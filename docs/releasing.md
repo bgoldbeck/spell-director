@@ -16,14 +16,13 @@ Each PR that changes behavior adds a line under `## [Unreleased]` in [`CHANGELOG
 
 1. On a branch: set the new version in `VERSION`, and rename `## [Unreleased]` in `CHANGELOG.md` to `## [X.Y.Z] - YYYY-MM-DD`, with a fresh empty `## [Unreleased]` above it.
 2. Run the checks in [CLAUDE.md](../CLAUDE.md) (a test checks that `VERSION` and the changelog agree), then PR and merge into `main`.
-3. Publish the release from the latest `main`. No GitHub Actions are involved, and GitHub creates the tag itself, so nothing needs to be pushed. Pick either way:
-   - **On github.com:** Releases → *Draft a new release* → type `vX.Y.Z` in *Choose a tag* and pick *Create new tag on publish*, target `main`, title `SpellDirector vX.Y.Z`, and paste the output of `python tools/release_notes.py` as the description. Click *Publish release*.
-   - **With the GitHub CLI** (`gh`, signed in):
+3. Publish it from the latest `main`:
 
-     ```bash
-     git checkout main && git pull
-     python tools/release_notes.py > release-notes.md
-     gh release create "v$(cat VERSION)" --target main --title "SpellDirector v$(cat VERSION)" --notes-file release-notes.md
-     ```
+   ```bash
+   python tools/release.py --dry-run   # check the tag and notes
+   python tools/release.py             # publish
+   ```
 
-`python tools/release_notes.py` prints the changelog section for the version in `VERSION` (or pass a version, such as `0.1.0`).
+   The script reads `VERSION` and that version's changelog section and creates the GitHub Release through the REST API. GitHub creates the `vX.Y.Z` tag on `main` itself, so nothing gets pushed and no GitHub Actions are used. It stops if that release already exists.
+
+   It needs a GitHub token with *Contents: read and write* on this repo: `GH_TOKEN` (or `GITHUB_TOKEN`) in the environment, or the GitHub CLI signed in (`gh auth login`). Claude runs this on the owner's PC, where the sign-in lives.
