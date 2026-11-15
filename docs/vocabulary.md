@@ -177,6 +177,10 @@ Fire is soft and slow next to lightning: it billows, licks and drifts instead of
 | heat haze, shimmer | shader `distortion` 0.3–0.6 | The air bends above and behind the flames. Shader intent only; the viewer doesn't draw it. |
 | burning ground, smolder | `decal` `burn` / glowing `cracks` (add, short) over `scorch` (alpha, long), `fire` cue at low gain | The ground catches, glows, then goes black. |
 | fireball | `orb` in a `travel: projectile` spell, `sparks` `look: ember` trailing | A thrown ball of fire (orb material `plasma` or `fiery`). |
+| meteor, falling star, called-down rock | `orb` `look: meteor` anchored at `sky` in a `travel: projectile` spell (`approach_deg`, `approach_yaw_deg`, `travel_ease: ease_in`) | A burning rock that falls onto the target at an angle, with a flame trail and a smoke trail that hangs in the air (`smoke_trail_ms`). Pair it with a long telegraph. |
+| debris, rubble, rocks flying | `sparks` `look: debris` (`glow` for hot rock), positive `gravity` | Rock chunks thrown out of an impact that tumble, land and stay. |
+| dust wave, blast wave of dust | `smoke` (alpha) with `spread_speed` | A low ring of dust rolling outward along the ground. |
+| fireball (explosion) | `smoke` `blend: add` with a small `spread_speed` | The ball of flame that boils up out of a big impact. |
 
 ## 9. How the director uses this
 

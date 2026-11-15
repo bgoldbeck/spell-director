@@ -509,6 +509,165 @@ class RibbonMesh {
   }
 }
 
+// ------------------------------------------------------------ rocks
+
+// A lumpy rock: an icosphere pushed in and out by seeded bumps. Unit size.
+function rockGeometry(seed, detail = 1, lumpy = 0.35) {
+  const geo = new THREE.IcosahedronGeometry(1, detail);
+  const r = rng(seed);
+  const bumps = Array.from({ length: 7 }, () => ({
+    d: new THREE.Vector3(r.range(-1, 1), r.range(-1, 1), r.range(-1, 1)).normalize(),
+    k: r.range(-1, 1),
+  }));
+  const pos = geo.attributes.position;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i).normalize();
+    let s = 1;
+    for (const b of bumps) s += lumpy * b.k * Math.pow(Math.max(0, v.dot(b.d)), 3);
+    v.multiplyScalar(Math.max(0.55, s));
+    pos.setXYZ(i, v.x, v.y, v.z);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// A burning rock falling from the sky (orb look "meteor"): a lumpy dark rock
+// with molten seams whose leading face glows white-hot, wrapped in a heat
+// shell, dragging a trail of flame puffs that cool from white-yellow through
+// orange to red, then a long dark smoke trail that hangs in the air after it
+// lands. Every puff is emitted at a fixed time along the flight, so the whole
+// trail is a function of t.
+class MeteorParts {
+  constructor(layer) {
+    this.layer = layer;
+    const tp = layer.effect.template;
+    const pal = tp.palette || {};
+    const col = (k, d) => new THREE.Color(pal[k] || pal.primary || d);
+    this.hot = col("core", "#fff3c4");
+    this.mid = col("primary", "#ff8a1f");
+    this.cool = col("secondary", "#d3340f");
+    this.rockColor = col("shadow", "#2a2320");
+    this.geo = rockGeometry(seedFor(layer.effect.seed, layer.def.id, "rock"), 2, 0.4);
+    const n = this.geo.attributes.position.count;
+    this.geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+    // Molten seams: fixed per vertex, from a few seeded bands.
+    const r = layer.rng("seams");
+    const bands = Array.from({ length: 4 }, () => new THREE.Vector3(r.range(-1, 1), r.range(-1, 1), r.range(-1, 1)).normalize());
+    const v = new THREE.Vector3();
+    this.seam = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      v.fromBufferAttribute(this.geo.attributes.position, i).normalize();
+      let m = 0;
+      for (const b of bands) m = Math.max(m, 1 - Math.min(1, Math.abs(v.dot(b)) / 0.12));
+      this.seam[i] = m;
+    }
+    this.rock = new THREE.Mesh(this.geo, new THREE.MeshBasicMaterial({ vertexColors: true }));
+    this.heat = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), new THREE.MeshBasicMaterial({
+      color: this.mid, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    this.spin = new THREE.Vector3(r.range(-1, 1), r.range(-1, 1), r.range(-1, 1)).normalize();
+    this.flames = [];
+    this.smokes = [];
+    for (let i = 0; i < 48; i++) {
+      const f = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: cloud(i % 4), color: this.mid.clone(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      }));
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: cloud((i + 2) % 4), color: this.rockColor.clone().lerp(new THREE.Color("#8a8580"), 0.35), transparent: true, depthWrite: false,
+      }));
+      f.visible = s.visible = false;
+      this.flames.push(f);
+      this.smokes.push(s);
+    }
+    this.group = new THREE.Group();
+    this.group.add(...this.smokes, this.heat, this.rock, ...this.flames);
+    this.key = new THREE.Vector3(-0.4, 0.8, 0.45).normalize();
+  }
+
+  // The rock and its heat shell at `at`, heading along `dir`.
+  updateRock(t, at, dir, radius, I) {
+    this.rock.visible = this.heat.visible = I > 0.001;
+    if (!this.rock.visible) return;
+    this.rock.position.copy(at);
+    this.rock.scale.setScalar(radius);
+    this.rock.quaternion.setFromAxisAngle(this.spin, (t / 1000) * 2.2);
+    this.heat.position.copy(at).addScaledVector(dir, radius * 0.25);
+    this.heat.scale.setScalar(radius * 1.55);
+    this.heat.material.opacity = 0.32 * I;
+    // Light each vertex: the face pushing through the air glows white-hot,
+    // molten seams glow orange, the rest is dark rock lit by a key light.
+    const pos = this.geo.attributes.position;
+    const nrm = this.geo.attributes.normal;
+    const colors = this.geo.attributes.color;
+    const q = this.rock.quaternion;
+    const nv = new THREE.Vector3();
+    const c = new THREE.Color();
+    for (let i = 0; i < pos.count; i++) {
+      nv.fromBufferAttribute(nrm, i).applyQuaternion(q);
+      const lit = 0.35 + 0.65 * Math.max(0, nv.dot(this.key));
+      const front = Math.max(0, nv.dot(dir));
+      const glow = Math.min(1, this.seam[i] * 0.9 * I + Math.pow(front, 2) * 1.1 * I);
+      c.copy(this.rockColor).multiplyScalar(lit * 1.6);
+      if (glow > 0) c.lerp(glow > 0.6 ? this.hot : this.mid, Math.min(1, glow));
+      colors.setXYZ(i, c.r, c.g, c.b);
+    }
+    colors.needsUpdate = true;
+  }
+
+  // Flame and smoke puffs shed along the flight. f: the flight beat.
+  updateTrail(t, f, posAt, radius, I, opts) {
+    const r = this.layer.rng("trail");
+    const flameLife = Math.max(1, opts.trail_ms);
+    const smokeLife = opts.smoke_trail_ms;
+    const span = Math.max(1, f.end_ms - f.start_ms);
+    const n = this.flames.length;
+    let any = false;
+    for (let i = 0; i < n; i++) {
+      const te = f.start_ms + ((i + r.range(0, 0.9)) / n) * span;
+      const offA = new THREE.Vector3(r.range(-1, 1), r.range(-1, 1), r.range(-1, 1));
+      const k = r.range(0.7, 1.3);
+      const spin = r.range(0, Math.PI * 2);
+      const age = t - te;
+      const born = age >= 0 && te <= f.end_ms;
+      const fl = this.flames[i];
+      const u = age / flameLife;
+      fl.visible = born && u <= 1 && I > 0.001;
+      if (fl.visible) {
+        const at = posAt(te).addScaledVector(offA, radius * 0.5 * (0.3 + u));
+        at.y += 0.25 * u * u;
+        fl.position.copy(at);
+        fl.scale.setScalar(radius * k * (2.2 + 3.2 * u));
+        fl.material.rotation = spin + u;
+        const tc = fl.material.color;
+        if (u < 0.35) tc.copy(this.hot).lerp(this.mid, u / 0.35);
+        else tc.copy(this.mid).lerp(this.cool, Math.min(1, (u - 0.35) / 0.5));
+        fl.material.opacity = 0.75 * (1 - u) * Math.min(1, age / 30 + 0.2);
+        any = true;
+      }
+      const sm = this.smokes[i];
+      const us = smokeLife > 0 ? age / smokeLife : 2;
+      sm.visible = born && us <= 1 && i % 2 === 0;
+      if (sm.visible) {
+        const at = posAt(te).addScaledVector(offA, radius * (0.6 + 2.2 * us));
+        at.y += 0.35 * us;
+        sm.position.copy(at);
+        sm.scale.setScalar(radius * k * (2.8 + 6 * us));
+        sm.material.rotation = -spin + us * 0.6;
+        sm.material.opacity = opts.smoke_opacity * Math.sin(Math.PI * Math.min(1, us * 1.4 + 0.08)) * Math.min(1, age / 60);
+        any = true;
+      }
+    }
+    return any;
+  }
+
+  hide() {
+    this.rock.visible = this.heat.visible = false;
+    this.flames.forEach((s) => (s.visible = false));
+    this.smokes.forEach((s) => (s.visible = false));
+  }
+}
+
 // ------------------------------------------------------------ layers
 
 class Layer {
@@ -816,6 +975,30 @@ class SparksLayer extends Layer {
     // look "ember": glowing flecks that flutter and flicker as they drift
     // (pair with negative gravity so they float up on the heat).
     this.ember = this.base.look === "ember";
+    // look "debris": lumpy rock chunks that tumble, fall and come to rest on
+    // the ground, lit by the scene. With `glow` they start hot and cool.
+    this.debris = this.base.look === "debris";
+    if (this.debris) {
+      this.rocks = new THREE.InstancedMesh(
+        rockGeometry(seedFor(effect.seed, def.id, "chunk"), 0, 0.5),
+        new THREE.MeshLambertMaterial({ color: "#ffffff" }),
+        this.max,
+      );
+      this.rocks.frustumCulled = false;
+      this.rocks.setColorAt(0, outer);
+      this.rocks.count = 0;
+      // Rock in the layer's color; hot chunks glow in the palette's fire
+      // colors (primary, with a core-colored streak) whatever the rock color.
+      const pal = effect.template.palette || {};
+      const fireHot = new THREE.Color(pal.primary || "#ff8a1f");
+      const fireCore = new THREE.Color(pal.core || pal.primary || "#fff3c4");
+      this.rockColor = outer.clone();
+      this.hotColor = fireHot.clone().lerp(fireCore, 0.3);
+      this.streaks = new RibbonMesh(this.max * 4, fireHot, 1, 1);
+      this.hot = new RibbonMesh(this.max * 4, fireCore, 1, 0.6);
+      this.group.add(this.rocks, this.streaks.mesh, this.hot.mesh);
+      return;
+    }
     if (this.droplet) {
       this.streaks = new RibbonMesh(this.max * 4, outer.clone().lerp(core, 0.25), 1, 1.2, { blending: THREE.NormalBlending });
       this.hot = new RibbonMesh(this.max * 4, core, 1, 0.5);
@@ -851,6 +1034,10 @@ class SparksLayer extends Layer {
     // Sparks are born over emit_ms (default 120 ms: one burst); longer reads as a fountain.
     const span = Math.max(1, Math.min(w.end - w.start, this.p("emit_ms", 0, 120)));
     const streakS = this.p("streak_ms", 0, this.droplet ? 30 : this.ember ? 35 : 60) / 1000;
+    if (this.debris) {
+      this.updateDebris({ local, count, life, origin, speed, spread, gravity, spreadDeg, drag, sz, span, streakS });
+      return;
+    }
     const paths = [];
     for (let i = 0; i < count; i++) {
       const born = r.range(0, span);
@@ -899,6 +1086,77 @@ class SparksLayer extends Layer {
     }
   }
 }
+
+// Debris: same seeded launch as sparks (so count, speed, spread_deg, gravity
+// and drag mean the same thing), but each chunk is a tumbling rock that lands
+// and stays put, shrinking away at the end of its life. `glow` (0-1) makes
+// chunks start hot (the layer's first color, with a short glowing streak)
+// and cool to their rock color over the first part of their flight.
+SparksLayer.prototype.updateDebris = function updateDebris(o) {
+  const r = this.rng("burst");
+  const glow = Math.max(0, Math.min(1, this.p("glow", 0, 0)));
+  const m = new THREE.Matrix4();
+  const q = new THREE.Quaternion();
+  const sc = new THREE.Vector3();
+  const c = new THREE.Color();
+  const paths = [];
+  let n = 0;
+  for (let i = 0; i < o.count; i++) {
+    const born = r.range(0, o.span);
+    const lifeI = o.life * r.range(0.7, 1.2);
+    const theta = r.range(0, Math.PI * 2);
+    const cone = THREE.MathUtils.degToRad(o.spreadDeg / 2);
+    const phi = o.spreadDeg >= 360 ? Math.acos(r.range(-1, 1)) : r.range(0, Math.min(Math.PI, cone));
+    const v = o.speed * (1 + r.range(-o.spread, o.spread));
+    const axis = new THREE.Vector3(r.range(-1, 1), r.range(-1, 1), r.range(-1, 1)).normalize();
+    const spin = r.range(4, 14);
+    const k = r.range(0.4, 1.6);
+    const dx = Math.sin(phi) * Math.cos(theta);
+    const dy = Math.cos(phi);
+    const dz = Math.sin(phi) * Math.sin(theta);
+    const age = (o.local - born) / 1000;
+    if (age < 0 || age * 1000 > lifeI) continue;
+    const size = o.sz * k;
+    const rest = size * 0.45;
+    const at = (a) => {
+      const travel = (v * (1 - Math.exp(-o.drag * a))) / o.drag;
+      return new THREE.Vector3(o.origin.x + dx * travel, o.origin.y + dy * travel - 0.5 * o.gravity * a * a, o.origin.z + dz * travel);
+    };
+    // When it lands (first sample below resting height), it stops there.
+    let land = Infinity;
+    for (let s = 1; s <= 24; s++) {
+      const a = (s / 24) * (lifeI / 1000);
+      if (at(a).y <= rest) {
+        land = a;
+        break;
+      }
+    }
+    const a = Math.min(age, land);
+    const head = at(a);
+    head.y = Math.max(rest, head.y);
+    const left = lifeI / 1000 - age;
+    const shrink = Math.min(1, left / 0.25);
+    q.setFromAxisAngle(axis, spin * a);
+    sc.setScalar(size * shrink);
+    m.compose(head, q, sc);
+    this.rocks.setMatrixAt(n, m);
+    const heat = glow * Math.max(0, 1 - age / Math.max(0.05, (lifeI / 1000) * 0.45));
+    c.copy(this.rockColor).lerp(this.hotColor, heat);
+    this.rocks.setColorAt(n, c);
+    n++;
+    if (heat > 0.02 && age < land) {
+      const tail = at(Math.max(0, a - o.streakS));
+      paths.push({ pts: [head, head.clone().lerp(tail, 0.5), tail], w: [heat, heat * 0.7, 0.1 * heat] });
+    }
+  }
+  this.rocks.count = n;
+  this.rocks.instanceMatrix.needsUpdate = true;
+  if (this.rocks.instanceColor) this.rocks.instanceColor.needsUpdate = true;
+  this.streaks.setPaths(paths, o.sz * 0.5);
+  this.hot.setPaths(paths, o.sz * 0.2);
+  this.streaks.opacity = 0.8;
+  this.hot.opacity = 1;
+};
 
 const RING_FRAGMENT = /* glsl */ `
 uniform vec3 color;
@@ -1017,7 +1275,7 @@ class SmokeLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
     this.sprites = [];
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 32; i++) {
       // blend "add": glowing billows of flame instead of lit smoke.
       const blending = def.blend === "add" ? THREE.AdditiveBlending : THREE.NormalBlending;
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloud(i % 4), color: this.colors[0], transparent: true, depthWrite: false, blending }));
@@ -1033,12 +1291,18 @@ class SmokeLayer extends Layer {
     this.group.visible = !!w && local >= 0 && local <= (w.end - w.start) + life;
     if (!this.group.visible) return;
     const r = this.rng("smoke");
-    const count = Math.min(16, Math.round(this.p("count", t, 6)));
+    const count = Math.min(32, Math.round(this.p("count", t, 6)));
     const origin = this.anchorPos();
     const rise = this.p("rise_speed", t, 40) * PX;
     const size = this.p("size_px", t, 24) * PX * 2;
     const opacity = this.p("opacity", t, 0.35);
+    // spread_speed: puffs also roll outward along the ground, evenly around
+    // the centre (a dust wave), slowing as they go.
+    const outward = this.p("spread_speed", t, 0) * PX;
+    const ro = this.rng("spread");
     this.sprites.forEach((s, i) => {
+      const ang = ((i + ro.range(-0.35, 0.35)) / Math.max(1, count)) * Math.PI * 2;
+      const kOut = ro.range(0.75, 1.2);
       const born = r.range(0, Math.max(1, (w.end - w.start) * 0.5));
       const dx = r.range(-0.15, 0.15);
       const dz = r.range(-0.15, 0.15);
@@ -1048,6 +1312,12 @@ class SmokeLayer extends Layer {
       s.visible = i < count && age >= 0 && age <= 1;
       if (!s.visible) return;
       s.position.set(origin.x + dx * (1 + age), origin.y + 0.1 + rise * age * (life / 1000) * 3, origin.z + dz * (1 + age));
+      if (outward) {
+        const secs = (age * life) / 1000;
+        const d = (outward * kOut * (1 - Math.exp(-2.5 * secs))) / 2.5;
+        s.position.x += Math.cos(ang) * d;
+        s.position.z += Math.sin(ang) * d;
+      }
       s.scale.setScalar(size * (0.6 + age));
       s.material.rotation = spin0 + spin * age;
       s.material.opacity = opacity * Math.sin(Math.PI * age);
@@ -1069,10 +1339,31 @@ class OrbLayer extends Layer {
     this.currentRadius = 0;
     this.pos = this.anchorPos();
     // Projectile spells: an orb held in the hand flies to the target during
-    // its travel beat.
+    // its travel beat; an orb anchored in the sky falls onto the target.
     const tp = effect.template;
-    const flies = tp.space?.travel === "projectile" && ["caster_hand", "caster"].includes(def.anchor || "target");
+    this.fromSky = (def.anchor || "target") === "sky";
+    const flies = tp.space?.travel === "projectile" && ["caster_hand", "caster", "sky"].includes(def.anchor || "target");
     this.flight = flies ? (this.window?.beats || []).find((b) => b.phase === "travel") || null : null;
+    // look "meteor": a burning rock with a flame and smoke trail.
+    if (this.base.look === "meteor") {
+      this.meteor = new MeteorParts(this);
+      this.core.visible = this.shell.visible = false;
+      this.group.add(this.meteor.group);
+    }
+  }
+
+  // Where a falling orb starts: above the target, tilted approach_deg from
+  // vertical, coming in from approach_yaw_deg (0 = from beyond the target,
+  // 180 = from over the caster's head), measured on the ground from the cast
+  // direction.
+  skyStart(t) {
+    const st = this.effect.stage;
+    const to = st.anchor("target");
+    const h = st.sky.y;
+    const tilt = THREE.MathUtils.degToRad(Math.max(0, Math.min(75, this.p("approach_deg", t, 0))));
+    const yaw = THREE.MathUtils.degToRad(this.p("approach_yaw_deg", t, 0));
+    const off = Math.tan(tilt) * h;
+    return to.add(new THREE.Vector3(Math.cos(yaw) * off, h, -Math.sin(yaw) * off));
   }
 
   // Where the orb is at time t: in the hand, on its way, or at the target.
@@ -1080,8 +1371,8 @@ class OrbLayer extends Layer {
     const f = this.flight;
     if (!f) return this.anchorPos();
     const st = this.effect.stage;
-    const from = st.hand.clone();
-    const to = st.chest(0);
+    const from = this.fromSky ? this.skyStart(t) : st.hand.clone();
+    const to = this.fromSky ? st.anchor("target") : st.chest(0);
     const u = Math.max(0, Math.min(1, (t - f.start_ms) / Math.max(1, f.end_ms - f.start_ms)));
     const e = this.p("travel_ease", t, "linear") === "ease_in" ? u * u : u;
     const arc = this.p("arc_height_px", t, 0) * PX * 4 * e * (1 - e);
@@ -1090,6 +1381,10 @@ class OrbLayer extends Layer {
 
   update(t) {
     const I = this.intensityAt(t);
+    if (this.meteor) {
+      this.updateMeteor(t, I);
+      return;
+    }
     this.group.visible = I > 0.001;
     if (!this.group.visible) {
       this.currentRadius = 0;
@@ -1121,10 +1416,38 @@ class OrbLayer extends Layer {
     this.updateTrail(t, r, I);
   }
 
-  // A tapering streak behind a flying orb: where the orb was over the last trail_ms.
-  updateTrail(t, r, I) {
+  updateMeteor(t, I) {
     const f = this.flight;
-    const trailMs = this.p("trail_ms", t, 140);
+    const m = this.meteor;
+    const r = this.p("radius_px", t, 10) * PX;
+    const at = this.posAt(t);
+    this.pos = at;
+    this.currentRadius = I > 0.001 ? r : 0;
+    const ahead = f ? this.posAt(Math.min(f.end_ms, t + 16)) : at.clone().setY(0);
+    const behind = f ? this.posAt(Math.max(f.start_ms, t - 16)) : at.clone().setY(at.y + 1);
+    const dir = new THREE.Vector3().subVectors(ahead, behind);
+    if (dir.lengthSq() < 1e-8) dir.set(0, -1, 0);
+    dir.normalize();
+    m.updateRock(t, at, dir, r, I);
+    const trailing = f ? m.updateTrail(t, f, (x) => this.posAt(x), r, I, {
+      trail_ms: this.p("trail_ms", t, 260),
+      smoke_trail_ms: this.p("smoke_trail_ms", t, 0),
+      smoke_opacity: this.p("smoke_opacity", t, 0.45),
+    }) : false;
+    this.group.visible = I > 0.001 || trailing;
+    // A bright streak just behind the rock: where it was over the last 90 ms.
+    if (I > 0.001) this.updateTrail(t, r, I, 90);
+    else {
+      this.trail.setPaths([], 0);
+      this.trailCore.setPaths([], 0);
+    }
+    this.arcs.setPaths([], 0);
+  }
+
+  // A tapering streak behind a flying orb: where the orb was over the last trail_ms.
+  updateTrail(t, r, I, ms) {
+    const f = this.flight;
+    const trailMs = ms ?? this.p("trail_ms", t, 140);
     if (!f || t <= f.start_ms || trailMs <= 0) {
       this.trail.setPaths([], 0);
       this.trailCore.setPaths([], 0);
