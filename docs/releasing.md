@@ -16,13 +16,18 @@ Each PR that changes behavior adds a line under `## [Unreleased]` in [`CHANGELOG
 
 1. On a branch: set the new version in `VERSION`, and rename `## [Unreleased]` in `CHANGELOG.md` to `## [X.Y.Z] - YYYY-MM-DD`, with a fresh empty `## [Unreleased]` above it.
 2. Run the checks in [CLAUDE.md](../CLAUDE.md) (a test checks that `VERSION` and the changelog agree), then PR and merge into `main`.
-3. Publish it from the latest `main`:
+3. Publish it from the latest `main`, **on Windows** so the attached exe is a Windows build:
 
    ```bash
+   python -m pip install -r requirements-build.txt   # once: PyInstaller
    python tools/release.py --dry-run   # check the tag and notes
-   python tools/release.py             # publish
+   python tools/release.py             # build the exe, publish, attach the exe
    ```
 
-   The script reads `VERSION` and that version's changelog section and creates the GitHub Release through the REST API. GitHub creates the `vX.Y.Z` tag on `main` itself, so nothing gets pushed and no GitHub Actions are used. It stops if that release already exists.
+   The script reads `VERSION` and that version's changelog section, builds `dist/SpellDirector-v<version>-windows.exe` with [`tools/build_exe.py`](../tools/build_exe.py), creates the GitHub Release through the REST API, and uploads the exe to it. GitHub creates the `vX.Y.Z` tag on `main` itself, so nothing gets pushed and no GitHub Actions are used. It stops if that release already exists. If the upload fails after the release was created, `python tools/release.py --attach` builds and uploads the exe again; `--no-exe` skips the exe.
 
    It needs a GitHub token with *Contents: read and write* on this repo: `GH_TOKEN` (or `GITHUB_TOKEN`) in the environment, or the GitHub CLI signed in (`gh auth login`). Claude runs this on the owner's PC, where the sign-in lives.
+
+## The exe
+
+`SpellDirector-v<version>-windows.exe` is the viewer packaged with PyInstaller (one file, with a console window). It bundles `web/`, `templates/`, `schemas/` and `VERSION`, serves them on localhost (port 47811, or the next free one) and opens the browser. Closing the window stops it. Command-line options are the same as `tools/serve.py` (for example `--port`). To build one without releasing: `python tools/build_exe.py`.
