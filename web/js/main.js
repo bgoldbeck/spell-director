@@ -31,6 +31,7 @@ const state = {
   view: null,
   last: performance.now(),
   hidden: new Set(),
+  chosenView: null, // the view the user picked; null means "open each spell in its hero view"
 };
 
 // ------------------------------------------------------------ sound
@@ -53,6 +54,35 @@ function soundPref() {
   } catch {
     return true;
   }
+}
+
+// The camera view the user picked sticks across spells and visits; until they pick one,
+// each spell opens in its hero view.
+const VIEW_KEY = "spelldirector.view";
+const VIEW_NAMES = ["front", "side", "top", "three_quarter", "quad"];
+
+function savedView() {
+  try {
+    const v = localStorage.getItem(VIEW_KEY);
+    return VIEW_NAMES.includes(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+function chooseView(view, save = true) {
+  if (!VIEW_NAMES.includes(view)) return;
+  state.chosenView = view;
+  state.view = view;
+  if (save) {
+    try {
+      localStorage.setItem(VIEW_KEY, view);
+    } catch {
+      /* private mode: just don't remember */
+    }
+  }
+  setupCameras();
+  updateViewButtons();
 }
 
 function setMuted(muted, save = true) {
@@ -235,7 +265,7 @@ function selectTemplate(tpl) {
   state.template = tpl;
   state.hidden = new Set();
   state.t = 0;
-  state.view = tpl.views?.hero || "three_quarter";
+  state.view = state.chosenView || tpl.views?.hero || "three_quarter";
   loadEffect();
   buildTemplateUI();
   updateViewButtons();
@@ -293,6 +323,7 @@ function syncUrl() {
   if (state.template) q.set("template", state.template.id);
   if (state.type === ALL) q.delete("type");
   else q.set("type", state.type);
+  if (state.chosenView) q.set("view", state.chosenView);
   q.delete("t");
   history.replaceState(null, "", `${location.pathname}?${q}`);
 }
@@ -500,9 +531,8 @@ ui.reroll.onclick = () => {
 };
 document.querySelectorAll(".view").forEach((b) => {
   b.onclick = () => {
-    state.view = b.dataset.view;
-    setupCameras();
-    updateViewButtons();
+    chooseView(b.dataset.view);
+    syncUrl();
   };
 });
 ui.focus.onclick = () => document.body.classList.toggle("focus");
@@ -575,10 +605,11 @@ async function boot() {
   state.template = start.template;
   buildTypeSelect();
   buildSpellSelect();
+  // ?view= wins for this visit and isn't saved, so automation can't change the remembered view.
+  const urlView = params.get("view");
+  state.chosenView = VIEW_NAMES.includes(urlView) ? urlView : savedView();
   // Leave a bad ?template= in the URL so the error stays explainable.
   pickSpell(start.template, { updateUrl: false });
-  const v = params.get("view");
-  if (v) document.querySelector(`.view[data-view="${v}"]`)?.click();
   const t = params.get("t");
   if (t !== null) {
     state.t = Number(t);
