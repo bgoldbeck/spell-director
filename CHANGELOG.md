@@ -6,6 +6,14 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Added
+
+- Viewer: spells are organized by type, with Type and Spell dropdowns, Prev/Next buttons and `[` / `]` keys to step through a type, and a `?type=` URL parameter. The URL follows the spell you pick.
+
+### Fixed
+
+- Viewer: an unknown `?template=` id now shows an error instead of silently opening the first template.
+
 ## [0.1.0] - 2026-11-15
 
 First versioned release.

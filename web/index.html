@@ -22,7 +22,18 @@
       </div>
     </header>
 
-    <nav id="tabs" class="tabs" aria-label="Templates"></nav>
+    <nav class="picker" aria-label="Spells">
+      <label>Type
+        <select id="type-select" title="Spell type"></select>
+      </label>
+      <label>Spell
+        <select id="spell-select" title="Spell within the type"></select>
+      </label>
+      <button id="prev-spell" class="btn" title="Previous spell of this type ([)">‹ Prev</button>
+      <button id="next-spell" class="btn" title="Next spell of this type (])">Next ›</button>
+      <span id="spell-count" class="spell-count"></span>
+    </nav>
+    <p id="error" class="error" hidden></p>
 
     <section class="stage-wrap">
       <div id="stage" class="stage">
@@ -89,7 +100,6 @@
         <ul id="layers" class="layers"></ul>
       </div>
     </section>
-    <p id="error" class="error" hidden></p>
   </div>
   <script type="module" src="js/main.js"></script>
 </body>
