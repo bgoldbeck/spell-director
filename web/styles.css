@@ -23,6 +23,7 @@ body {
 
 .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
 h1 { margin: 0; font-size: 22px; }
+.app-version { font-size: 12px; font-weight: 500; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; vertical-align: middle; }
 h2 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .sub { margin: 4px 0 0; color: var(--muted); }
 .top-actions { display: flex; gap: 8px; flex-shrink: 0; }

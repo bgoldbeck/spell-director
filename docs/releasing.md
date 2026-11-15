@@ -30,4 +30,4 @@ Each PR that changes behavior adds a line under `## [Unreleased]` in [`CHANGELOG
 
 ## The exe
 
-`SpellDirector-v<version>-windows.exe` is the viewer packaged with PyInstaller (one file, with a console window). It bundles `web/`, `templates/`, `schemas/` and `VERSION`, serves them on localhost (port 47811, or the next free one) and opens the browser. Closing the window stops it. Command-line options are the same as `tools/serve.py` (for example `--port`). To build one without releasing: `python tools/build_exe.py`.
+`SpellDirector-v<version>-windows.exe` is the viewer packaged with PyInstaller (one file, with a console window). It bundles `web/`, `templates/`, `schemas/` and `VERSION`, serves them on localhost (port 47811, or the next free one) and opens the browser. If one is already running, it just opens the browser on that one and exits. The viewer header shows the version from the bundled `VERSION`. Closing the window stops it. Command-line options are the same as `tools/serve.py` (for example `--port`). To build one without releasing: `python tools/build_exe.py`.
