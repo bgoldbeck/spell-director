@@ -3,10 +3,12 @@ import { OrbitControls } from "../vendor/OrbitControls.js";
 import { Effect } from "./engine/effect.js";
 import { VIEWS, VIEW_LABELS, viewCamera } from "./engine/stage.js";
 import { beatsAt, phaseColor } from "./engine/timeline.js";
+import { ALL, groupByType, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
 
 const $ = (id) => document.getElementById(id);
 const ui = {
-  canvas: $("canvas"), stage: $("stage"), tabs: $("tabs"), title: $("title"), subtitle: $("subtitle"),
+  canvas: $("canvas"), stage: $("stage"), typeSelect: $("type-select"), spellSelect: $("spell-select"),
+  prevSpell: $("prev-spell"), nextSpell: $("next-spell"), spellCount: $("spell-count"), title: $("title"), subtitle: $("subtitle"),
   beatNames: $("beat-names"), beatIntent: $("beat-intent"), cues: $("cues"), time: $("time"),
   replay: $("replay"), play: $("play"), speed: $("speed"), loop: $("loop"), seed: $("seed"), reroll: $("reroll"),
   scrubber: $("scrubber"), bands: $("bands"), beats: $("beats"), description: $("description"),
@@ -16,6 +18,8 @@ const ui = {
 
 const state = {
   templates: [],
+  groups: [],
+  type: ALL,
   template: null,
   effect: null,
   seed: 1,
@@ -186,20 +190,85 @@ function selectTemplate(tpl) {
   ui.play.textContent = "Pause";
 }
 
-function buildTabs() {
-  ui.tabs.innerHTML = "";
-  state.templates.forEach((tpl) => {
-    const b = document.createElement("button");
-    b.className = "btn";
-    b.textContent = tpl.name;
-    b.title = tpl.description || "";
-    b.onclick = () => {
-      selectTemplate(tpl);
-      [...ui.tabs.children].forEach((c) => c.classList.toggle("active", c === b));
-    };
-    ui.tabs.appendChild(b);
-  });
+// ------------------------------------------------------------ type + spell pickers
+
+function setCatalog(templates) {
+  state.templates = templates;
+  state.groups = groupByType(templates);
 }
+
+function buildTypeSelect() {
+  ui.typeSelect.innerHTML = "";
+  const all = new Option(`${typeLabel(ALL)} (${state.templates.length})`, ALL);
+  ui.typeSelect.add(all);
+  for (const g of state.groups) ui.typeSelect.add(new Option(`${g.label} (${g.templates.length})`, g.type));
+  ui.typeSelect.value = state.type;
+}
+
+function spellOption(tpl) {
+  const o = new Option(tpl.name || tpl.id, tpl.id);
+  o.title = tpl.description || "";
+  return o;
+}
+
+function buildSpellSelect() {
+  ui.spellSelect.innerHTML = "";
+  if (state.type === ALL) {
+    for (const g of state.groups) {
+      const og = document.createElement("optgroup");
+      og.label = g.label;
+      g.templates.forEach((t) => og.appendChild(spellOption(t)));
+      ui.spellSelect.appendChild(og);
+    }
+  } else {
+    spellsFor(state.groups, state.type).forEach((t) => ui.spellSelect.add(spellOption(t)));
+  }
+  if (state.template) ui.spellSelect.value = state.template.id;
+  updatePickerState();
+}
+
+function updatePickerState() {
+  const list = spellsFor(state.groups, state.type);
+  const i = list.findIndex((t) => t.id === state.template?.id);
+  ui.spellCount.textContent = list.length ? `${i + 1} of ${list.length}` : "";
+  ui.prevSpell.disabled = ui.nextSpell.disabled = list.length < 2;
+  ui.spellSelect.title = state.template?.description || "Spell within the type";
+}
+
+function syncUrl() {
+  const q = new URLSearchParams(location.search);
+  if (state.template) q.set("template", state.template.id);
+  if (state.type === ALL) q.delete("type");
+  else q.set("type", state.type);
+  q.delete("t");
+  history.replaceState(null, "", `${location.pathname}?${q}`);
+}
+
+function pickSpell(tpl, { updateUrl = true } = {}) {
+  if (!tpl) return;
+  selectTemplate(tpl);
+  ui.spellSelect.value = tpl.id;
+  updatePickerState();
+  if (updateUrl) {
+    ui.error.hidden = true;
+    syncUrl();
+  }
+}
+
+function pickType(type) {
+  state.type = type;
+  ui.typeSelect.value = type;
+  buildSpellSelect();
+  const list = spellsFor(state.groups, type);
+  // Keep the current spell when it belongs to the new type.
+  if (!list.some((t) => t.id === state.template?.id)) pickSpell(list[0]);
+  else syncUrl();
+}
+
+ui.typeSelect.onchange = () => pickType(ui.typeSelect.value);
+ui.spellSelect.onchange = () => pickSpell(state.templates.find((t) => t.id === ui.spellSelect.value));
+ui.prevSpell.onclick = () => pickSpell(step(state.groups, state.type, state.template?.id, -1));
+ui.nextSpell.onclick = () => pickSpell(step(state.groups, state.type, state.template?.id, 1));
 
 function buildTemplateUI() {
   const tpl = state.template;
@@ -376,7 +445,9 @@ window.addEventListener("keydown", (e) => {
   else if (e.key === " ") {
     e.preventDefault();
     ui.play.click();
-  } else if (["1", "2", "3", "4", "5"].includes(e.key)) {
+  } else if (e.key === "[") ui.prevSpell.click();
+  else if (e.key === "]") ui.nextSpell.click();
+  else if (["1", "2", "3", "4", "5"].includes(e.key)) {
     document.querySelectorAll(".view")[Number(e.key) - 1].click();
   }
 });
@@ -386,9 +457,12 @@ ui.file.onchange = async () => {
   try {
     const tpl = JSON.parse(await f.text());
     if (!tpl.beats || !tpl.layers) throw new Error("not a SpellDirector template (no beats/layers)");
-    state.templates = state.templates.filter((x) => x.id !== tpl.id).concat(tpl);
-    buildTabs();
-    ui.tabs.lastChild.click();
+    setCatalog(state.templates.filter((x) => x.id !== tpl.id).concat(tpl));
+    state.type = tpl.element || "other";
+    buildTypeSelect();
+    state.template = tpl;
+    buildSpellSelect();
+    pickSpell(tpl);
     ui.error.hidden = true;
   } catch (err) {
     showError(`Could not open ${f.name}: ${err.message}`);
@@ -406,18 +480,23 @@ function showError(msg) {
 async function boot() {
   try {
     const index = await (await fetch("templates/index.json")).json();
-    state.templates = await Promise.all(index.templates.map(async (p) => (await fetch(`templates/${p}`)).json()));
+    setCatalog(await Promise.all(index.templates.map(async (p) => (await fetch(`templates/${p}`)).json())));
   } catch (err) {
     showError(`Could not load templates: ${err.message}`);
     return;
   }
-  buildTabs();
-  const want = new URLSearchParams(location.search).get("template");
-  const i = Math.max(0, state.templates.findIndex((t) => t.id === want));
-  ui.tabs.children[i]?.click();
-  const v = new URLSearchParams(location.search).get("view");
+  const params = new URLSearchParams(location.search);
+  const start = resolveStart(state.groups, { template: params.get("template"), type: params.get("type") });
+  if (start.error) showError(start.error);
+  state.type = start.type;
+  state.template = start.template;
+  buildTypeSelect();
+  buildSpellSelect();
+  // Leave a bad ?template= in the URL so the error stays explainable.
+  pickSpell(start.template, { updateUrl: false });
+  const v = params.get("view");
   if (v) document.querySelector(`.view[data-view="${v}"]`)?.click();
-  const t = new URLSearchParams(location.search).get("t");
+  const t = params.get("t");
   if (t !== null) {
     state.t = Number(t);
     state.playing = false;

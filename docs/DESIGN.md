@@ -85,17 +85,19 @@ The director is an AI agent following [director-playbook.md](director-playbook.m
 
 `run.bat` (Windows) or `./run.sh` → http://localhost:47811 (default port; `--port` or `SPELLDIRECTOR_PORT` to change, next free port if busy). Laid out like the motion study:
 
-- Template tabs; beat buttons (jump to a beat) with a **Clear** button; beat-intent captions on the stage; sound cues shown as captions.
+- **Type** and **Spell** dropdowns: templates are grouped by their `element` (new types show up on their own), with "All types" listing every spell under its type; **‹ Prev / Next ›** (or `[` / `]`) step through the chosen type. Beat buttons (jump to a beat) with a **Clear** button; beat-intent captions on the stage; sound cues shown as captions.
 - Scrubber with colored phase bands; Replay, Pause/Play, speed 0.1×–2×, Loop, Seed + **New cast**, **Focus view** (F) for recording.
 - **Front / Side / Top / 3/4 / All four** camera presets; hero view starred and opened by default; each view shows that template's `views.reads`. OrbitControls for free orbit. Top is orthographic.
 - Layer toggles, palette swatches, description and director's notes. **Open JSON…** loads any template file.
-- URL parameters for automation: `?template=<id>&view=<front|side|top|three_quarter|quad>&t=<ms>` (with `t`, playback starts paused).
+- URL parameters for automation: `?template=<id>&type=<element>&view=<front|side|top|three_quarter|quad>&t=<ms>` (with `t`, playback starts paused). An unknown `template` or `type` shows an error naming it, then falls back to the first spell. Picking a spell updates the URL, so it can be bookmarked or shared.
 
 Engine (`web/js/engine/`):
 
 - `timeline.js`: pure functions, Node-testable: seeded RNG (mulberry32), param resolution, beat curves, layer intensity, keyframes.
 - `stage.js`: world layout from `space` (caster at origin facing +X, hand, sky, targets laid out in the footprint cone, beam end point) and the four camera presets.
 - `effect.js`: one class per layer type. **Every frame is a pure function of (template, seed, t)**, so scrubbing and all four views show the same cast. Randomness that changes over time (bolt regeneration, flicker) is seeded by a time tick.
+
+`web/js/catalog.js` (pure, Node-testable) groups templates by type for the dropdowns, steps through a type, and resolves the URL parameters.
 
 Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists the templates. A live preview was published as a private claude.ai artifact.
 
@@ -110,7 +112,6 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 - Screen flash in "All four" mode covers all quadrants at once.
 - No export of rendered frames yet.
 - The viewer only lays out several targets for chains, so an area "storm" of strikes can't be previewed yet; the director playbook tells the AI to stay within what the viewer draws.
-- An unknown `?template=` id silently falls back to the first template.
 
 ## 8. Decisions log
 
