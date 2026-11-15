@@ -161,7 +161,9 @@ def find_browser() -> str | None:
         return env
     candidates: list[Path] = []
     if sys.platform == "win32":
-        for base in (os.environ.get("ProgramFiles(x86)"), os.environ.get("ProgramFiles"), os.environ.get("LOCALAPPDATA")):
+        # MCP clients may start the exe with a trimmed environment, so fall back to the usual folders.
+        for base in (os.environ.get("ProgramFiles(x86)") or r"C:\Program Files (x86)",
+                     os.environ.get("ProgramFiles") or r"C:\Program Files", os.environ.get("LOCALAPPDATA")):
             if base:
                 candidates += [Path(base) / "Microsoft" / "Edge" / "Application" / "msedge.exe",
                                Path(base) / "Google" / "Chrome" / "Application" / "chrome.exe"]
