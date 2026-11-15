@@ -85,6 +85,7 @@ An effect is a stack of layers. Each layer has one job.
 | `orb` | A ball of energy (charge-up, projectile head). |
 | `beam` | A continuous ribbon between two points. |
 | `eruption` | Solid rock bursting out of the ground in rows that sweep outward (spikes or slabs), each row bigger than the last, then crumbling. |
+| `wave` | A wall of water that rolls along the ground to the target and crashes over it. |
 | `ring` | Expanding shockwave circle (overhead) or ripple. |
 | `decal` | Mark on the ground: scorch, burn, cracks, crater, puddle, splash, frost, rune circle, warning ring (telegraph), fissures. Fades in, stays, fades out; can outlive the spell. |
 | `smoke` | Soft alpha volume, slow drift. |
@@ -249,6 +250,21 @@ Psychic force is mostly invisible, so tell it through what it does to space and 
 | lift, levitate | `sparks` from the target with negative `gravity` and low `drag` | Debris and motes floating up inside the field. The viewer can't move the target stand-in; say in the beat intent how high a game should lift it. |
 | crush, squeeze, clench | `orb` `radius_px` keyframed down hard, an inward billboard `ring`, then `flash` + `sparks` + ground `ring` + `cracks` | The field collapses onto the target, then bursts. |
 | mind link, focus | a thin `beam` with high `wobble` and fine `spiral_*`, a small pulsing `orb` + `glow` at the hand | The visible thread of the caster's will. |
+
+### Water- and ice-specific terms
+
+Water has weight: it arcs, falls back and leaves the ground wet. Ice is water that stopped: it snaps into place, spikes, sparkles and stays. Neither glows much; they catch light (fresnel, glints) instead of making it, so keep `emissive.hdr` low (1–2) except for the bright core of an ice ray.
+
+| Term | Field | Meaning |
+|---|---|---|
+| jet, hose, water cannon | `beam` `style: water` | A churning liquid column. A heavy cannon is wider (`width_px` 40+), surges harder (`churn`) and throws a big crown splash. |
+| tidal wave, surge, breaker | `wave` layer | A wall of water rolling to the target, crest curling forward (`curl`), crashing and spreading. Follow it with a `puddle` decal and droplet sparks. |
+| spray, crown splash, fountain | `sparks` `look: droplet` with high `gravity` | Drops thrown up that fall back. |
+| ice ray, freezing beam | `beam` `style: ice` | A glassy, slow-flowing ray with a hard white core and frost glints drifting off it. |
+| frosted, encased, crystals | `sparks` `look: shard` (high `drag`, `gravity` 0, long life) | Ice spikes that shoot out of the target and freeze in place. |
+| snow, sleet, blizzard | `sparks` `look: flake` from a `sky` anchor with `emit_radius_px`, `wind_px` | Flakes falling over an area, slanted by the wind. Stack two layers (big slow flakes, small fast ones) for depth. |
+| whiteout, freezing fog | `smoke` alpha in pale colors | Cold mist that hides the ground. |
+| frozen ground, rime | `decal` `frost`, `grow_ms` | Ice crystals spreading out from the hit. |
 
 ## 9. How the director uses this
 

@@ -197,8 +197,35 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
+// A soft, slightly hexagonal snowflake with a bright center.
+let flakeTexture = null;
+function flakeTex() {
+  if (flakeTexture) return flakeTexture;
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const g = c.getContext("2d");
+  const body = g.createRadialGradient(32, 32, 0, 32, 32, 30);
+  body.addColorStop(0, "rgba(255,255,255,1)");
+  body.addColorStop(0.35, "rgba(255,255,255,0.8)");
+  body.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = body;
+  g.fillRect(0, 0, 64, 64);
+  g.strokeStyle = "rgba(255,255,255,0.55)";
+  g.lineWidth = 3;
+  for (let k = 0; k < 3; k++) {
+    const a = (k * Math.PI) / 3;
+    g.beginPath();
+    g.moveTo(32 - Math.cos(a) * 26, 32 - Math.sin(a) * 26);
+    g.lineTo(32 + Math.cos(a) * 26, 32 + Math.sin(a) * 26);
+    g.stroke();
+  }
+  flakeTexture = new THREE.CanvasTexture(c);
+  flakeTexture.colorSpace = THREE.SRGBColorSpace;
+  return flakeTexture;
+}
+
 class DropletPoints {
-  constructor(capacity, color) {
+  constructor(capacity, color, map = dropTex()) {
     this.capacity = capacity;
     const geo = new THREE.BufferGeometry();
     this.pos = new THREE.BufferAttribute(new Float32Array(capacity * 3), 3);
@@ -208,7 +235,7 @@ class DropletPoints {
     this.material = new THREE.ShaderMaterial({
       vertexShader: DROP_VERTEX,
       fragmentShader: DROP_FRAGMENT,
-      uniforms: { color: { value: new THREE.Color(color) }, map: { value: dropTex() }, scale: { value: 1 } },
+      uniforms: { color: { value: new THREE.Color(color) }, map: { value: map }, scale: { value: 1 } },
       transparent: true,
       depthWrite: false,
     });
@@ -1122,9 +1149,23 @@ class SparksLayer extends Layer {
     // look "leaf": flat flakes (leaves, paper, petals) that flutter, turning
     // edge-on and back.
     this.leaf = this.base.look === "leaf";
+    // look "flake": soft snow or frost flakes that drift and tumble, no streak.
+    this.flake = this.base.look === "flake";
+    // look "shard": ice crystals that shoot out from the anchor and freeze in
+    // place as spikes (a needle from near the anchor to the head).
+    this.shard = this.base.look === "shard";
     if (this.leaf) {
       this.streaks = new RibbonMesh(this.max * 4, outer, 1, 0.5, { blending: THREE.NormalBlending });
       this.hot = new RibbonMesh(this.max * 4, core.clone().lerp(outer, 0.5), 1, 0.3, { blending: THREE.NormalBlending });
+    } else if (this.flake) {
+      this.streaks = new RibbonMesh(this.max * 4, outer.clone().lerp(core, 0.5), 1, 1.6, { blending: THREE.NormalBlending });
+      this.hot = new RibbonMesh(this.max * 4, core, 1, 0.8);
+      this.heads = new DropletPoints(this.max, core.clone().lerp(outer, 0.2), flakeTex());
+      this.group.add(this.heads.points);
+    } else if (this.shard) {
+      // Solid, see-through ice bodies with a thin additive glint.
+      this.streaks = new RibbonMesh(this.max * 4, outer.clone().lerp(core, 0.3), 1, 0.4, { blending: THREE.NormalBlending });
+      this.hot = new RibbonMesh(this.max * 4, core, 1, 1.5);
     } else if (this.droplet) {
       this.streaks = new RibbonMesh(this.max * 4, outer.clone().lerp(core, 0.25), 1, 1.2, { blending: THREE.NormalBlending });
       this.hot = new RibbonMesh(this.max * 4, core, 1, 0.5);
@@ -1194,6 +1235,8 @@ class SparksLayer extends Layer {
     // swirl: turns around the vertical axis over a gathering spark's flight.
     const gather = this.p("gather_px", 0, 0) * PX;
     const swirl = this.p("swirl", 0, 0) * Math.PI * 2;
+    // wind_px: a steady sideways push in px/s along the cast direction.
+    const wind = this.p("wind_px", 0, 0) * PX;
     const paths = [];
     for (let i = 0; i < count; i++) {
       const born = r.range(0, span);
@@ -1210,6 +1253,7 @@ class SparksLayer extends Layer {
       const age = (local - born) / 1000;
       if (age < 0 || age * 1000 > lifeI) continue;
       const ph = i * 2.399; // not from r: sparks skipped above would shift the sequence
+      const wobble = this.ember || this.flake;
       const reach = gather * (0.7 + 0.6 * (((Math.sin(i * 78.233) * 43758.5453) % 1 + 1) % 1));
       const inward = (a) => {
         const f = Math.min(1, Math.max(0, (a * 1000) / lifeI));
@@ -1225,18 +1269,25 @@ class SparksLayer extends Layer {
       };
       const at = gather > 0 ? inward : (a) => {
         const travel = (v * (1 - Math.exp(-drag * a))) / drag;
-        const flutter = this.ember ? Math.sin(a * 7 + ph) * 0.18 * a : 0;
+        const flutter = wobble ? Math.sin(a * 7 + ph) * 0.18 * a : 0;
+        // Flakes are light: air drag caps their fall at a steady gravity/4
+        // per second instead of accelerating, so snow fills the whole column.
+        const fall = this.flake ? (gravity / 4) * (a - (1 - Math.exp(-4 * a)) / 4) : 0.5 * gravity * a * a;
         return new THREE.Vector3(
-          o.x + dx * travel + flutter,
-          Math.max(0.01, o.y + dy * travel - 0.5 * gravity * a * a),
-          o.z + dz * travel + (this.ember ? Math.cos(a * 5 + ph) * 0.18 * a : 0),
+          o.x + dx * travel + flutter + wind * a,
+          Math.max(0.01, o.y + dy * travel - fall),
+          o.z + dz * travel + (wobble ? Math.cos(a * 5 + ph) * 0.18 * a : 0),
         );
       };
       let fade = 1 - (age * 1000) / lifeI;
       if (gather > 0) fade = Math.min(1, (1 - fade) * 4, fade * 10);
       if (this.ember) fade *= 0.55 + 0.45 * Math.abs(Math.sin(age * 23 + ph * 3));
+      if (this.flake) fade = Math.min(1, fade * 3) * Math.min(1, age * 8);
+      // Frozen shards hold, then go in the last fifth of their life.
+      if (this.shard) fade = Math.min(1, fade * 5);
       const head = at(age);
-      const tail = at(Math.max(0, age - streakS));
+      // A shard is a needle that grows from near the anchor out to its head.
+      const tail = this.shard ? at(0).lerp(head, 0.3) : at(Math.max(0, age - streakS));
       if (head.distanceTo(tail) < sz * 0.5) tail.copy(head).addScaledVector(UP, -sz * 0.5);
       const mid = head.clone().lerp(tail, 0.5);
       // Drop size varies per spark (by index, so the burst stays seeded).
@@ -1252,6 +1303,20 @@ class SparksLayer extends Layer {
       this.streaks.setPaths(paths, sz * 0.6);
       this.hot.setPaths(paths, sz * 0.25);
       this.streaks.opacity = 0.95;
+      this.hot.opacity = 0.6;
+    } else if (this.flake) {
+      // Soft round flakes, each with a faint motion smear.
+      this.heads.set(paths.map((q) => ({ p: q.pts[0], s: sz * 1.8 * q.k * q.w[0] })));
+      this.streaks.setPaths(paths, sz * 0.3);
+      this.hot.setPaths([], 0);
+      this.streaks.opacity = 0.35;
+    } else if (this.shard) {
+      // Crisp crystals: a pale body with a bright edge down the middle,
+      // thickest at the base so each one reads as a spike.
+      const spikes = paths.map((q) => ({ pts: [q.pts[0], q.pts[1], q.pts[2]], w: [0.15 * q.w[0], 0.8 * q.w[0], q.w[0]], k: q.k }));
+      this.streaks.setPaths(spikes, sz * 0.9);
+      this.hot.setPaths(spikes, sz * 0.25);
+      this.streaks.opacity = 0.8;
       this.hot.opacity = 0.6;
     } else if (this.droplet) {
       // A round drop at the head with a thin wet trail behind it.
@@ -1958,11 +2023,28 @@ class BeamLayer extends Layer {
     this.water = this.base.style === "water";
     this.fire = this.base.style === "fire";
     this.wind = this.base.style === "wind";
-    this.fluid = this.water || this.fire || this.wind;
+    // style "ice": a glassy, frozen ray. Built like the water column but slow,
+    // with a hard bright core, a frosted rim and frost glints drifting off it.
+    this.ice = this.base.style === "ice";
+    this.fluid = this.water || this.fire || this.wind || this.ice;
     const [core, outer] = this.colors;
     const secondary = new THREE.Color(effect.template.palette.secondary || effect.template.palette.primary);
     const seed = (seedFor(effect.seed, def.id, instance, "noise") % 1000) / 10;
-    if (this.water) {
+    if (this.ice) {
+      const flow = this.base.flow_speed ?? 2;
+      const fluid = (o) => ({ flow, seed, foamColor: core, ...o });
+      this.halo = new RibbonMesh(120, outer, 0.22, 2.5);
+      this.outer = new RibbonMesh(120, outer.clone().lerp(secondary, 0.3), 0.7, 0.5, {
+        blending: THREE.NormalBlending,
+        fluid: fluid({ noise: this.base.turbulence ?? 0.25, scale: 5, rim: 1, foam: this.base.foam ?? 0.7 }),
+      });
+      this.core = new RibbonMesh(120, core, 1, 0.9, {
+        fluid: fluid({ flow: flow * 1.5, noise: 0.3, scale: 6, rim: 0, foam: 0.9 }),
+      });
+      this.drops = new RibbonMesh(160, core.clone().lerp(outer, 0.3), 0.8, 0.8);
+      this.dropHeads = new DropletPoints(160, core, flakeTex());
+      this.group.add(this.halo.mesh, this.outer.mesh, this.core.mesh, this.drops.mesh, this.dropHeads.points);
+    } else if (this.water) {
       const flow = this.base.flow_speed ?? 6;
       const fluid = (o) => ({ flow, seed, foamColor: core, ...o });
       this.halo = new RibbonMesh(120, outer, 0.18, 2.5);
@@ -2140,7 +2222,7 @@ class BeamLayer extends Layer {
       this.updateWind(t, width, I, n, len, sec, grow);
       return;
     }
-    if (!this.water) {
+    if (!this.water && !this.ice) {
       this.core.set(segs, width * 0.18);
       this.outer.set(segs, width * 0.55);
       this.halo.set(segs, width * 1.5);
@@ -2151,8 +2233,8 @@ class BeamLayer extends Layer {
     }
     // Water: the column swells and pinches as surges travel down it, and
     // flares a little where it leaves the hand and where it hits.
-    const churn = this.p("churn", t, 0.35);
-    const flow = this.p("flow_speed", t, 6);
+    const churn = this.p("churn", t, this.ice ? 0.1 : 0.35);
+    const flow = this.p("flow_speed", t, this.ice ? 2 : 6);
     const w = this.path.map((_, i) => {
       const u = i / n;
       const d = u * len - sec * flow;
@@ -2166,10 +2248,10 @@ class BeamLayer extends Layer {
     const hw = w.map((x, i) => x * Math.min(1, (i / n) * 6, (1 - i / n) * 10 + 0.3));
     this.halo.setPaths([{ pts: this.path, w: hw }], width * 1.4);
     this.outer.setPaths(path, width * 0.62);
-    this.core.setPaths(path, width * 0.22);
-    this.halo.opacity = 0.12 * I;
+    this.core.setPaths(path, width * (this.ice ? 0.14 : 0.22));
+    this.halo.opacity = (this.ice ? 0.07 : 0.12) * I;
     this.outer.opacity = Math.min(1, 0.95 * I);
-    this.core.opacity = 0.85 * I;
+    this.core.opacity = (this.ice ? 0.55 : 0.85) * I;
     this.updateShed(t, width, I);
   }
 
@@ -2322,7 +2404,8 @@ class BeamLayer extends Layer {
     const size = this.p("shed_size_px", t, 3) * PX;
     // Water drops fall; fire embers are carried up by the heat.
     // (Dust and leaves off a gust drift down slowly.)
-    const g = this.fire ? -2.2 : this.wind ? 2.5 : 9;
+    // Frost glints off an ice ray drift down slowly.
+    const g = this.fire ? -2.2 : this.wind ? 2.5 : this.ice ? 1.2 : 9;
     const r = this.rng("shed");
     const paths = [];
     const path = this.path;
@@ -2355,6 +2438,7 @@ class BeamLayer extends Layer {
       return;
     }
     this.drops.setPaths(paths, s * 0.4);
+    if (this.ice) this.drops.opacity = 0.5 * I;
     this.dropHeads.set(paths.map((q) => ({ p: q.pts[0], s: q.sz * 1.6 * (0.5 + 0.5 * q.w[0]) })));
   }
 
@@ -2791,6 +2875,315 @@ class VortexLayer extends Layer {
   }
 }
 
+// ------------------------------------------------------------ wave
+
+const WAVE_VERTEX = /* glsl */ `
+attribute vec2 wuv; // x: across the wall (-1..1), y: along the profile (0 toe .. 1 back)
+attribute float lip; // 1 near the crest and lip, 0 on the back and face
+uniform float peak; // crest height, world units
+varying vec2 vUv;
+varying float vH;
+varying float vLip;
+varying vec3 vNormal;
+varying vec3 vView;
+void main() {
+  vUv = wuv;
+  vLip = lip;
+  vH = clamp(position.y / max(0.01, peak), 0.0, 1.2);
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  vNormal = normalize(normalMatrix * normal);
+  vView = isOrthographic ? vec3(0.0, 0.0, 1.0) : normalize(-mv.xyz);
+  gl_Position = projectionMatrix * mv;
+}`;
+
+const WAVE_FRAGMENT = /* glsl */ `
+uniform vec3 deep;
+uniform vec3 body;
+uniform vec3 foamColor;
+uniform float opacity;
+uniform float time;
+uniform float flow;
+uniform float foam;
+uniform float turbulence;
+uniform float seed;
+varying vec2 vUv;
+varying float vH;
+varying float vLip;
+varying vec3 vNormal;
+varying vec3 vView;
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7)) + seed) * 43758.5453); }
+float vnoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p) {
+  float v = 0.0, a = 0.5;
+  for (int k = 0; k < 4; k++) { v += a * vnoise(p); p = p * 2.03 + 17.1; a *= 0.5; }
+  return v;
+}
+void main() {
+  // Water runs up the face and over the crest (flow along the profile);
+  // streaks are stretched across the wall like the lines of a breaking wave.
+  vec2 q = vec2(vUv.x * 6.0, vUv.y * 9.0 + time * flow);
+  float n = fbm(q);
+  float streak = fbm(vec2(vUv.x * 14.0 + n * 2.0, vUv.y * 3.0 + time * flow * 1.3));
+  // Ragged ends: noise eats the wall where it tapers off at both sides.
+  float side = 1.0 - smoothstep(0.7 - 0.25 * turbulence * n, 1.0, abs(vUv.x));
+  // Foam: a churning white band on the crest and lip, white flecks on the face.
+  float crest = smoothstep(0.6, 0.95, vLip + (n - 0.5) * turbulence) * smoothstep(0.35, 0.6, n + 0.2 * vLip);
+  float flecks = smoothstep(0.62, 0.8, streak) * 0.5;
+  float f = clamp((crest + flecks) * foam, 0.0, 1.0);
+  // Deep and dark at the base and back, lighter and see-through toward the lip.
+  float facing = abs(dot(normalize(vNormal), vView));
+  float rim = pow(1.0 - facing, 2.0);
+  // Dark at the base, lighter with height; light catches the upper face.
+  vec3 water = mix(deep, body, smoothstep(0.05, 0.9, vH + 0.2 * (n - 0.5)));
+  water *= mix(0.75, 1.15, smoothstep(0.2, 1.0, vH));
+  // Foam also trails down the back from the crest in streaks.
+  float trail = smoothstep(0.55, 0.75, streak) * smoothstep(0.4, 0.95, vH) * 0.7;
+  f = clamp(f + trail * foam, 0.0, 1.0);
+  vec3 c = mix(water + rim * 0.25 * body, foamColor * 0.8, f);
+  float a = mix(0.8, 0.97, f) * mix(0.85, 1.0, rim) * side * smoothstep(0.0, 0.06, vH + 0.02);
+  gl_FragColor = vec4(c, a * opacity);
+  #include <colorspace_fragment>
+}`;
+
+// A wall of water that rises out of the ground near the caster, rolls to the
+// target with its crest curling forward, then crashes down over it and
+// spreads out. The wall is a grid: across its width (u) and along a profile
+// from the front toe, up the hollow face, out to the lip, over the crest and
+// down the gentle back (v). Spray is thrown off the crest. All of it is a
+// function of t, so scrubbing works.
+class WaveLayer extends Layer {
+  constructor(effect, def, instance) {
+    super(effect, def, instance);
+    // Fixed palette roles: deep water `secondary`, body `primary`, foam `core`.
+    const pal = effect.template.palette;
+    const outer = new THREE.Color(pal.primary || "#3fa6e8");
+    const core = new THREE.Color(pal.core || "#ffffff");
+    const deep = new THREE.Color(pal.secondary || pal.primary || "#1a5fd6");
+    this.NU = 48;
+    this.NV = 28;
+    const n = (this.NU + 1) * (this.NV + 1);
+    const geo = new THREE.BufferGeometry();
+    this.pos = new THREE.BufferAttribute(new Float32Array(n * 3), 3);
+    this.pos.setUsage(THREE.DynamicDrawUsage);
+    const wuv = new Float32Array(n * 2);
+    const lip = new Float32Array(n);
+    const index = [];
+    for (let j = 0; j <= this.NV; j++) {
+      for (let i = 0; i <= this.NU; i++) {
+        const k = j * (this.NU + 1) + i;
+        wuv[k * 2] = (i / this.NU) * 2 - 1;
+        wuv[k * 2 + 1] = j / this.NV;
+        // The profile's lip and crest sit around v = 0.4..0.7.
+        lip[k] = Math.exp(-Math.pow((j / this.NV - 0.58) / 0.2, 2));
+        if (i < this.NU && j < this.NV) {
+          const a = k;
+          const b = k + 1;
+          const c = k + this.NU + 1;
+          const d = c + 1;
+          index.push(a, c, b, b, c, d);
+        }
+      }
+    }
+    geo.setAttribute("position", this.pos);
+    geo.setAttribute("wuv", new THREE.BufferAttribute(wuv, 2));
+    geo.setAttribute("lip", new THREE.BufferAttribute(lip, 1));
+    geo.setIndex(index);
+    this.material = new THREE.ShaderMaterial({
+      vertexShader: WAVE_VERTEX,
+      fragmentShader: WAVE_FRAGMENT,
+      uniforms: {
+        deep: { value: deep.clone().lerp(outer, 0.15) },
+        body: { value: outer.clone() },
+        foamColor: { value: core.clone() },
+        opacity: { value: 0 },
+        time: { value: 0 },
+        flow: { value: this.base.flow_speed ?? 1.2 },
+        foam: { value: this.base.foam ?? 0.7 },
+        turbulence: { value: this.base.turbulence ?? 0.5 },
+        peak: { value: 1 },
+        seed: { value: (seedFor(effect.seed, def.id, instance, "noise") % 1000) / 10 },
+      },
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    this.mesh = new THREE.Mesh(geo, this.material);
+    this.mesh.frustumCulled = false;
+    this.spray = new RibbonMesh(200, outer.clone().lerp(core, 0.4), 0.6, 1.2, { blending: THREE.NormalBlending });
+    this.sprayHeads = new DropletPoints(200, outer.clone().lerp(core, 0.5));
+    this.group.add(this.mesh, this.spray.mesh, this.sprayHeads.points);
+    this.crest = [];
+    // Per-cast unevenness along the crest: a few seeded bumps.
+    const r = this.rng("shape");
+    this.bumps = Array.from({ length: 3 }, (_, k) => ({ f: 1.5 + k * 1.7 + r.range(0, 1), ph: r.range(0, 6.28), a: r.range(0.05, 0.12) }));
+  }
+
+  // Where the wall starts and where it crashes, and the unit vectors along
+  // and across the run.
+  frame() {
+    const st = this.effect.stage;
+    const end = st.anchor(this.effect.template.space.destination === "point" ? "point" : "target").setY(0);
+    const dir = new THREE.Vector3(end.x, 0, end.z).normalize();
+    if (dir.lengthSq() < 1e-6) dir.set(1, 0, 0);
+    const start = dir.clone().multiplyScalar(0.6);
+    const across = new THREE.Vector3(-dir.z, 0, dir.x);
+    return { start, end, dir, across };
+  }
+
+  // The profile at crest height h with curl c (0..1, more = further over),
+  // as [forward, up] pairs from the front toe to the back base.
+  profile(h, c, collapse) {
+    const H = h;
+    // Toe -> up the hollow face -> along the underside of the curl -> lip tip
+    // -> back over the top of the crest -> down the back to its base. The
+    // fold between the underside and the top is what reads as a curl.
+    const pts = [
+      [0.3 * H + 0.5 * H * collapse, 0],
+      [0.1 * H + 0.3 * H * collapse, 0.3 * H * (1 - 0.5 * collapse)],
+      [0.02 * H, 0.62 * H],
+      [0.08 * H + 0.1 * H * c, 0.84 * H],
+      [0.22 * H + 0.45 * H * c, H * (0.92 - 0.3 * c)],
+      [0.28 * H + 0.6 * H * c, H * (0.86 - 0.42 * c)],
+      [0.3 * H + 0.35 * H * c, H * (1.0 - 0.1 * c)],
+      [0.1 * H, 1.04 * H],
+      [-0.3 * H, 0.86 * H],
+      [-0.75 * H, 0.42 * H],
+      [-1.25 * H, 0],
+    ];
+    return new THREE.CatmullRomCurve3(pts.map(([f, y]) => new THREE.Vector3(f, Math.max(0, y), 0)), false, "centripetal");
+  }
+
+  // The wave's shape at layer time `local` (ms): where its middle is, crest
+  // height, curl and how far it has crashed (0..1).
+  state(t, local) {
+    const span = Math.max(1, this.window.end - this.window.start);
+    const travelMs = Math.max(1, this.p("travel_ms", t, span * 0.6));
+    const crashMs = Math.max(1, this.p("crash_ms", t, 300));
+    const H = this.p("height_px", t, 140) * PX;
+    const curl0 = this.p("curl", t, 0.6);
+    const { start, end, dir } = this.frame();
+    const u = Math.max(0, Math.min(1, local / travelMs));
+    const crash = Math.max(0, Math.min(1, (local - travelMs) / crashMs));
+    // Rises out of the ground over the first third of the run, then rolls on.
+    const rise = 1 - Math.pow(1 - Math.min(1, u / 0.35), 2);
+    // While crashing the crest throws over and drops, and the water spreads past the target.
+    const h = H * (0.15 + 0.85 * rise) * (1 - 0.85 * crash * (2 - crash));
+    const curl = Math.min(1, curl0 * (0.4 + 0.6 * u) + crash * 0.8);
+    const center = start.clone().lerp(end, u - 0.12 * (1 - u)).addScaledVector(dir, 0.6 * crash * H);
+    return { H, h, curl, crash, center };
+  }
+
+  // How fast the wave rolls, in world units per second.
+  runSpeed(t) {
+    const span = Math.max(1, this.window.end - this.window.start);
+    const { start, end } = this.frame();
+    return start.distanceTo(end) / (Math.max(1, this.p("travel_ms", t, span * 0.6)) / 1000);
+  }
+
+  // How tall the wall is at `a` (-1..1 across it), and how far its end trails.
+  across(a, H, sec) {
+    const env = Math.pow(Math.max(0, 1 - Math.pow(Math.abs(a), 2.4)), 0.6);
+    let bump = 1;
+    for (const b of this.bumps) bump += b.a * Math.sin(a * b.f + b.ph + sec * 2.2);
+    return { hs: Math.max(0.02, env * bump), lag: -0.35 * H * a * a };
+  }
+
+  update(t) {
+    const I = this.intensityAt(t);
+    const w = this.window;
+    const local = this.local(t);
+    this.group.visible = !!w && I > 0.001 && local >= 0;
+    if (!this.group.visible) {
+      this.crest = [];
+      return;
+    }
+    const span = Math.max(1, w.end - w.start);
+    const half = (this.p("width_px", t, 300) * PX) / 2;
+    const { dir, across } = this.frame();
+    const { H, h, curl, crash, center } = this.state(t, local);
+    const prof = this.profile(h, curl, crash).getPoints(this.NV);
+    const top = prof.reduce((m, q) => (q.y > m.y ? q : m), prof[0]);
+    const sec = t / 1000;
+    const P = this.pos.array;
+    const crest = [];
+    for (let i = 0; i <= this.NU; i++) {
+      const a = (i / this.NU) * 2 - 1;
+      // The wall tapers off at both ends and its ends trail behind the middle.
+      const { hs, lag } = this.across(a, H, sec);
+      for (let j = 0; j <= this.NV; j++) {
+        const pr = prof[j];
+        const k = j * (this.NU + 1) + i;
+        P[k * 3] = center.x + dir.x * (pr.x * hs + lag) + across.x * a * half;
+        P[k * 3 + 1] = Math.max(0.005, pr.y * hs);
+        P[k * 3 + 2] = center.z + dir.z * (pr.x * hs + lag) + across.z * a * half;
+      }
+      // Crest point (top of the profile) for spray and attached glows.
+      crest.push(new THREE.Vector3(
+        center.x + dir.x * (top.x * hs + lag) + across.x * a * half,
+        top.y * hs,
+        center.z + dir.z * (top.x * hs + lag) + across.z * a * half,
+      ));
+    }
+    this.pos.needsUpdate = true;
+    this.mesh.geometry.computeVertexNormals();
+    this.crest = crest;
+    this.material.uniforms.time.value = local / 1000;
+    this.material.uniforms.peak.value = Math.max(0.05, h);
+    this.material.uniforms.opacity.value = Math.min(1, I * 1.15);
+    this.updateSpray(t, local, span, I, dir, across, half);
+  }
+
+  // Spray torn off the crest: each drop is born at a seeded time and place
+  // along the crest as it was then, thrown forward and up, and falls.
+  updateSpray(t, local, span, I, dir, across, half) {
+    const count = Math.min(200, Math.round(this.p("shed_count", t, 60)));
+    const life = this.p("shed_life_ms", t, 600);
+    const speed = this.p("shed_speed", t, 220) * PX;
+    const size = this.p("shed_size_px", t, 4) * PX;
+    const r = this.rng("spray");
+    const paths = [];
+    const g = 9;
+    for (let i = 0; i < count; i++) {
+      const born = r.range(0, span * 0.9);
+      const a = r.range(-0.85, 0.85);
+      const up = r.range(0.4, 1.1);
+      const fwd = r.range(0.2, 1.0);
+      const lat = r.range(-0.4, 0.4);
+      const v = speed * r.range(0.6, 1.3);
+      const lifeI = life * r.range(0.6, 1.2);
+      const sz = size * r.range(0.5, 1.5);
+      const age = (local - born) / 1000;
+      if (age < 0 || age * 1000 > lifeI) continue;
+      const then = this.state(t, born);
+      const { hs, lag } = this.across(a, then.H, (this.window.start + born) / 1000);
+      const reach = (0.2 * then.curl + 0.1) * then.h * hs + lag;
+      const origin = then.center.clone().addScaledVector(dir, reach).addScaledVector(across, a * half);
+      origin.y = then.h * hs * 0.97;
+      const vel = new THREE.Vector3(dir.x * fwd - dir.z * lat, up, dir.z * fwd + dir.x * lat).normalize().multiplyScalar(v);
+      // Spray keeps the speed of the wave that threw it.
+      vel.addScaledVector(dir, then.crash > 0 ? 0 : this.runSpeed(t));
+      const pos = (s) => origin.clone().addScaledVector(vel, s).add(new THREE.Vector3(0, -0.5 * g * s * s, 0));
+      const head = pos(age);
+      if (head.y < 0.01) continue;
+      const tail = pos(Math.max(0, age - 0.035));
+      const fade = 1 - (age * 1000) / lifeI;
+      paths.push({ pts: [head, head.clone().lerp(tail, 0.5), tail], w: [fade, 0.9 * fade, 0.3 * fade], sz });
+    }
+    const s = paths.length ? paths.reduce((m, q) => m + q.sz, 0) / paths.length : size;
+    this.spray.setPaths(paths, s * 0.4);
+    this.spray.opacity = 0.6 * Math.min(1, I);
+    this.sprayHeads.set(paths.map((q) => ({ p: q.pts[0], s: q.sz * 1.6 * (0.5 + 0.5 * q.w[0]) })));
+  }
+
+  points() {
+    return this.crest.filter((_, i) => i % 6 === 3);
+  }
+}
+
 class LightLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
@@ -2836,6 +3229,7 @@ const TYPES = {
   beam: BeamLayer,
   eruption: EruptionLayer,
   vortex: VortexLayer,
+  wave: WaveLayer,
   light: LightLayer,
   camera_shake: ShakeLayer,
   sound_cue: SoundLayer,

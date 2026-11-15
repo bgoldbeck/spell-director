@@ -1,0 +1,800 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "ice-rime-ray",
+  "name": "Rime Ray",
+  "description": "Cold mist and frost flakes gather at the caster's hand, then a glassy ray of ice lances to the target, which bristles with ice crystals and frost spreading over the ground before the crystals shatter.",
+  "element": "ice",
+  "archetype": "beam",
+  "tags": [
+    "line",
+    "beam",
+    "freeze",
+    "single-target",
+    "status"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "a freezing ice beam that frosts over the target, for a 3/4 action game"
+  },
+  "timing": {
+    "duration_ms": 1800,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "beam",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The ray runs away from the camera, so the frost gathering at the hand and the crystals bursting out of the target carry it; the frost decal spreads under the target.",
+      "side": "The full ray from hand to target: a white-hot core in a pale glassy sheath with frost drifting off it. Crystal spikes jut out of the target and stay until they shatter.",
+      "top": "A pale straight line to the target, then a star of ice crystals and a frost patch spreading across the ground; the frost stays after the spell.",
+      "three_quarter": "Hero view. The ray recedes to the target, the crystal spikes read in depth around it and the frost patch reads as an ellipse growing on the ground."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#6CCBF5",
+    "secondary": "#2F78C4",
+    "accent": "#DDF7FF",
+    "shadow": "#20476E"
+  },
+  "beats": [
+    {
+      "id": "chill",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 340,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.15,
+        "to": 0.8
+      },
+      "intent": "Cold gathers at the caster's hand: a pale glowing seed of ice, frost flakes swirling in the air around it, a thin shimmer."
+    },
+    {
+      "id": "lance",
+      "phase": "release",
+      "start_ms": 340,
+      "end_ms": 400,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.9
+      },
+      "intent": "A sharp crack of cold light at the hand as the ray fires. Brief, never a white-out."
+    },
+    {
+      "id": "ray",
+      "phase": "travel",
+      "start_ms": 360,
+      "end_ms": 1050,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.85,
+        "to": 1.0,
+        "flicker_hz": 9
+      },
+      "intent": "A glassy ray of ice reaches the target in 120 ms and holds, steady and humming, frost drifting off it like breath on a cold day."
+    },
+    {
+      "id": "freeze",
+      "phase": "impact",
+      "start_ms": 480,
+      "end_ms": 1050,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "Ice crystals spike out of the target and freeze in place; frost creeps across the ground and a cold mist rolls off the hit."
+    },
+    {
+      "id": "shatter",
+      "phase": "dissipation",
+      "start_ms": 1050,
+      "end_ms": 1800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "The ray cuts out, the crystals hold a moment and then shatter into glittering fragments; the frost on the ground stays."
+    }
+  ],
+  "layers": [
+    {
+      "id": "frost-ground",
+      "type": "decal",
+      "beats": [
+        "freeze",
+        "shatter"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "shape": "frost",
+        "radius_px": {
+          "min": 95,
+          "max": 110
+        },
+        "opacity": 1.0,
+        "fade_in_ms": 120,
+        "grow_ms": 650,
+        "start_scale": 0.2,
+        "lifetime_ms": 2800,
+        "fade_ms": 1400,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Rime spreading over the ground in feathery crystals, sparkling where the light hits, then melting from the edges in.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2,
+          "edge_color": "core"
+        },
+        "fresnel": 0.4,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "hard"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "frost-sheen",
+      "type": "decal",
+      "beats": [
+        "freeze"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "accent",
+      "z": 1,
+      "params": {
+        "shape": "frost",
+        "radius_px": {
+          "min": 60,
+          "max": 70
+        },
+        "opacity": 0.6,
+        "fade_in_ms": 80,
+        "grow_ms": 400,
+        "start_scale": 0.3,
+        "lifetime_ms": 700,
+        "fade_ms": 500,
+        "detail": 0.8
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "A bright sheen of fresh ice right under the hit that dulls quickly.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 8,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "cold-ring",
+      "type": "ring",
+      "beats": [
+        "freeze"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": {
+          "min": 100,
+          "max": 115
+        },
+        "thickness_px": 4,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A ring of freezing air rolling outward over the ground.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.8,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 1.5
+        },
+        "distortion": 0.3,
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "seed",
+      "type": "orb",
+      "beats": [
+        "chill",
+        "lance"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 3
+        },
+        {
+          "t_ms": 340,
+          "param": "radius_px",
+          "value": 11,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "radius_px": 5,
+        "pulse_hz": 5,
+        "wobble": 0.1,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "A small faceted seed of ice glowing pale blue, sharp-edged, catching the light.",
+        "technique": "procedural",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0.6,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.6
+        },
+        "fresnel": 0.8,
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "hard",
+          "core_ratio": 0.4
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "seed-glow",
+      "type": "glow",
+      "beats": [
+        "chill",
+        "lance"
+      ],
+      "attach_to": "seed",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Cold pale glow around the seed.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "swirl-flakes",
+      "type": "sparks",
+      "beats": [
+        "chill"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "accent",
+      "z": 12,
+      "params": {
+        "look": "flake",
+        "count": {
+          "min": 40,
+          "max": 50
+        },
+        "speed": 60,
+        "speed_spread": 0.6,
+        "gravity": 30,
+        "lifetime_ms": 420,
+        "size_px": 3,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_ms": 340,
+        "emit_radius_px": 35
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Frost flakes condensing out of the air and tumbling around the hand.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "lance-flash",
+      "type": "flash",
+      "beats": [
+        "lance"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 45,
+        "peak": 0.45
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "A sharp cold flare at the hand.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ray",
+      "type": "beam",
+      "beats": [
+        "ray"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "keyframes": [
+        {
+          "t_ms": 950,
+          "param": "width_px",
+          "value": 16
+        },
+        {
+          "t_ms": 1050,
+          "param": "width_px",
+          "value": 2,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "style": "ice",
+        "width_px": {
+          "min": 16,
+          "max": 18
+        },
+        "wobble": 0.05,
+        "wobble_hz": 4,
+        "jaggedness": 0.03,
+        "regen_ms": 90,
+        "grow_ms": 120,
+        "flow_speed": 2.5,
+        "turbulence": 0.25,
+        "foam": 0.8,
+        "churn": 0.12,
+        "shed_count": 70,
+        "shed_speed": 70,
+        "shed_size_px": 3,
+        "shed_life_ms": 600
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "A glassy ray of ice: a white-hot core inside a pale, faceted sheath, frost crystals forming and flaking off its surface.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 2.5,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 3
+        },
+        "fresnel": 0.8,
+        "distortion": 0.25,
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian",
+          "core_ratio": 0.35
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ray-glow",
+      "type": "glow",
+      "beats": [
+        "ray"
+      ],
+      "attach_to": "ray",
+      "plane": "billboard",
+      "color": "secondary",
+      "z": 8,
+      "params": {
+        "radius_px": 16,
+        "softness": 0.85
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A cold haze around the ray.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 1.8,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "crystals",
+      "type": "sparks",
+      "beats": [
+        "freeze"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "color": "gradient_primary_to_secondary",
+      "z": 13,
+      "params": {
+        "look": "shard",
+        "count": {
+          "min": 34,
+          "max": 42
+        },
+        "speed": 380,
+        "speed_spread": 0.45,
+        "gravity": 0,
+        "lifetime_ms": 1250,
+        "size_px": 11,
+        "spread_deg": 200,
+        "drag": 0.9,
+        "emit_ms": 380
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "Clear ice spikes bursting out of the target and freezing in place: faceted, see-through, bright along their edges.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "fresnel": 0.9,
+        "distortion": 0.2,
+        "emissive": {
+          "hdr": 2.2,
+          "falloff": "hard",
+          "core_ratio": 0.5
+        },
+        "lighting": "lit",
+        "notes": "Spawn as mesh particles (elongated crystals) that scale up from the target and hold."
+      }
+    },
+    {
+      "id": "hit-glow",
+      "type": "glow",
+      "beats": [
+        "freeze"
+      ],
+      "anchor": "point",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "radius_px": 45,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A cold bluish glow inside the ice around the target.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "cold-mist",
+      "type": "smoke",
+      "beats": [
+        "freeze",
+        "shatter"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "count": 10,
+        "rise_speed": 8,
+        "size_px": {
+          "min": 36,
+          "max": 44
+        },
+        "lifetime_ms": 900,
+        "opacity": 0.25
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Heavy cold mist rolling low off the frozen target.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.3,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 0.3
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "shatter-bits",
+      "type": "sparks",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "color": "primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 300,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 520,
+        "size_px": 2,
+        "spread_deg": 220,
+        "drag": 0.2,
+        "emit_ms": 120,
+        "streak_ms": 25
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "The crystals shattering into glittering fragments that drop and wink out.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 8,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "fresnel": 0.7,
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.7
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "glitter",
+      "type": "sparks",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "look": "flake",
+        "count": {
+          "min": 30,
+          "max": 36
+        },
+        "speed": 50,
+        "speed_spread": 0.6,
+        "gravity": 40,
+        "lifetime_ms": 700,
+        "size_px": 2.5,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_ms": 300,
+        "emit_radius_px": 40
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Fine ice dust glittering in the air after the shatter.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.4,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "downward",
+          "speed": 0.3
+        },
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "hard"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "lance"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 2,
+          "max": 3
+        },
+        "frequency_hz": 22,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "cold-light",
+      "type": "light",
+      "beats": [
+        "ray",
+        "freeze"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 4,
+        "energy": 1.6
+      },
+      "shader": {
+        "technique": "light",
+        "look": "A pale, cold light that makes the target look frozen.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "chill-sound",
+      "type": "sound_cue",
+      "beats": [
+        "chill"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.5,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "lance-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lance"
+      ],
+      "params": {
+        "cue": "zap",
+        "gain": 0.6,
+        "pitch": {
+          "min": 0.65,
+          "max": 0.75
+        }
+      }
+    },
+    {
+      "id": "ray-sound",
+      "type": "sound_cue",
+      "beats": [
+        "ray"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.45,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "freeze-sound",
+      "type": "sound_cue",
+      "beats": [
+        "freeze"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.4,
+        "pitch": 1.5
+      }
+    },
+    {
+      "id": "shatter-sound",
+      "type": "sound_cue",
+      "beats": [
+        "shatter"
+      ],
+      "params": {
+        "cue": "shatter",
+        "gain": 0.8,
+        "pitch": {
+          "min": 0.95,
+          "max": 1.1
+        },
+        "duration_ms": 500
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Crystal directions and sizes, frost patch shape and drifting flakes vary per cast. The 120 ms reach, the freeze moment and the shatter at 1050 ms stay fixed so a freeze status can sync to them."
+  },
+  "director_notes": "A freezing ray that leaves the target encased. Choices: (1) the ray is the new beam style ice (slow flow, hard white core, glassy rim, frost drifting off) so it reads cold and solid next to the energy and water beams; (2) the hit is ice crystal spikes (sparks look shard) that freeze in place and hold for the whole contact, then shatter on a fixed frame with a shatter cue, which a game can sync with breaking a freeze status; (3) a frost decal grows under the target and outlives the spell. Palette is pale cyan with white, no saturated blue, so it doesn't read as water."
+}

@@ -28,7 +28,7 @@ KNOWN_PARAMS = {
     "flash": {"scope", "radius_px", "peak"},
     "sparks": {
         "count", "speed", "speed_spread", "gravity", "lifetime_ms", "size_px", "spread_deg", "drag", "emit_ms", "streak_ms", "look", "glow",
-        "gather_px", "swirl", "emit_radius_px",
+        "gather_px", "swirl", "emit_radius_px", "wind_px",
     },
     "crackle": {"count", "length_px", "jaggedness", "regen_ms", "radius_px"},
     "orb": {
@@ -45,6 +45,10 @@ KNOWN_PARAMS = {
     "vortex": {
         "height_px", "base_radius_px", "top_radius_px", "flare", "spin_hz", "strands", "twist", "turbulence",
         "sway_px", "sway_hz", "grow_ms", "opacity", "start_offset_px", "meander_px", "wander_px",
+    },
+    "wave": {
+        "width_px", "height_px", "travel_ms", "crash_ms", "curl", "flow_speed", "turbulence", "foam",
+        "shed_count", "shed_speed", "shed_size_px", "shed_life_ms",
     },
     "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness", "arc_deg", "ease"},
     "eruption": {
