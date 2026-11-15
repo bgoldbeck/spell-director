@@ -512,6 +512,123 @@ class RibbonMesh {
 
 // ------------------------------------------------------------ rocks
 
+// Moves every vertex by a seeded amount, the same for vertices that share a
+// position (box and cylinder faces have their own copies of each corner), so
+// the surface stays closed.
+function jitterVertices(geo, fn) {
+  const pos = geo.attributes.position;
+  const moved = new Map();
+  const v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    const key = `${v.x.toFixed(4)},${v.y.toFixed(4)},${v.z.toFixed(4)}`;
+    if (!moved.has(key)) moved.set(key, fn(v.clone()));
+    const m = moved.get(key);
+    pos.setXYZ(i, m.x, m.y, m.z);
+  }
+  pos.needsUpdate = true;
+}
+
+// A low-poly crag for eruptions, seeded: a jagged spike or a broken slab.
+// Stands on y = 0, 1 unit tall and about 1 unit wide, to be scaled. Flat-shaded, with vertex colors darker at
+// the base and per-face variation so the facets read in every view.
+export function cragGeometry(kind, r) {
+  let geo;
+  if (kind === "slab") {
+    // A broken plate of ground shoved up on edge: wide, thin, ragged top.
+    geo = new THREE.BoxGeometry(1, 1, 0.38, 3, 2, 1);
+    geo.translate(0, 0.5, 0);
+    jitterVertices(geo, (v) => {
+      const top = v.y > 0.99;
+      v.x += r.range(-0.08, 0.08);
+      v.z += r.range(-0.06, 0.06);
+      if (top) v.y -= r.range(0, 0.35);
+      else if (v.y > 0.4) v.y += r.range(-0.12, 0.12);
+      return v;
+    });
+  } else {
+    // A spike: a ragged five- or six-sided cone with a crooked tip.
+    const sides = r() < 0.5 ? 5 : 6;
+    geo = new THREE.CylinderGeometry(0.06, 0.5, 1, sides, 3);
+    geo.translate(0, 0.5, 0);
+    const lean = new THREE.Vector2(r.range(-0.18, 0.18), r.range(-0.18, 0.18));
+    jitterVertices(geo, (v) => {
+      const k = r.range(0.72, 1.18);
+      v.x *= k;
+      v.z *= k;
+      v.x += lean.x * v.y * v.y;
+      v.z += lean.y * v.y * v.y;
+      if (v.y > 0.05 && v.y < 0.99) v.y += r.range(-0.07, 0.07);
+      return v;
+    });
+  }
+  geo = geo.index ? geo.toNonIndexed() : geo;
+  geo.computeVertexNormals();
+  const pos = geo.attributes.position;
+  const colors = new Float32Array(pos.count * 3);
+  for (let f = 0; f < pos.count; f += 3) {
+    const face = r.range(0.82, 1.08);
+    for (let k = 0; k < 3; k++) {
+      const y = pos.getY(f + k);
+      const shade = face * (0.55 + 0.5 * Math.min(1, Math.max(0, y)));
+      colors[(f + k) * 3] = colors[(f + k) * 3 + 1] = colors[(f + k) * 3 + 2] = shade;
+    }
+  }
+  geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  return geo;
+}
+
+function rockMaterial(color) {
+  return new THREE.MeshStandardMaterial({ color, vertexColors: true, flatShading: true, roughness: 0.95, metalness: 0 });
+}
+
+// Many small tumbling rocks in one draw call (debris, pebbles, rubble).
+class RockChunks {
+  constructor(capacity, color, seed) {
+    this.capacity = capacity;
+    const r = rng(seed);
+    // The same lumpy rock as sparks look "debris" (unit radius), halved so
+    // sizes are diameters.
+    this.mesh = new THREE.InstancedMesh(rockGeometry(seed, 0, 0.5).scale(0.5, 0.5, 0.5), new THREE.MeshLambertMaterial({ color }), capacity);
+    this.mesh.frustumCulled = false;
+    this.mesh.count = 0;
+    // A little shade variation per rock.
+    const c = new THREE.Color();
+    for (let i = 0; i < capacity; i++) this.mesh.setColorAt(i, c.setScalar(r.range(0.7, 1.15)));
+    this.m = new THREE.Matrix4();
+    this.q = new THREE.Quaternion();
+    this.s = new THREE.Vector3();
+  }
+
+  // rocks: [{p: Vector3, s: world diameter, axis: Vector3 (unit), angle}]
+  set(rocks) {
+    const n = Math.min(this.capacity, rocks.length);
+    for (let i = 0; i < n; i++) {
+      const k = rocks[i];
+      this.q.setFromAxisAngle(k.axis, k.angle);
+      this.s.setScalar(Math.max(1e-4, k.s));
+      this.m.compose(k.p, this.q, this.s);
+      this.mesh.setMatrixAt(i, this.m);
+    }
+    this.mesh.count = n;
+    this.mesh.instanceMatrix.needsUpdate = true;
+  }
+}
+
+// Where a thrown rock is at age a (s): a ballistic arc that stops where it
+// lands. Pure (closed form plus a fixed bisection), so scrubbing works.
+function thrown(from, vel, gravity, a, rest) {
+  const at = (s) => new THREE.Vector3(from.x + vel.x * s, from.y + vel.y * s - 0.5 * gravity * s * s, from.z + vel.z * s);
+  if (gravity <= 0) return { p: at(a), landed: false };
+  // y(s) = y0 + vy s - g s^2 / 2 = rest
+  const c = from.y - rest;
+  const land = (vel.y + Math.sqrt(Math.max(0, vel.y * vel.y + 2 * gravity * c))) / gravity;
+  if (a < land) return { p: at(a), landed: false };
+  const p = at(land);
+  p.y = rest;
+  return { p, landed: true, since: a - land };
+}
+
 // A lumpy rock: an icosphere pushed in and out by seeded bumps. Unit size.
 function rockGeometry(seed, detail = 1, lumpy = 0.35) {
   const geo = new THREE.IcosahedronGeometry(1, detail);
@@ -1054,8 +1171,22 @@ class SparksLayer extends Layer {
     // Sparks are born over emit_ms (default 120 ms: one burst); longer reads as a fountain.
     const span = Math.max(1, Math.min(w.end - w.start, this.p("emit_ms", 0, 120)));
     const streakS = this.p("streak_ms", 0, this.droplet ? 30 : this.ember ? 35 : 60) / 1000;
+    // emit_radius_px: each spark starts somewhere on a disc around the anchor
+    // (rocks raining over an area) instead of all from one point.
+    const emitR = this.p("emit_radius_px", 0, 0) * PX;
+    const ro = this.rng("emit");
+    const startAt = () => {
+      const o = origin.clone();
+      if (emitR > 0) {
+        const ea = ro.range(0, Math.PI * 2);
+        const ed = Math.sqrt(ro()) * emitR;
+        o.x += Math.cos(ea) * ed;
+        o.z += Math.sin(ea) * ed;
+      }
+      return o;
+    };
     if (this.debris) {
-      this.updateDebris({ local, count, life, origin, speed, spread, gravity, spreadDeg, drag, sz, span, streakS });
+      this.updateDebris({ local, count, life, origin, startAt, speed, spread, gravity, spreadDeg, drag, sz, span, streakS });
       return;
     }
     // gather_px: sparks are born on a shell this far out and are drawn in to
@@ -1074,6 +1205,8 @@ class SparksLayer extends Layer {
       const dx = Math.sin(phi) * Math.cos(theta);
       const dy = Math.cos(phi);
       const dz = Math.sin(phi) * Math.sin(theta);
+      // Drawn before any skip below so each spark keeps its spot.
+      const o = startAt();
       const age = (local - born) / 1000;
       if (age < 0 || age * 1000 > lifeI) continue;
       const ph = i * 2.399; // not from r: sparks skipped above would shift the sequence
@@ -1094,9 +1227,9 @@ class SparksLayer extends Layer {
         const travel = (v * (1 - Math.exp(-drag * a))) / drag;
         const flutter = this.ember ? Math.sin(a * 7 + ph) * 0.18 * a : 0;
         return new THREE.Vector3(
-          origin.x + dx * travel + flutter,
-          Math.max(0.01, origin.y + dy * travel - 0.5 * gravity * a * a),
-          origin.z + dz * travel + (this.ember ? Math.cos(a * 5 + ph) * 0.18 * a : 0),
+          o.x + dx * travel + flutter,
+          Math.max(0.01, o.y + dy * travel - 0.5 * gravity * a * a),
+          o.z + dz * travel + (this.ember ? Math.cos(a * 5 + ph) * 0.18 * a : 0),
         );
       };
       let fade = 1 - (age * 1000) / lifeI;
@@ -1163,13 +1296,14 @@ SparksLayer.prototype.updateDebris = function updateDebris(o) {
     const dx = Math.sin(phi) * Math.cos(theta);
     const dy = Math.cos(phi);
     const dz = Math.sin(phi) * Math.sin(theta);
+    const from = o.startAt();
     const age = (o.local - born) / 1000;
     if (age < 0 || age * 1000 > lifeI) continue;
     const size = o.sz * k;
     const rest = size * 0.45;
     const at = (a) => {
       const travel = (v * (1 - Math.exp(-o.drag * a))) / o.drag;
-      return new THREE.Vector3(o.origin.x + dx * travel, o.origin.y + dy * travel - 0.5 * o.gravity * a * a, o.origin.z + dz * travel);
+      return new THREE.Vector3(from.x + dx * travel, from.y + dy * travel - 0.5 * o.gravity * a * a, from.z + dz * travel);
     };
     // When it lands (first sample below resting height), it stops there.
     let land = Infinity;
@@ -1313,6 +1447,8 @@ uniform vec3 color;
 uniform float opacity;
 uniform float inner; // inner edge, as a fraction of the outer radius
 uniform float softness;
+uniform float arcHalf;  // half the arc's angle in radians (>= pi: a full ring)
+uniform float heading;  // the arc's middle direction, atan2(z, x) on the ground
 varying vec2 vUv;
 void main() {
   float d = length(vUv - 0.5) * 2.0;
@@ -1323,6 +1459,13 @@ void main() {
   float a = 1.0 - smoothstep(1.0 - max(0.05, softness), 1.0, x);
   // Shockwaves are brightest on their leading edge.
   a *= mix(0.55, 1.0, smoothstep(inner, 1.0, d));
+  if (arcHalf < 3.14159) {
+    // Only the arc facing the cast direction, fading out toward its ends.
+    // The plane lies flat, so its uv y runs along world -z.
+    vec2 p = vUv - 0.5;
+    float off = abs(mod(atan(-p.y, p.x) - heading + 3.14159265, 6.2831853) - 3.14159265);
+    a *= 1.0 - smoothstep(arcHalf * 0.7, arcHalf, off);
+  }
   gl_FragColor = vec4(color, a * opacity);
   #include <colorspace_fragment>
 }`;
@@ -1361,6 +1504,8 @@ class RingLayer extends Layer {
         opacity: { value: 0 },
         inner: { value: 0.9 },
         softness: { value: Math.max(0, Math.min(1, this.base.softness ?? 0.5)) },
+        arcHalf: { value: THREE.MathUtils.degToRad(Math.max(1, Math.min(360, typeof this.base.arc_deg === "number" ? this.base.arc_deg : 360))) / 2 },
+        heading: { value: castHeading(effect.stage) },
       },
       transparent: true,
       blending: THREE.AdditiveBlending,
@@ -1383,7 +1528,10 @@ class RingLayer extends Layer {
     this.group.visible = !!w && I > 0.001;
     if (!this.group.visible) return;
     const u = Math.min(1, Math.max(0, this.local(t) / Math.max(1, w.end - w.start)));
-    const e = 1 - (1 - u) * (1 - u);
+    // ease: ease_out (default, a burst that slows), linear (a steady wave
+    // front, e.g. to keep pace with an eruption) or ease_in (speeds up).
+    const ease = this.p("ease", t, "ease_out");
+    const e = ease === "linear" ? u : ease === "ease_in" ? u * u : 1 - (1 - u) * (1 - u);
     const r0 = this.p("start_radius_px", t, 10) * PX;
     const r1 = this.p("end_radius_px", t, 80) * PX;
     const radius = r0 + (r1 - r0) * e;
@@ -1408,7 +1556,7 @@ class DecalLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
     this.plan = decalPlan(effect.template, def, effect.seed, instance);
-    this.canvas = drawDecal(this.plan.shape, seedFor(effect.seed, def.id, instance, "texture"), { detail: this.plan.detail });
+    this.canvas = drawDecal(this.plan.shape, seedFor(effect.seed, def.id, instance, "texture"), { detail: this.plan.detail, arc_deg: this.plan.arc_deg });
     const map = new THREE.CanvasTexture(this.canvas);
     map.colorSpace = THREE.SRGBColorSpace;
     map.anisotropy = 4;
@@ -1424,12 +1572,26 @@ class DecalLayer extends Layer {
       polygonOffsetFactor: -4,
       polygonOffsetUnits: -4,
     });
+    // reveal_ms: the mark spreads out from its centre (cracks running
+    // outward) instead of appearing whole.
+    this.reveal = { value: 1 };
+    if (this.plan.reveal_ms > 0) {
+      this.material.onBeforeCompile = (shader) => {
+        shader.uniforms.reveal = this.reveal;
+        shader.fragmentShader = `uniform float reveal;\n${shader.fragmentShader}`.replace(
+          "#include <map_fragment>",
+          "#include <map_fragment>\n  if (reveal < 1.0) diffuseColor.a *= 1.0 - smoothstep(reveal * 1.02 - 0.06, reveal * 1.02, length(vMapUv - 0.5) * 2.0);",
+        );
+      };
+      this.material.customProgramCacheKey = () => "decal-reveal";
+    }
     this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), this.material);
     this.group.add(this.mesh);
   }
 
   update(t) {
     const st = decalState(this.plan, t);
+    this.reveal.value = st.reveal;
     this.group.visible = st.opacity > 0.001;
     if (!this.group.visible) return;
     const at = this.anchorPos();
@@ -2117,6 +2279,196 @@ class BeamLayer extends Layer {
   }
 }
 
+// The cast direction on the ground, as an angle (radians, atan2(z, x)): from
+// the caster toward the target. Arcs, frontal eruptions and arc decals face it.
+function castHeading(stage) {
+  const to = stage.anchor("target");
+  const dx = to.x - stage.caster.x;
+  const dz = to.z - stage.caster.z;
+  return Math.hypot(dx, dz) > 0.1 ? Math.atan2(dz, dx) : 0;
+}
+
+// Overshoots a little past 1 and settles: a thrust that jolts to a stop.
+function backOut(u, s = 1.4) {
+  const v = u - 1;
+  return 1 + (s + 1) * v * v * v + s * v * v;
+}
+
+// Rock bursting out of the ground in rows along an arc (or a full circle)
+// that sweeps outward from its anchor: an earth wave, a ground pound, a ring
+// of spikes. Each row erupts when the wave reaches it, bigger than the last
+// (growth), thrusts up fast (rise_ms) with a small overshoot, holds (hold_ms)
+// and crumbles back down (sink_ms), throwing rock chunks (debris_*) and
+// kicking up dust (dust). Rocks take the layer's color, dust the palette's
+// secondary. The whole layout comes from the seed at construction; update
+// only poses it for t.
+class EruptionLayer extends Layer {
+  constructor(effect, def, instance) {
+    super(effect, def, instance);
+    const b = this.base;
+    const num = (k, d) => (typeof b[k] === "number" ? b[k] : d);
+    const shape = b.shape === "slabs" ? "slab" : "spike";
+    this.slab = shape === "slab";
+    const rows = Math.max(1, Math.min(12, Math.round(num("rows", 5))));
+    const arc = THREE.MathUtils.degToRad(Math.max(5, Math.min(360, num("arc_deg", 100))));
+    const full = arc >= Math.PI * 2 - 1e-3;
+    const r0 = num("start_radius_px", 50) * PX;
+    const r1 = Math.max(r0, num("end_radius_px", 360) * PX);
+    const growth = Math.max(0.3, num("growth", 1.3));
+    const h0 = num("height_px", 35) * PX;
+    const w0 = num("width_px", this.slab ? 30 : 16) * PX;
+    const spacing = Math.max(0.05, num("spacing_px", 40) * PX);
+    const delay = Math.max(0, num("row_delay_ms", 120));
+    const delayGrowth = Math.max(0.2, num("delay_growth", 1));
+    const jitter = Math.max(0, Math.min(1, num("jitter", 0.35)));
+    const tilt = THREE.MathUtils.degToRad(num("tilt_deg", this.slab ? 28 : 16));
+    this.rise = Math.max(1, num("rise_ms", 90));
+    this.hold = Math.max(0, num("hold_ms", 300));
+    this.sink = Math.max(1, num("sink_ms", 350));
+    this.dustAmt = Math.max(0, Math.min(1, num("dust", 0.6)));
+    this.dustLife = Math.max(50, num("dust_life_ms", 900));
+    const debrisN = Math.max(0, Math.min(8, Math.round(num("debris_count", 3))));
+    const debrisSpeed = num("debris_speed", 280) * PX;
+    const debrisSize = num("debris_size_px", 5) * PX;
+    this.gravity = num("gravity", 980) * PX;
+    const dustSize = num("dust_size_px", 30) * PX;
+
+    const origin = this.anchorPos();
+    origin.y = 0;
+    const heading = castHeading(effect.stage);
+    const r = this.rng("layout");
+    const rockColor = this.colors[1];
+    this.material = rockMaterial(rockColor);
+    const pal = effect.template.palette || {};
+    const dustColor = new THREE.Color(pal.secondary || pal.primary || "#c8b89a");
+    this.spikes = [];
+    this.debris = [];
+    this.dust = [];
+    let t0 = 0;
+    let end = 0;
+    const life = this.rise + this.hold + this.sink;
+    for (let k = 0; k < rows; k++) {
+      if (k > 0) t0 += delay * Math.pow(delayGrowth, k - 1);
+      const f = rows > 1 ? k / (rows - 1) : 0;
+      const radius = r0 + (r1 - r0) * f;
+      const scale = Math.pow(growth, k);
+      const gap = spacing * Math.sqrt(scale);
+      const n = Math.max(1, Math.round((radius * arc) / gap));
+      for (let i = 0; i < n; i++) {
+        // u: -0.5..0.5 across the arc (0 = straight ahead).
+        const u = full ? i / n : n > 1 ? i / (n - 1) - 0.5 : 0;
+        const a = heading + (full ? u * Math.PI * 2 : u * arc) + r.range(-0.5, 0.5) * jitter * (arc / n);
+        // The arc is tallest in the middle and lower toward its ends.
+        const edge = full || n < 2 ? 1 : 1 - 0.45 * Math.pow(Math.abs(u) * 2, 2);
+        const out = new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
+        const base = origin.clone().addScaledVector(out, radius + r.range(-0.5, 0.5) * jitter * gap);
+        const height = h0 * scale * edge * r.range(1 - 0.5 * jitter, 1 + 0.3 * jitter);
+        const width = w0 * scale * (0.6 + 0.4 * edge) * r.range(1 - 0.4 * jitter, 1 + 0.3 * jitter);
+        // Slabs turn their broad face to the wave; spikes face anywhere. Both
+        // lean outward, away from the anchor.
+        const yawAngle = this.slab ? Math.PI / 2 - a + r.range(-0.35, 0.35) : r.range(0, Math.PI * 2);
+        const yaw = new THREE.Quaternion().setFromAxisAngle(UP, yawAngle);
+        const axis = new THREE.Vector3().crossVectors(UP, out).normalize();
+        const q = new THREE.Quaternion().setFromAxisAngle(axis, tilt * r.range(0.6, 1.3)).multiply(yaw);
+        // The front bows: the ends of the arc lag the middle a little.
+        const time = Math.max(0, t0 + r.range(-0.5, 0.5) * jitter * Math.min(delay, 120) * 0.5 + (full ? 0 : Math.abs(u) * Math.min(delay, 160) * 0.3));
+        const mesh = new THREE.Mesh(cragGeometry(shape, r), this.material);
+        mesh.visible = false;
+        this.group.add(mesh);
+        this.spikes.push({ mesh, base, q, height, width, t: time });
+        end = Math.max(end, time + life);
+        const side = new THREE.Vector3(-out.z, 0, out.x);
+        const nDebris = Math.round(debrisN * (0.6 + 0.4 * scale));
+        for (let j = 0; j < nDebris; j++) {
+          const dir = new THREE.Vector3().addScaledVector(out, r.range(0.15, 0.9)).addScaledVector(UP, r.range(0.8, 1.4))
+            .addScaledVector(side, r.range(-0.6, 0.6)).normalize();
+          this.debris.push({
+            launch: time + r.range(0, this.rise * 0.8),
+            from: base.clone().addScaledVector(UP, height * r.range(0.2, 0.7)),
+            vel: dir.multiplyScalar(debrisSpeed * Math.sqrt(scale) * r.range(0.6, 1.25)),
+            size: debrisSize * Math.sqrt(scale) * r.range(0.6, 1.5),
+            axis: new THREE.Vector3(r.range(-1, 1), r.range(-1, 1), r.range(-1, 1)).normalize(),
+            spin: r.range(5, 14) * r.sign(),
+            endAt: time + life + r.range(0, 150),
+          });
+        }
+        const puffs = scale > 1.6 ? 2 : 1;
+        for (let j = 0; j < puffs; j++) {
+          this.dust.push({
+            born: time + r.range(0, this.rise * 0.6),
+            p: base.clone().addScaledVector(side, r.range(-0.6, 0.6) * width),
+            drift: out.clone().multiplyScalar(r.range(0.1, 0.45)).addScaledVector(side, r.range(-0.2, 0.2)),
+            rise: r.range(0.15, 0.4),
+            size: dustSize * Math.pow(scale, 0.75) * r.range(0.8, 1.3),
+            spin0: r.range(0, Math.PI * 2),
+            spin: r.range(-1, 1),
+          });
+        }
+      }
+    }
+    this.end = Math.max(end + 160, ...this.dust.map((d) => d.born + this.dustLife));
+    this.chunks = new RockChunks(Math.max(1, Math.min(512, this.debris.length)), rockColor.clone().multiplyScalar(0.9), seedFor(effect.seed, def.id, instance, "chunks"));
+    this.group.add(this.chunks.mesh);
+    this.dustSprites = this.dust.slice(0, 160).map((_, i) => {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloud(i % 4), color: dustColor, transparent: true, depthWrite: false }));
+      sp.visible = false;
+      this.group.add(sp);
+      return sp;
+    });
+  }
+
+  update(t) {
+    const local = this.local(t);
+    const on = !!this.window && local >= 0 && local <= this.end;
+    this.group.visible = on;
+    if (!on) return;
+    const life = this.rise + this.hold + this.sink;
+    for (const s of this.spikes) {
+      const a = local - s.t;
+      s.mesh.visible = a >= 0 && a <= life;
+      if (!s.mesh.visible) continue;
+      let up = 1;
+      let spread = 1;
+      if (a < this.rise) up = backOut(a / this.rise);
+      else if (a > this.rise + this.hold) {
+        // Crumbles: slumps down and spreads a little as it breaks apart.
+        const v = (a - this.rise - this.hold) / this.sink;
+        up = 1 - v * v * (3 - 2 * v);
+        spread = (1 + 0.25 * v) * (1 - 0.75 * v * v);
+      }
+      s.mesh.position.copy(s.base);
+      s.mesh.quaternion.copy(s.q);
+      s.mesh.scale.set(s.width * spread, Math.max(0.001, s.height * up), s.width * spread);
+    }
+    const rocks = [];
+    for (const d of this.debris) {
+      const age = (local - d.launch) / 1000;
+      if (age < 0 || local > d.endAt) continue;
+      const h = thrown(d.from, d.vel, this.gravity, age, d.size * 0.35);
+      // Tumbles in the air, lies still once it lands, crumbles away at the end.
+      rocks.push({ p: h.p, s: d.size * Math.min(1, (d.endAt - local) / 250), axis: d.axis, angle: d.spin * (h.landed ? age - h.since : age) });
+    }
+    this.chunks.set(rocks);
+    this.dustSprites.forEach((sp, i) => {
+      const d = this.dust[i];
+      const age = (local - d.born) / this.dustLife;
+      sp.visible = this.dustAmt > 0 && age >= 0 && age <= 1;
+      if (!sp.visible) return;
+      const s = d.size * (0.55 + 1.3 * age);
+      sp.position.copy(d.p).addScaledVector(d.drift, age).setY(s * 0.3 + d.rise * age);
+      sp.scale.setScalar(s);
+      sp.material.rotation = d.spin0 + d.spin * age;
+      sp.material.opacity = this.dustAmt * Math.min(1, age / 0.12) * Math.pow(1 - age, 1.5);
+    });
+  }
+
+  // Tips of the rocks that are up now (for layers attached to the eruption).
+  points() {
+    const pts = this.spikes.filter((s) => s.mesh.visible).map((s) => s.base.clone().setY(s.mesh.scale.y * 0.8));
+    return pts.length ? pts : [this.anchorPos()];
+  }
+}
+
 // A spinning funnel of air (tornado, whirlwind, dust devil). Its shape and
 // motion come from engine/vortex.js. Drawn as a translucent wall whose
 // streaky noise spirals up and around it (alpha-blended, densest at the
@@ -2398,6 +2750,7 @@ const TYPES = {
   smoke: SmokeLayer,
   orb: OrbLayer,
   beam: BeamLayer,
+  eruption: EruptionLayer,
   vortex: VortexLayer,
   light: LightLayer,
   camera_shake: ShakeLayer,

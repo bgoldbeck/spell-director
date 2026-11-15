@@ -45,6 +45,9 @@ def test_list_and_filter():
     assert {"wind-gale-shove", "wind-tornado"} <= {t["id"] for t in library.list_templates(element="wind")}
     assert [t["id"] for t in library.list_templates(element="psychic")] == ["psychic-mind-crush"]
     assert library.list_templates(element="no-such-element") == []
+    assert [t["id"] for t in library.list_templates(element="earth")] == [
+        "earth-ground-pound", "earth-rending-quake", "earth-rockfall", "earth-stone-spires",
+    ]
 
 
 def test_get_template_and_missing():

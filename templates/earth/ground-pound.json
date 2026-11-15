@@ -1,0 +1,832 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "earth-ground-pound",
+  "name": "Ground Pound",
+  "description": "The caster gathers strength as pebbles lift and dust is drawn in, hangs for a beat, then slams the ground: a quake runs out in a frontal arc, splitting the earth and bursting rock spikes up row after row, each row bigger than the last, ending in a huge eruption that hurls rocks and dust high before everything crumbles back down.",
+  "element": "earth",
+  "archetype": "nova",
+  "tags": [
+    "ground",
+    "slam",
+    "arc",
+    "wave",
+    "eruption",
+    "area",
+    "staggered",
+    "escalating",
+    "melee"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "An earth ground pound: the caster slams the ground and a frontal arc wave grows outward from them, ejecting earth upward with increasing effect and good timing for dramatic effect."
+  },
+  "timing": {
+    "duration_ms": 2800,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "arc",
+      "length": 3.8,
+      "angle_deg": 100,
+      "distribution": "edge_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Over the shoulder the wave runs away from the camera: rows of spikes burst up one after another into the distance, the far rows bigger even though they are further away, ending in a tall eruption and dust plume around the target.",
+      "side": "The escalation reads best here: a staircase of rock rising left to right, small spikes near the caster and towering ones at the far end, debris arcing up and falling, dust rolling along the ground.",
+      "top": "The ground story: a fan of fissures and a frontal arc of churned dust sweeping outward from the crater at the caster's feet, rows of rock popping up across a 100 degree arc, debris scattering, then the crumbling. The contracting dust ring shows the wind-up.",
+      "three_quarter": "Hero view. The arc reads as a widening fan of rock rising row by row toward the target, the rows clearly growing, debris and dust thrown high, cracks and crater on the ground."
+    }
+  },
+  "palette": {
+    "core": "#F2E2C4",
+    "primary": "#8C6B4A",
+    "secondary": "#C4AC88",
+    "accent": "#E3A04F",
+    "shadow": "#2B221B"
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 600,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.15,
+        "to": 0.9
+      },
+      "intent": "The caster gathers strength with a fist raised: a low rumble builds, pebbles and grit lift off the ground around them, dust is drawn in toward their feet and a dull amber glow swells in the fist."
+    },
+    {
+      "id": "hang",
+      "phase": "anticipation",
+      "start_ms": 600,
+      "end_ms": 680,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "A split second of stillness at the top of the swing: the pebbles hang in the air and the rumble holds. This hold is what makes the slam land."
+    },
+    {
+      "id": "slam",
+      "phase": "release",
+      "start_ms": 680,
+      "end_ms": 760,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "The fist slams down: a hard thud and boom, a warm pop of dust, chunks of ground knocked loose, a crater punched under the caster and a sharp camera jolt."
+    },
+    {
+      "id": "wave",
+      "phase": "travel",
+      "start_ms": 720,
+      "end_ms": 1400,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.45,
+        "to": 1.0
+      },
+      "intent": "The quake runs outward in a 100 degree arc in front of the caster. The ground splits ahead of it and rock spikes burst up in five rows, each row bigger and a little later than the last, so the rhythm builds: crack, crack, CRACK. The shaking grows with it."
+    },
+    {
+      "id": "climax",
+      "phase": "impact",
+      "start_ms": 1300,
+      "end_ms": 1750,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "The last row is the biggest: towering spikes at the far end, a deep boom, heavy rocks hurled high that rain back down and a tall dust plume. The strongest shake of the spell."
+    },
+    {
+      "id": "settle",
+      "phase": "dissipation",
+      "start_ms": 1700,
+      "end_ms": 2800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The rocks crack and crumble back into the ground row by row, the debris settles, the dust drifts and thins, and the fissures and crater are left behind."
+    }
+  ],
+  "layers": [
+    {
+      "id": "fault-fissures",
+      "type": "decal",
+      "beats": [
+        "wave",
+        "climax",
+        "settle"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "fissures",
+        "radius_px": 400,
+        "arc_deg": 104,
+        "reveal_ms": 650,
+        "opacity": 0.85,
+        "fade_in_ms": 40,
+        "lifetime_ms": 3600,
+        "fade_ms": 1500,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Dark fissures that split the ground in a fan ahead of the caster, running outward with the wave and staying open after the rocks sink.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.15
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "slam-crater",
+      "type": "decal",
+      "beats": [
+        "slam",
+        "wave",
+        "climax",
+        "settle"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 60,
+          "max": 70
+        },
+        "opacity": 0.8,
+        "fade_in_ms": 30,
+        "grow_ms": 140,
+        "start_scale": 0.5,
+        "lifetime_ms": 3600,
+        "fade_ms": 1500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A shallow dent punched into the ground where the fist landed, with a raised broken rim and grit.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gather-ring",
+      "type": "ring",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 120,
+        "end_radius_px": 22,
+        "thickness_px": 8,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A faint ring of grit and dust being drawn in toward the caster's feet as they gather strength.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "inward",
+          "speed": 1.5
+        },
+        "emissive": {
+          "hdr": 1,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "slam-ring",
+      "type": "ring",
+      "beats": [
+        "slam"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "core",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 150,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A quick puff of dust blasted out flat in every direction the instant the fist hits.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "distortion": 0.3,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shock-arc",
+      "type": "ring",
+      "beats": [
+        "wave"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 50,
+        "end_radius_px": 370,
+        "thickness_px": 20,
+        "softness": 0.9,
+        "arc_deg": 100,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "The leading edge of the quake: a band of churned dust running across the ground in a frontal arc, just ahead of each row of rock.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "distortion": 0.4,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "stone-wave",
+      "type": "eruption",
+      "beats": [
+        "wave",
+        "climax",
+        "settle"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 100,
+        "rows": 5,
+        "start_radius_px": 55,
+        "end_radius_px": 360,
+        "row_delay_ms": 130,
+        "delay_growth": 1.1,
+        "growth": {
+          "min": 1.34,
+          "max": 1.42
+        },
+        "height_px": 32,
+        "width_px": 16,
+        "spacing_px": 40,
+        "tilt_deg": 16,
+        "jitter": 0.4,
+        "rise_ms": 80,
+        "hold_ms": 320,
+        "sink_ms": 380,
+        "debris_count": 3,
+        "debris_speed": 300,
+        "debris_size_px": 6,
+        "gravity": 980,
+        "dust": 0.65,
+        "dust_size_px": 34,
+        "dust_life_ms": 1000
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Jagged spikes of rock that punch up out of the ground row after row, each row bigger than the last, leaning away from the caster, then crack and crumble back down. Faceted, matte, lighter on top where the light catches them.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.12
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "lift-pebbles",
+      "type": "sparks",
+      "beats": [
+        "gather",
+        "hang"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": {
+          "min": 26,
+          "max": 32
+        },
+        "speed": 130,
+        "speed_spread": 0.6,
+        "gravity": -110,
+        "lifetime_ms": 820,
+        "size_px": 5,
+        "spread_deg": 170,
+        "drag": 0.3,
+        "emit_ms": 460,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Pebbles and grit lifting off the ground around the caster, hanging in the air as the strength builds.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 0.3
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gather-dust",
+      "type": "smoke",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "count": 6,
+        "rise_speed": 10,
+        "size_px": {
+          "min": 22,
+          "max": 28
+        },
+        "lifetime_ms": 620,
+        "opacity": 0.22
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Low dust stirring around the caster's feet, pulled inward.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "inward",
+          "speed": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "fist-glow",
+      "type": "glow",
+      "beats": [
+        "gather",
+        "hang",
+        "slam"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.8,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A dull amber glow swelling in the raised fist: the earth's strength gathering, not fire.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 1.8,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "slam-flash",
+      "type": "flash",
+      "beats": [
+        "slam"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 12,
+      "params": {
+        "scope": "local",
+        "radius_px": 70,
+        "peak": 0.5
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A short warm pop of light and dust where the fist meets the ground; not a white-out.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "slam-burst",
+      "type": "sparks",
+      "beats": [
+        "slam"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "count": {
+          "min": 20,
+          "max": 26
+        },
+        "speed": 420,
+        "speed_spread": 0.5,
+        "gravity": 980,
+        "lifetime_ms": 950,
+        "size_px": 5,
+        "spread_deg": 120,
+        "drag": 0.15,
+        "emit_ms": 60,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of ground knocked loose by the slam, thrown up and out, tumbling and landing around the caster.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "slam-dust",
+      "type": "smoke",
+      "beats": [
+        "slam",
+        "wave"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "count": 10,
+        "rise_speed": 28,
+        "size_px": {
+          "min": 36,
+          "max": 44
+        },
+        "lifetime_ms": 950,
+        "opacity": 0.45
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A thick dust cloud bursting up around the caster from the impact and rolling outward.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "climax-debris",
+      "type": "sparks",
+      "beats": [
+        "climax"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 28,
+          "max": 34
+        },
+        "speed": 520,
+        "speed_spread": 0.5,
+        "gravity": 980,
+        "lifetime_ms": 1150,
+        "size_px": 7,
+        "spread_deg": 90,
+        "drag": 0.12,
+        "emit_ms": 140,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "The last and biggest row blows apart at the far end: heavy rocks hurled high that rain back down.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "climax-dust",
+      "type": "smoke",
+      "beats": [
+        "climax",
+        "settle"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "count": 12,
+        "rise_speed": 34,
+        "size_px": {
+          "min": 56,
+          "max": 66
+        },
+        "lifetime_ms": 1250,
+        "opacity": 0.45
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A tall billowing dust plume thrown up at the far end by the final eruption, hanging and drifting as it settles.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.2,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gather-tremor",
+      "type": "camera_shake",
+      "beats": [
+        "gather",
+        "hang"
+      ],
+      "params": {
+        "amplitude_px": 2,
+        "frequency_hz": 30,
+        "decay": 0.2
+      }
+    },
+    {
+      "id": "slam-shake",
+      "type": "camera_shake",
+      "beats": [
+        "slam"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 12,
+          "max": 15
+        },
+        "frequency_hz": 22,
+        "decay": 0.5
+      }
+    },
+    {
+      "id": "wave-shake",
+      "type": "camera_shake",
+      "beats": [
+        "wave"
+      ],
+      "params": {
+        "amplitude_px": 9,
+        "frequency_hz": 18,
+        "decay": 0.3
+      }
+    },
+    {
+      "id": "climax-shake",
+      "type": "camera_shake",
+      "beats": [
+        "climax"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 15,
+          "max": 18
+        },
+        "frequency_hz": 15,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.45,
+        "pitch": 0.85
+      }
+    },
+    {
+      "id": "swing-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hang"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.5,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "slam-sound",
+      "type": "sound_cue",
+      "beats": [
+        "slam"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "slam-boom",
+      "type": "sound_cue",
+      "beats": [
+        "slam"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.75,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "eruption-sound",
+      "type": "sound_cue",
+      "beats": [
+        "wave"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.55,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.1
+        },
+        "repeat_ms": 140
+      }
+    },
+    {
+      "id": "quake-sound",
+      "type": "sound_cue",
+      "beats": [
+        "wave",
+        "climax"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.65,
+        "pitch": 0.75
+      }
+    },
+    {
+      "id": "climax-sound",
+      "type": "sound_cue",
+      "beats": [
+        "climax"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.7,
+          "max": 0.78
+        }
+      }
+    },
+    {
+      "id": "climax-crash",
+      "type": "sound_cue",
+      "beats": [
+        "climax"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.8,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "settle-sound",
+      "type": "sound_cue",
+      "beats": [
+        "settle"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.3,
+        "pitch": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Spike placement, sizes, lean, the growth per row, debris paths and the fissure pattern vary per cast. The gather (0.6 s), the hang, the slam time, the row rhythm and the 100 degree arc stay fixed so the hit always lands at the same moment and the danger area is fair to read."
+  },
+  "director_notes": "Built from Lisa's request for an earth ground pound that grows outward from the caster in a frontal arc, throwing earth up with increasing effect; it is a genre move, so nothing here copies a particular game. Timing is the point: (1) a 0.6 s gather with lifting pebbles, inward dust, a fist glow and a low rumble, then an 80 ms hang where everything holds still, so the slam lands; (2) the slam is short and hard: impact plus boom, dust pop, chunks thrown, crater, the first big jolt; (3) an eruption layer bursts rock spikes up in five rows across a 100 degree arc, each row about 1.4x bigger and 10% later than the last (row_delay_ms 130, delay_growth 1.1), so the beat builds instead of staying even; a linear arc ring of dust (ring arc_deg, ease linear) and fissures that spread outward (decal reveal_ms) run with the front; (4) the last row is the climax: the biggest spikes, a second, deeper boom, heavy debris and a dust plume at the target, and the strongest shake; (5) the rocks hold, then crumble back down; the fissures and crater outlive the spell. Sound: rumble -> whoosh -> impact + boom -> crash every 140 ms over a rumble -> deep boom + crash -> quiet rumble. A game can swap spikes for slabs (eruption shape slabs) for a heaving-ground look. The slam is at the caster's feet; a game with a jump-slam animation should trigger the slam beat on the landing frame."
+}

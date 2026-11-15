@@ -84,8 +84,9 @@ An effect is a stack of layers. Each layer has one job.
 | `crackle` | Short tiny bolts crawling over a surface or around a source. |
 | `orb` | A ball of energy (charge-up, projectile head). |
 | `beam` | A continuous ribbon between two points. |
+| `eruption` | Solid rock bursting out of the ground in rows that sweep outward (spikes or slabs), each row bigger than the last, then crumbling. |
 | `ring` | Expanding shockwave circle (overhead) or ripple. |
-| `decal` | Mark on the ground: scorch, burn, cracks, crater, puddle, splash, frost, rune circle, warning ring (telegraph). Fades in, stays, fades out; can outlive the spell. |
+| `decal` | Mark on the ground: scorch, burn, cracks, crater, puddle, splash, frost, rune circle, warning ring (telegraph), fissures. Fades in, stays, fades out; can outlive the spell. |
 | `smoke` | Soft alpha volume, slow drift. |
 | `light` | Dynamic light cast on the environment. |
 | `camera_shake` | Screen shake. |
@@ -204,6 +205,22 @@ Air is invisible: wind reads through what it carries (dust, leaves, debris, stre
 | cloud cap | drawn by `vortex` | Dark puffs turning at the top of the funnel. |
 | scoured ground | `decal` `swirl` | Spiral grooves left where it ground. |
 | gust, howl, roar | `wind` cue (pitch for size: low for a gathering wind, 1.0–1.1 for a roaring funnel), `whoosh` for a snap | The sound of the air. Add `rumble` for a heavy grind. |
+### Earth-specific terms
+
+Earth is heavy and physical. It has no glow to hide behind: it sells weight through timing (a long gather, a held beat, a hard slam), through solid, lit rock that moves fast and stops dead, and through what it throws around (debris, dust, cracks) and the camera shake. Rhythm matters more than color: staggered hits that grow (crack, crack, CRACK) read as power building.
+
+| Term | Field | Meaning |
+|---|---|---|
+| ground pound, slam, stomp | short `release` beat at the caster: `flash` (low `peak`), `ring`, `sparks` `look: debris`, `smoke` dust, `crater` decal, big `camera_shake`, `impact` + `boom` | The hit that starts the quake. Precede it with a gather and a 60–100 ms hang (`hold`). |
+| earth wave, quake line, fault | `eruption` with `arc_deg` 60–120 at `caster`, a `ring` with the same `arc_deg` and `ease: linear`, a `fissures` decal with `arc_deg` and `reveal_ms` | Rock bursting up along a front that runs away from the caster. |
+| escalation, growing eruptions | `eruption.growth` 1.3–1.5, `delay_growth` 1.05–1.2 | Each row bigger and a little later than the last, so the beat builds instead of staying even. |
+| spikes, spires, stone lances, pillars | `eruption` `shape: spikes`; one cluster: `arc_deg` 360, `start_radius_px` 0, `growth` 0.5–0.7 (tallest in the middle) | Sharp rock stabbing up out of the ground. |
+| heave, rolling ground, quake | `eruption` `shape: slabs`, `arc_deg` 360, slow `rise_ms` 120–200, long `hold_ms`; long flickering `camera_shake` (5–7 Hz) | Plates of ground shoved up on edge all around. |
+| rockfall, rock slide, boulders | `sparks` `look: debris` anchored at `sky` with `emit_radius_px`, big `size_px` (15–25), long `lifetime_ms` | Boulders tumbling down onto an area, landing and lying as rubble. |
+| debris, rubble, chips, pebbles | `sparks` `look: debris`; `eruption.debris_*` | Rock chunks thrown up that tumble, land and stay. |
+| dust, dust cloud | `smoke` (alpha, `primary` or `secondary`), `eruption.dust`; `spread_speed` for a dust wave | Kicked-up earth, brown-grey, never glowing. |
+| fissures, splitting ground | `decal` `fissures` (`arc_deg`, `reveal_ms`), `crater`, `cracks` | The ground tears open and stays open after the rock sinks. |
+| gather, brace | pebbles lifting (`sparks` `look: debris`, negative `gravity`), dust drawn in (`ring` closing), low `rumble`, a dull `glow` in the fist | Strength building before the slam. |
 
 ### Light and energy beam terms
 

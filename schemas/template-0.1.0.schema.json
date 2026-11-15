@@ -347,6 +347,7 @@
               "crackle",
               "orb",
               "beam",
+              "eruption",
               "vortex",
               "ring",
               "decal",
@@ -472,7 +473,8 @@
                         "swirl",
                         "swept",
                         "rune_circle",
-                        "warning_ring"
+                        "warning_ring",
+                        "fissures"
                       ],
                       "description": "What the mark looks like from above. See docs/template-format.md#decals."
                     },
@@ -621,6 +623,31 @@
                         }
                       ],
                       "description": "How busy the texture is (cracks, rays, glyphs), default 0.5."
+                    },
+                    "arc_deg": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 360
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Keep only the sector facing the cast direction, this many degrees wide (default 360: the whole mark). Without a rotation_deg, an arc mark faces the cast direction."
+                    },
+                    "reveal_ms": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "The mark spreads out from its centre over this long from its start, like cracks running across the ground (default 0: appears whole)."
                     }
                   }
                 }

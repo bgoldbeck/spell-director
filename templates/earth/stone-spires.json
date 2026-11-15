@@ -1,0 +1,464 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "earth-stone-spires",
+  "name": "Stone Spires",
+  "description": "Cracks glow under the target and pebbles jump as the ground swells, then a cluster of sharp stone pillars stabs up out of the ground, the tallest in the middle, flinging chips and dust, holds for a moment and crumbles back down.",
+  "element": "earth",
+  "archetype": "strike",
+  "tags": [
+    "spikes",
+    "pillars",
+    "from-below",
+    "target",
+    "telegraph",
+    "burst"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A stone-spike eruption: sharp stone pillars jutting up under the target, as an original version of a common game move."
+  },
+  "timing": {
+    "duration_ms": 2300,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "ground",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.9,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A tight cluster of tall pillars stabs up around the target, the tallest in the middle, chips flying up.",
+      "side": "The silhouette sells it: a crown of sharp pillars, tallest in the middle and fanning outward, taller than the target.",
+      "top": "The ground story: glowing cracks under the target as the telegraph, then the pillars' footprint (a tight cluster), chips and dust spraying outward and the cracked crater left behind.",
+      "three_quarter": "Hero view. Sharp stone pillars burst up around the target in a ripple from the middle out, chips and dust flying, then crumble."
+    }
+  },
+  "palette": {
+    "core": "#F2E2C4",
+    "primary": "#8C6B4A",
+    "secondary": "#C4AC88",
+    "accent": "#E3A04F",
+    "shadow": "#2B221B"
+  },
+  "beats": [
+    {
+      "id": "swell",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 0.9
+      },
+      "intent": "The ground under the target swells: faint glowing cracks open, pebbles jump and a rumble rises. The warning, and the dodge window."
+    },
+    {
+      "id": "burst",
+      "phase": "release",
+      "start_ms": 500,
+      "end_ms": 580,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.85
+      },
+      "intent": "Sharp stone pillars stab up out of the ground, the tallest in the middle, with a sharp crack and a boom."
+    },
+    {
+      "id": "impale",
+      "phase": "impact",
+      "start_ms": 560,
+      "end_ms": 1250,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "The pillars hold, chips and dust spray outward and fall back, and the camera jolts."
+    },
+    {
+      "id": "crumble",
+      "phase": "dissipation",
+      "start_ms": 1200,
+      "end_ms": 2300,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The pillars crack and crumble back into the ground, the dust settles and a cracked crater is left."
+    }
+  ],
+  "layers": [
+    {
+      "id": "warning-cracks",
+      "type": "decal",
+      "beats": [
+        "swell",
+        "burst"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "accent",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": 75,
+        "opacity": 0.7,
+        "fade_in_ms": 250,
+        "pulse_hz": 4,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Thin cracks glowing a dull amber under the target as the ground swells: the telegraph.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 1.8,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "spire-crater",
+      "type": "decal",
+      "beats": [
+        "burst",
+        "impale",
+        "crumble"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 70,
+          "max": 80
+        },
+        "opacity": 0.8,
+        "fade_in_ms": 30,
+        "lifetime_ms": 2500,
+        "fade_ms": 1200,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A cracked, broken dent where the pillars burst out.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "swell-pebbles",
+      "type": "sparks",
+      "beats": [
+        "swell"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "count": 16,
+        "speed": 110,
+        "speed_spread": 0.5,
+        "gravity": 980,
+        "lifetime_ms": 320,
+        "size_px": 4,
+        "spread_deg": 40,
+        "drag": 0.1,
+        "emit_ms": 460,
+        "emit_radius_px": 60,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Pebbles hopping on the swelling ground.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "spires",
+      "type": "eruption",
+      "beats": [
+        "burst",
+        "impale",
+        "crumble"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 3,
+        "start_radius_px": 0,
+        "end_radius_px": 70,
+        "row_delay_ms": 35,
+        "growth": 0.62,
+        "height_px": {
+          "min": 160,
+          "max": 180
+        },
+        "width_px": 42,
+        "spacing_px": 62,
+        "tilt_deg": 14,
+        "jitter": 0.3,
+        "rise_ms": 70,
+        "hold_ms": 620,
+        "sink_ms": 420,
+        "debris_count": 3,
+        "debris_speed": 360,
+        "debris_size_px": 6,
+        "gravity": 980,
+        "dust": 0.45,
+        "dust_size_px": 32,
+        "dust_life_ms": 900
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Sharp faceted stone pillars stabbing up out of the ground in a crown, tallest in the middle, leaning out a little, then cracking and crumbling.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.12
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burst-flash",
+      "type": "flash",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 10,
+      "params": {
+        "scope": "local",
+        "radius_px": 50,
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A short pop of dusty light at the burst.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "burst-chips",
+      "type": "sparks",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "count": {
+          "min": 26,
+          "max": 32
+        },
+        "speed": 480,
+        "speed_spread": 0.5,
+        "gravity": 980,
+        "lifetime_ms": 900,
+        "size_px": 5,
+        "spread_deg": 70,
+        "drag": 0.12,
+        "emit_ms": 80,
+        "emit_radius_px": 40,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chips of stone flung high as the pillars burst out, raining back down.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burst-dust",
+      "type": "smoke",
+      "beats": [
+        "impale"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": 10,
+        "rise_speed": 26,
+        "size_px": {
+          "min": 40,
+          "max": 48
+        },
+        "lifetime_ms": 900,
+        "opacity": 0.3
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Dust blown out around the base of the pillars.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.4,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 0.5
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "swell-tremor",
+      "type": "camera_shake",
+      "beats": [
+        "swell"
+      ],
+      "params": {
+        "amplitude_px": 2,
+        "frequency_hz": 28,
+        "decay": 0.2
+      }
+    },
+    {
+      "id": "burst-shake",
+      "type": "camera_shake",
+      "beats": [
+        "burst",
+        "impale"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 11,
+          "max": 13
+        },
+        "frequency_hz": 20,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "swell-sound",
+      "type": "sound_cue",
+      "beats": [
+        "swell"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.45,
+        "pitch": 0.85
+      }
+    },
+    {
+      "id": "burst-crack",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.8,
+        "pitch": {
+          "min": 0.6,
+          "max": 0.7
+        }
+      }
+    },
+    {
+      "id": "burst-sound",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "burst-boom",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.6,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "crumble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "crumble"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.55,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The pillars' count, lean and heights, the chip paths and the crack pattern vary per cast. The 0.5 s telegraph and the burst time stay fixed so a target can always dodge."
+  },
+  "director_notes": "An original stone-spike eruption (a genre move). An eruption layer with a full circle and growth below 1 makes a crown: the middle pillar is the tallest (170 px, taller than a character) and each ring outward is shorter and a few ms later (row_delay_ms 35), a ripple from the centre. The telegraph is the readable part: 0.5 s of faint glowing cracks (decal cracks, add, pulsing) and hopping pebbles with a rising rumble, then a sharp crack + impact + boom with the burst. The pillars hold for 0.6 s (that's the hit window) and crumble. For a line of spikes toward the target instead, use an eruption at the caster with a narrow arc_deg and many rows."
+}

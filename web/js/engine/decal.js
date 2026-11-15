@@ -20,6 +20,7 @@ export const DECAL_SHAPES = {
   swept: { blend: "alpha", about: "dust swept into streaks fanning out along the cast direction" },
   rune_circle: { blend: "add", about: "magic circle: rings, glyph marks and a star" },
   warning_ring: { blend: "add", about: "area telegraph: faint fill, bright rim, ticks" },
+  fissures: { blend: "alpha", about: "long ground fissures splitting outward from the centre (pair with arc_deg for a frontal fan)" },
 };
 
 export const DECAL_DEFAULTS = {
@@ -34,6 +35,8 @@ export const DECAL_DEFAULTS = {
   stretch: 1,
   pulse_hz: 0,
   detail: 0.5,
+  arc_deg: 360,
+  reveal_ms: 0,
 };
 
 export function decalShape(layer) {
@@ -60,8 +63,10 @@ export function decalPlan(template, layer, seed, instance = 0) {
   const win = layerWindow(template, layer);
   const start = win?.start ?? 0;
   const lifetime = base.lifetime_ms ?? (win ? win.end - win.start : 0);
-  // Without a rotation, each cast lays the mark at a random angle.
-  const rotation = base.rotation_deg ?? rng(seedFor(seed, layer.id, instance, "rotation")).range(0, 360);
+  const arc = Math.max(1, Math.min(360, p("arc_deg")));
+  // Without a rotation, each cast lays the mark at a random angle; an arc
+  // mark faces the cast direction.
+  const rotation = base.rotation_deg ?? (arc < 360 ? 0 : rng(seedFor(seed, layer.id, instance, "rotation")).range(0, 360));
   return {
     shape: decalShape(layer),
     blend: decalBlend(layer),
@@ -78,15 +83,18 @@ export function decalPlan(template, layer, seed, instance = 0) {
     stretch: p("stretch"),
     pulse_hz: Math.max(0, p("pulse_hz")),
     detail: clamp01(p("detail")),
+    arc_deg: arc,
+    reveal_ms: Math.max(0, p("reveal_ms")),
     end_ms: start + Math.max(0, lifetime) + Math.max(0, p("fade_ms")),
   };
 }
 
-// Opacity (0-1), scale (multiplier of the full size) and rotation (degrees,
-// counter-clockwise seen from above, 0 = along the cast direction) at time t.
+// Opacity (0-1), scale (multiplier of the full size), rotation (degrees,
+// counter-clockwise seen from above, 0 = along the cast direction) and reveal
+// (0-1: how far out from the centre the mark has spread, for reveal_ms) at t.
 export function decalState(plan, t) {
   const d = t - plan.start_ms;
-  if (d < 0 || t > plan.end_ms) return { opacity: 0, scale: plan.grow_ms > 0 ? plan.start_scale : 1, rotation_deg: plan.rotation_deg };
+  if (d < 0 || t > plan.end_ms) return { opacity: 0, scale: plan.grow_ms > 0 ? plan.start_scale : 1, rotation_deg: plan.rotation_deg, reveal: d < 0 && plan.reveal_ms > 0 ? 0 : 1 };
   let o = plan.fade_in_ms > 0 ? clamp01(d / plan.fade_in_ms) : 1;
   if (t > plan.hold_until_ms) o *= plan.fade_out_ms > 0 ? clamp01(1 - (t - plan.hold_until_ms) / plan.fade_out_ms) : 0;
   if (plan.pulse_hz > 0) o *= 0.7 + 0.3 * Math.cos((d / 1000) * plan.pulse_hz * Math.PI * 2);
@@ -95,5 +103,6 @@ export function decalState(plan, t) {
     opacity: o * plan.opacity,
     scale,
     rotation_deg: plan.rotation_deg + (plan.spin_deg_per_s * d) / 1000,
+    reveal: plan.reveal_ms > 0 ? clamp01(d / plan.reveal_ms) : 1,
   };
 }

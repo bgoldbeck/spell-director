@@ -1,0 +1,509 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "earth-rockfall",
+  "name": "Rockfall",
+  "description": "A rumble overhead and a trickle of grit and pebbles warn of it, a dark patch spreads on the ground, then boulders tumble down onto the target one after another, smashing into the ground in bursts of dust and chips, and a last huge boulder crashes down on top before the rubble settles.",
+  "element": "earth",
+  "archetype": "strike",
+  "tags": [
+    "falling",
+    "boulders",
+    "from-above",
+    "area",
+    "staggered",
+    "rubble"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A rock slide: boulders tumbling down onto the target, as an original version of a common game move."
+  },
+  "timing": {
+    "duration_ms": 3000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 4.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.3,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "side",
+    "reads": {
+      "front": "The boulders fall in front of the camera onto the target, tumbling as they come, each landing in a puff of dust, the big one last.",
+      "side": "Hero view. The full fall reads: grit trickling, boulders tumbling down one after another at different heights, each landing with a burst, then the huge one.",
+      "top": "The ground story: the dark patch spreading where the rocks will land (the telegraph), boulders arriving and piling up, dust bursts and the crater left by the last one.",
+      "three_quarter": "Boulders tumbling down onto the target from above, piling up in a heap of rubble with dust rising, the last huge one landing on top."
+    }
+  },
+  "palette": {
+    "core": "#F2E2C4",
+    "primary": "#8C6B4A",
+    "secondary": "#C4AC88",
+    "accent": "#E3A04F",
+    "shadow": "#2B221B"
+  },
+  "beats": [
+    {
+      "id": "rumble",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 550,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 0.9
+      },
+      "intent": "A rumble overhead. Grit and pebbles trickle down onto the target and a dark patch spreads on the ground where the rocks will land."
+    },
+    {
+      "id": "fall",
+      "phase": "travel",
+      "start_ms": 550,
+      "end_ms": 950,
+      "intensity": {
+        "shape": "linear",
+        "from": 0.8,
+        "to": 1.0
+      },
+      "intent": "Boulders break loose and tumble down one after another, spinning as they fall."
+    },
+    {
+      "id": "topple",
+      "phase": "travel",
+      "start_ms": 870,
+      "end_ms": 960,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "A last, much bigger boulder breaks loose above and drops."
+    },
+    {
+      "id": "pound",
+      "phase": "impact",
+      "start_ms": 1250,
+      "end_ms": 1650,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.7,
+        "to": 1.0,
+        "flicker_hz": 7
+      },
+      "intent": "The boulders smash into the ground one after another: crash, crash, crash, each in a burst of dust and chips, the ground shaking with each."
+    },
+    {
+      "id": "crush",
+      "phase": "impact",
+      "start_ms": 1600,
+      "end_ms": 2000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "A last huge boulder slams down on top of the heap: a deep boom, a big dust plume and the hardest shake."
+    },
+    {
+      "id": "settle",
+      "phase": "dissipation",
+      "start_ms": 1950,
+      "end_ms": 3000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The rubble lies in a heap, the dust drifts and thins and the shaking dies away."
+    }
+  ],
+  "layers": [
+    {
+      "id": "drop-shadow",
+      "type": "decal",
+      "beats": [
+        "rumble",
+        "fall"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 95,
+        "opacity": 0.45,
+        "fade_in_ms": 250,
+        "grow_ms": 700,
+        "start_scale": 0.3,
+        "lifetime_ms": 800,
+        "fade_ms": 300,
+        "detail": 0.3
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A soft dark patch spreading on the ground where the rocks will land: the telegraph, like the shadow of what is coming.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "rubble-crater",
+      "type": "decal",
+      "beats": [
+        "crush",
+        "settle"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 85,
+          "max": 95
+        },
+        "opacity": 0.8,
+        "fade_in_ms": 40,
+        "grow_ms": 120,
+        "start_scale": 0.6,
+        "lifetime_ms": 3200,
+        "fade_ms": 1500,
+        "detail": 0.8
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A broken crater with scattered chips where the heap landed.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "falling-grit",
+      "type": "sparks",
+      "beats": [
+        "rumble"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "count": 24,
+        "speed": 30,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 1000,
+        "size_px": 3,
+        "spread_deg": 360,
+        "drag": 0.05,
+        "emit_ms": 520,
+        "emit_radius_px": 90,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Grit and pebbles trickling down from above: the warning.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "boulders",
+      "type": "sparks",
+      "beats": [
+        "fall"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": {
+          "min": 8,
+          "max": 10
+        },
+        "speed": 70,
+        "speed_spread": 0.5,
+        "gravity": 1500,
+        "lifetime_ms": 2300,
+        "size_px": {
+          "min": 18,
+          "max": 22
+        },
+        "spread_deg": 360,
+        "drag": 0.02,
+        "emit_ms": 400,
+        "emit_radius_px": 110,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Boulders tumbling down onto the target one after another, spinning as they fall, landing and lying in a heap.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "keystone",
+      "type": "sparks",
+      "beats": [
+        "topple"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": 1,
+        "speed": 0,
+        "speed_spread": 0,
+        "gravity": 1500,
+        "lifetime_ms": 2600,
+        "size_px": 44,
+        "spread_deg": 10,
+        "drag": 0.02,
+        "emit_ms": 1,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "The last huge boulder, dropping onto the heap and staying on top of it.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "impact-dust",
+      "type": "smoke",
+      "beats": [
+        "pound"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "count": 12,
+        "rise_speed": 24,
+        "size_px": {
+          "min": 36,
+          "max": 44
+        },
+        "lifetime_ms": 800,
+        "opacity": 0.32
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A burst of dust each time a boulder lands.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.4,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 0.5
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "impact-chips",
+      "type": "sparks",
+      "beats": [
+        "pound"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "count": 36,
+        "speed": 300,
+        "speed_spread": 0.5,
+        "gravity": 980,
+        "lifetime_ms": 700,
+        "size_px": 4,
+        "spread_deg": 120,
+        "drag": 0.12,
+        "emit_ms": 480,
+        "emit_radius_px": 100,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chips of stone flying off as the boulders smash down.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crush-dust",
+      "type": "smoke",
+      "beats": [
+        "crush",
+        "settle"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "count": 14,
+        "rise_speed": 32,
+        "size_px": {
+          "min": 60,
+          "max": 70
+        },
+        "lifetime_ms": 1300,
+        "opacity": 0.36
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A tall dust plume thrown up by the last boulder, drifting as it settles.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.4,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.5
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "pound-shake",
+      "type": "camera_shake",
+      "beats": [
+        "pound"
+      ],
+      "params": {
+        "amplitude_px": 7,
+        "frequency_hz": 16,
+        "decay": 0.3
+      }
+    },
+    {
+      "id": "crush-shake",
+      "type": "camera_shake",
+      "beats": [
+        "crush"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 15,
+          "max": 18
+        },
+        "frequency_hz": 14,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "rumble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "rumble",
+        "fall"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.55,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "pound-sound",
+      "type": "sound_cue",
+      "beats": [
+        "pound"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.75,
+        "pitch": {
+          "min": 0.85,
+          "max": 1.05
+        },
+        "repeat_ms": 110
+      }
+    },
+    {
+      "id": "crush-sound",
+      "type": "sound_cue",
+      "beats": [
+        "crush"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.7,
+          "max": 0.8
+        }
+      }
+    },
+    {
+      "id": "crush-crash",
+      "type": "sound_cue",
+      "beats": [
+        "crush"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.85,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "settle-sound",
+      "type": "sound_cue",
+      "beats": [
+        "settle"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.25,
+        "pitch": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Where each boulder starts, how it tumbles, its size and where it lands vary per cast. The warning time, the first landing and the last big boulder stay fixed so the danger is fair to read."
+  },
+  "director_notes": "An original rock slide from above (a genre move). Built from rock-look sparks: boulders are sparks with look rock and a big size_px, born over the target area in the sky (anchor sky, emit_radius_px) and dropped by gravity, so they tumble, land and lie as rubble. Timing: 0.55 s of warning (rumble, grit trickling down, a dark patch spreading on the ground as the telegraph), then boulders arrive in a staggered stream for about 0.4 s (emit_ms) so the crashes come one after another, then a beat later one huge boulder lands on top for the climax with a boom, the biggest shake and a crater. Sound: rumble -> crash every 110 ms -> boom + crash -> quiet rumble. The fall height is the template's space.scale (4 character heights); raise it for a longer, scarier fall."
+}

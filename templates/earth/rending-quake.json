@@ -1,0 +1,561 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "earth-rending-quake",
+  "name": "Rending Quake",
+  "description": "The caster raises a foot while the ground trembles, then stomps: fissures race out in every direction, the ground around them heaves up in broken slabs ring after ring, pebbles bounce across the whole area and the camera shakes hard and long before the slabs settle back and the cracks are left behind.",
+  "element": "earth",
+  "archetype": "nova",
+  "tags": [
+    "quake",
+    "area",
+    "around-caster",
+    "ground",
+    "slabs",
+    "sustained-shake"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "An earthquake: a whole-area shake with fissures, as an original version of a common game move."
+  },
+  "timing": {
+    "duration_ms": 3000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster the ground heaves on every side: slabs tilt up in rings that run away from the camera and toward it, dust rolls and pebbles bounce.",
+      "side": "Rings of broken slabs rise on both sides of the caster, the far rings a little later than the near ones, with pebbles hopping across the ground between them.",
+      "top": "The ground story: fissures racing out in every direction from the caster, rings of churned dust spreading, slabs popping up ring by ring, then the cracked ground left behind.",
+      "three_quarter": "Hero view. The whole area around the caster heaves: rings of slabs rising and settling, fissures, dust and bouncing pebbles, all under a long heavy shake."
+    }
+  },
+  "palette": {
+    "core": "#F2E2C4",
+    "primary": "#8C6B4A",
+    "secondary": "#C4AC88",
+    "accent": "#E3A04F",
+    "shadow": "#2B221B"
+  },
+  "beats": [
+    {
+      "id": "brace",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 450,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.15,
+        "to": 0.85
+      },
+      "intent": "The caster raises a foot. A low rumble builds, the ground starts to tremble and a few pebbles hop around their feet."
+    },
+    {
+      "id": "stomp",
+      "phase": "release",
+      "start_ms": 450,
+      "end_ms": 520,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "The foot stomps down: a hard thud and boom, a pop of dust and a crater under the caster."
+    },
+    {
+      "id": "rupture",
+      "phase": "travel",
+      "start_ms": 500,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.6,
+        "to": 1.0
+      },
+      "intent": "The ground tears open: fissures race outward in every direction, a ring of dust rolls out and the first ring of slabs heaves up, then the next, and the next."
+    },
+    {
+      "id": "heave",
+      "phase": "impact",
+      "start_ms": 950,
+      "end_ms": 1950,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.7,
+        "to": 1.0,
+        "flicker_hz": 6
+      },
+      "intent": "The whole area keeps rolling: slabs tilted up all around, an aftershock rolls out, pebbles bounce across the ground and the camera shakes hard the whole time."
+    },
+    {
+      "id": "settle",
+      "phase": "dissipation",
+      "start_ms": 1900,
+      "end_ms": 3000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The shaking dies away, the slabs sink back into the ground, the dust drifts and the cracked ground is left behind."
+    }
+  ],
+  "layers": [
+    {
+      "id": "quake-fissures",
+      "type": "decal",
+      "beats": [
+        "rupture",
+        "heave",
+        "settle"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "fissures",
+        "radius_px": 380,
+        "reveal_ms": 480,
+        "opacity": 0.85,
+        "fade_in_ms": 30,
+        "lifetime_ms": 3600,
+        "fade_ms": 1500,
+        "detail": 0.9
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Fissures splitting the ground in every direction from the caster, spreading out fast and staying open.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "stomp-crater",
+      "type": "decal",
+      "beats": [
+        "stomp",
+        "rupture",
+        "heave",
+        "settle"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "crater",
+        "radius_px": 55,
+        "opacity": 0.75,
+        "fade_in_ms": 30,
+        "grow_ms": 120,
+        "start_scale": 0.5,
+        "lifetime_ms": 3500,
+        "fade_ms": 1500,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A shallow dent where the foot came down.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "rupture-ring",
+      "type": "ring",
+      "beats": [
+        "rupture"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 360,
+        "thickness_px": 22,
+        "softness": 0.9,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A ring of churned dust rolling outward over the ground ahead of the heaving slabs.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "distortion": 0.4,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "aftershock-ring",
+      "type": "ring",
+      "beats": [
+        "heave"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 60,
+        "end_radius_px": 380,
+        "thickness_px": 14,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A second, fainter shock rolling out while the ground is still heaving.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "distortion": 0.3,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "heaving-ground",
+      "type": "eruption",
+      "beats": [
+        "rupture",
+        "heave",
+        "settle"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "shape": "slabs",
+        "arc_deg": 360,
+        "rows": 4,
+        "start_radius_px": 80,
+        "end_radius_px": 320,
+        "row_delay_ms": 120,
+        "delay_growth": 1.0,
+        "growth": 1.15,
+        "height_px": {
+          "min": 30,
+          "max": 36
+        },
+        "width_px": 38,
+        "spacing_px": 72,
+        "tilt_deg": 32,
+        "jitter": 0.55,
+        "rise_ms": 150,
+        "hold_ms": 800,
+        "sink_ms": 500,
+        "debris_count": 2,
+        "debris_speed": 200,
+        "debris_size_px": 5,
+        "gravity": 980,
+        "dust": 0.4,
+        "dust_size_px": 36,
+        "dust_life_ms": 1100
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Broken plates of ground shoved up on edge in rings around the caster, tilted outward, heaving up slowly and sinking back.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.12
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "brace-pebbles",
+      "type": "sparks",
+      "beats": [
+        "brace"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": 14,
+        "speed": 90,
+        "speed_spread": 0.5,
+        "gravity": 980,
+        "lifetime_ms": 350,
+        "size_px": 4,
+        "spread_deg": 40,
+        "drag": 0.1,
+        "emit_ms": 420,
+        "emit_radius_px": 70,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Pebbles hopping on the trembling ground around the caster's feet.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "stomp-dust",
+      "type": "smoke",
+      "beats": [
+        "stomp",
+        "rupture"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "count": 10,
+        "rise_speed": 18,
+        "size_px": {
+          "min": 40,
+          "max": 48
+        },
+        "lifetime_ms": 900,
+        "opacity": 0.3
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A low dust cloud punched out from under the stomp.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.4,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 0.5
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "stomp-flash",
+      "type": "flash",
+      "beats": [
+        "stomp"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 12,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A short warm pop of dust light at the stomp.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bouncing-pebbles",
+      "type": "sparks",
+      "beats": [
+        "heave"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "count": {
+          "min": 60,
+          "max": 80
+        },
+        "speed": 170,
+        "speed_spread": 0.6,
+        "gravity": 980,
+        "lifetime_ms": 600,
+        "size_px": 5,
+        "spread_deg": 50,
+        "drag": 0.1,
+        "emit_ms": 950,
+        "emit_radius_px": 340,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Pebbles and clods jolted into the air all over the area, landing and jumping again while the ground rolls.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "quake-shake",
+      "type": "camera_shake",
+      "beats": [
+        "rupture",
+        "heave"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 9,
+          "max": 11
+        },
+        "frequency_hz": 14,
+        "decay": 0.2
+      }
+    },
+    {
+      "id": "stomp-shake",
+      "type": "camera_shake",
+      "beats": [
+        "stomp"
+      ],
+      "params": {
+        "amplitude_px": 14,
+        "frequency_hz": 22,
+        "decay": 0.5
+      }
+    },
+    {
+      "id": "settle-shake",
+      "type": "camera_shake",
+      "beats": [
+        "settle"
+      ],
+      "params": {
+        "amplitude_px": 3,
+        "frequency_hz": 10,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "brace-sound",
+      "type": "sound_cue",
+      "beats": [
+        "brace"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.4,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "stomp-sound",
+      "type": "sound_cue",
+      "beats": [
+        "stomp"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.75,
+          "max": 0.85
+        }
+      }
+    },
+    {
+      "id": "stomp-boom",
+      "type": "sound_cue",
+      "beats": [
+        "stomp"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.85,
+        "pitch": {
+          "min": 0.75,
+          "max": 0.85
+        }
+      }
+    },
+    {
+      "id": "rupture-sound",
+      "type": "sound_cue",
+      "beats": [
+        "rupture"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.7,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.95
+        },
+        "repeat_ms": 120
+      }
+    },
+    {
+      "id": "quake-sound",
+      "type": "sound_cue",
+      "beats": [
+        "rupture",
+        "heave"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.9,
+        "pitch": 0.65
+      }
+    },
+    {
+      "id": "settle-sound",
+      "type": "sound_cue",
+      "beats": [
+        "settle"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.3,
+        "pitch": 0.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Slab placement, tilt and size, the fissure pattern and pebble hops vary per cast. The stomp time and the ring rhythm stay fixed so the hit lands at the same moment every cast."
+  },
+  "director_notes": "An original area quake around the caster (a genre move, nothing copied). Timing: a 0.45 s brace with a building rumble, faint trembling and a few hopping pebbles; a sharp stomp (impact + boom, dust pop, crater); then a rupture: fissures spread out in a full circle (decal fissures, reveal_ms) with a ring of dust, and an eruption layer with shape slabs heaves the ground up in four rings, slower (rise_ms 150) and longer-held than spikes so it reads as rolling ground, not attack spikes; an aftershock ring and pebbles bouncing over the whole area (sparks look rock with emit_radius_px) carry the long heave under a 6 Hz flickering shake; the slabs sink back and the cracks stay. Sound: rumble -> impact + boom -> crash -> long loud rumble -> quiet rumble. The caster is the centre (destination caster): every target standing in the circle is hit."
+}

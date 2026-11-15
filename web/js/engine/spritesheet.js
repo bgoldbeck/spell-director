@@ -133,10 +133,15 @@ export function buildDecals(template, seed, plan) {
       rotation_deg: r1(d.rotation_deg),
       spin_deg_per_s: r1(d.spin_deg_per_s),
       pulse_hz: r3(d.pulse_hz),
+      // A sector facing the cast direction (360 = the whole mark), and how
+      // long the mark takes to spread out from its centre (0 = appears whole).
+      arc_deg: r1(d.arc_deg),
+      reveal_ms: r1(d.reveal_ms),
       curves: {
         opacity: states.map((x) => r3(x.opacity)),
         scale: states.map((x) => r3(x.scale)),
         rotation_deg: states.map((x) => r1(x.rotation_deg)),
+        reveal: states.map((x) => r3(x.reveal)),
       },
     };
   });
@@ -228,7 +233,7 @@ export function buildTracks(template, seed, plan, cueLibrary = { cues: {} }) {
 // layer first, then its support, then particles, then decals, then the
 // finishing tracks (lights, screen flashes, shake, sound) and the timing pass.
 export const BUILD_STAGES = [
-  { stage: "core", types: ["bolt", "beam", "orb", "vortex"], about: "the hero shape that reads as the spell on its own" },
+  { stage: "core", types: ["bolt", "beam", "orb", "eruption", "vortex"], about: "the hero shape that reads as the spell on its own" },
   { stage: "secondary", types: ["glow", "crackle", "ring", "flash"], about: "glows, rings and crackle that support the core" },
   { stage: "particles", types: ["sparks", "smoke"], about: "sparks, spray and smoke" },
   { stage: "decals", types: ["decal"], about: "marks on the ground" },
@@ -308,7 +313,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       end_ms: sheet?.end_ms ?? null,
       beats: l.beats || [],
       beat_window_ms: win ? [win.start, win.end] : null,
-      blend: l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" ? "alpha" : "add"),
+      blend: l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" || l.type === "eruption" ? "alpha" : "add"),
       color_slot: l.color || "primary",
       colors: colorHexes(template, l.color),
       z: l.z ?? 0,
@@ -319,7 +324,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       params: resolveParams(l.params, seed, `${l.id}#0`),
       keyframes: l.keyframes || [],
       empty: !visible[l.id],
-      ...shaderInfo(l, l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" ? "alpha" : "add")),
+      ...shaderInfo(l, l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" || l.type === "eruption" ? "alpha" : "add")),
     };
   });
   const tracksOut = tracks || { screen_flashes: [], camera_shake: [], lights: [], sounds: [] };
@@ -536,6 +541,7 @@ export function guideMarkdown(m, { files } = {}) {
       "- **Rotation** is counter-clockwise as seen from above, starting from the cast direction. Without a fixed rotation in the template, each seed lays the mark at a different angle.",
       "- **Timing**: it fades in from its start, stays until *full until*, then fades out. A mark that outlives the spell is meant to stay on the ground: keep the projector alive until its end time. `pulse_hz` (warning rings) makes its opacity throb.",
       "- **Curves** in the JSON (`decals[].curves`) give opacity (0–1), scale (× full size) and rotation (degrees) for every spell frame, already including fades, growth, spin and pulse. Read them, or rebuild them from the timing fields.",
+      "- **Arc and reveal**: a decal with `arc_deg` under 360 is only the sector facing the cast direction (already cut out in the texture). One with `reveal_ms` spreads out from its centre, like cracks running across the ground: the `reveal` curve (0–1) is how far out it has spread, as a fraction of the texture's half-width. In a shader, hide pixels whose distance from the texture centre (0 at the centre, 1 at the edge's midpoint) is beyond `reveal`, with a soft edge.",
       "- **Per target**: a decal marked `per_target` repeats on every chain target, delayed by each hop.",
       "- **Blend**: `alpha` decals paint the ground (scorch darkens it, puddles tint it). `add` decals are light on the ground (glowing cracks, rune circles, warning rings): use emission, not albedo.",
       "",

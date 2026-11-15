@@ -1,5 +1,9 @@
 {
   "templates": [
+    "earth/ground-pound.json",
+    "earth/rending-quake.json",
+    "earth/rockfall.json",
+    "earth/stone-spires.json",
     "energy/annihilator-beam.json",
     "fire/dragon-breath.json",
     "fire/ember-volley.json",
