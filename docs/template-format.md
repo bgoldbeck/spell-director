@@ -27,11 +27,39 @@ A **template** is what the director writes. It describes a spell effect well eno
 | `source` | no | `handwritten`, `director_text` (with `prompt`), or `director_gif` (with `reference`). |
 | `timing` | yes | `duration_ms`, optional `fps_hint`, `loop`. |
 | `space` | yes | Origin, destination, travel mode, footprint, chain targets. |
+| `views` | yes | `hero` view plus `reads` for `front`, `side`, `top`, `three_quarter`. |
 | `palette` | yes | `core` and `primary` required; `secondary`, `accent`, `shadow` optional. |
 | `beats` | yes | The timeline. |
 | `layers` | yes | What gets drawn. |
 | `variation` | no | Notes on what should differ between casts. |
 | `director_notes` | no | Why the director made the choices it did. Useful when revising. |
+
+## Views
+
+Every template is authored in 3D and must read from four cameras: front, side, top and 3/4 (see [vocabulary](vocabulary.md#7-camera-views)). The preview renders all four side by side.
+
+```json
+"views": {
+  "hero": "three_quarter",
+  "reads": {
+    "front": "Tall vertical bolt, branches spreading left and right.",
+    "side": "Same bolt edge-on; checks it has depth.",
+    "top": "Bolt is a point; the ring, radial sparks and scorch tell the story.",
+    "three_quarter": "Bolt reads tall and the ring reads as an ellipse."
+  }
+}
+```
+
+`reads` is written for people and for the GIF breakdown: it's the checklist the preview is judged against in each view.
+
+Layers say how they sit in 3D with `plane`. If omitted, the default is:
+
+| Plane | Default for |
+|---|---|
+| `ground` | `ring`, `decal` |
+| `billboard` | `glow`, `orb`, `flash`, `light` |
+| `volume` | `bolt`, `beam`, `crackle`, `sparks`, `smoke` |
+| `vertical` | none by default; use for walls and pillars |
 
 ## Beats
 

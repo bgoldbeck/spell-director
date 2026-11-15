@@ -107,7 +107,34 @@ Space is described the same way in a front view and an overhead view, so a rende
 | `distribution` | How sub-elements spread inside the footprint: `even`, `random`, `center_weighted`, `edge_weighted`, `spiral`. |
 | `scale` | Size in world units (1 unit ≈ a character's height). |
 
-## 7. Lightning-specific terms
+## 7. Camera views
+
+Every effect must read from four standard cameras. Templates are authored in 3D so all four render from the same data. The director writes down what each view should show (`views.reads`) and which one the effect is designed around (`views.hero`).
+
+| View | Camera | Best for judging | Typical game |
+|---|---|---|---|
+| `front` | Level, looking along the cast direction (from behind or in front of the caster). | Height, silhouette, flashes, anything vertical (sky strikes, pillars). | Fighting games, over-the-shoulder, cutscenes |
+| `side` | Level, 90° to the cast direction. | Travel: projectile arcs, beam length, timing of hops left to right. | Side-scrollers, platformers |
+| `top` | Straight down. | Footprint and distribution: cones, rings, chain paths, area coverage, the "arc of how the spell moves". | Top-down, RTS, tactics, MOBA-style |
+| `three_quarter` | 45° around, about 35° down. | Both height and footprint at once. Usually the hero view. | Isometric RPGs, ARPGs, most 3D action |
+
+**How layers read per view** (`plane` on a layer):
+
+| Plane | Front / side | Top | 3/4 |
+|---|---|---|---|
+| `ground` (rings, decals, ground crackle) | thin line, often nearly invisible | full shape | ellipse |
+| `vertical` (walls, pillars) | full shape | thin line | foreshortened |
+| `billboard` (glows, orbs, flashes) | always faces camera | always faces camera | always faces camera |
+| `volume` (bolts, beams, sparks, smoke) | true 3D projection | true 3D projection | true 3D projection |
+
+**Rules of thumb**
+
+- A vertical strike is a dot from the top view. Give it a ground story (ring, scorch, radial sparks) or it disappears in top-down games.
+- A beam aimed at the camera collapses to a circle in front view. Make the source and the impact readable on their own.
+- Bolts must be generated in 3D, not drawn flat, or they look like paper cutouts from the side.
+- When reading a GIF, first identify which view it was captured from, then infer the other three.
+
+## 8. Lightning-specific terms
 
 | Term | Field | Meaning |
 |---|---|---|
@@ -120,12 +147,13 @@ Space is described the same way in a front view and an overhead view, so a rende
 | static | `crackle` | Tiny crawling arcs, often during anticipation. |
 | afterimage | `bolt.afterimage_ms` | Path lingers as a fading ghost. |
 
-## 8. How the director uses this
+## 9. How the director uses this
 
 1. Hear the request (text) or read a GIF breakdown.
-2. Pick an archetype: `strike`, `projectile`, `chain`, `beam`, `aura`, `nova`.
+2. Pick an archetype: `strike`, `projectile`, `chain`, `beam`, `aura`, `nova`, and the hero view (ask what camera the game uses if unknown).
 3. Propose the phases with durations, and ask at most 2–3 choices in plain words, for example:
    *"Should it have a long charge-up (heavier, 0.4 s) or hit instantly (snappier)?"*
    *"One clean bolt, or a wild tree of forks?"*
 4. Choose palette and layers.
-5. Write the template, with ranges and variation knobs so every cast looks a little different.
+5. Describe what the effect should look like in each of the four views.
+6. Write the template, with ranges and variation knobs so every cast looks a little different.

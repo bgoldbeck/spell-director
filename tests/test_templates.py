@@ -76,3 +76,10 @@ def test_rejects_unknown_schema_version(base):
     doc["schema"] = "spelldirector.template/9.9.9"
     errors, _ = check(doc)
     assert errors
+
+
+def test_requires_all_four_views(base):
+    doc = copy.deepcopy(base)
+    del doc["views"]["reads"]["top"]
+    errors, _ = check(doc)
+    assert any("top" in e for e in errors)
