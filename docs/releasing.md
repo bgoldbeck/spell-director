@@ -16,12 +16,14 @@ Each PR that changes behavior adds a line under `## [Unreleased]` in [`CHANGELOG
 
 1. On a branch: set the new version in `VERSION`, and rename `## [Unreleased]` in `CHANGELOG.md` to `## [X.Y.Z] - YYYY-MM-DD`, with a fresh empty `## [Unreleased]` above it.
 2. Run the checks in [CLAUDE.md](../CLAUDE.md) (a test checks that `VERSION` and the changelog agree), then PR and merge into `main`.
-3. Tag the merge commit on `main` and push the tag:
+3. Start the release, either way:
+   - **From GitHub:** Actions tab → *Release* → *Run workflow* on `main`. It creates the `vX.Y.Z` tag from `VERSION` on the latest `main` commit.
+   - **From a terminal:** tag the merge commit and push the tag:
 
-   ```bash
-   git checkout main && git pull
-   git tag vX.Y.Z
-   git push origin vX.Y.Z
-   ```
+     ```bash
+     git checkout main && git pull
+     git tag vX.Y.Z
+     git push origin vX.Y.Z
+     ```
 
 4. The [release workflow](../.github/workflows/release.yml) checks that the tag matches `VERSION` and creates the GitHub Release, with that version's changelog section as the notes. To preview the notes: `python tools/release_notes.py`.
