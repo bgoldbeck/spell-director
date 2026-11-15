@@ -10,6 +10,10 @@ SpellDirector exports a spell as sprite sheets plus an assembly guide, so it can
 
 Options: views (default all four), cell size in px (default 192), frame rate (default the template's `fps_hint`, else 30), seed, whether to make a sheet per layer, and whether to bake the bloom glow in (default on; `--no-bloom`).
 
+## Reference, not literal instructions
+
+The sheets show timing, layering, composition and palette. They are not the effect to ship, and an AI model should not copy them pixel for pixel. Each layer's **shader intent** (from the template, see [vocabulary §11](vocabulary.md#11-shader-intent-the-magic)) says how to build the look with shaders and particles; the guide turns it into short Unity and Godot recipes, and the JSON carries it as `layers[].shader` and `layers[].engine_hints`, with the same notice in `how_to_use`. Use the frames to check the rebuild, or directly only for prototypes, flipbook-style games and texture sources.
+
 ## What you get
 
 | File | What it is |

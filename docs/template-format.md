@@ -84,6 +84,24 @@ Beats may overlap (an impact can start while the release is still fading). Every
 - `attach_to`: follow another layer (a glow wrapping a bolt).
 - `keyframes`: override a numeric param at a moment in time. Values between keyframes are eased.
 
+## Shader intent
+
+Each drawn layer may have a `shader` object: what it's made of and how its surface behaves, for rebuilding it with shaders and particles in an engine. It never changes the viewer's frames. Terms and values: [vocabulary §11](vocabulary.md#11-shader-intent-the-magic).
+
+```json
+"shader": {
+  "material": "ionized",
+  "look": "Torn-open air: a white-hot core with crackling blue creases that crawl along the bolt.",
+  "technique": "ribbon",
+  "noise": { "type": "ridged", "scale": 6, "speed": 4, "contrast": 0.8 },
+  "flow": { "direction": "along_path", "speed": 8 },
+  "emissive": { "hdr": 6, "falloff": "exponential", "core_ratio": 0.3 },
+  "lighting": "emits_light"
+}
+```
+
+Fields: `material`, `look`, `technique`, `noise` (`type`, `scale`, `speed`, `contrast`), `flow` (`direction`, `speed`), `distortion`, `fresnel`, `dissolve` (`pattern`, `edge_width`, `edge_color`), `emissive` (`hdr`, `falloff`, `core_ratio`), `lighting`, `notes`. All optional. `sound_cue` and `camera_shake` layers take none.
+
 ## Known params by layer type
 
 Unknown params are allowed (the validator warns) so the director can experiment, but renderers only promise to support these.
@@ -149,6 +167,7 @@ Decal beats set when it appears (the start of its first beat) and, without `life
 - keyframes land inside the layer's active beats;
 - every range has `min <= max`;
 - unknown layer params are reported as warnings;
+- a drawn layer without a `shader` intent is reported as a warning (an engine rebuild would have to guess its look), and so is a `shader` on a `sound_cue` or `camera_shake`;
 - a `sound_cue` whose `cue` isn't in the cue library is reported as a warning (the viewer captions it but plays nothing).
 
 ## Versioning

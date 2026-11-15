@@ -432,7 +432,9 @@ function buildTemplateUI() {
   tpl.layers.forEach((l) => {
     const li = document.createElement("li");
     const id = `layer-${l.id}`;
-    li.innerHTML = `<label for="${id}"><input id="${id}" type="checkbox" checked> ${l.id} <small>${l.type}</small></label>`;
+    const mat = l.shader?.material ? ` · ${l.shader.material}` : "";
+    li.innerHTML = `<label for="${id}"><input id="${id}" type="checkbox" checked> ${l.id} <small>${l.type}${mat}</small></label>`;
+    if (l.shader?.look) li.title = `Shader intent: ${l.shader.look}`;
     li.querySelector("input").onchange = (e) => {
       const hide = !e.target.checked;
       if (hide) state.hidden.add(l.id);

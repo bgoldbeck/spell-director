@@ -110,6 +110,18 @@ Know what the viewer draws today (see the known issues in [DESIGN.md](DESIGN.md#
 
 Set `z` back to front: shadow/smoke/decal → glow → bolt/beam → sparks → flash. Decals always draw on the ground under everything else; their `z` only orders them among themselves (a glowing crack decal above its scorch). Use only params listed in the template format; unknown params produce warnings and the renderer may ignore them.
 
+### Shader intent (every drawn layer)
+
+The rendered frames are a timing and composition reference; the magic in a game comes from shaders. So give every drawn layer a `shader` object (vocabulary §11, template format "Shader intent"). Skip it only for `sound_cue` and `camera_shake`.
+
+1. **Material first.** Pick the one word for what the layer is made of: lightning is `ionized`, a charged ball `plasma`, a water jet `liquid`, spray `foamy`, a scorch `ashen`, a glow `ethereal`, a rune `arcane`. Turn the user's feel words into it ("wet", "glassy", "molten", "smoky").
+2. **Technique** from the layer type: `bolt`/`beam`/`crackle` → `ribbon`; `sparks`/`smoke` → `particles`; `decal` → `decal`; `glow`/`orb`/`ring`/`flash` → `procedural`; `light` → `light`.
+3. **Surface**: a noise type that matches the material (ridged for electricity, fBm for plasma and fire, Voronoi for foam, ice and cracks, curl for smoke, streaks for jets), a flow direction that matches the motion (`along_path` for bolts and beams, `outward` for rings and splashes, `upward` for smoke and fire), and only the extras that sell it: `distortion` for water, heat and shockwaves, `fresnel` for orbs, water and shields, `dissolve` for anything that should erode rather than fade.
+4. **Emissive** from the weight words: `hdr` 2–3 for a glow, 4–6 for a strike, 7–10 for a boss flash. Lit materials (`wet`, `smoky`, `stone`, `dusty`) get `lighting: lit` and little or no emission.
+5. **`look`**: one plain sentence a person could paint from. This is where the feel words go.
+
+Keep the same material and noise family across a spell's layers so they read as one substance, and vary scale and HDR between core and support layers.
+
 ### Sizes and weight
 
 Sizes are in pixels at 100 px per world unit (1 unit = a character's height).
