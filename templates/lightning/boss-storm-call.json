@@ -420,7 +420,12 @@
         "strike"
       ],
       "params": {
-        "cue": "crack"
+        "cue": "crack",
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        },
+        "gain": 1
       }
     },
     {
@@ -430,7 +435,47 @@
         "barrage"
       ],
       "params": {
-        "cue": "boom"
+        "cue": "boom",
+        "gain": 1
+      }
+    },
+    {
+      "id": "warning-buzz",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "buzz",
+        "gain": 0.35
+      }
+    },
+    {
+      "id": "restrike-sound",
+      "type": "sound_cue",
+      "beats": [
+        "barrage"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.6,
+        "repeat_ms": 130,
+        "offset_ms": 40,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.15
+        }
+      }
+    },
+    {
+      "id": "rumble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "aftermath"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.7
       }
     }
   ],

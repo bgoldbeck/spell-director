@@ -102,7 +102,7 @@ Unknown params are allowed (the validator warns) so the director can experiment,
 | `smoke` | `count`, `rise_speed`, `size_px`, `lifetime_ms`, `opacity` |
 | `light` | `radius`, `energy` |
 | `camera_shake` | `amplitude_px`, `frequency_hz`, `decay` (0–1) |
-| `sound_cue` | `cue` (`charge`, `crack`, `boom`, `sizzle`, `hum`) |
+| `sound_cue` | `cue` (one of the cues in [`web/sounds/cues.json`](../web/sounds/cues.json): `charge`, `hum`, `buzz`, `crackle`, `sizzle`, `zap`, `crack`, `boom`, `rumble`, `impact`, `crash`, `shatter`, `ignite`, `fire`, `whoosh`, `wind`, `shimmer`), `gain` (0–1, default 0.8), `pitch` (playback-rate multiplier 0.5–2, default 1), `offset_ms` (delay after the beat starts), `duration_ms` (override length), `repeat_ms` (one-shots: retrigger every N ms inside each beat) |
 
 ## Validation rules beyond the schema
 
@@ -113,7 +113,8 @@ Unknown params are allowed (the validator warns) so the director can experiment,
 - layers only reference beats and layers that exist;
 - keyframes land inside the layer's active beats;
 - every range has `min <= max`;
-- unknown layer params are reported as warnings.
+- unknown layer params are reported as warnings;
+- a `sound_cue` whose `cue` isn't in the cue library is reported as a warning (the viewer captions it but plays nothing).
 
 ## Versioning
 

@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { OrbitControls } from "../vendor/OrbitControls.js";
 import { Effect } from "./engine/effect.js";
+import { cuesAt, eventsBetween, soundEvents } from "./engine/sound.js";
+import { SoundPlayer } from "./audio.js";
 import { VIEWS, VIEW_LABELS, viewCamera } from "./engine/stage.js";
 import { beatsAt, phaseColor } from "./engine/timeline.js";
 import { ALL, groupByType, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
@@ -13,7 +15,7 @@ const ui = {
   replay: $("replay"), play: $("play"), speed: $("speed"), loop: $("loop"), seed: $("seed"), reroll: $("reroll"),
   scrubber: $("scrubber"), bands: $("bands"), beats: $("beats"), description: $("description"),
   palette: $("palette"), notes: $("notes"), layers: $("layers"), focus: $("focus"), file: $("file"),
-  flash: $("flash"), dim: $("dim"), quadLabels: $("quad-labels"), viewRead: $("view-read"), error: $("error"),
+  mute: $("mute"), flash: $("flash"), dim: $("dim"), quadLabels: $("quad-labels"), viewRead: $("view-read"), error: $("error"),
 };
 
 const state = {
@@ -30,6 +32,55 @@ const state = {
   last: performance.now(),
   hidden: new Set(),
 };
+
+// ------------------------------------------------------------ sound
+
+const sound = {
+  player: new SoundPlayer(),
+  library: { cues: {} },
+  events: [],
+  at: 0, // the time playback last reached; anything else is a jump
+  playing: false,
+};
+
+function soundPref() {
+  const q = new URLSearchParams(location.search).get("sound");
+  if (q === "off" || q === "0") return true;
+  if (q === "on" || q === "1") return false;
+  try {
+    return localStorage.getItem("spelldirector.muted") === "1";
+  } catch {
+    return false;
+  }
+}
+
+function setMuted(muted, save = true) {
+  sound.player.setMuted(muted);
+  ui.mute.textContent = muted ? "Sound off" : "Sound on";
+  ui.mute.classList.toggle("active", !muted);
+  ui.mute.setAttribute("aria-pressed", String(!muted));
+  if (save) {
+    try {
+      localStorage.setItem("spelldirector.muted", muted ? "1" : "0");
+    } catch {
+      /* private mode: just don't remember */
+    }
+  }
+}
+
+function rebuildSound() {
+  sound.player.stopAll();
+  sound.events = state.template ? soundEvents(state.template, state.seed, sound.library) : [];
+}
+
+// Play the cues whose start time playback crossed this frame.
+function playSound(from, to, wrapped) {
+  const d = duration();
+  const due = wrapped
+    ? eventsBetween(sound.events, from, d + 1).concat(eventsBetween(sound.events, 0, to))
+    : eventsBetween(sound.events, from, to);
+  sound.player.play(due, { seed: state.seed, speed: state.speed });
+}
 
 // ------------------------------------------------------------ three setup
 
@@ -176,6 +227,7 @@ function loadEffect() {
   scene.add(state.effect.group);
   rebuildProps(state.effect.stage);
   setupCameras();
+  rebuildSound();
 }
 
 function selectTemplate(tpl) {
@@ -356,7 +408,7 @@ function updateOverlay() {
     .join(" &nbsp;/&nbsp; ");
   const latest = active[active.length - 1];
   ui.beatIntent.textContent = latest?.intent || "";
-  ui.cues.textContent = state.effect.cues.length ? state.effect.cues.map((c) => `♪ ${c}`).join("  ") : "";
+  ui.cues.textContent = cuesAt(sound.events, t).map((c) => `♪ ${c}`).join("  ");
   ui.time.textContent = `${Math.round(t)} / ${duration()} ms`;
   ui.scrubber.value = String(Math.round(t));
   [...ui.beats.children].forEach((btn, i) => {
@@ -380,18 +432,27 @@ function frame(now) {
   const dt = Math.min(100, now - state.last);
   state.last = now;
   if (state.template) {
+    // A jump (scrub, beat button, replay, new spell) or a pause cuts the sound.
+    if (state.t !== sound.at || (sound.playing && !state.playing)) sound.player.stopAll();
     if (state.playing) {
+      const from = state.t;
+      let wrapped = false;
       state.t += dt * state.speed;
       const d = duration();
       if (state.t > d) {
-        if (ui.loop.checked) state.t = state.t % d;
-        else {
+        if (ui.loop.checked) {
+          state.t = state.t % d;
+          wrapped = true;
+        } else {
           state.t = d;
           state.playing = false;
           ui.play.textContent = "Play";
         }
       }
+      playSound(from, state.t, wrapped);
     }
+    sound.at = state.t;
+    sound.playing = state.playing;
     state.effect.update(state.t);
     controls?.update();
     render();
@@ -412,6 +473,12 @@ ui.play.onclick = () => {
   state.playing = !state.playing;
   ui.play.textContent = state.playing ? "Pause" : "Play";
 };
+ui.mute.onclick = () => {
+  sound.player.unlock();
+  setMuted(!sound.player.muted);
+};
+// Browsers start audio only after a user gesture.
+for (const ev of ["pointerdown", "keydown"]) window.addEventListener(ev, () => sound.player.unlock(), { capture: true });
 ui.speed.onchange = () => (state.speed = Number(ui.speed.value));
 ui.scrubber.oninput = () => {
   state.t = Number(ui.scrubber.value);
@@ -445,7 +512,8 @@ window.addEventListener("keydown", (e) => {
   else if (e.key === " ") {
     e.preventDefault();
     ui.play.click();
-  } else if (e.key === "[") ui.prevSpell.click();
+  } else if (e.key === "m" || e.key === "M") ui.mute.click();
+  else if (e.key === "[") ui.prevSpell.click();
   else if (e.key === "]") ui.nextSpell.click();
   else if (["1", "2", "3", "4", "5"].includes(e.key)) {
     document.querySelectorAll(".view")[Number(e.key) - 1].click();
@@ -477,7 +545,21 @@ function showError(msg) {
 
 // ------------------------------------------------------------ boot
 
+async function loadCueLibrary() {
+  try {
+    const res = await fetch("sounds/cues.json");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn("SpellDirector: no sound cue library, cues show as captions only", err);
+    return { cues: {} };
+  }
+}
+
 async function boot() {
+  setMuted(soundPref(), false);
+  sound.library = await loadCueLibrary();
+  sound.player.setLibrary(sound.library);
   try {
     const index = await (await fetch("templates/index.json")).json();
     setCatalog(await Promise.all(index.templates.map(async (p) => (await fetch(`templates/${p}`)).json())));

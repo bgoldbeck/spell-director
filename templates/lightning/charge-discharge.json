@@ -408,7 +408,19 @@
         "sustain"
       ],
       "params": {
-        "cue": "hum"
+        "cue": "hum",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "collapse-sound",
+      "type": "sound_cue",
+      "beats": [
+        "collapse"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.35
       }
     }
   ],

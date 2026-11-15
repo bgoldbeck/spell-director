@@ -286,7 +286,34 @@
         "hops"
       ],
       "params": {
-        "cue": "sizzle"
+        "cue": "sizzle",
+        "gain": 0.4
+      }
+    },
+    {
+      "id": "hop-zaps",
+      "type": "sound_cue",
+      "beats": [
+        "hops"
+      ],
+      "params": {
+        "cue": "zap",
+        "repeat_ms": 85,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.2
+        }
+      }
+    },
+    {
+      "id": "fizzle-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fizzle"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.3
       }
     }
   ],

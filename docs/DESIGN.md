@@ -75,7 +75,7 @@ Background is estimated as the 10th-percentile brightness per pixel (spell effec
 
 The director is an AI agent following [director-playbook.md](director-playbook.md), connected through an MCP server (`python -m director.mcp_server`, stdio; `.mcp.json` registers it for Claude Code).
 
-- `director/library.py`: plain functions over the library: `list_templates`, `get_template`, `get_doc`, `get_schema`, `validate_template` (wraps `tools/validate.py`), `save_template`, `breakdown_reference` (wraps `tools/breakdown.py`). Tests use these directly.
+- `director/library.py`: plain functions over the library: `list_templates`, `get_template`, `get_doc`, `get_schema`, `get_sound_cues`, `validate_template` (wraps `tools/validate.py`), `save_template`, `breakdown_reference` (wraps `tools/breakdown.py`). Tests use these directly.
 - `director/mcp_server.py`: thin MCP adapter (mcp Python SDK 2.x, `MCPServer`). Tools mirror the library; the docs and schema are resources; `direct_spell`, `direct_from_gif` and `grow_library` are prompts that load the playbooks. It must never print to stdout (the stdio channel).
 - `save_template` validates first, writes `templates/<element>/<id without the element prefix>.json`, rebuilds `templates/index.json`, refuses to replace a template unless `overwrite` is set, and never replaces a file holding a different id. `breakdown_gif` writes to `breakdowns/<name>/` (git-ignored) and returns the contact sheet and curves images.
 - The playbook caps questions at 2–3, maps weight words to durations and sizes, requires `views.reads` for all four views and a ground story for top-down heroes, and has a library mode for generating templates without a request.
@@ -85,7 +85,7 @@ The director is an AI agent following [director-playbook.md](director-playbook.m
 
 `run.bat` (Windows) or `./run.sh` → http://localhost:47811 (default port; `--port` or `SPELLDIRECTOR_PORT` to change, next free port if busy). Laid out like the motion study:
 
-- **Type** and **Spell** dropdowns: templates are grouped by their `element` (new types show up on their own), with "All types" listing every spell under its type; **‹ Prev / Next ›** (or `[` / `]`) step through the chosen type. Beat buttons (jump to a beat) with a **Clear** button; beat-intent captions on the stage; sound cues shown as captions.
+- **Type** and **Spell** dropdowns: templates are grouped by their `element` (new types show up on their own), with "All types" listing every spell under its type; **‹ Prev / Next ›** (or `[` / `]`) step through the chosen type. Beat buttons (jump to a beat) with a **Clear** button; beat-intent captions on the stage; sound cues play in sync and show as captions, with a **Sound on/off** toggle (M, remembered per browser, `?sound=off` in the URL).
 - Scrubber with colored phase bands; Replay, Pause/Play, speed 0.1×–2×, Loop, Seed + **New cast**, **Focus view** (F) for recording.
 - **Front / Side / Top / 3/4 / All four** camera presets; hero view starred and opened by default; each view shows that template's `views.reads`. OrbitControls for free orbit. Top is orthographic.
 - Layer toggles, palette swatches, description and director's notes. **Open JSON…** loads any template file.
@@ -96,6 +96,8 @@ Engine (`web/js/engine/`):
 - `timeline.js`: pure functions, Node-testable: seeded RNG (mulberry32), param resolution, beat curves, layer intensity, keyframes.
 - `stage.js`: world layout from `space` (caster at origin facing +X, hand, sky, targets laid out in the footprint cone, beam end point) and the four camera presets.
 - `effect.js`: one class per layer type. **Every frame is a pure function of (template, seed, t)**, so scrubbing and all four views show the same cast. Randomness that changes over time (bolt regeneration, flicker) is seeded by a time tick.
+
+Sound: `web/js/engine/sound.js` (pure, Node-testable) turns a template's `sound_cue` layers into a schedule of events (cue, start, length, gain, pitch) from the template, the seed and the cue library `web/sounds/cues.json`. `web/js/audio.js` plays the events whose start the clock crossed this frame: a real sample if the cue lists `samples`, otherwise a procedural Web Audio placeholder named after the cue. Jumps, pauses and new spells cut the sound; rendering never reads audio state, so frames stay a pure function of (template, seed, t). Every cue has a `sfx_prompt` so a text-to-SFX service can fill the library later.
 
 `web/js/catalog.js` (pure, Node-testable) groups templates by type for the dropdowns, steps through a type, and resolves the URL parameters.
 
@@ -111,6 +113,7 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 - Projectile travel (`travel: projectile`) is in the format but the viewer has no projectile layer behavior yet.
 - Screen flash in "All four" mode covers all quadrants at once.
 - No export of rendered frames yet.
+- Sounds are procedural placeholders (synth + filtered noise). They get the timing right but sound like placeholders; swap in CC0 samples or text-to-SFX output per cue (`web/sounds/README.md`).
 - The viewer only lays out several targets for chains, so an area "storm" of strikes can't be previewed yet; the director playbook tells the AI to stay within what the viewer draws.
 
 ## 8. Decisions log
@@ -127,3 +130,4 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 | 2026-11-15 | Every feature on its own branch → PR → merge → delete branch. |
 | 2026-11-15 | The director's bridge is an MCP server (Python, official SDK), a thin adapter over the library functions. |
 | 2026-11-15 | Breakdown should accept MP4 references as well as GIFs. |
+| 2026-11-15 | Sound is timed cues mapped to a small generic cue library, not generated audio. Procedural Web Audio placeholders now; real CC0 samples or text-to-SFX output replace them per cue later. |

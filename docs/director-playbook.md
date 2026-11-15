@@ -26,7 +26,7 @@ Read these once per session (MCP resources, or the files):
 | `spelldirector://docs/gif-breakdown-playbook` | `docs/gif-breakdown-playbook.md` |
 | `spelldirector://schema/0.1.0` | `schemas/template-0.1.0.schema.json` |
 
-Then call `list_templates` and open the one or two closest to the request with `get_template`. Existing templates are your best guide to what the viewer renders well. Reuse their structure, don't duplicate them: a new template must differ in feel, not just in numbers.
+Call `get_sound_cues` once for the sound cue vocabulary. Then call `list_templates` and open the one or two closest to the request with `get_template`. Existing templates are your best guide to what the viewer renders well. Reuse their structure, don't duplicate them: a new template must differ in feel, not just in numbers.
 
 ## Step 1. Read the request
 
@@ -91,7 +91,14 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
 - **Payoff**: `flash` on release, `sparks` + `ring` on impact, `camera_shake` for weight, `light` on the target.
 - **Ground story**: anything vertical is a dot from the top view, so give it a `ring`, `decal`, radial `sparks` or ground `crackle`. Mandatory when the hero view is `top`.
 - **Tail**: `crackle` lingering, `smoke`, `decal` fading.
-- **Sound cues**: `sound_cue` on release and impact (`charge`, `crack`, `boom`, `sizzle`, `hum`).
+- **Sound cues**: one `sound_cue` layer per sound, listing the beats it plays in. Call `get_sound_cues` for the vocabulary (vocabulary §10). Turn the user's words into cues ("electric buzz" → `buzz`, "thunderclap" → `crack`, "explosion" → `boom`, "flames" → `fire`). A typical score:
+  - anticipation: a sustained build (`charge`, `crackle`, `buzz`, `wind`, `shimmer`);
+  - release: one sharp one-shot (`crack`, `zap`, `ignite`, `whoosh`);
+  - travel: sustained (`hum`, `sizzle`, `fire`) or a repeating one-shot (`zap` with `repeat_ms` = the hop delay);
+  - impact: the weight (`boom`, `impact`, `crash`, `shatter`); heavy spells stack a one-shot and a sustained `rumble`;
+  - dissipation: a quiet tail (`crackle`, `rumble`, `fire`, `sizzle`) at `gain` 0.3–0.5.
+
+  Keep it to 2–5 cues, mix loud and quiet (`gain`), and give one-shots a small `pitch` range (e.g. 0.9–1.1) so repeated casts don't sound identical. If no cue fits, use the closest one and say what you wanted in `director_notes`; don't invent cue names.
 
 Know what the viewer draws today (see the known issues in [DESIGN.md](DESIGN.md#6-known-issues-and-limits)): several targets exist only for chains (`travel: chain` or `destination: targets`), so a "storm of strikes across an area" renders as strikes on one spot; projectile travel isn't drawn yet. Prefer designs the viewer can show, and say in `director_notes` when you go beyond it.
 

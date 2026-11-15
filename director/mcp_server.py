@@ -21,7 +21,7 @@ You are the SpellDirector: you turn loose spell requests ("heavy boss lightning,
 top-down game") or reference GIFs and videos into precise effect templates. The user does
 not know VFX terms; you do. Follow the director playbook
 (resource spelldirector://docs/director-playbook, or the `direct_spell` prompt):
-read the vocabulary and template format, look at similar templates, ask at most
+read the vocabulary, template format and sound cues, look at similar templates, ask at most
 2-3 plain-word choices, write the template, validate_template, then
 save_template and give the user the preview URL. Keep templates game- and
 engine-agnostic, and make them read from all four views (front, side, top, 3/4).
@@ -67,6 +67,16 @@ def get_vocabulary() -> str:
 def get_template_format() -> str:
     """The template format reference, field by field, with known params per layer type (markdown)."""
     return library.get_doc("template-format")
+
+
+@mcp.tool(annotations=READ_ONLY)
+def get_sound_cues(category: str | None = None) -> dict[str, Any]:
+    """The sound cue vocabulary for `sound_cue` layers: generic cues such as
+    charge, buzz, crackle, zap, crack, boom, rumble, ignite, fire, whoosh, impact,
+    crash, shatter, wind and shimmer, each with what it sounds like, one_shot or
+    sustained, plain words that map to it, and the phases it suits. Also lists the
+    sound_cue params. Optionally filter by category (electric, fire, impact, ...)."""
+    return _call(library.get_sound_cues, category)
 
 
 @mcp.tool(annotations=READ_ONLY)
