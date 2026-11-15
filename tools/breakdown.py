@@ -1,0 +1,551 @@
+"""Break a spell VFX GIF down into hard facts the director can build a template from.
+
+Usage:
+    python tools/breakdown.py path/to/spell.gif --out breakdowns/spell
+
+Writes to the output folder:
+    breakdown.json     frames, timing, curves, palette, phase hints, spatial hints
+    contact_sheet.png  labelled frames (index, time, phase hint) for the AI to look at
+    curves.png         brightness / coverage / motion over time with phase bands and peaks
+    palette.png        effect colors, brightest first, with suggested palette slots
+    heatmap.png        where on screen the effect happens across the whole GIF
+
+The numbers are measurements, the phases and view are *hints*. The AI follows
+docs/gif-breakdown-playbook.md to turn them into a template.
+"""
+
+from __future__ import annotations
+
+import argparse
+import colorsys
+import json
+import math
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont, ImageSequence
+
+ANALYSIS_MAX_SIDE = 256
+BROWSER_MIN_DELAY_MS = 20  # browsers treat delays at or below 10 ms as 100 ms
+DEFAULT_DELAY_MS = 100
+GLOW_THRESHOLD = 0.03  # luma increase over background that counts as "effect"
+MAX_SHEET_FRAMES = 48
+
+PHASE_COLORS = {
+    "none": (90, 90, 90),
+    "anticipation": (90, 140, 255),
+    "release": (255, 255, 255),
+    "impact": (255, 200, 60),
+    "dissipation": (150, 110, 200),
+}
+
+
+@dataclass
+class Frame:
+    index: int
+    start_ms: int
+    duration_ms: int
+    raw_duration_ms: int
+    rgb: np.ndarray  # H x W x 3 float32 in 0..1 (analysis size)
+    full: Image.Image  # original-size RGB frame
+    stats: dict = field(default_factory=dict)
+
+
+# ---------------------------------------------------------------- loading
+
+
+def _effective_delay(raw: int | None) -> int:
+    if raw is None:
+        return DEFAULT_DELAY_MS
+    if raw <= 10:
+        return DEFAULT_DELAY_MS
+    return max(int(raw), BROWSER_MIN_DELAY_MS)
+
+
+def load_frames(path: Path) -> tuple[list[Frame], dict]:
+    img = Image.open(path)
+    width, height = img.size
+    scale = min(1.0, ANALYSIS_MAX_SIDE / max(width, height))
+    small = (max(1, round(width * scale)), max(1, round(height * scale)))
+    frames: list[Frame] = []
+    t = 0
+    for i, frame in enumerate(ImageSequence.Iterator(img)):
+        raw = frame.info.get("duration")
+        delay = _effective_delay(raw)
+        rgba = frame.convert("RGBA")
+        # Composite transparency over black: spell GIFs are almost always shown over dark scenes.
+        base = Image.new("RGBA", rgba.size, (0, 0, 0, 255))
+        full = Image.alpha_composite(base, rgba).convert("RGB")
+        arr = np.asarray(full.resize(small, Image.BILINEAR), dtype=np.float32) / 255.0
+        frames.append(Frame(i, t, delay, raw if raw is not None else -1, arr, full))
+        t += delay
+    meta = {
+        "source": path.name,
+        "width": width,
+        "height": height,
+        "analysis_size": list(small),
+        "frame_count": len(frames),
+        "duration_ms": t,
+        "loop": img.info.get("loop") is not None,
+    }
+    return frames, meta
+
+
+# ---------------------------------------------------------------- measuring
+
+
+def luma(rgb: np.ndarray) -> np.ndarray:
+    return rgb[..., 0] * 0.2126 + rgb[..., 1] * 0.7152 + rgb[..., 2] * 0.0722
+
+
+def measure(frames: list[Frame]) -> dict:
+    stack = np.stack([f.rgb for f in frames])
+    lumas = luma(stack)
+    # Spell effects are mostly additive light over a darker scene, so the
+    # background is what each pixel looks like at its darkest. A low
+    # percentile instead of the minimum ignores single noisy frames.
+    background = np.percentile(lumas, 10, axis=0)
+    h, w = background.shape
+    ys, xs = np.mgrid[0:h, 0:w]
+    union = np.zeros_like(background)
+    prev = None
+    for f, y in zip(frames, lumas):
+        gain = np.clip(y - background, 0, None)
+        mask = gain > GLOW_THRESHOLD
+        coverage = float(mask.mean())
+        energy = float(gain.mean())
+        stats = {
+            "mean_luma": round(float(y.mean()), 4),
+            "peak_luma": round(float(np.percentile(y, 99.5)), 4),
+            "energy_raw": energy,
+            "coverage": round(coverage, 4),
+            "motion": round(float(np.abs(y - prev).mean()) if prev is not None else 0.0, 4),
+        }
+        if mask.any():
+            weight = gain * mask
+            total = weight.sum()
+            cx = float((xs * weight).sum() / total) / max(w - 1, 1)
+            cy = float((ys * weight).sum() / total) / max(h - 1, 1)
+            rows = np.where(mask.any(axis=1))[0]
+            cols = np.where(mask.any(axis=0))[0]
+            stats["centroid"] = [round(cx, 3), round(cy, 3)]
+            stats["bbox"] = [
+                round(cols[0] / w, 3), round(rows[0] / h, 3),
+                round((cols[-1] + 1) / w, 3), round((rows[-1] + 1) / h, 3),
+            ]
+            union += gain
+        else:
+            stats["centroid"] = None
+            stats["bbox"] = None
+        f.stats = stats
+        prev = y
+    peak_energy = max((f.stats["energy_raw"] for f in frames), default=0.0) or 1.0
+    for f in frames:
+        f.stats["intensity"] = round(f.stats.pop("energy_raw") / peak_energy, 4)
+    return {"background_luma": round(float(background.mean()), 4), "union": union}
+
+
+# ---------------------------------------------------------------- phases
+
+
+def find_peaks(values: list[float], min_height: float = 0.5, min_drop: float = 0.15) -> list[int]:
+    """Local maxima at least min_height that stand at least min_drop above
+    the lowest point between them and the previous accepted peak."""
+    peaks: list[int] = []
+    n = len(values)
+    for i, v in enumerate(values):
+        left = values[i - 1] if i > 0 else -1.0
+        right = values[i + 1] if i < n - 1 else -1.0
+        if v < min_height or v < left or v < right or (v == left and i > 0):
+            continue
+        if peaks:
+            valley = min(values[peaks[-1]: i + 1])
+            if v - valley < min_drop or values[peaks[-1]] - valley < min_drop:
+                if v > values[peaks[-1]]:
+                    peaks[-1] = i
+                continue
+        peaks.append(i)
+    return peaks
+
+
+def phase_hints(frames: list[Frame]) -> dict:
+    inten = [f.stats["intensity"] for f in frames]
+    n = len(frames)
+    end_ms = frames[-1].start_ms + frames[-1].duration_ms if frames else 0
+    peaks = find_peaks(inten)
+    active = [i for i, f in enumerate(frames) if inten[i] >= 0.01 or f.stats["coverage"] > 0.001]
+    if not active:
+        for f in frames:
+            f.stats["phase_hint"] = "none"
+        return {"peaks": [], "phases": [], "flicker": None}
+    start, last = active[0], active[-1]
+    strong = [i for i, v in enumerate(inten) if v >= 0.7]
+    release_start = strong[0]
+    main_peak = max(range(n), key=lambda i: inten[i])
+    # Impact lasts while the effect stays strong or keeps flickering back up.
+    impact_end = main_peak
+    for i in range(main_peak, last + 1):
+        if inten[i] >= 0.4 or any(p >= i for p in peaks if inten[p] >= 0.6):
+            impact_end = i
+    release_end = max(release_start, min(main_peak, release_start + 2))
+
+    def label(i: int) -> str:
+        if i < start or i > last:
+            return "none"
+        if i < release_start:
+            return "anticipation"
+        if i <= release_end:
+            return "release"
+        if i <= impact_end:
+            return "impact"
+        return "dissipation"
+
+    for f in frames:
+        f.stats["phase_hint"] = label(f.index)
+
+    phases = []
+    for f in frames:
+        p = f.stats["phase_hint"]
+        if p == "none":
+            continue
+        if phases and phases[-1]["phase"] == p:
+            phases[-1]["end_frame"] = f.index
+            phases[-1]["end_ms"] = f.start_ms + f.duration_ms
+        else:
+            phases.append({"phase": p, "start_frame": f.index, "end_frame": f.index,
+                           "start_ms": f.start_ms, "end_ms": f.start_ms + f.duration_ms})
+
+    flicker = None
+    if len(peaks) >= 3:
+        span_ms = frames[peaks[-1]].start_ms - frames[peaks[0]].start_ms
+        if span_ms > 0:
+            flicker = {"peaks": len(peaks), "hz": round((len(peaks) - 1) / (span_ms / 1000), 2)}
+    hold = sum(1 for v in inten if v >= 0.95)
+    return {
+        "effect_start_ms": frames[start].start_ms,
+        "effect_end_ms": frames[last].start_ms + frames[last].duration_ms,
+        "gif_end_ms": end_ms,
+        "main_peak_frame": main_peak,
+        "main_peak_ms": frames[main_peak].start_ms,
+        "peaks": [{"frame": p, "ms": frames[p].start_ms, "intensity": inten[p]} for p in peaks],
+        "hold_frames_at_peak": hold,
+        "flicker": flicker,
+        "phases": phases,
+    }
+
+
+# ---------------------------------------------------------------- space
+
+
+def spatial_hints(frames: list[Frame], union: np.ndarray) -> dict:
+    pts = [(f.start_ms, f.stats["centroid"]) for f in frames if f.stats["centroid"]]
+    out: dict = {}
+    if union.max() > 0:
+        mask = union > union.max() * 0.15
+        rows = np.where(mask.any(axis=1))[0]
+        cols = np.where(mask.any(axis=0))[0]
+        h, w = union.shape
+        bw = (cols[-1] - cols[0] + 1) / w
+        bh = (rows[-1] - rows[0] + 1) / h
+        out["footprint_bbox"] = [round(cols[0] / w, 3), round(rows[0] / h, 3),
+                                 round((cols[-1] + 1) / w, 3), round((rows[-1] + 1) / h, 3)]
+        out["footprint_aspect"] = round(bw / bh, 3) if bh else None
+        # Radial symmetry: how evenly the effect spreads around its centre (1 = perfect disc).
+        ys, xs = np.nonzero(mask)
+        cy, cx = ys.mean(), xs.mean()
+        angles = np.arctan2(ys - cy, xs - cx)
+        hist, _ = np.histogram(angles, bins=8, range=(-math.pi, math.pi))
+        out["radial_evenness"] = round(float(hist.min() / hist.max()), 3) if hist.max() else 0.0
+        out["vertical_extent"] = round(float(bh), 3)
+        out["horizontal_extent"] = round(float(bw), 3)
+    if len(pts) >= 2:
+        (t0, (x0, y0)), (t1, (x1, y1)) = pts[0], pts[-1]
+        dx, dy = x1 - x0, y1 - y0
+        out["centroid_travel"] = {"dx": round(dx, 3), "dy": round(dy, 3),
+                                  "distance": round(math.hypot(dx, dy), 3)}
+        if math.hypot(dx, dy) < 0.08:
+            direction = "stationary"
+        elif abs(dx) > abs(dy) * 1.5:
+            direction = "horizontal"
+        elif abs(dy) > abs(dx) * 1.5:
+            direction = "vertical"
+        else:
+            direction = "diagonal"
+        out["travel_direction"] = direction
+    out["view_guess"] = guess_view(out)
+    return out
+
+
+def guess_view(s: dict) -> dict:
+    """Very rough. The playbook tells the AI to confirm by looking at the frames."""
+    scores = {"front": 0.0, "side": 0.0, "top": 0.0, "three_quarter": 0.0}
+    aspect = s.get("footprint_aspect") or 1.0
+    even = s.get("radial_evenness", 0.0)
+    direction = s.get("travel_direction", "stationary")
+    if even > 0.5 and 0.7 < aspect < 1.4:
+        scores["top"] += 2
+    if 1.4 <= aspect < 2.6 and even > 0.25:
+        scores["three_quarter"] += 1.5
+    if aspect < 0.7 or direction == "vertical":
+        scores["front"] += 1.5
+        scores["side"] += 1
+    if direction == "horizontal" or aspect >= 2.6:
+        scores["side"] += 2
+    if direction == "diagonal":
+        scores["three_quarter"] += 1.5
+    scores["three_quarter"] += 0.5  # most game VFX GIFs are shot in 3/4
+    best = max(scores, key=scores.get)
+    total = sum(scores.values()) or 1
+    return {"best": best, "confidence": round(scores[best] / total, 2),
+            "scores": {k: round(v, 2) for k, v in scores.items()}}
+
+
+# ---------------------------------------------------------------- palette
+
+
+def palette(frames: list[Frame], colors: int = 6) -> list[dict]:
+    stack = np.stack([f.rgb for f in frames])
+    lumas = luma(stack)
+    background = np.percentile(lumas, 10, axis=0)
+    gain = lumas - background
+    pixels = stack[gain > GLOW_THRESHOLD]
+    if len(pixels) == 0:
+        return []
+    rng = np.random.default_rng(0)
+    if len(pixels) > 60000:
+        pixels = pixels[rng.choice(len(pixels), 60000, replace=False)]
+    strip = Image.fromarray((pixels.reshape(1, -1, 3) * 255).astype(np.uint8), "RGB")
+    q = strip.quantize(colors=colors, method=Image.Quantize.MEDIANCUT)
+    pal = q.getpalette()[: colors * 3]
+    counts = q.getcolors() or []
+    total = sum(c for c, _ in counts) or 1
+    entries = []
+    for count, idx in counts:
+        r, g, b = pal[idx * 3: idx * 3 + 3]
+        h, light, s = colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
+        entries.append({
+            "hex": f"#{r:02X}{g:02X}{b:02X}",
+            "share": round(count / total, 3),
+            "luma": round((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255, 3),
+            "saturation": round(s, 3),
+            "hue_deg": round(h * 360),
+        })
+    entries.sort(key=lambda e: -e["luma"])
+    return suggest_slots(entries)
+
+
+def suggest_slots(entries: list[dict]) -> list[dict]:
+    """Map measured colors to template palette slots. Suggestions only."""
+    free = set(range(len(entries)))
+
+    def take(slot: str, i: int | None) -> int | None:
+        if i is not None:
+            free.discard(i)
+            entries[i]["suggested_slot"] = slot
+        return i
+
+    def best(cands, key):
+        cands = [i for i in cands if i in free]
+        return max(cands, key=key) if cands else None
+
+    e = entries
+    take("core", best([i for i in free if e[i]["luma"] >= 0.7], lambda i: e[i]["luma"]))
+    primary = take("primary", best([i for i in free if e[i]["luma"] >= 0.3],
+                                   lambda i: math.sqrt(e[i]["share"]) * (0.2 + e[i]["saturation"]) * e[i]["luma"]))
+    if primary is None:
+        primary = take("primary", best(free, lambda i: e[i]["share"] * (0.2 + e[i]["saturation"])))
+    p_luma = e[primary]["luma"] if primary is not None else 1.0
+    p_hue = e[primary]["hue_deg"] if primary is not None else 0
+    take("secondary", best([i for i in free if e[i]["luma"] < p_luma and e[i]["luma"] >= 0.12],
+                           lambda i: e[i]["saturation"] * (0.5 + e[i]["share"])))
+
+    def hue_gap(i):
+        d = abs(e[i]["hue_deg"] - p_hue) % 360
+        return min(d, 360 - d)
+
+    take("accent", best([i for i in free if e[i]["saturation"] >= 0.3 and hue_gap(i) >= 40], hue_gap))
+    take("shadow", best([i for i in free if e[i]["luma"] < 0.2], lambda i: -e[i]["luma"]))
+    return entries
+
+
+# ---------------------------------------------------------------- pictures
+
+
+def _font(size: int) -> ImageFont.ImageFont:
+    for name in ("DejaVuSans.ttf", "Arial.ttf"):
+        try:
+            return ImageFont.truetype(name, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+def contact_sheet(frames: list[Frame], peaks: set[int], path: Path) -> list[int]:
+    n = len(frames)
+    if n <= MAX_SHEET_FRAMES:
+        chosen = list(range(n))
+    else:
+        step = n / MAX_SHEET_FRAMES
+        chosen = sorted({int(i * step) for i in range(MAX_SHEET_FRAMES)} | peaks)
+    w, h = frames[0].full.size
+    thumb_w = 200
+    thumb_h = max(1, round(h * thumb_w / w))
+    cols = min(6, len(chosen))
+    rows = math.ceil(len(chosen) / cols)
+    label_h = 30
+    pad = 6
+    sheet = Image.new("RGB", (cols * (thumb_w + pad) + pad, rows * (thumb_h + label_h + pad) + pad), (18, 18, 22))
+    draw = ImageDraw.Draw(sheet)
+    font = _font(12)
+    for k, i in enumerate(chosen):
+        f = frames[i]
+        x = pad + (k % cols) * (thumb_w + pad)
+        y = pad + (k // cols) * (thumb_h + label_h + pad)
+        sheet.paste(f.full.resize((thumb_w, thumb_h), Image.BILINEAR), (x, y))
+        phase = f.stats.get("phase_hint", "none")
+        color = PHASE_COLORS[phase]
+        draw.rectangle([x - 2, y - 2, x + thumb_w + 1, y + thumb_h + 1], outline=color, width=2)
+        star = " *" if i in peaks else ""
+        draw.text((x + 2, y + thumb_h + 2), f"#{i}  {f.start_ms} ms{star}", fill=(230, 230, 230), font=font)
+        draw.text((x + 2, y + thumb_h + 16), f"{phase}  i={f.stats['intensity']:.2f}", fill=color, font=font)
+    sheet.save(path)
+    return chosen
+
+
+def curves_chart(frames: list[Frame], hints: dict, path: Path) -> None:
+    W, H, m = 900, 320, 44
+    img = Image.new("RGB", (W, H), (18, 18, 22))
+    d = ImageDraw.Draw(img)
+    font = _font(12)
+    end = frames[-1].start_ms + frames[-1].duration_ms
+    plot_w, plot_h = W - 2 * m, H - 2 * m
+
+    def x_of(ms):
+        return m + plot_w * ms / end
+
+    def y_of(v):
+        return m + plot_h * (1 - max(0.0, min(1.0, v)))
+
+    for ph in hints.get("phases", []):
+        c = PHASE_COLORS[ph["phase"]]
+        d.rectangle([x_of(ph["start_ms"]), m, x_of(ph["end_ms"]), m + plot_h], fill=tuple(v // 6 for v in c))
+        d.text((x_of(ph["start_ms"]) + 3, m - 16), ph["phase"], fill=c, font=font)
+    d.rectangle([m, m, m + plot_w, m + plot_h], outline=(80, 80, 90))
+    max_motion = max((f.stats["motion"] for f in frames), default=0) or 1
+    max_cov = max((f.stats["coverage"] for f in frames), default=0) or 1
+    series = [
+        ("intensity", lambda f: f.stats["intensity"], (255, 230, 120)),
+        ("coverage", lambda f: f.stats["coverage"] / max_cov, (110, 200, 255)),
+        ("motion", lambda f: f.stats["motion"] / max_motion, (200, 120, 255)),
+    ]
+    for k, (name, fn, color) in enumerate(series):
+        pts = []
+        for f in frames:
+            pts += [(x_of(f.start_ms), y_of(fn(f))), (x_of(f.start_ms + f.duration_ms), y_of(fn(f)))]
+        d.line(pts, fill=color, width=2)
+        d.text((m + 6 + k * 110, H - m + 22), name, fill=color, font=font)
+    for p in hints.get("peaks", []):
+        x = x_of(frames[p["frame"]].start_ms + frames[p["frame"]].duration_ms / 2)
+        d.ellipse([x - 4, y_of(p["intensity"]) - 4, x + 4, y_of(p["intensity"]) + 4], outline=(255, 255, 255))
+    for ms in range(0, end + 1, max(100, (end // 10) // 100 * 100)):
+        d.line([x_of(ms), m + plot_h, x_of(ms), m + plot_h + 4], fill=(120, 120, 130))
+        d.text((x_of(ms) - 10, m + plot_h + 6), f"{ms}", fill=(160, 160, 170), font=font)
+    img.save(path)
+
+
+def palette_chart(entries: list[dict], path: Path) -> None:
+    sw, h = 140, 110
+    img = Image.new("RGB", (max(1, len(entries)) * sw, h), (18, 18, 22))
+    d = ImageDraw.Draw(img)
+    font = _font(12)
+    for i, e in enumerate(entries):
+        x = i * sw
+        d.rectangle([x + 4, 4, x + sw - 4, 64], fill=e["hex"])
+        d.text((x + 6, 70), f"{e['hex']}  {e['share'] * 100:.0f}%", fill=(230, 230, 230), font=font)
+        d.text((x + 6, 88), e.get("suggested_slot", ""), fill=(255, 230, 120), font=font)
+    img.save(path)
+
+
+def heatmap(union: np.ndarray, path: Path, size: tuple[int, int]) -> None:
+    v = union / union.max() if union.max() > 0 else union
+    rgb = np.stack([np.clip(v * 3, 0, 1), np.clip(v * 3 - 1, 0, 1), np.clip(v * 3 - 2, 0, 1)], axis=-1)
+    Image.fromarray((rgb * 255).astype(np.uint8)).resize(size, Image.NEAREST).save(path)
+
+
+# ---------------------------------------------------------------- main
+
+
+def breakdown(gif: Path, out: Path) -> dict:
+    frames, meta = load_frames(gif)
+    if not frames:
+        raise ValueError("GIF has no frames")
+    measured = measure(frames)
+    hints = phase_hints(frames)
+    space = spatial_hints(frames, measured["union"])
+    colors = palette(frames)
+    out.mkdir(parents=True, exist_ok=True)
+    peaks = {p["frame"] for p in hints.get("peaks", [])}
+    sheet_frames = contact_sheet(frames, peaks, out / "contact_sheet.png")
+    curves_chart(frames, hints, out / "curves.png")
+    palette_chart(colors, out / "palette.png")
+    heatmap(measured["union"], out / "heatmap.png", (frames[0].full.size[0] // 2 or 1, frames[0].full.size[1] // 2 or 1))
+    result = {
+        "schema": "spelldirector.breakdown/0.1.0",
+        "gif": meta,
+        "background_luma": measured["background_luma"],
+        "timing": hints,
+        "space": space,
+        "palette": colors,
+        "frames": [
+            {"index": f.index, "start_ms": f.start_ms, "duration_ms": f.duration_ms,
+             "raw_duration_ms": f.raw_duration_ms, **f.stats}
+            for f in frames
+        ],
+        "images": {
+            "contact_sheet": "contact_sheet.png",
+            "contact_sheet_frames": sheet_frames,
+            "curves": "curves.png",
+            "palette": "palette.png",
+            "heatmap": "heatmap.png",
+        },
+    }
+    (out / "breakdown.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    return result
+
+
+def summary(r: dict) -> str:
+    t, s = r["timing"], r["space"]
+    lines = [
+        f"{r['gif']['source']}: {r['gif']['frame_count']} frames, {r['gif']['duration_ms']} ms, "
+        f"{r['gif']['width']}x{r['gif']['height']}",
+    ]
+    for p in t.get("phases", []):
+        lines.append(f"  {p['phase']:<13} {p['start_ms']:>5}-{p['end_ms']:<5} ms  (frames {p['start_frame']}-{p['end_frame']})")
+    if t.get("flicker"):
+        lines.append(f"  flicker: {t['flicker']['peaks']} peaks, ~{t['flicker']['hz']} Hz")
+    if s.get("view_guess"):
+        lines.append(f"  view guess: {s['view_guess']['best']} (confidence {s['view_guess']['confidence']})")
+    lines.append("  palette: " + ", ".join(f"{e['hex']}={e.get('suggested_slot', '-')}" for e in r["palette"]))
+    return "\n".join(lines)
+
+
+def main(argv: list[str]) -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("gif", type=Path)
+    ap.add_argument("--out", type=Path, help="output folder (default: breakdowns/<gif name>)")
+    args = ap.parse_args(argv)
+    out = args.out or Path("breakdowns") / args.gif.stem
+    try:
+        result = breakdown(args.gif, out)
+    except (OSError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    print(summary(result))
+    print(f"wrote {out}/")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
