@@ -9,7 +9,7 @@ Read [docs/DESIGN.md](docs/DESIGN.md) for the full design and [docs/ROADMAP.md](
 - Keep everything **game- and engine-agnostic** (not tied to Pokemon or any one game).
 - MidiMCP is inspiration for the template idea only. Don't copy its architecture.
 - Templates must work from all four views: front, side, top, 3/4.
-- No hosted CI. Run the checks below before every PR. (The only GitHub Actions workflow is `release.yml`, which creates a GitHub Release when a `v*` tag is pushed; it runs no tests.)
+- No hosted CI. Run the checks below before every PR. Don't add GitHub Actions workflows of any kind (the owner won't pay for them), including for releases.
 
 ## Checks
 
