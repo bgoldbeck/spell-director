@@ -11,6 +11,7 @@ import json
 import os
 import re
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -24,6 +25,7 @@ if str(ROOT / "tools") not in sys.path:
 
 import breakdown as _breakdown  # noqa: E402
 import build_index as _build_index  # noqa: E402
+import export_sprites as _export_sprites  # noqa: E402
 import validate as _validate  # noqa: E402
 
 DOC_FILES = {
@@ -238,4 +240,37 @@ def breakdown_reference(path: str, name: str | None = None, start_s: float | Non
         "space": result["space"],
         "palette": result["palette"],
         "frame_count": len(result["frames"]),
+    }
+
+
+# ---------------------------------------------------------------- export
+
+
+def export_sprites(template_id: str, seed: int = 1, frame: int = 192, fps: int | None = None,
+                   views: list[str] | None = None, layers: bool = True) -> dict:
+    """Export a template as sprite sheets for a game engine: all.png (the whole
+    spell) and layer-<id>.png per drawn layer (columns are frames, rows are the
+    views), plus <id>.spritesheet.json and an assembly guide <id>.guide.md.
+    Goes to exports/<id>-seed<seed>/. Needs Playwright and a browser
+    (requirements-export.txt)."""
+    if _find(template_id) is None:
+        raise LibraryError(f"no template with id {template_id!r}")
+    if not 32 <= frame <= 1024:
+        raise LibraryError("frame must be between 32 and 1024 px")
+    try:
+        # Playwright's sync API refuses to run inside an asyncio loop (the MCP server), so use a thread.
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            res = pool.submit(_export_sprites.export, template_id, seed=seed, frame=frame, fps=fps,
+                              views=views, layers=layers).result()
+    except _export_sprites.ExportError as exc:
+        raise LibraryError(str(exc)) from exc
+    m = res["manifest"]
+    return {
+        "out_dir": res["out"],
+        "files": res["files"],
+        "guide": next((f for f in res["files"] if f.endswith(".guide.md")), None),
+        "frame_count": m["frame_count"],
+        "fps": m["fps"],
+        "view_rows": m["view_rows"],
+        "sheets": [{k: sh[k] for k in ("image", "first_frame", "frame_count", "start_ms", "end_ms")} for sh in m["sheets"]],
     }

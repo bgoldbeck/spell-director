@@ -5,6 +5,8 @@ import { cuesAt, eventsBetween, soundEvents } from "./engine/sound.js";
 import { SoundPlayer } from "./audio.js";
 import { VIEWS, VIEW_LABELS, viewCamera } from "./engine/stage.js";
 import { beatsAt, phaseColor } from "./engine/timeline.js";
+import { exportSpriteSheets } from "./exporter.js";
+import { makeZip } from "./zip.js";
 import { ALL, groupByType, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
 
 const $ = (id) => document.getElementById(id);
@@ -15,6 +17,8 @@ const ui = {
   replay: $("replay"), play: $("play"), speed: $("speed"), loop: $("loop"), seed: $("seed"), reroll: $("reroll"),
   scrubber: $("scrubber"), bands: $("bands"), beats: $("beats"), description: $("description"),
   palette: $("palette"), notes: $("notes"), layers: $("layers"), focus: $("focus"), file: $("file"),
+  exportBtn: $("export"), exportDialog: $("export-dialog"), exportGo: $("export-go"), exportStatus: $("export-status"),
+  exportForm: $("export-form"),
   mute: $("mute"), flash: $("flash"), dim: $("dim"), quadLabels: $("quad-labels"), viewRead: $("view-read"), error: $("error"),
 };
 
@@ -537,7 +541,7 @@ document.querySelectorAll(".view").forEach((b) => {
 });
 ui.focus.onclick = () => document.body.classList.toggle("focus");
 window.addEventListener("keydown", (e) => {
-  if (e.target.matches("input, select, textarea")) return;
+  if (e.target.matches("input, select, textarea") || ui.exportDialog.open) return;
   if (e.key === "f" || e.key === "F") document.body.classList.toggle("focus");
   else if (e.key === "Escape") document.body.classList.remove("focus");
   else if (e.key === " ") {
@@ -567,6 +571,78 @@ ui.file.onchange = async () => {
     showError(`Could not open ${f.name}: ${err.message}`);
   }
   ui.file.value = "";
+};
+
+// ------------------------------------------------------------ export
+
+function exportOptions(form) {
+  const views = [...form.querySelectorAll('input[name="view"]:checked')].map((i) => i.value);
+  return {
+    views,
+    frame: Number(form.elements.frame.value),
+    fps: form.elements.fps.value ? Number(form.elements.fps.value) : undefined,
+    layers: form.elements.layers.checked,
+  };
+}
+
+function download(name, bytes, type) {
+  const url = URL.createObjectURL(new Blob([bytes], { type }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+ui.exportBtn.onclick = () => {
+  ui.exportStatus.textContent = state.template ? `${state.template.name}, seed ${state.seed}.` : "";
+  ui.exportDialog.showModal();
+};
+ui.exportGo.onclick = async () => {
+  const tpl = state.template;
+  if (!tpl) return;
+  const opts = exportOptions(ui.exportForm);
+  if (!opts.views.length) {
+    ui.exportStatus.textContent = "Pick at least one view.";
+    return;
+  }
+  ui.exportGo.disabled = true;
+  try {
+    const { files, manifest } = await exportSpriteSheets(tpl, {
+      ...opts,
+      seed: state.seed,
+      cueLibrary: sound.library,
+      onProgress: (p) => {
+        if (p.total) ui.exportStatus.textContent = `${p.stage === "scan" ? "Finding each layer's frames" : "Drawing sheets"}… ${Math.round((p.done / p.total) * 100)}%`;
+      },
+    });
+    const folder = `${tpl.id}-seed${state.seed}`;
+    const zip = makeZip(files.map((f) => ({ name: `${folder}/${f.name}`, data: f.data })));
+    download(`${folder}-sprites.zip`, zip, "application/zip");
+    ui.exportStatus.textContent = `Done: ${manifest.sheets.length} sheets (the whole spell plus one per layer), ${manifest.frame_count} frames, ${manifest.view_rows.length} views each.`;
+  } catch (err) {
+    console.error(err);
+    ui.exportStatus.textContent = `Export failed: ${err.message}`;
+  } finally {
+    ui.exportGo.disabled = false;
+  }
+};
+
+// For tools/export_sprites.py: export a template (the current one, or one
+// passed in) and return the files as base64.
+window.spellDirectorExport = async (opts = {}) => {
+  const tpl = opts.template || (opts.id ? state.templates.find((t) => t.id === opts.id) : state.template);
+  if (!tpl) throw new Error(`unknown template ${opts.id ?? ""}`.trim());
+  const { files, manifest } = await exportSpriteSheets(tpl, { ...opts, seed: opts.seed ?? state.seed, cueLibrary: sound.library });
+  const b64 = (data) => {
+    const bytes = typeof data === "string" ? new TextEncoder().encode(data) : data;
+    let s = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    return btoa(s);
+  };
+  return { manifest, files: files.map((f) => ({ name: f.name, base64: b64(f.data) })) };
 };
 
 function showError(msg) {

@@ -42,7 +42,7 @@ Key principles:
 | GIF breakdown tool + playbook | done | `tools/breakdown.py`, `docs/gif-breakdown-playbook.md` |
 | Viewer (Three.js motion study) | done, v1 | `web/`, `tools/serve.py` |
 | Director: playbook + MCP server | done, v1 | `docs/director-playbook.md`, `director/` |
-| Exports (sprite sheets, PNG sequences, GIF) | not started | ROADMAP |
+| Sprite sheet export + assembly guide | done, v1 | `docs/exporting.md`, `web/js/exporter.js`, `tools/export_sprites.py` |
 | Engine integration | not started | ROADMAP |
 
 Languages: Python 3.11+ for tools and the director (jsonschema, numpy, Pillow, PyAV, pytest, mcp 2.x), plain ES modules for the web viewer (no build step, Three.js r169 vendored in `web/vendor`). No CI; tests run locally.
@@ -101,6 +101,8 @@ Sound: `web/js/engine/sound.js` (pure, Node-testable) turns a template's `sound_
 
 `web/js/catalog.js` (pure, Node-testable) groups templates by type for the dropdowns, steps through a type, and resolves the URL parameters.
 
+Export: **Export sprites…** renders the current template and seed into one sheet per layer plus `all.png` (columns are frames, rows are the four views, every cell aligned), with a `spelldirector.spritesheet/1` JSON file and a Markdown assembly guide, downloaded as a .zip. Screen flashes, camera shake, lights and sound cues are exported as per-frame tracks instead of pixels. Full description: [exporting.md](exporting.md).
+
 Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists the templates. A live preview was published as a private claude.ai artifact.
 
 ## 7. Known issues and limits
@@ -112,7 +114,7 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 - Only lightning has templates. Some layer params in the format (e.g. `light.radius` units, `decal.shape: burn`) are only roughly honored by the renderer.
 - Projectile travel (`travel: projectile`) is in the format but the viewer has no projectile layer behavior yet.
 - Screen flash in "All four" mode covers all quadrants at once.
-- No export of rendered frames yet.
+- Export makes sprite sheets only (no PNG sequence or GIF yet), and the viewer can't play an exported sheet back to check it.
 - Sounds are procedural placeholders (synth + filtered noise). They get the timing right but sound like placeholders; swap in CC0 samples or text-to-SFX output per cue (`web/sounds/README.md`).
 - The viewer only lays out several targets for chains, so an area "storm" of strikes can't be previewed yet; the director playbook tells the AI to stay within what the viewer draws.
 
@@ -131,3 +133,4 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 | 2026-11-15 | The director's bridge is an MCP server (Python, official SDK), a thin adapter over the library functions. |
 | 2026-11-15 | Breakdown should accept MP4 references as well as GIFs. |
 | 2026-11-15 | Sound is timed cues mapped to a small generic cue library, not generated audio. Procedural Web Audio placeholders now; real CC0 samples or text-to-SFX output replace them per cue later. |
+| 2026-11-15 | Engine handoff is sprite sheets + an instruction .md (and JSON): one sheet per layer, frames as columns and the four views as rows, layer timings documented. |

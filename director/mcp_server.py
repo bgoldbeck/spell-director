@@ -114,6 +114,19 @@ def breakdown_gif(path: str, name: str | None = None, start_s: float | None = No
     return out
 
 
+@mcp.tool(annotations=ToolAnnotations(destructiveHint=False, idempotentHint=True, openWorldHint=False))
+def export_sprites(template_id: str, seed: int = 1, frame: int = 192, fps: int | None = None,
+                   views: list[str] | None = None, layers: bool = True) -> dict[str, Any]:
+    """Export a template as sprite sheets for rebuilding it in a game engine
+    (Unity, Godot, ...): all.png for the whole spell and one layer-<id>.png per
+    drawn layer, where columns are frames and rows are the views (front, side,
+    top, three_quarter), plus a JSON file and a Markdown assembly guide with
+    every layer's timing, blend mode and colors, the beats, sound cues, screen
+    flashes and camera shake. `frame` is the cell size in px; `fps` defaults to
+    the template's. Writes to exports/<id>-seed<seed>/ and returns the paths."""
+    return _call(library.export_sprites, template_id, seed, frame, fps, views, layers)
+
+
 # ---------------------------------------------------------------- resources
 
 

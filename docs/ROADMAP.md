@@ -42,8 +42,12 @@ MP4 and other video input is done (`tools/breakdown.py`, `--start`/`--end`). Fir
 
 ### 5. Export
 
-- Render a template to a PNG sequence, sprite sheet (with JSON metadata: frame size, fps, loop) and GIF, per view, from a seed. Headless via Playwright, or in-browser with a download through the viewer.
+Sprite sheets are done (`docs/exporting.md`): one sheet per layer plus a whole-spell sheet, frames as columns and views as rows, a JSON file and an assembly guide, from the viewer, `tools/export_sprites.py` or the director's `export_sprites` tool.
+
+- Try an export in Unity (Sparkfall) end to end and fix what the guide gets wrong.
+- PNG sequence and GIF output.
 - Fixed-seed batches for variation sets.
+- A sheet preview in the viewer to check an export plays back right.
 
 ### 6. In-viewer editing
 
@@ -64,7 +68,8 @@ MP4 and other video input is done (`tools/breakdown.py`, `--start`/`--end`). Fir
 
 ### 9. Game engine integration
 
-- Engine-agnostic first: sprite sheets + metadata from Export.
+- Engine-agnostic first: sprite sheets + metadata from Export (done).
+- An importer script per engine that builds the effect from the export JSON.
 - Then runtime players that read template JSON directly (Unity first, the owner's game Sparkfall is Unity; Godot possible).
 
 ## Open questions for the owner

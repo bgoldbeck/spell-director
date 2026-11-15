@@ -1,0 +1,6 @@
+# Optional: for exporting sprite sheets from the command line or the MCP
+# server (tools/export_sprites.py). The viewer's "Export sprites…" button
+# needs none of this.
+#   python -m pip install -r requirements-export.txt
+#   python -m playwright install chromium   # or have Chrome or Edge installed
+playwright>=1.45

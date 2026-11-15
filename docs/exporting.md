@@ -1,0 +1,49 @@
+# Exporting sprite sheets for a game engine
+
+SpellDirector exports a spell as sprite sheets plus an assembly guide, so it can be rebuilt in Unity, Godot or any engine that plays sprite animations. Nothing in the export is tied to one engine.
+
+## How to export
+
+- **Viewer:** pick the spell and seed, click **Export sprites…**, choose views, cell size and frame rate, then **Export .zip**. Works in the Windows app too.
+- **Command line:** `python tools/export_sprites.py lightning-sky-strike --seed 7 --frame 256` writes to `exports/<id>-seed<seed>/` (git-ignored). Needs `pip install -r requirements-export.txt` and a browser: `python -m playwright install chromium`, or an installed Chrome or Edge (found automatically), or a Chromium path in `SPELLDIRECTOR_CHROMIUM`.
+- **Director (MCP):** the `export_sprites` tool does the same as the command line.
+
+Options: views (default all four), cell size in px (default 192), frame rate (default the template's `fps_hint`, else 30), seed, and whether to make a sheet per layer.
+
+## What you get
+
+| File | What it is |
+|---|---|
+| `all.png` | The whole spell, every layer together. |
+| `layer-<layer id>.png` | One sheet per drawn layer. |
+| `<id>.guide.md` | The assembly guide: layout, beats, every layer's timing, blend, colors and draw order, the non-sprite tracks, where the caster and target are, and steps for Unity and Godot. |
+| `<id>.spritesheet.json` | The same data, machine-readable (format `spelldirector.spritesheet/1`). |
+| `<id>.template.json` | The template the sheets came from. |
+
+### Sheet layout
+
+- **Columns are frames, rows are views** (front, side, top, 3/4, in that order, or the subset you exported). One column shows one moment from every view.
+- A layer's sheet holds only the frames where that layer is visible; column 0 is its first frame. The JSON and guide give each sheet's `first_frame`, `frame_count`, `start_ms` and `end_ms`. `all.png` always covers every frame.
+- Every cell is the same size and each view uses the same camera in every sheet, so layer sprites placed at the same position stack into the full spell pixel for pixel.
+- Sheets are capped at 4096 px wide. Longer sheets wrap: the next frames go in a new block of view rows below. Frame `k` for view row `v` is at column `k % columns`, row `floor(k / columns) × views + v`.
+- Each view's camera is zoomed onto the square around everything the spell draws in that view, so the effect fills its cells. Pixel positions of the caster, target and sky point, and pixels per world unit, are in the JSON and the guide for placing and scaling it.
+
+### Transparency
+
+Each frame is rendered on black and on white and the two are compared to get straight (not premultiplied) alpha on a transparent background. That keeps additive glows and normal-blended smoke both correct. Layers marked `add` look closest with an additive material in the engine.
+
+### Not drawn into the sheets
+
+These are exported as tracks with one value per frame, because an engine does them better than baked pixels:
+
+- **Screen flashes** (`flash` with `scope: screen`): color, add or multiply, and an opacity curve.
+- **Camera shake**: frequency and an amplitude curve in template pixels (100 px = one character height).
+- **Lights**: anchor, color, range and an energy curve.
+- **Sound cues**: start time and frame, cue, length, volume, pitch, one-shot or sustained, and the cue's text-to-SFX prompt.
+
+## Code
+
+- `web/js/engine/spritesheet.js`: pure and Node-tested. Frame plan, sheet layout, tracks, the manifest and the guide.
+- `web/js/exporter.js`: renders the frames with Three.js (the same `Effect` as the viewer, so frames are a pure function of template, seed and time) and builds the PNGs.
+- `web/js/zip.js`: a small stored-ZIP writer for the viewer's download.
+- `tools/export_sprites.py`: starts the viewer server, opens it in headless Chromium and calls `window.spellDirectorExport`.
