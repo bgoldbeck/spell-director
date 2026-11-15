@@ -38,7 +38,7 @@ Key principles:
 | Vocabulary (the director's language) | done | `docs/vocabulary.md` |
 | Template format + JSON Schema 0.1.0 | done | `docs/template-format.md`, `schemas/template-0.1.0.schema.json` |
 | Validator | done | `tools/validate.py` |
-| Example templates (lightning) | done, 4 | `templates/lightning/*.json` |
+| Example templates | done: 5 lightning, 1 water | `templates/*/*.json` |
 | GIF breakdown tool + playbook | done | `tools/breakdown.py`, `docs/gif-breakdown-playbook.md` |
 | Viewer (Three.js motion study) | done, v1 | `web/`, `tools/serve.py` |
 | Director: playbook + MCP server | done, v1 | `docs/director-playbook.md`, `director/` |
@@ -95,7 +95,8 @@ Engine (`web/js/engine/`):
 
 - `timeline.js`: pure functions, Node-testable: seeded RNG (mulberry32), param resolution, beat curves, layer intensity, keyframes.
 - `stage.js`: world layout from `space` (caster at origin facing +X, hand, sky, targets laid out in the footprint cone, beam end point) and the four camera presets.
-- `effect.js`: one class per layer type. **Every frame is a pure function of (template, seed, t)**, so scrubbing and all four views show the same cast. Randomness that changes over time (bolt regeneration, flicker) is seeded by a time tick.
+- `effect.js`: one class per layer type. **Every frame is a pure function of (template, seed, t)**, so scrubbing and all four views show the same cast. Randomness that changes over time (bolt regeneration, flicker) is seeded by a time tick. Bolts, beams, crackle, arcs and spark streaks are camera-facing ribbons with a soft profile (one draw call per mesh; the vertex shader turns each ribbon to face whichever camera draws it, so the four views stay right). Bolts attached to a beam ride along it as short arcs. Projectile orbs fly from the hand to the target during their `travel` beat with a trail.
+- `post.js`: the scene is drawn into an HDR render target, bloomed (UnrealBloomPass, vendored in `web/vendor/postprocessing`) and written to the canvas. The viewer's **Bloom** checkbox (B, `?bloom=off`) turns it off; the sprite export bakes the same bloom unless asked not to.
 
 Sound: `web/js/engine/sound.js` (pure, Node-testable) turns a template's `sound_cue` layers into a schedule of events (cue, start, length, gain, pitch) from the template, the seed and the cue library `web/sounds/cues.json`. `web/js/audio.js` plays the events whose start the clock crossed this frame: a real sample if the cue lists `samples`, otherwise a procedural Web Audio placeholder named after the cue. Jumps, pauses and new spells cut the sound; rendering never reads audio state, so frames stay a pure function of (template, seed, t). Every cue has a `sfx_prompt` so a text-to-SFX service can fill the library later.
 
@@ -107,12 +108,10 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 
 ## 7. Known issues and limits
 
-- **Beam-attached arcs** (`beam-arcs` in charge-discharge) spread too far from the beam. Arcs attached to a beam should hug it.
-- **Glow, flash and smoke are basic** (sprites and a CSS screen overlay). No bloom post-processing; bolts are instanced cylinders.
+- **Flash and smoke are basic** (soft sprites and a CSS screen overlay).
 - **Camera-view guess in the breakdown tool is weak** (called the 3/4 sample GIF "front"). The playbook has the AI confirm by eye.
 - Breakdown has only been tested on a synthetic GIF and MP4, never a real game capture.
 - Only lightning has templates. Some layer params in the format (e.g. `light.radius` units, `decal.shape: burn`) are only roughly honored by the renderer.
-- Projectile travel (`travel: projectile`) is in the format but the viewer has no projectile layer behavior yet.
 - Screen flash in "All four" mode covers all quadrants at once.
 - Export makes sprite sheets only (no PNG sequence or GIF yet), and the viewer can't play an exported sheet back to check it.
 - Sounds are procedural placeholders (synth + filtered noise). They get the timing right but sound like placeholders; swap in CC0 samples or text-to-SFX output per cue (`web/sounds/README.md`).

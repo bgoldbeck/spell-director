@@ -36,11 +36,10 @@ The Analyze page (`web/analyze.html`) already plays a dropped clip frame by fram
 
 ### 4. Viewer: visual quality
 
-- Bloom post-processing (UnrealBloomPass from three/examples) instead of stacked additive cylinders.
-- Bolts as camera-facing ribbons with a soft texture.
-- Fix beam-attached arcs to hug the beam.
+Done: bloom, soft camera-facing ribbons for bolts, beams and crackle, arcs that hug their beam, spark streaks, soft shockwave rings, projectile travel with a trail (Ball Lightning).
+
 - Screen flash per quadrant in "All four" mode.
-- Projectile travel (orb or bolt head moving from caster to target with a trail).
+- Softer smoke (animated noise instead of round sprites).
 
 ### 5. Export
 

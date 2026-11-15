@@ -6,6 +6,16 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Changed
+
+- Spells look much better in the viewer: bloom makes bright light glow, bolts, beams and crackle are drawn as soft ribbons instead of stacked tubes, sparks fly as streaks, and shockwave rings are soft with a bright leading edge. A **Bloom** checkbox (B) turns the glow off.
+- Arcs that ride on a beam (Charge and Discharge) now hug the beam instead of flailing across the screen.
+- Sprite exports bake in the same bloom glow (untick **Bake bloom** or use `--no-bloom` if your engine adds its own).
+
+### Added
+
+- Projectiles fly: in a `travel: projectile` spell, an orb in the caster's hand flies to the target during its travel beat with a streak behind it, optionally lobbed (`trail_ms`, `arc_height_px`, `travel_ease`). New **Ball Lightning** template shows it off.
+
 ## [0.4.0] - 2026-11-15
 
 ### Changed

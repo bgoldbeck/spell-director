@@ -8,7 +8,7 @@ SpellDirector exports a spell as sprite sheets plus an assembly guide, so it can
 - **Command line:** `python tools/export_sprites.py lightning-sky-strike --seed 7 --frame 256` writes to `exports/<id>-seed<seed>/` (git-ignored). Needs `pip install -r requirements-export.txt` and a browser: `python -m playwright install chromium`, or an installed Chrome or Edge (found automatically), or a Chromium path in `SPELLDIRECTOR_CHROMIUM`.
 - **Director (MCP):** the `export_sprites` tool does the same as the command line.
 
-Options: views (default all four), cell size in px (default 192), frame rate (default the template's `fps_hint`, else 30), seed, and whether to make a sheet per layer.
+Options: views (default all four), cell size in px (default 192), frame rate (default the template's `fps_hint`, else 30), seed, whether to make a sheet per layer, and whether to bake the bloom glow in (default on; `--no-bloom`).
 
 ## What you get
 
@@ -31,6 +31,8 @@ Options: views (default all four), cell size in px (default 192), frame rate (de
 ### Transparency
 
 Each frame is rendered on black and on white and the two are compared to get straight (not premultiplied) alpha on a transparent background. That keeps additive glows and normal-blended smoke both correct. Layers marked `add` look closest with an additive material in the engine.
+
+The viewer's bloom glow is baked into the sprites by default (`bloom_baked` in the JSON). If your engine adds its own bloom, untick **Bake bloom** (or pass `--no-bloom`) so the glow isn't doubled.
 
 ### Not drawn into the sheets
 

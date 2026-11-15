@@ -175,7 +175,7 @@ export function buildTracks(template, seed, plan, cueLibrary = { cues: {} }) {
 // sheets: [{id, first, count, layout}] (the whole-spell sheet first).
 // visible: {layerId: {first, last} | null} over all exported views.
 // views: {view: {pivots, px_per_unit, camera}} in row order.
-export function buildManifest({ template, seed, plan, sheets, visible, views, tracks, version = "", frame }) {
+export function buildManifest({ template, seed, plan, sheets, visible, views, tracks, version = "", frame, bloom = true }) {
   const loop = !!template.timing?.loop;
   const ms = (f) => r1(f * plan.frameMs);
   const viewOrder = Object.keys(views);
@@ -232,6 +232,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
     frame_count: plan.count,
     frame: { width: frame, height: frame },
     alpha: "straight",
+    bloom_baked: !!bloom,
     pixel_origin: "top-left, y down",
     hero_view: template.views?.hero || "three_quarter",
     view_rows: viewOrder,
@@ -304,6 +305,7 @@ export function guideMarkdown(m, { files } = {}) {
     ["Sheets", `${m.sheets.length}: \`${all?.image ?? "all.png"}\` for the whole spell, plus one per layer`],
     ["Rows in every sheet", viewList.map((v, i) => `${i} ${VIEW_NAMES[v] || v}${v === m.hero_view ? " (hero)" : ""}`).join(", ")],
     ["Alpha", "Straight (not premultiplied), transparent background"],
+    ["Bloom", m.bloom_baked ? "Baked into the sprites (the soft glow around bright parts). Turn your engine's bloom down on these, or export without bloom." : "Not baked in: add bloom in your engine for the glow"],
   ]), "");
 
   add("## Files", "");

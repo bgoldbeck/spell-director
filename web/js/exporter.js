@@ -5,12 +5,15 @@
 //
 // Frames are rendered twice, on black and on white, and the two are compared
 // to recover a straight-alpha image on a transparent background. That works
-// for additive glows and for normal-blended smoke alike. Camera shake and
-// screen flashes are left out of the pixels and exported as curves instead.
+// for additive glows and for normal-blended smoke alike. Bloom (on by default,
+// like the viewer) is additive light, so it is measured on black and added to
+// both passes before the comparison. Camera shake and screen flashes are left
+// out of the pixels and exported as curves instead.
 
 import * as THREE from "three";
 import { Effect } from "./engine/effect.js";
 import { viewCamera } from "./engine/stage.js";
+import { Post } from "./engine/post.js";
 import {
   ALL_ID, DEFAULTS, SHEET_VIEWS, buildManifest, buildTracks, cellRect, framePlan, guideMarkdown, layoutSheet,
   sheetFileName, spriteLayers, visibleRange,
@@ -63,12 +66,29 @@ function solo(effect, ids) {
   return () => effect.layers.forEach((l, i) => (l.group.visible = saved[i]));
 }
 
-function grab(renderer, scene, cam, bg, ctx, size) {
+function grab(post, scene, cam, bg, ctx, size, bloom = false) {
   scene.background = bg;
-  renderer.render(scene, cam);
+  post.render([{ scene, camera: cam }], { bloom });
   ctx.clearRect(0, 0, size, size);
-  ctx.drawImage(renderer.domElement, 0, 0);
+  ctx.drawImage(post.renderer.domElement, 0, 0);
   return ctx.getImageData(0, 0, size, size).data;
+}
+
+// The bloom's own light (bloomed minus plain, both on black), added to the
+// white pass. Its faintest tail (a few levels out of 255) is dropped from both:
+// at small cell sizes the widest bloom level is only a few pixels across and
+// would show up as a faint square.
+const BLOOM_FLOOR = 4;
+export function addBloom(white, plainBlack, bloomedBlack) {
+  for (let i = 0; i < white.length; i += 4) {
+    for (let c = 0; c < 3; c++) {
+      let glow = bloomedBlack[i + c] - plainBlack[i + c];
+      glow = glow > BLOOM_FLOOR ? glow - BLOOM_FLOOR : 0;
+      bloomedBlack[i + c] = plainBlack[i + c] + glow;
+      white[i + c] = Math.min(255, white[i + c] + glow);
+    }
+  }
+  return white;
 }
 
 // Black/white difference matte -> straight-alpha RGBA.
@@ -135,7 +155,7 @@ function toPng(canvas) {
 
 /**
  * Export sprite sheets.
- * opts: {seed, frame, fps, views, layers (true = layer rows), maxWidth, cueLibrary, version, onProgress}
+ * opts: {seed, frame, fps, views, layers (true = layer rows), bloom (default true), maxWidth, cueLibrary, version, onProgress}
  * Returns {manifest, files: [{name, data: Uint8Array | string}]}.
  */
 export async function exportSpriteSheets(template, opts = {}) {
@@ -143,12 +163,15 @@ export async function exportSpriteSheets(template, opts = {}) {
   const size = Math.max(32, Math.min(1024, Math.round(opts.frame || DEFAULTS.frame)));
   const views = (opts.views?.length ? opts.views : SHEET_VIEWS).filter((v) => SHEET_VIEWS.includes(v));
   const withLayers = opts.layers !== false;
+  const bloom = opts.bloom !== false;
   const plan = framePlan(template, { fps: opts.fps });
   const progress = opts.onProgress || (() => {});
 
   const effect = new Effect(template, seed);
   const scene = makeScene(effect);
   const renderer = makeRenderer(size);
+  const post = new Post(renderer, { bloom });
+  post.setSize(size, size);
   const scratch = document.createElement("canvas");
   scratch.width = scratch.height = size;
   const sctx = scratch.getContext("2d", { willReadFrequently: true });
@@ -174,7 +197,7 @@ export async function exportSpriteSheets(template, opts = {}) {
       for (const v of views) {
         for (const id of [null, ...ids]) {
           const undo = solo(effect, id ? new Set([id]) : null);
-          const px = grab(renderer, scene, cams[v], black, sctx, size);
+          const px = grab(post, scene, cams[v], black, sctx, size, bloom);
           const drawn = id ? anyDrawn(px) : growBox(px, size, boxes[v]);
           undo();
           if (id) flags[id][f] ||= drawn;
@@ -217,10 +240,15 @@ export async function exportSpriteSheets(template, opts = {}) {
           const k = f - sh.first;
           if (k < 0 || k >= sh.count) continue;
           const undo = solo(effect, sh.id === ALL_ID ? null : new Set([sh.id]));
-          const b = grab(renderer, scene, cams[v], black, sctx, size).slice();
-          const w = grab(renderer, scene, cams[v], white, sctx, size);
+          const b = grab(post, scene, cams[v], black, sctx, size).slice();
+          const w = grab(post, scene, cams[v], white, sctx, size).slice();
+          let lit = b;
+          if (bloom) {
+            lit = grab(post, scene, cams[v], black, sctx, size, true).slice();
+            addBloom(w, b, lit);
+          }
           undo();
-          matte(b, w, cellImg.data);
+          matte(lit, w, cellImg.data);
           const r = cellRect(sh.layout, row, k);
           sh.ctx.putImageData(cellImg, r.x, r.y);
         }
@@ -231,7 +259,7 @@ export async function exportSpriteSheets(template, opts = {}) {
 
     const viewMeta = Object.fromEntries(views.map((v) => [v, viewInfo(effect.stage, cams[v], size)]));
     const tracks = buildTracks(template, seed, plan, opts.cueLibrary);
-    const manifest = buildManifest({ template, seed, plan, sheets, visible, views: viewMeta, tracks, version: opts.version, frame: size });
+    const manifest = buildManifest({ template, seed, plan, sheets, visible, views: viewMeta, tracks, version: opts.version, frame: size, bloom });
     const base = template.id;
     const extra = [
       { name: `${base}.spritesheet.json`, about: "The same data as this guide, machine-readable" },
@@ -250,6 +278,7 @@ export async function exportSpriteSheets(template, opts = {}) {
   } finally {
     scene.remove(effect.group);
     effect.dispose();
+    post.dispose();
     renderer.dispose();
     renderer.forceContextLoss?.();
   }

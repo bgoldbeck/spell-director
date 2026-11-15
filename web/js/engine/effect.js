@@ -163,39 +163,153 @@ export function boltSegments(a, b, opts, r) {
   return out;
 }
 
-// Instanced cylinders: one draw call for many line segments of any width.
-class SegmentMesh {
-  constructor(capacity, color, opacity) {
-    const geo = new THREE.CylinderGeometry(1, 1, 1, 6, 1, true);
-    geo.translate(0, 0.5, 0);
-    this.material = new THREE.MeshBasicMaterial({
-      color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false,
+// Join segments that share endpoints into polylines. boltSegments and the
+// beam reuse the same point objects at joints, so a branch starts a new path.
+export function segmentsToPaths(segs) {
+  const paths = [];
+  const tails = new Map(); // end point -> path
+  for (const s of segs) {
+    let path = tails.get(s.a);
+    if (path) tails.delete(s.a);
+    else {
+      path = { pts: [s.a], w: [s.w] };
+      paths.push(path);
+    }
+    path.pts.push(s.b);
+    path.w.push(s.w);
+    tails.set(s.b, path);
+  }
+  return paths;
+}
+
+const RIBBON_VERTEX = /* glsl */ `
+attribute vec3 prev;
+attribute vec3 next;
+attribute float side;
+attribute float width;
+varying float vSide;
+vec3 safeNorm(vec3 v, vec3 fb) { float l = length(v); return l > 1e-6 ? v / l : fb; }
+void main() {
+  vec4 c = modelViewMatrix * vec4(position, 1.0);
+  vec3 p = (modelViewMatrix * vec4(prev, 1.0)).xyz;
+  vec3 n = (modelViewMatrix * vec4(next, 1.0)).xyz;
+  vec3 d1 = safeNorm(c.xyz - p, vec3(0.0, 1.0, 0.0));
+  vec3 d2 = safeNorm(n - c.xyz, d1);
+  vec3 dir = safeNorm(d1 + d2, d1);
+  vec3 eye = isOrthographic ? vec3(0.0, 0.0, 1.0) : safeNorm(-c.xyz, vec3(0.0, 0.0, 1.0));
+  // Widen the ribbon sideways to the camera: it always shows its flat face.
+  vec3 perp = safeNorm(cross(dir, eye), vec3(1.0, 0.0, 0.0));
+  vec3 n1 = safeNorm(cross(d1, eye), perp);
+  float miter = clamp(1.0 / max(0.35, abs(dot(perp, n1))), 1.0, 2.0);
+  gl_Position = projectionMatrix * vec4(c.xyz + perp * side * width * miter, 1.0);
+  vSide = side;
+}`;
+
+const RIBBON_FRAGMENT = /* glsl */ `
+uniform vec3 color;
+uniform float opacity;
+uniform float hardness;
+varying float vSide;
+void main() {
+  float x = abs(vSide);
+  // Soft across the width: bright in the middle, fading to nothing at the edge.
+  float a = pow(max(0.0, 1.0 - x * x), hardness);
+  gl_FragColor = vec4(color, a * opacity);
+  #include <colorspace_fragment>
+}`;
+
+// Camera-facing ribbons with a soft profile, one draw call for many polylines.
+// The ribbon turns to face whichever camera draws it (in the vertex shader),
+// so all four views stay correct in "All four" mode.
+class RibbonMesh {
+  constructor(capacity, color, opacity = 1, hardness = 1) {
+    this.capacity = capacity * 2 + 64; // points
+    const n = this.capacity;
+    const geo = new THREE.BufferGeometry();
+    const attr = (k, size) => {
+      const a = new THREE.BufferAttribute(new Float32Array(n * 2 * size), size);
+      a.setUsage(THREE.DynamicDrawUsage);
+      geo.setAttribute(k, a);
+      return a;
+    };
+    this.pos = attr("position", 3);
+    this.prev = attr("prev", 3);
+    this.next = attr("next", 3);
+    this.side = attr("side", 1);
+    this.width = attr("width", 1);
+    this.index = new THREE.BufferAttribute(new Uint32Array(n * 6), 1);
+    this.index.setUsage(THREE.DynamicDrawUsage);
+    geo.setIndex(this.index);
+    for (let i = 0; i < n; i++) {
+      this.side.array[i * 2] = -1;
+      this.side.array[i * 2 + 1] = 1;
+    }
+    this.material = new THREE.ShaderMaterial({
+      vertexShader: RIBBON_VERTEX,
+      fragmentShader: RIBBON_FRAGMENT,
+      uniforms: {
+        color: { value: new THREE.Color(color) },
+        opacity: { value: opacity },
+        hardness: { value: hardness },
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
     });
-    this.mesh = new THREE.InstancedMesh(geo, this.material, capacity);
+    this.mesh = new THREE.Mesh(geo, this.material);
     this.mesh.frustumCulled = false;
-    this.mesh.count = 0;
-    this.capacity = capacity;
-    this._m = new THREE.Matrix4();
-    this._q = new THREE.Quaternion();
-    this._s = new THREE.Vector3();
-    this._d = new THREE.Vector3();
+    geo.setDrawRange(0, 0);
   }
 
+  get opacity() {
+    return this.material.uniforms.opacity.value;
+  }
+
+  set opacity(v) {
+    this.material.uniforms.opacity.value = v;
+  }
+
+  // segs: [{a, b, w}] (joined into polylines), radius: half-width in world units.
   set(segs, radius) {
-    let n = 0;
-    for (const s of segs) {
-      if (n >= this.capacity) break;
-      this._d.subVectors(s.b, s.a);
-      const len = this._d.length();
-      if (len < 1e-5) continue;
-      this._q.setFromUnitVectors(UP, this._d.normalize());
-      const rr = Math.max(0.0005, radius * s.w);
-      this._s.set(rr, len, rr);
-      this._m.compose(s.a, this._q, this._s);
-      this.mesh.setMatrixAt(n++, this._m);
+    this.setPaths(segmentsToPaths(segs), radius);
+  }
+
+  // paths: [{pts: [Vector3], w: [width multiplier per point]}].
+  setPaths(paths, radius) {
+    const P = this.pos.array;
+    const V = this.prev.array;
+    const N = this.next.array;
+    const W = this.width.array;
+    const I = this.index.array;
+    let v = 0; // point index
+    let ii = 0;
+    const put = (arr, k, p) => {
+      arr[k * 6] = arr[k * 6 + 3] = p.x;
+      arr[k * 6 + 1] = arr[k * 6 + 4] = p.y;
+      arr[k * 6 + 2] = arr[k * 6 + 5] = p.z;
+    };
+    const tmp = new THREE.Vector3();
+    for (const path of paths) {
+      const m = path.pts.length;
+      if (m < 2 || v + m > this.capacity) continue;
+      for (let i = 0; i < m; i++) {
+        const k = v + i;
+        const p = path.pts[i];
+        put(P, k, p);
+        put(V, k, i > 0 ? path.pts[i - 1] : tmp.copy(p).multiplyScalar(2).sub(path.pts[1]));
+        put(N, k, i < m - 1 ? path.pts[i + 1] : tmp.copy(p).multiplyScalar(2).sub(path.pts[m - 2]));
+        W[k * 2] = W[k * 2 + 1] = Math.max(0.0005, radius * path.w[i]);
+        if (i < m - 1) {
+          const a = k * 2;
+          I[ii++] = a; I[ii++] = a + 1; I[ii++] = a + 2;
+          I[ii++] = a + 1; I[ii++] = a + 3; I[ii++] = a + 2;
+        }
+      }
+      v += m;
     }
-    this.mesh.count = n;
-    this.mesh.instanceMatrix.needsUpdate = true;
+    for (const a of [this.pos, this.prev, this.next, this.width, this.index]) a.needsUpdate = true;
+    this.mesh.geometry.setDrawRange(0, ii);
   }
 }
 
@@ -249,11 +363,17 @@ class BoltLayer extends Layer {
     super(effect, def, instance);
     const [core, outer] = this.colors;
     const secondary = new THREE.Color(effect.template.palette.secondary || effect.template.palette.primary);
-    this.core = new SegmentMesh(600, core, 1);
-    this.outer = new SegmentMesh(600, outer, 0.85);
-    this.glow = new SegmentMesh(600, secondary, 0.22);
+    this.core = new RibbonMesh(600, core, 1, 0.5);
+    this.outer = new RibbonMesh(600, outer, 0.85, 1.4);
+    this.glow = new RibbonMesh(600, secondary, 0.22, 2.5);
     this.group.add(this.glow.mesh, this.outer.mesh, this.core.mesh);
     this.segs = [];
+  }
+
+  // The beam this bolt rides on, if it is attached to one.
+  beam() {
+    const attached = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
+    return attached instanceof BeamLayer ? attached : null;
   }
 
   endpoints() {
@@ -302,9 +422,10 @@ class BoltLayer extends Layer {
       branch_depth: this.p("branch_depth", t, 0),
       branch_length_ratio: this.p("branch_length_ratio", t, 0.35),
     };
-    const hops = this.endpoints();
+    const beam = this.beam();
+    const hops = beam ? [] : this.endpoints();
     const isChain = this.effect.template.space.travel === "chain" && hops.length > 1;
-    let segs = [];
+    let segs = beam ? hugArcs(beam.path, beam.halfWidth, opts, this.rng("hug", tick)) : [];
     hops.forEach(([a, b], k) => {
       const appear = isChain ? w.start + this.effect.stage.hopDelay(k) : w.start;
       if (t < appear) return;
@@ -323,12 +444,12 @@ class BoltLayer extends Layer {
     this.segs = segs;
     const width = this.p("width_px", t, 4) * PX;
     const glowPx = this.p("glow_px", t, 10) * PX;
-    this.core.set(segs, width * 0.18);
-    this.outer.set(segs, width * 0.45);
-    this.glow.set(segs, Math.max(width, glowPx));
-    this.core.material.opacity = Math.min(1, I * 1.1);
-    this.outer.material.opacity = 0.85 * I;
-    this.glow.material.opacity = 0.18 * I;
+    this.core.set(segs, width * 0.22);
+    this.outer.set(segs, width * 0.6);
+    this.glow.set(segs, Math.max(width, glowPx) * 1.2);
+    this.core.opacity = Math.min(1, I * 1.1);
+    this.outer.opacity = 0.85 * I;
+    this.glow.opacity = 0.18 * I;
   }
 
   points() {
@@ -340,11 +461,53 @@ class BoltLayer extends Layer {
   }
 }
 
+// Short arcs that ride along a beam: each one jumps between two nearby points
+// on the beam's path and never strays further than about two beam widths, so
+// they hug the beam instead of flailing across the screen.
+export function hugArcs(path, halfWidth, opts, r) {
+  if (!path || path.length < 2) return [];
+  const lengths = [0];
+  for (let i = 1; i < path.length; i++) lengths.push(lengths[i - 1] + path[i].distanceTo(path[i - 1]));
+  const total = lengths[lengths.length - 1];
+  if (total < 1e-3) return [];
+  const at = (d) => {
+    d = Math.max(0, Math.min(total, d));
+    let i = 1;
+    while (i < lengths.length - 1 && lengths[i] < d) i++;
+    const u = (d - lengths[i - 1]) / Math.max(1e-6, lengths[i] - lengths[i - 1]);
+    return path[i - 1].clone().lerp(path[i], u);
+  };
+  const count = Math.max(1, Math.round((opts.segments ?? 12) / 3));
+  const reach = Math.max(0.02, halfWidth * 3);
+  const out = [];
+  for (let k = 0; k < count; k++) {
+    const span = r.range(0.25, 0.7) * Math.min(1, total / 2);
+    const d0 = r.range(0, Math.max(0, total - span));
+    const a = at(d0);
+    const b = at(d0 + span);
+    const dir = new THREE.Vector3().subVectors(b, a).normalize();
+    const [p1, p2] = perpendiculars(dir);
+    const n = 6 + Math.round(span * 8);
+    const pts = [a];
+    for (let i = 1; i < n; i++) {
+      const u = i / n;
+      const env = Math.sin(Math.PI * u);
+      const off = reach * env * (opts.jaggedness ?? 0.6);
+      pts.push(at(d0 + span * u)
+        .addScaledVector(p1, r.range(-1, 1) * off)
+        .addScaledVector(p2, r.range(-1, 1) * off));
+    }
+    pts.push(b);
+    for (let i = 0; i < pts.length - 1; i++) out.push({ a: pts[i], b: pts[i + 1], w: 1 - (opts.taper ?? 0.4) * Math.abs(i / (pts.length - 1) - 0.5) * 2 });
+  }
+  return out;
+}
+
 class CrackleLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
-    this.core = new SegmentMesh(300, this.colors[0].clone().lerp(new THREE.Color("#ffffff"), 0.5), 1);
-    this.outer = new SegmentMesh(300, this.colors[1], 0.6);
+    this.core = new RibbonMesh(300, this.colors[0].clone().lerp(new THREE.Color("#ffffff"), 0.5), 1, 0.5);
+    this.outer = new RibbonMesh(300, this.colors[1], 0.6, 1.5);
     this.group.add(this.outer.mesh, this.core.mesh);
   }
 
@@ -373,10 +536,10 @@ class CrackleLayer extends Layer {
       const end = start.clone().addScaledVector(dir, len * r.range(0.6, 1.2));
       segs = segs.concat(boltSegments(start, end, { segments: 5, jaggedness: this.p("jaggedness", t, 0.8), taper: 0.6 }, r));
     }
-    this.core.set(segs, 0.006);
-    this.outer.set(segs, 0.016);
-    this.core.material.opacity = Math.min(1, I * 1.2);
-    this.outer.material.opacity = 0.6 * I;
+    this.core.set(segs, 0.008);
+    this.outer.set(segs, 0.026);
+    this.core.opacity = Math.min(1, I * 1.2);
+    this.outer.opacity = 0.6 * I;
   }
 }
 
@@ -410,7 +573,9 @@ class GlowLayer extends Layer {
       s.position.copy(pts[i]);
       s.scale.setScalar(radius * 2 * k);
     });
-    this.material.opacity = Math.min(1, I * (pts.length > 1 ? 0.35 : 0.9));
+    // Bloom already spreads light along bolts and beams, so a glow strung along
+    // one stays faint; a glow on a single point is the main soft light.
+    this.material.opacity = Math.min(1, I * (pts.length > 1 ? 0.1 : 0.75));
   }
 }
 
@@ -441,25 +606,21 @@ class FlashLayer extends Layer {
   }
 }
 
+// Sparks are drawn as short streaks along their motion (where each spark is
+// now back to where it was a moment ago), which reads as speed in a still
+// frame; slow sparks shrink to dots.
 class SparksLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
     this.max = 200;
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(this.max * 3), 3));
-    geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(this.max * 3), 3));
-    this.points3 = new THREE.Points(geo, new THREE.PointsMaterial({
-      size: 0.05, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, map: soft(),
-    }));
-    this.points3.frustumCulled = false;
-    this.group.add(this.points3);
+    const [core, outer] = this.colors;
+    this.streaks = new RibbonMesh(this.max * 4, outer, 1, 1.2);
+    this.hot = new RibbonMesh(this.max * 4, core.clone().lerp(outer, 0.35), 1, 0.6);
+    this.group.add(this.streaks.mesh, this.hot.mesh);
   }
 
   update(t) {
     const w = this.window;
-    const geo = this.points3.geometry;
-    const pos = geo.attributes.position.array;
-    const col = geo.attributes.color.array;
     const local = this.local(t);
     const count = Math.min(this.max, Math.round(this.p("count", 0, 20)));
     const life = this.p("lifetime_ms", 0, 400);
@@ -477,10 +638,11 @@ class SparksLayer extends Layer {
     const gravity = this.p("gravity", 0, 800) * PX;
     const spreadDeg = this.p("spread_deg", 0, 180);
     const drag = Math.max(0.01, this.p("drag", 0, 0.1) * 6);
-    const sz = this.p("size_px", 0, 3);
+    const sz = this.p("size_px", 0, 3) * PX;
     // Sparks are born over emit_ms (default 120 ms: one burst); longer reads as a fountain.
     const span = Math.max(1, Math.min(w.end - w.start, this.p("emit_ms", 0, 120)));
-    let n = 0;
+    const streakS = this.p("streak_ms", 0, 60) / 1000;
+    const paths = [];
     for (let i = 0; i < count; i++) {
       const born = r.range(0, span);
       const lifeI = life * r.range(0.7, 1.2);
@@ -488,46 +650,82 @@ class SparksLayer extends Layer {
       const cone = THREE.MathUtils.degToRad(spreadDeg / 2);
       const phi = spreadDeg >= 360 ? Math.acos(r.range(-1, 1)) : r.range(0, Math.min(Math.PI, cone));
       const v = speed * (1 + r.range(-spread, spread));
-      const dir = new THREE.Vector3(Math.sin(phi) * Math.cos(theta), Math.cos(phi), Math.sin(phi) * Math.sin(theta));
+      const dx = Math.sin(phi) * Math.cos(theta);
+      const dy = Math.cos(phi);
+      const dz = Math.sin(phi) * Math.sin(theta);
       const age = (local - born) / 1000;
-      const alive = age >= 0 && age * 1000 <= lifeI;
-      let px = 0;
-      let py = 0;
-      let pz = 0;
-      let a = 0;
-      if (alive) {
-        const travel = (v * (1 - Math.exp(-drag * age))) / drag;
-        px = origin.x + dir.x * travel;
-        py = Math.max(0.01, origin.y + dir.y * travel - 0.5 * gravity * age * age);
-        pz = origin.z + dir.z * travel;
-        a = 1 - (age * 1000) / lifeI;
-      }
-      pos[n * 3] = px;
-      pos[n * 3 + 1] = py;
-      pos[n * 3 + 2] = pz;
-      const c = this.colors[1];
-      col[n * 3] = c.r * a;
-      col[n * 3 + 1] = c.g * a;
-      col[n * 3 + 2] = c.b * a;
-      n++;
+      if (age < 0 || age * 1000 > lifeI) continue;
+      const at = (a) => {
+        const travel = (v * (1 - Math.exp(-drag * a))) / drag;
+        return new THREE.Vector3(
+          origin.x + dx * travel,
+          Math.max(0.01, origin.y + dy * travel - 0.5 * gravity * a * a),
+          origin.z + dz * travel,
+        );
+      };
+      const fade = 1 - (age * 1000) / lifeI;
+      const head = at(age);
+      const tail = at(Math.max(0, age - streakS));
+      if (head.distanceTo(tail) < sz * 0.5) tail.copy(head).addScaledVector(UP, -sz * 0.5);
+      const mid = head.clone().lerp(tail, 0.5);
+      paths.push({ pts: [head, mid, tail], w: [fade, fade * 0.8, 0.15 * fade] });
     }
-    geo.setDrawRange(0, n);
-    geo.attributes.position.needsUpdate = true;
-    geo.attributes.color.needsUpdate = true;
-    this.points3.material.size = sz * PX * 3.2;
+    this.streaks.setPaths(paths, sz * 0.75);
+    this.hot.setPaths(paths, sz * 0.3);
+    this.streaks.opacity = 0.9;
+    this.hot.opacity = 1;
   }
 }
+
+const RING_FRAGMENT = /* glsl */ `
+uniform vec3 color;
+uniform float opacity;
+uniform float inner; // inner edge, as a fraction of the outer radius
+uniform float softness;
+varying vec2 vUv;
+void main() {
+  float d = length(vUv - 0.5) * 2.0;
+  float mid = (inner + 1.0) * 0.5;
+  float half_ = max(1e-4, (1.0 - inner) * 0.5);
+  float x = clamp(abs(d - mid) / half_, 0.0, 1.0);
+  // softness 0: a crisp band; 1: a soft glow that fades to both edges.
+  float a = 1.0 - smoothstep(1.0 - max(0.05, softness), 1.0, x);
+  // Shockwaves are brightest on their leading edge.
+  a *= mix(0.55, 1.0, smoothstep(inner, 1.0, d));
+  gl_FragColor = vec4(color, a * opacity);
+  #include <colorspace_fragment>
+}`;
+
+const PLANE_VERTEX = /* glsl */ `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`;
 
 class RingLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
-    this.material = new THREE.MeshBasicMaterial({
-      color: this.colors[1], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+    this.material = new THREE.ShaderMaterial({
+      vertexShader: PLANE_VERTEX,
+      fragmentShader: RING_FRAGMENT,
+      uniforms: {
+        color: { value: this.colors[1].clone() },
+        opacity: { value: 0 },
+        inner: { value: 0.9 },
+        softness: { value: Math.max(0, Math.min(1, this.base.softness ?? 0.5)) },
+      },
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      polygonOffset: true,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
     });
-    this.mesh = new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 72), this.material);
+    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.material);
     this.mesh.rotation.x = -Math.PI / 2;
     this.group.add(this.mesh);
-    this._thick = null;
   }
 
   update(t) {
@@ -540,16 +738,14 @@ class RingLayer extends Layer {
     const r0 = this.p("start_radius_px", t, 10) * PX;
     const r1 = this.p("end_radius_px", t, 80) * PX;
     const radius = r0 + (r1 - r0) * e;
-    const thick = Math.min(0.95, (this.p("thickness_px", t, 5) * PX) / Math.max(0.01, radius));
-    if (this._thick === null || Math.abs(thick - this._thick) > 0.02) {
-      this.mesh.geometry.dispose();
-      this.mesh.geometry = new THREE.RingGeometry(1 - thick, 1, 72);
-      this._thick = thick;
-    }
+    // A soft ring needs room to fade: draw it a little wider than its thickness.
+    const thick = (this.p("thickness_px", t, 5) * PX) * (1 + this.material.uniforms.softness.value);
+    const outer = radius + thick / 2;
     const at = this.anchorPos();
     this.mesh.position.set(at.x, 0.02, at.z);
-    this.mesh.scale.setScalar(radius);
-    this.material.opacity = I * (1 - u * 0.7);
+    this.mesh.scale.setScalar(outer);
+    this.material.uniforms.inner.value = Math.max(0, (radius - thick / 2) / outer);
+    this.material.uniforms.opacity.value = Math.min(1, I * (1 - u * 0.7) * 1.3);
   }
 }
 
@@ -624,9 +820,30 @@ class OrbLayer extends Layer {
     this.shellMat = new THREE.MeshBasicMaterial({ color: this.colors[1], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
     this.core = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), this.coreMat);
     this.shell = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), this.shellMat);
-    this.arcs = new SegmentMesh(200, this.colors[1].clone().lerp(new THREE.Color("#fff"), 0.4), 1);
-    this.group.add(this.shell, this.core, this.arcs.mesh);
+    this.arcs = new RibbonMesh(200, this.colors[1].clone().lerp(new THREE.Color("#fff"), 0.4), 1, 0.6);
+    this.trail = new RibbonMesh(64, this.colors[1], 0.7, 1.6);
+    this.trailCore = new RibbonMesh(64, this.colors[0], 0.9, 0.6);
+    this.group.add(this.trail.mesh, this.trailCore.mesh, this.shell, this.core, this.arcs.mesh);
     this.currentRadius = 0;
+    this.pos = this.anchorPos();
+    // Projectile spells: an orb held in the hand flies to the target during
+    // its travel beat.
+    const tp = effect.template;
+    const flies = tp.space?.travel === "projectile" && ["caster_hand", "caster"].includes(def.anchor || "target");
+    this.flight = flies ? (this.window?.beats || []).find((b) => b.phase === "travel") || null : null;
+  }
+
+  // Where the orb is at time t: in the hand, on its way, or at the target.
+  posAt(t) {
+    const f = this.flight;
+    if (!f) return this.anchorPos();
+    const st = this.effect.stage;
+    const from = st.hand.clone();
+    const to = st.chest(0);
+    const u = Math.max(0, Math.min(1, (t - f.start_ms) / Math.max(1, f.end_ms - f.start_ms)));
+    const e = this.p("travel_ease", t, "linear") === "ease_in" ? u * u : u;
+    const arc = this.p("arc_height_px", t, 0) * PX * 4 * e * (1 - e);
+    return from.lerp(to, e).add(new THREE.Vector3(0, arc, 0));
   }
 
   update(t) {
@@ -636,7 +853,8 @@ class OrbLayer extends Layer {
       this.currentRadius = 0;
       return;
     }
-    const at = this.anchorPos();
+    const at = this.posAt(t);
+    this.pos = at;
     const pulse = this.p("pulse_hz", t, 4);
     const wob = this.p("wobble", t, 0.1);
     const r = this.p("radius_px", t, 10) * PX * (1 + 0.08 * Math.sin((t / 1000) * pulse * Math.PI * 2));
@@ -656,22 +874,51 @@ class OrbLayer extends Layer {
       const b = at.clone().addScaledVector(dir, r * n.range(1.3, 2.2));
       segs = segs.concat(boltSegments(a, b, { segments: 4, jaggedness: 0.9, taper: 0.5 }, n));
     }
-    this.arcs.set(segs, 0.007);
-    this.arcs.material.opacity = I;
+    this.arcs.set(segs, 0.009);
+    this.arcs.opacity = I;
+    this.updateTrail(t, r, I);
+  }
+
+  // A tapering streak behind a flying orb: where the orb was over the last trail_ms.
+  updateTrail(t, r, I) {
+    const f = this.flight;
+    const trailMs = this.p("trail_ms", t, 140);
+    if (!f || t <= f.start_ms || trailMs <= 0) {
+      this.trail.setPaths([], 0);
+      this.trailCore.setPaths([], 0);
+      return;
+    }
+    const steps = 16;
+    const pts = [];
+    const w = [];
+    for (let k = 0; k <= steps; k++) {
+      const tk = Math.max(f.start_ms, t - (trailMs * k) / steps);
+      pts.push(this.posAt(tk));
+      w.push(1 - k / steps);
+      if (tk === f.start_ms) break;
+    }
+    const paths = pts.length > 1 ? [{ pts, w }] : [];
+    this.trail.setPaths(paths, r * 0.9);
+    this.trailCore.setPaths(paths, r * 0.35);
+    this.trail.opacity = 0.7 * I;
+    this.trailCore.opacity = 0.9 * I;
   }
 
   points() {
-    return [this.anchorPos()];
+    return [this.pos.clone()];
   }
 }
 
 class BeamLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
-    this.core = new SegmentMesh(120, this.colors[0], 1);
-    this.outer = new SegmentMesh(120, this.colors[1], 0.8);
-    this.group.add(this.outer.mesh, this.core.mesh);
+    this.core = new RibbonMesh(120, this.colors[0], 1, 0.45);
+    this.outer = new RibbonMesh(120, this.colors[1], 0.8, 1.2);
+    this.halo = new RibbonMesh(120, this.colors[1], 0.2, 3);
+    this.group.add(this.halo.mesh, this.outer.mesh, this.core.mesh);
     this.segs = [];
+    this.path = [];
+    this.halfWidth = 0;
   }
 
   endpoints() {
@@ -684,6 +931,7 @@ class BeamLayer extends Layer {
     this.group.visible = I > 0.001;
     if (!this.group.visible) {
       this.segs = [];
+      this.path = [];
       return;
     }
     const [[a, b]] = this.endpoints();
@@ -713,11 +961,15 @@ class BeamLayer extends Layer {
     const segs = [];
     for (let i = 0; i < shown - 1; i++) segs.push({ a: pts[i], b: pts[i + 1], w: 1 });
     this.segs = segs;
+    this.path = pts.slice(0, shown);
     const width = this.p("width_px", t, 14) * PX;
-    this.core.set(segs, width * 0.22);
-    this.outer.set(segs, width * 0.5);
-    this.core.material.opacity = Math.min(1, I * 1.1);
-    this.outer.material.opacity = 0.75 * I;
+    this.halfWidth = width * 0.5;
+    this.core.set(segs, width * 0.18);
+    this.outer.set(segs, width * 0.55);
+    this.halo.set(segs, width * 1.5);
+    this.core.opacity = Math.min(1, I);
+    this.outer.opacity = 0.5 * I;
+    this.halo.opacity = 0.12 * I;
   }
 
   points() {

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "../vendor/OrbitControls.js";
 import { Effect } from "./engine/effect.js";
+import { Post } from "./engine/post.js";
 import { cuesAt, eventsBetween, soundEvents } from "./engine/sound.js";
 import { SoundPlayer } from "./audio.js";
 import { VIEWS, VIEW_LABELS, viewCamera } from "./engine/stage.js";
@@ -19,6 +20,7 @@ const ui = {
   palette: $("palette"), notes: $("notes"), layers: $("layers"), focus: $("focus"), file: $("file"),
   exportBtn: $("export"), exportDialog: $("export-dialog"), exportGo: $("export-go"), exportStatus: $("export-status"),
   exportForm: $("export-form"),
+  bloom: $("bloom"),
   mute: $("mute"), flash: $("flash"), dim: $("dim"), quadLabels: $("quad-labels"), viewRead: $("view-read"), error: $("error"),
 };
 
@@ -122,7 +124,6 @@ function playSound(from, to, wrapped) {
 const renderer = new THREE.WebGLRenderer({ canvas: ui.canvas, antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.setScissorTest(true);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#0b0d12");
@@ -215,7 +216,22 @@ function resize() {
   }
 }
 
-function renderView(cam, x, y, w, h) {
+// Bloom is on by default; the Bloom checkbox or ?bloom=off turns it off (remembered per browser).
+function bloomPref() {
+  const q = new URLSearchParams(location.search).get("bloom");
+  if (q === "off" || q === "0") return false;
+  if (q === "on" || q === "1") return true;
+  try {
+    return localStorage.getItem("spelldirector.bloom") !== "0";
+  } catch {
+    return true;
+  }
+}
+
+const post = new Post(renderer, { bloom: bloomPref() });
+
+// Shake offsets the camera for this frame only.
+function shaken(cam) {
   const shake = state.effect.shake;
   const saved = cam.position.clone();
   if (shake.x || shake.y) {
@@ -223,27 +239,31 @@ function renderView(cam, x, y, w, h) {
     const up = new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld, 1);
     cam.position.addScaledVector(right, shake.x).addScaledVector(up, shake.y);
   }
-  renderer.setViewport(x, y, w, h);
-  renderer.setScissor(x, y, w, h);
-  renderer.render(scene, cam);
-  cam.position.copy(saved);
+  return () => cam.position.copy(saved);
 }
 
 function render() {
   resize();
-  const w = ui.canvas.clientWidth;
-  const h = ui.canvas.clientHeight;
+  // Drawing-buffer pixels; viewports have a bottom-left origin.
+  const W = ui.canvas.width;
+  const H = ui.canvas.height;
+  post.setSize(W, H);
+  let views;
   if (state.view === "quad") {
-    const hw = Math.floor(w / 2);
-    const hh = Math.floor(h / 2);
-    // Three's viewport origin is bottom-left.
-    renderView(cameras.front, 0, hh, hw, h - hh);
-    renderView(cameras.side, hw, hh, w - hw, h - hh);
-    renderView(cameras.top, 0, 0, hw, hh);
-    renderView(cameras.three_quarter, hw, 0, w - hw, hh);
+    const hw = Math.floor(W / 2);
+    const hh = Math.floor(H / 2);
+    views = [
+      { camera: cameras.front, x: 0, y: hh, w: hw, h: H - hh },
+      { camera: cameras.side, x: hw, y: hh, w: W - hw, h: H - hh },
+      { camera: cameras.top, x: 0, y: 0, w: hw, h: hh },
+      { camera: cameras.three_quarter, x: hw, y: 0, w: W - hw, h: hh },
+    ];
   } else {
-    renderView(cameras[state.view], 0, 0, w, h);
+    views = [{ camera: cameras[state.view] }];
   }
+  const undo = views.map((v) => shaken(v.camera));
+  post.render(views.map((v) => ({ scene, ...v })));
+  undo.forEach((u) => u());
 }
 
 // ------------------------------------------------------------ effect + UI
@@ -515,6 +535,15 @@ ui.mute.onclick = () => {
 };
 // Browsers start audio only after a user gesture.
 for (const ev of ["pointerdown", "keydown"]) window.addEventListener(ev, () => sound.player.unlock(), { capture: true });
+ui.bloom.checked = post.enabled;
+ui.bloom.onchange = () => {
+  post.enabled = ui.bloom.checked;
+  try {
+    localStorage.setItem("spelldirector.bloom", post.enabled ? "1" : "0");
+  } catch {
+    /* private mode: just don't remember */
+  }
+};
 ui.speed.onchange = () => (state.speed = Number(ui.speed.value));
 ui.scrubber.oninput = () => {
   state.t = Number(ui.scrubber.value);
@@ -548,6 +577,7 @@ window.addEventListener("keydown", (e) => {
     e.preventDefault();
     ui.play.click();
   } else if (e.key === "m" || e.key === "M") ui.mute.click();
+  else if (e.key === "b" || e.key === "B") ui.bloom.click();
   else if (e.key === "[") ui.prevSpell.click();
   else if (e.key === "]") ui.nextSpell.click();
   else if (["1", "2", "3", "4", "5"].includes(e.key)) {
@@ -582,6 +612,7 @@ function exportOptions(form) {
     frame: Number(form.elements.frame.value),
     fps: form.elements.fps.value ? Number(form.elements.fps.value) : undefined,
     layers: form.elements.layers.checked,
+    bloom: form.elements.bloom.checked,
   };
 }
 
