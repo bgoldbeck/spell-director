@@ -13,7 +13,8 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-ROOT = Path(__file__).resolve().parent.parent
+# In the packaged exe, bundled files live under sys._MEIPASS.
+ROOT = Path(getattr(sys, "_MEIPASS", None) or Path(__file__).resolve().parent.parent)
 SCHEMAS = {
     "spelldirector.template/0.1.0": ROOT / "schemas" / "template-0.1.0.schema.json",
 }

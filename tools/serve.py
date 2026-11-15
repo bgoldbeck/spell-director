@@ -22,8 +22,10 @@ JPEGs are served under /analysis/<id>/ from a temp folder; only the newest
 few analyses are kept. This needs numpy, Pillow and PyAV (bundled in the exe);
 without them the endpoint answers 503 and the rest of the viewer still works.
 
-Serves web/ at / and the repo's templates/ at /templates/. The template
-index is rebuilt on every request, so new template files show up on reload.
+Serves web/ at / and the templates at /templates/: the repo's templates/,
+or in the exe the built-in ones plus the user's library folder (see
+tools/app_paths.py). The template index is rebuilt on every request, so new
+template files show up on reload.
 """
 
 from __future__ import annotations
@@ -51,7 +53,7 @@ from pathlib import Path
 ROOT = Path(getattr(sys, "_MEIPASS", None) or Path(__file__).resolve().parent.parent)
 sys.path.insert(0, str(ROOT / "tools"))
 
-from build_index import build  # noqa: E402
+import app_paths  # noqa: E402
 
 DEFAULT_PORT = 47811
 APP = "SpellDirector"
@@ -71,6 +73,34 @@ ANALYZE_MAX_BYTES = 1024 * 1024 * 1024  # 1 GB
 ANALYSES_KEPT = 6
 _ANALYSIS_ID = re.compile(r"^[0-9a-f]{32}$")
 _analyze_lock = threading.Lock()  # one breakdown at a time: they are CPU and memory heavy
+
+
+# Sprite export jobs for a headless browser (tools/export_sprites.py without
+# Playwright): the page GETs its options from /api/export-job/<token> and POSTs
+# the files back there.
+EXPORT_MAX_BYTES = 1024 * 1024 * 1024
+_export_jobs: dict[str, dict] = {}
+_export_jobs_lock = threading.Lock()
+
+
+def add_export_job(opts: dict) -> tuple[str, threading.Event, dict]:
+    """Register an export job; returns (token, done event, job). job["result"] or job["error"] is set when done."""
+    token = uuid.uuid4().hex
+    job = {"opts": opts, "done": threading.Event()}
+    with _export_jobs_lock:
+        _export_jobs[token] = job
+    return token, job["done"], job
+
+
+def drop_export_job(token: str) -> None:
+    with _export_jobs_lock:
+        _export_jobs.pop(token, None)
+
+
+def _export_job(path: str) -> dict | None:
+    token = path[len("/api/export-job/"):]
+    with _export_jobs_lock:
+        return _export_jobs.get(token) if _ANALYSIS_ID.match(token) else None
 
 
 def analysis_root() -> Path:
@@ -169,11 +199,9 @@ class Handler(SimpleHTTPRequestHandler):
                     return str(target)
             return str(ROOT / "web" / "404")
         if clean.startswith("/templates/"):
-            rel = clean[len("/templates/"):]
-            target = (ROOT / "templates" / rel).resolve()
-            if (ROOT / "templates").resolve() in target.parents:
-                return str(target)
-            return str(ROOT / "web" / "404")
+            # The user's library first (the exe's saved spells), then the built-in templates.
+            target = app_paths.find_template_file(urllib.parse.unquote(clean[len("/templates/"):]))
+            return str(target) if target else str(ROOT / "web" / "404")
         return super().translate_path(path)
 
     def send_json(self, data, status: int = 200) -> None:
@@ -186,11 +214,15 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):  # noqa: N802
         clean = self.path.split("?", 1)[0]
+        if clean.startswith("/api/export-job/"):
+            job = _export_job(clean)
+            self.send_json({"opts": job["opts"]} if job else {"error": "no such export job"}, 200 if job else 404)
+            return
         if clean == "/version.json":
             self.send_json({"app": APP, "version": VERSION})
             return
         if clean == "/templates/index.json":
-            body = json.dumps(build()).encode()
+            body = json.dumps(app_paths.template_index()).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
@@ -201,6 +233,9 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):  # noqa: N802
         url = urllib.parse.urlsplit(self.path)
+        if url.path.startswith("/api/export-job/"):
+            self.receive_export(url.path)
+            return
         if url.path != "/api/analyze":
             self.send_json({"error": "not found"}, 404)
             return
@@ -218,6 +253,28 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_json({"error": "bad Content-Length"}, 400)
             return
         self.send_json(result)
+
+    def receive_export(self, path: str) -> None:
+        job = _export_job(path)
+        if job is None or job["done"].is_set():
+            self.close_connection = True
+            self.send_json({"error": "no such export job"}, 404)
+            return
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            if not 0 < length <= EXPORT_MAX_BYTES:
+                raise ValueError
+            body = json.loads(self.rfile.read(length))
+        except ValueError:
+            self.close_connection = True
+            self.send_json({"error": "bad export body"}, 400)
+            return
+        if isinstance(body, dict) and "error" in body:
+            job["error"] = str(body["error"])
+        else:
+            job["result"] = body
+        job["done"].set()
+        self.send_json({"ok": True})
 
     def end_headers(self):
         self.send_header("Cache-Control", "no-store")

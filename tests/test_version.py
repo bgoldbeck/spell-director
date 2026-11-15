@@ -61,14 +61,16 @@ def test_exe_build_bundles_viewer_and_templates():
     args = build_exe.pyinstaller_args("1.2.3")
     joined = " ".join(args)
     assert "--onefile" in args and build_exe.exe_name("1.2.3") in args
-    for item in ("web", "templates", "schemas", "VERSION"):
+    for item in ("web", "templates", "schemas", "docs", "VERSION"):
         assert str(ROOT / item) in joined
+    # `exe --mcp` is the director: its package must be in, and Playwright (no driver in the exe) out.
+    assert "director.mcp_server" in args and args[args.index("--exclude-module") + 1] == "playwright"
     assert args[-1].endswith("exe_main.py")
     # The Analyze page's breakdown (numpy, Pillow, PyAV) must be in the exe.
     assert args[args.index("--hidden-import") + 1] == "breakdown"
     assert "av" in args[args.index("--collect-submodules") + 1:]
     reqs = (ROOT / "requirements-build.txt").read_text()
-    for pkg in ("pyinstaller", "numpy", "Pillow", "av"):
+    for pkg in ("pyinstaller", "numpy", "Pillow", "av", "mcp", "jsonschema"):
         assert f"\n{pkg}>=" in "\n" + reqs
 
 

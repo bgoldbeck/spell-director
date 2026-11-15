@@ -745,5 +745,23 @@ async function boot() {
   requestAnimationFrame(frame);
 }
 
+// For tools/export_sprites.py when Playwright isn't there (the packaged exe):
+// a headless browser opens ?export_job=<token>, and the page fetches the
+// export options from the server and posts the files back.
+async function runExportJob(token) {
+  const url = `api/export-job/${encodeURIComponent(token)}`;
+  let body;
+  try {
+    const { opts } = await (await fetch(url)).json();
+    body = await window.spellDirectorExport(opts);
+  } catch (err) {
+    body = { error: err?.message || String(err) };
+  }
+  await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+}
+
 window.spellDirector = state; // handy for debugging and screenshots
-boot();
+boot().then(() => {
+  const job = new URLSearchParams(location.search).get("export_job");
+  if (job) runExportJob(job);
+});
