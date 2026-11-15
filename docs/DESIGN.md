@@ -45,7 +45,7 @@ Key principles:
 | Exports (sprite sheets, PNG sequences, GIF) | not started | ROADMAP |
 | Engine integration | not started | ROADMAP |
 
-Languages: Python 3.11+ for tools and the director (jsonschema, numpy, Pillow, pytest, mcp 2.x), plain ES modules for the web viewer (no build step, Three.js r169 vendored in `web/vendor`). No CI; tests run locally.
+Languages: Python 3.11+ for tools and the director (jsonschema, numpy, Pillow, PyAV, pytest, mcp 2.x), plain ES modules for the web viewer (no build step, Three.js r169 vendored in `web/vendor`). No CI; tests run locally.
 
 ## 3. The template format
 
@@ -63,9 +63,11 @@ Full reference: [template-format.md](template-format.md). Summary:
 
 ## 4. GIF breakdown
 
-`python tools/breakdown.py spell.gif --out breakdowns/spell` measures a GIF and writes `breakdown.json` plus a labelled contact sheet, curves chart, palette swatches and heatmap. It reports frame timing (browser delay rules, merged frames), per-frame intensity / coverage / motion / centroid / bbox, peaks, flicker rate, hold frames, phase hints, footprint, travel direction, a camera-view guess and a palette with suggested slots.
+`python tools/breakdown.py spell.gif --out breakdowns/spell` measures a GIF or video and writes `breakdown.json` plus a labelled contact sheet, curves chart, palette swatches and heatmap. It reports frame timing (browser delay rules, merged frames), per-frame intensity / coverage / motion / centroid / bbox, peaks, flicker rate, hold frames, phase hints, footprint, travel direction, a camera-view guess and a palette with suggested slots.
 
 The [playbook](gif-breakdown-playbook.md) tells the AI how to turn that into a template: identify the camera view first, then timeline, layers, params, palette, and write and validate the template.
+
+Videos (MP4, WebM, MOV, MKV, AVI) are decoded with PyAV, trimmed with `--start`/`--end`, sampled at up to 30 fps and 20 s, with stored frames capped at 640 px. Each kept frame lasts until the next, like merged GIF frames, so the rest of the analysis is shared.
 
 Background is estimated as the 10th-percentile brightness per pixel (spell effects are mostly additive light).
 
@@ -102,7 +104,7 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 - **Beam-attached arcs** (`beam-arcs` in charge-discharge) spread too far from the beam. Arcs attached to a beam should hug it.
 - **Glow, flash and smoke are basic** (sprites and a CSS screen overlay). No bloom post-processing; bolts are instanced cylinders.
 - **Camera-view guess in the breakdown tool is weak** (called the 3/4 sample GIF "front"). The playbook has the AI confirm by eye.
-- Breakdown has only been tested on a synthetic GIF, never a real game GIF.
+- Breakdown has only been tested on a synthetic GIF and MP4, never a real game capture.
 - Only lightning has templates. Some layer params in the format (e.g. `light.radius` units, `decal.shape: burn`) are only roughly honored by the renderer.
 - Projectile travel (`travel: projectile`) is in the format but the viewer has no projectile layer behavior yet.
 - Screen flash in "All four" mode covers all quadrants at once.

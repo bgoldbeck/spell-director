@@ -4,6 +4,9 @@ Used by the tests and handy for trying the breakdown tool without a real GIF:
     python tools/sample_gif.py samples/synthetic-sky-strike.gif
     python tools/breakdown.py samples/synthetic-sky-strike.gif
 
+A path ending in .mp4 writes the same timeline as an H.264 video (needs PyAV):
+    python tools/sample_gif.py samples/synthetic-sky-strike.mp4
+
 Timeline (40 ms frames, 28 frames, 1120 ms):
     0-1    empty
     2-9    anticipation: ground glow grows
@@ -84,6 +87,30 @@ def write(path: Path) -> Path:
     return path
 
 
+def write_video(path: Path, fps: int = 1000 // FRAME_MS, lead_in: int = 0) -> Path:
+    """Write the timeline as a video. fps must be a multiple of 25 (the GIF's
+    rate); higher rates repeat frames. lead_in adds that many empty GIF frames
+    before the timeline (for testing --start)."""
+    import av
+
+    repeat = fps // (1000 // FRAME_MS)
+    if repeat < 1 or fps % (1000 // FRAME_MS):
+        raise ValueError("fps must be a multiple of 25")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    frames = [frame(0)] * lead_in + [frame(i) for i in range(28)]
+    with av.open(str(path), mode="w") as out:
+        stream = out.add_stream("libx264" if "libx264" in av.codecs_available else "mpeg4", rate=fps)
+        stream.width, stream.height, stream.pix_fmt = W, H, "yuv420p"
+        stream.options = {"crf": "12"} if stream.codec_context.name == "libx264" else {}
+        for img in frames:
+            for _ in range(repeat):
+                for packet in stream.encode(av.VideoFrame.from_image(img)):
+                    out.mux(packet)
+        for packet in stream.encode():
+            out.mux(packet)
+    return path
+
+
 if __name__ == "__main__":
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("samples/synthetic-sky-strike.gif")
-    print(write(out))
+    print(write_video(out) if out.suffix.lower() in {".mp4", ".mov", ".mkv", ".webm"} else write(out))

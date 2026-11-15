@@ -1,7 +1,12 @@
-"""Break a spell VFX GIF down into hard facts the director can build a template from.
+"""Break a spell VFX GIF or video (MP4, WebM, MOV) down into hard facts the
+director can build a template from.
 
 Usage:
     python tools/breakdown.py path/to/spell.gif --out breakdowns/spell
+    python tools/breakdown.py path/to/spell.mp4 --start 1.2 --end 3.5
+
+Videos are decoded with PyAV, resampled to at most --max-fps frames per second
+(default 30) and limited to --max-seconds (default 20) after --start.
 
 Writes to the output folder:
     breakdown.json     frames, timing, curves, palette, phase hints, spatial hints
@@ -32,6 +37,10 @@ BROWSER_MIN_DELAY_MS = 20  # browsers treat delays at or below 10 ms as 100 ms
 DEFAULT_DELAY_MS = 100
 GLOW_THRESHOLD = 0.03  # luma increase over background that counts as "effect"
 MAX_SHEET_FRAMES = 48
+VIDEO_SUFFIXES = {".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi"}
+VIDEO_MAX_FPS = 30.0
+VIDEO_MAX_SECONDS = 20.0
+FULL_MAX_SIDE = 640  # cap stored full-size video frames (contact sheet only needs small ones)
 
 PHASE_COLORS = {
     "none": (90, 90, 90),
@@ -64,7 +73,105 @@ def _effective_delay(raw: int | None) -> int:
     return max(int(raw), BROWSER_MIN_DELAY_MS)
 
 
-def load_frames(path: Path) -> tuple[list[Frame], dict]:
+def is_video(path: Path) -> bool:
+    return path.suffix.lower() in VIDEO_SUFFIXES
+
+
+def load_frames(path: Path, **video_opts) -> tuple[list[Frame], dict]:
+    if is_video(path):
+        return load_video_frames(path, **video_opts)
+    return load_gif_frames(path)
+
+
+def load_video_frames(path: Path, start_s: float = 0.0, end_s: float | None = None,
+                      max_fps: float = VIDEO_MAX_FPS, max_seconds: float = VIDEO_MAX_SECONDS) -> tuple[list[Frame], dict]:
+    """Decode a video into frames with real timestamps.
+
+    Frames are kept no closer together than 1/max_fps; each kept frame lasts
+    until the next kept one, like merged GIF frames. Only [start_s, end_s)
+    is read, and at most max_seconds of it.
+    """
+    try:
+        import av
+    except ImportError as exc:  # pragma: no cover - depends on the environment
+        raise ValueError("reading video needs PyAV: python -m pip install av") from exc
+    if max_fps <= 0:
+        raise ValueError("max_fps must be positive")
+    limit_s = start_s + max_seconds
+    stop_s = min(end_s, limit_s) if end_s is not None else limit_s
+    min_gap = 1.0 / max_fps
+    raw: list[tuple[float, Image.Image]] = []
+    truncated = False
+    try:
+        container = av.open(str(path))
+    except av.error.FFmpegError as exc:
+        raise ValueError(f"cannot read video {path.name}: {exc}") from exc
+    with container:
+        if not container.streams.video:
+            raise ValueError(f"{path.name} has no video stream")
+        stream = container.streams.video[0]
+        stream.thread_type = "AUTO"
+        rate = float(stream.average_rate) if stream.average_rate else None
+        source_frames = 0
+        last_kept = None
+        for vf in container.decode(stream):
+            if vf.time is None:
+                continue
+            t = float(vf.time)
+            if t < start_s - 1e-6:
+                continue
+            if t >= stop_s - 1e-6:
+                # Stopped by max_seconds (not by the caller's end) while video remains.
+                truncated = end_s is None or end_s > limit_s
+                break
+            source_frames += 1
+            if last_kept is not None and t - last_kept < min_gap - 1e-4:
+                continue
+            img = vf.to_image()
+            if max(img.size) > FULL_MAX_SIDE:
+                k = FULL_MAX_SIDE / max(img.size)
+                img = img.resize((max(1, round(img.width * k)), max(1, round(img.height * k))), Image.BILINEAR)
+            raw.append((t, img.convert("RGB")))
+            last_kept = t
+        width, height = stream.codec_context.width, stream.codec_context.height
+    if not raw:
+        raise ValueError(f"no video frames in {path.name} between {start_s} s and {stop_s} s")
+
+    t0 = raw[0][0]
+    starts = [round((t - t0) * 1000) for t, _ in raw]
+    gaps = [b - a for a, b in zip(starts, starts[1:])]
+    # The last kept frame lasts one typical step.
+    last_ms = int(np.median(gaps)) if gaps else round(1000 * max(1.0 / rate if rate else 0.0, min_gap))
+    ends = starts[1:] + [starts[-1] + max(1, last_ms)]
+    scale = min(1.0, ANALYSIS_MAX_SIDE / max(raw[0][1].size))
+    small = (max(1, round(raw[0][1].width * scale)), max(1, round(raw[0][1].height * scale)))
+    frames: list[Frame] = []
+    for i, ((_, full), start_ms, end_ms) in enumerate(zip(raw, starts, ends)):
+        arr = np.asarray(full.resize(small, Image.BILINEAR), dtype=np.float32) / 255.0
+        dur = max(1, end_ms - start_ms)
+        frames.append(Frame(i, start_ms, dur, dur, arr, full))
+    total = frames[-1].start_ms + frames[-1].duration_ms
+    meta = {
+        "source": path.name,
+        "format": "video",
+        "width": width,
+        "height": height,
+        "analysis_size": list(small),
+        "frame_count": len(frames),
+        "duration_ms": total,
+        "loop": False,
+        "video": {
+            "fps": round(rate, 3) if rate else None,
+            "source_frames": source_frames,
+            "max_fps": max_fps,
+            "start_s": round(t0, 3),
+            "truncated": truncated,
+        },
+    }
+    return frames, meta
+
+
+def load_gif_frames(path: Path) -> tuple[list[Frame], dict]:
     img = Image.open(path)
     width, height = img.size
     scale = min(1.0, ANALYSIS_MAX_SIDE / max(width, height))
@@ -83,6 +190,7 @@ def load_frames(path: Path) -> tuple[list[Frame], dict]:
         t += delay
     meta = {
         "source": path.name,
+        "format": "gif",
         "width": width,
         "height": height,
         "analysis_size": list(small),
@@ -477,10 +585,13 @@ def heatmap(union: np.ndarray, path: Path, size: tuple[int, int]) -> None:
 # ---------------------------------------------------------------- main
 
 
-def breakdown(gif: Path, out: Path) -> dict:
-    frames, meta = load_frames(gif)
+def breakdown(gif: Path, out: Path, **video_opts) -> dict:
+    """Break down a GIF or video. video_opts (start_s, end_s, max_fps,
+    max_seconds) apply to videos only. The result keeps the key "gif" for the
+    source's metadata, whatever its format."""
+    frames, meta = load_frames(gif, **video_opts)
     if not frames:
-        raise ValueError("GIF has no frames")
+        raise ValueError(f"{gif.name} has no frames")
     measured = measure(frames)
     hints = phase_hints(frames)
     space = spatial_hints(frames, measured["union"])
@@ -521,6 +632,10 @@ def summary(r: dict) -> str:
         f"{r['gif']['source']}: {r['gif']['frame_count']} frames, {r['gif']['duration_ms']} ms, "
         f"{r['gif']['width']}x{r['gif']['height']}",
     ]
+    video = r["gif"].get("video")
+    if video:
+        lines.append(f"  video: {video['fps']} fps source, sampled at <= {video['max_fps']} fps from {video['start_s']} s"
+                     + (" (truncated: use --start/--end or --max-seconds)" if video["truncated"] else ""))
     for p in t.get("phases", []):
         lines.append(f"  {p['phase']:<13} {p['start_ms']:>5}-{p['end_ms']:<5} ms  (frames {p['start_frame']}-{p['end_frame']})")
     if t.get("flicker"):
@@ -533,12 +648,19 @@ def summary(r: dict) -> str:
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("gif", type=Path)
-    ap.add_argument("--out", type=Path, help="output folder (default: breakdowns/<gif name>)")
+    ap.add_argument("gif", type=Path, help="GIF or video (MP4, WebM, MOV, MKV, AVI)")
+    ap.add_argument("--out", type=Path, help="output folder (default: breakdowns/<file name>)")
+    ap.add_argument("--start", type=float, default=0.0, help="video only: start time in seconds")
+    ap.add_argument("--end", type=float, help="video only: end time in seconds")
+    ap.add_argument("--max-fps", type=float, default=VIDEO_MAX_FPS, help="video only: sample at most this many fps")
+    ap.add_argument("--max-seconds", type=float, default=VIDEO_MAX_SECONDS, help="video only: read at most this long")
     args = ap.parse_args(argv)
     out = args.out or Path("breakdowns") / args.gif.stem
+    opts = {}
+    if is_video(args.gif):
+        opts = {"start_s": args.start, "end_s": args.end, "max_fps": args.max_fps, "max_seconds": args.max_seconds}
     try:
-        result = breakdown(args.gif, out)
+        result = breakdown(args.gif, out, **opts)
     except (OSError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

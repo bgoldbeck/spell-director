@@ -82,3 +82,62 @@ def test_rejects_non_gif(tmp_path):
     bad.write_text("not a gif")
     with pytest.raises(OSError):
         bd.breakdown(bad, tmp_path / "out")
+
+
+# ---------------------------------------------------------------- video
+
+av = pytest.importorskip("av")
+
+
+@pytest.fixture(scope="module")
+def video_result(tmp_path_factory):
+    tmp = tmp_path_factory.mktemp("bdv")
+    mp4 = sample_gif.write_video(tmp / "strike.mp4")
+    return bd.breakdown(mp4, tmp / "out"), tmp / "out"
+
+
+def test_video_timing_matches_the_gif(video_result):
+    r, out = video_result
+    assert r["gif"]["format"] == "video"
+    assert r["gif"]["frame_count"] == 28
+    assert r["gif"]["duration_ms"] == 28 * 40
+    assert sum(f["duration_ms"] for f in r["frames"]) == 28 * 40
+    assert r["timing"]["main_peak_ms"] == 400
+    assert r["timing"]["flicker"]["peaks"] >= 3
+    assert [p["phase"] for p in r["timing"]["phases"]] == ["anticipation", "release", "impact", "dissipation"]
+    assert (out / "contact_sheet.png").is_file()
+
+
+def test_video_is_resampled_to_max_fps(tmp_path):
+    mp4 = sample_gif.write_video(tmp_path / "fast.mp4", fps=100)
+    r = bd.breakdown(mp4, tmp_path / "out", max_fps=25)
+    assert r["gif"]["video"]["fps"] == 100
+    assert r["gif"]["frame_count"] == 28
+    assert r["gif"]["duration_ms"] == 28 * 40
+    assert r["timing"]["main_peak_ms"] == 400
+
+
+def test_video_start_end_and_truncation(tmp_path):
+    mp4 = sample_gif.write_video(tmp_path / "lead.mp4", lead_in=25)  # 1 s of nothing first
+    r = bd.breakdown(mp4, tmp_path / "out", start_s=1.0)
+    assert r["gif"]["video"]["start_s"] == pytest.approx(1.0)
+    assert r["timing"]["main_peak_ms"] == 400
+    assert not r["gif"]["video"]["truncated"]
+    short = bd.breakdown(mp4, tmp_path / "out2", start_s=1.0, max_seconds=0.6)
+    assert short["gif"]["video"]["truncated"]
+    assert short["gif"]["duration_ms"] <= 640
+    ended = bd.breakdown(mp4, tmp_path / "out3", start_s=1.0, end_s=1.6)
+    assert not ended["gif"]["video"]["truncated"]
+
+
+def test_bad_video_is_a_clear_error(tmp_path):
+    bad = tmp_path / "broken.mp4"
+    bad.write_bytes(b"not a video")
+    with pytest.raises(ValueError, match="cannot read video"):
+        bd.breakdown(bad, tmp_path / "out")
+
+
+def test_cli_accepts_video_options(tmp_path, capsys):
+    mp4 = sample_gif.write_video(tmp_path / "cli.mp4")
+    assert bd.main([str(mp4), "--out", str(tmp_path / "out"), "--max-fps", "20", "--end", "0.8"]) == 0
+    assert "video: 25.0 fps source" in capsys.readouterr().out
