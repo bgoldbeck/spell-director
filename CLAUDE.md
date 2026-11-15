@@ -9,7 +9,7 @@ Read [docs/DESIGN.md](docs/DESIGN.md) for the full design and [docs/ROADMAP.md](
 - Keep everything **game- and engine-agnostic** (not tied to Pokemon or any one game).
 - MidiMCP is inspiration for the template idea only. Don't copy its architecture.
 - Templates must work from all four views: front, side, top, 3/4.
-- No hosted CI. Run the checks below before every PR.
+- No hosted CI. Run the checks below before every PR. (The only GitHub Actions workflow is `release.yml`, which creates a GitHub Release when a `v*` tag is pushed; it runs no tests.)
 
 ## Checks
 
@@ -30,3 +30,4 @@ After adding or renaming a template, run `python tools/build_index.py` (a test f
 - Viewer has no build step; Three.js r169 is vendored in `web/vendor`.
 - Launch the viewer with `run.bat` / `./run.sh` or `python tools/serve.py` (default port 47811).
 - Check the viewer in headless Chromium with the URL parameters `?template=<id>&view=<view>&t=<ms>`.
+- Versioning: the app version lives only in `VERSION` (semver). Add a line under `## [Unreleased]` in `CHANGELOG.md` for each user-visible change. Releases: [docs/releasing.md](docs/releasing.md).

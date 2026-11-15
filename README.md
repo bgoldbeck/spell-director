@@ -13,6 +13,10 @@ Full design: [docs/DESIGN.md](docs/DESIGN.md). What's next: [docs/ROADMAP.md](do
 3. **Director** (MCP server + playbook done): text or GIF in, a few guided choices, template out. Also generates templates on its own to grow the library.
 4. **Builder and preview** (viewer done): renders templates in front, side, top and 3/4 views, side by side with the source GIF, and exports for game engines.
 
+## Versions
+
+The current version is in [`VERSION`](VERSION); what changed is in [`CHANGELOG.md`](CHANGELOG.md). Each version tag gets a [GitHub Release](https://github.com/bgoldbeck/spell-director/releases). How to cut one: [docs/releasing.md](docs/releasing.md).
+
 ## Repository layout
 
 | Path | What |
