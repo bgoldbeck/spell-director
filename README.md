@@ -32,9 +32,9 @@ Full design: [docs/DESIGN.md](docs/DESIGN.md). What's next: [docs/ROADMAP.md](do
 
 A Three.js motion-study viewer: pick a template, replay it, jump to a beat, scrub, slow it down, and check it from front, side, top and 3/4 (or all four at once). Each beat's intent shows as a caption. Change the seed to see a different cast of the same template, or open your own template JSON.
 
-```bash
-python tools/serve.py            # then open http://localhost:8000
-```
+**Windows:** double-click `run.bat`. **macOS / Linux:** `./run.sh`. Either one starts the viewer and opens it in your browser at http://localhost:47811 (only Python 3 is needed). Close the window or press Ctrl+C to stop.
+
+Use another port with `run.bat 50123` / `./run.sh 50123`, or set `SPELLDIRECTOR_PORT`. If the port is busy, the next free one is used. Without the scripts: `python tools/serve.py --open`.
 
 Keys: Space play/pause, 1-4 views, 5 all four, F focus view (Esc to leave). Drag to orbit, scroll to zoom.
 
