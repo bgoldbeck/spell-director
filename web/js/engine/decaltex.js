@@ -331,6 +331,46 @@ const SHAPES = {
     }
   },
 
+  // Cuts: a few thin crescent gouges across the centre, crossing at angles,
+  // with nicked chips flicked off their ends.
+  slash(g, s, R, detail) {
+    const c = s / 2;
+    const n = 2 + Math.round(detail * 3);
+    g.lineCap = "round";
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI + R.range(-0.35, 0.35);
+      const len = s * R.range(0.32, 0.45);
+      const bow = s * R.range(0.03, 0.08) * R.sign();
+      const ox = c + R.range(-0.06, 0.06) * s;
+      const oy = c + R.range(-0.06, 0.06) * s;
+      const dx = Math.cos(a);
+      const dy = Math.sin(a);
+      const x0 = ox - dx * len;
+      const y0 = oy - dy * len;
+      const x1 = ox + dx * len;
+      const y1 = oy + dy * len;
+      const cx = ox - dy * bow;
+      const cy = oy + dx * bow;
+      for (const [w, alpha] of [[0.03, 0.25], [0.012, 0.9]]) {
+        g.strokeStyle = `rgba(255,255,255,${alpha})`;
+        g.lineWidth = s * w;
+        g.beginPath();
+        g.moveTo(x0, y0);
+        g.quadraticCurveTo(cx, cy, x1, y1);
+        g.stroke();
+      }
+      g.fillStyle = "rgba(255,255,255,0.6)";
+      for (let k = 0; k < 6 + detail * 8; k++) {
+        const u = R.range(0, 1);
+        const px = (1 - u) * (1 - u) * x0 + 2 * (1 - u) * u * cx + u * u * x1;
+        const py = (1 - u) * (1 - u) * y0 + 2 * (1 - u) * u * cy + u * u * y1;
+        g.beginPath();
+        g.arc(px + R.range(-0.03, 0.03) * s, py + R.range(-0.03, 0.03) * s, R.range(1, 3) * (s / 512), 0, TAU);
+        g.fill();
+      }
+    }
+  },
+
   rune_circle(g, s, R, detail) {
     const c = s / 2;
     g.strokeStyle = "rgba(255,255,255,1)";
