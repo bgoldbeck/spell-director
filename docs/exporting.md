@@ -19,6 +19,7 @@ Options: views (default all four), cell size in px (default 192), frame rate (de
 | `<id>.guide.md` | The assembly guide: layout, beats, every layer's timing, blend, colors and draw order, the non-sprite tracks, where the caster and target are, and steps for Unity and Godot. |
 | `<id>.spritesheet.json` | The same data, machine-readable (format `spelldirector.spritesheet/1`). |
 | `<id>.template.json` | The template the sheets came from. |
+| `decal-<layer id>.png` | For each decal layer: its top-down texture for a decal projector (see [Decals](#decals)). |
 
 ### Sheet layout
 
@@ -33,6 +34,10 @@ Options: views (default all four), cell size in px (default 192), frame rate (de
 Each frame is rendered on black and on white and the two are compared to get straight (not premultiplied) alpha on a transparent background. That keeps additive glows and normal-blended smoke both correct. Layers marked `add` look closest with an additive material in the engine.
 
 The viewer's bloom glow is baked into the sprites by default (`bloom_baked` in the JSON). If your engine adds its own bloom, untick **Bake bloom** (or pass `--no-bloom`) so the glow isn't doubled.
+
+### Decals
+
+Each `decal` layer gets its sheet like any layer, plus `decal-<layer id>.png`: a 512 × 512 top-down texture (straight alpha, palette color baked in, right edge along the cast direction) for an engine's decal projector. The JSON's `decals` list gives its size in world units, blend (`alpha` paints the ground, `add` glows and belongs in emission), anchor, timing (`start_ms`, `fade_in_ms`, `hold_until_ms`, `fade_out_ms`, `end_ms`, which may be after the spell ends) and per-frame `curves` for opacity, scale and rotation. The guide has step-by-step setups for Unity's URP/HDRP Decal Projector and Godot 4's Decal node, and a note for 2D engines.
 
 ### Not drawn into the sheets
 

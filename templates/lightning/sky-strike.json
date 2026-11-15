@@ -37,7 +37,7 @@
     "reads": {
       "front": "A tall vertical bolt from the top of frame down to the target, branches spreading left and right. Ring and scorch read as a thin bright line on the ground.",
       "side": "Same vertical bolt, with a different branch pattern seen edge-on. Use it to check the bolt has depth and isn't flat.",
-      "top": "The bolt collapses to a bright point. The story is told by the ground: static crawling in a circle, the expanding ring, sparks spraying outward radially, and the cracked scorch decal.",
+      "top": "The bolt collapses to a bright point. The story is told by the ground: static crawling in a circle, the expanding ring, sparks spraying outward radially, and the scorch mark with glowing cracks that cool to black.",
       "three_quarter": "Hero view. Bolt reads tall with visible branches, and the ring and scorch read as ellipses so you see both the strike and its footprint."
     }
   },
@@ -272,13 +272,46 @@
       ],
       "anchor": "target",
       "plane": "ground",
-      "blend": "alpha",
       "color": "shadow",
       "z": 1,
       "params": {
-        "radius_px": 46,
+        "shape": "scorch",
+        "radius_px": {
+          "min": 62,
+          "max": 72
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 40,
+        "grow_ms": 90,
+        "start_scale": 0.7,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.6
+      }
+    },
+    {
+      "id": "hot-cracks",
+      "type": "decal",
+      "beats": [
+        "restrike",
+        "fade"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
         "shape": "cracks",
-        "fade_ms": 400
+        "radius_px": {
+          "min": 50,
+          "max": 60
+        },
+        "opacity": 1,
+        "fade_in_ms": 0,
+        "lifetime_ms": 200,
+        "fade_ms": 450,
+        "detail": 0.7
       }
     },
     {
@@ -406,5 +439,5 @@
     "seeded": true,
     "notes": "Bolt path, branch count, spark spray and shake strength change per cast. Timing is fixed so it lines up with gameplay hit frames."
   },
-  "director_notes": "Long gather vs. 70 ms strike gives weight. Restrike flicker is the signature of natural lightning. Main bolt stays solid (regen_ms 0) so it reads as one strike, while crackles regenerate fast to feel alive."
+  "director_notes": "Long gather vs. 70 ms strike gives weight. Restrike flicker is the signature of natural lightning. Main bolt stays solid (regen_ms 0) so it reads as one strike, while crackles regenerate fast to feel alive. Ground marks: a dark scorch (alpha) that stays after the spell, with glowing cracks (add) on top that cool within half a second, so the hit reads from above and leaves a mark."
 }

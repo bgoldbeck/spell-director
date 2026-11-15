@@ -96,13 +96,14 @@ Engine (`web/js/engine/`):
 - `timeline.js`: pure functions, Node-testable: seeded RNG (mulberry32), param resolution, beat curves, layer intensity, keyframes.
 - `stage.js`: world layout from `space` (caster at origin facing +X, hand, sky, targets laid out in the footprint cone, beam end point) and the four camera presets.
 - `effect.js`: one class per layer type. **Every frame is a pure function of (template, seed, t)**, so scrubbing and all four views show the same cast. Randomness that changes over time (bolt regeneration, flicker) is seeded by a time tick. Bolts, beams, crackle, arcs and spark streaks are camera-facing ribbons with a soft profile (one draw call per mesh; the vertex shader turns each ribbon to face whichever camera draws it, so the four views stay right). Bolts attached to a beam ride along it as short arcs. Projectile orbs fly from the hand to the target during their `travel` beat with a trail.
+- `decal.js` (pure, Node-testable): decal shapes, default blends and each decal's opacity, scale and rotation over time (fade in, lifetime, fade out, grow, spin, pulse, seeded angle); shared by the viewer and the export. `decaltex.js` draws each shape's top-down texture on a canvas from the seed. Decals draw first, flat on the ground, in `z` order, so everything standing on the ground draws over them.
 - `post.js`: the scene is drawn into an HDR render target, bloomed (UnrealBloomPass, vendored in `web/vendor/postprocessing`) and written to the canvas. The viewer's **Bloom** checkbox (B, `?bloom=off`) turns it off; the sprite export bakes the same bloom unless asked not to.
 
 Sound: `web/js/engine/sound.js` (pure, Node-testable) turns a template's `sound_cue` layers into a schedule of events (cue, start, length, gain, pitch) from the template, the seed and the cue library `web/sounds/cues.json`. `web/js/audio.js` plays the events whose start the clock crossed this frame: a real sample if the cue lists `samples`, otherwise a procedural Web Audio placeholder named after the cue. Jumps, pauses and new spells cut the sound; rendering never reads audio state, so frames stay a pure function of (template, seed, t). Every cue has a `sfx_prompt` so a text-to-SFX service can fill the library later.
 
 `web/js/catalog.js` (pure, Node-testable) groups templates by type for the dropdowns, steps through a type, and resolves the URL parameters.
 
-Export: **Export sprites…** renders the current template and seed into one sheet per layer plus `all.png` (columns are frames, rows are the four views, every cell aligned), with a `spelldirector.spritesheet/1` JSON file and a Markdown assembly guide, downloaded as a .zip. Screen flashes, camera shake, lights and sound cues are exported as per-frame tracks instead of pixels. Full description: [exporting.md](exporting.md).
+Export: **Export sprites…** renders the current template and seed into one sheet per layer plus `all.png` (columns are frames, rows are the four views, every cell aligned), with a `spelldirector.spritesheet/1` JSON file and a Markdown assembly guide, downloaded as a .zip. Screen flashes, camera shake, lights and sound cues are exported as per-frame tracks instead of pixels. Decals also get a top-down texture (`decal-<id>.png`) plus timing and per-frame curves for engine decal projectors. Full description: [exporting.md](exporting.md).
 
 Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists the templates. A live preview was published as a private claude.ai artifact.
 
@@ -111,7 +112,8 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 - **Flash and smoke are basic** (soft sprites and a CSS screen overlay).
 - **Camera-view guess in the breakdown tool is weak** (called the 3/4 sample GIF "front"). The playbook has the AI confirm by eye.
 - Breakdown has only been tested on a synthetic GIF and MP4, never a real game capture.
-- Only lightning has templates. Some layer params in the format (e.g. `light.radius` units, `decal.shape: burn`) are only roughly honored by the renderer.
+- Templates exist for lightning and water only. Some layer params in the format (e.g. `light.radius` units) are only roughly honored by the renderer.
+- Decals lie on the viewer's flat ground plane. Engines project them onto real terrain with their decal projectors (the export has the texture and curves for that).
 - Screen flash in "All four" mode covers all quadrants at once.
 - Export makes sprite sheets only (no PNG sequence or GIF yet), and the viewer can't play an exported sheet back to check it.
 - Sounds are procedural placeholders (synth + filtered noise). They get the timing right but sound like placeholders; swap in CC0 samples or text-to-SFX output per cue (`web/sounds/README.md`).
@@ -132,4 +134,5 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 | 2026-11-15 | The director's bridge is an MCP server (Python, official SDK), a thin adapter over the library functions. |
 | 2026-11-15 | Breakdown should accept MP4 references as well as GIFs. |
 | 2026-11-15 | Sound is timed cues mapped to a small generic cue library, not generated audio. Procedural Web Audio placeholders now; real CC0 samples or text-to-SFX output replace them per cue later. |
+| 2026-11-15 | Decals are a first-class layer: ground marks with fade-in/out, lifetime past the spell, grow, rotation, spin and seeded variation, exported as a top-down texture plus timing curves for Unity/Godot decal projectors. |
 | 2026-11-15 | Engine handoff is sprite sheets + an instruction .md (and JSON): one sheet per layer, frames as columns and the four views as rows, layer timings documented. |

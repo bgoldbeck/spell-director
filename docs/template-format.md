@@ -98,11 +98,46 @@ Unknown params are allowed (the validator warns) so the director can experiment,
 | `orb` | `radius_px`, `pulse_hz`, `wobble`, `crackle_count`; for `travel: projectile` an orb anchored at `caster_hand` flies to the target during its `travel` beat: `trail_ms` (streak behind it, default 140, 0 = none), `arc_height_px` (lob height at mid-flight, default 0), `travel_ease` (`linear` or `ease_in` to accelerate) |
 | `beam` | `width_px`, `wobble`, `wobble_hz`, `jaggedness`, `regen_ms`, `grow_ms` (time to reach full length, default 60) |
 | `ring` | `start_radius_px`, `end_radius_px`, `thickness_px`, `softness` |
-| `decal` | `radius_px`, `shape` (`scorch` / `cracks` / `burn` / `puddle`), `fade_ms` |
+| `decal` | `shape`, `radius_px`, `opacity`, `fade_in_ms`, `lifetime_ms`, `fade_ms`, `grow_ms`, `start_scale`, `rotation_deg`, `spin_deg_per_s`, `stretch`, `pulse_hz`, `detail`. See [Decals](#decals). |
 | `smoke` | `count`, `rise_speed`, `size_px`, `lifetime_ms`, `opacity` |
 | `light` | `radius`, `energy` |
 | `camera_shake` | `amplitude_px`, `frequency_hz`, `decay` (0–1) |
 | `sound_cue` | `cue` (one of the cues in [`web/sounds/cues.json`](../web/sounds/cues.json): `charge`, `hum`, `buzz`, `crackle`, `sizzle`, `zap`, `crack`, `boom`, `rumble`, `impact`, `crash`, `shatter`, `ignite`, `fire`, `whoosh`, `wind`, `shimmer`), `gain` (0–1, default 0.8), `pitch` (playback-rate multiplier 0.5–2, default 1), `offset_ms` (delay after the beat starts), `duration_ms` (override length), `repeat_ms` (one-shots: retrigger every N ms inside each beat) |
+
+## Decals
+
+A `decal` layer is a mark on the ground: drawn flat on the ground plane under everything else that stands there, and exported both as a sheet and as a top-down texture with a timing curve for engine decal projectors (see [exporting.md](exporting.md#decals)). The schema checks decal params (the shape names, number ranges).
+
+| Shape | Default blend | Looks like | Use for |
+|---|---|---|---|
+| `scorch` | alpha | dark burnt blotch with soot rays (near black whatever the color) | fire, lightning, explosions |
+| `burn` | add | glowing hot patch with embers | the hot moment of a hit, cooling fast |
+| `cracks` | alpha (add for glowing cracks) | branching cracks from the centre | heavy hits; lightning arcs in the ground |
+| `crater` | alpha | dark dent, dusty rim, debris | slams, meteors, boss strikes |
+| `puddle` | alpha | lumpy wet patch with a bright rim | water, blood, slime |
+| `splash` | alpha | wet patch with droplets thrown outward | water impacts |
+| `frost` | alpha | ice crystals spiking outward | ice, freeze |
+| `rune_circle` | add | rings, glyph marks and a star | casting, summoning, buffs |
+| `warning_ring` | add | faint fill, bright rim and ticks | telegraphs: "get out of here" |
+
+The layer's `blend` overrides the default (e.g. `cracks` with `blend: add` are glowing cracks). The color is the layer's palette slot.
+
+| Param | Default | Meaning |
+|---|---|---|
+| `shape` | `scorch` | One of the shapes above. |
+| `radius_px` | 40 | Radius at full size. |
+| `opacity` | 0.85 | Peak opacity. |
+| `fade_in_ms` | 60 | Fade in from the start of the layer's first beat. |
+| `lifetime_ms` | until its last beat ends | How long it stays at full strength from its start. Can run past the spell's duration: the mark stays on the ground (engines keep it; the viewer shows the spell's length). |
+| `fade_ms` | 400 | Fade out after the lifetime. |
+| `grow_ms`, `start_scale` | 0, 0.6 | Grow from `start_scale` to full size (spreading puddle, closing telegraph). |
+| `rotation_deg` | random per seed | Angle on the ground, counter-clockwise from the cast direction seen from above. |
+| `spin_deg_per_s` | 0 | Turning speed (rune circles). |
+| `stretch` | 1 | Length along its rotation axis relative to its width (a skid mark). |
+| `pulse_hz` | 0 | Opacity throb (warning rings). |
+| `detail` | 0.5 | How busy the texture is: number of cracks, rays, glyphs, droplets. |
+
+Decal beats set when it appears (the start of its first beat) and, without `lifetime_ms`, how long it holds. A decal's brightness does not follow the beats' intensity curves: marks don't flicker. Stack two decals for a hot mark that cools: a glowing `burn`/`cracks` (add, short lifetime) over a dark `scorch` (alpha, long lifetime).
 
 ## Validation rules beyond the schema
 

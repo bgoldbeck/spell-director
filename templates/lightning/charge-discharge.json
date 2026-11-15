@@ -37,8 +37,8 @@
     "reads": {
       "front": "Beam points at the camera: the orb grows into a bright disk, then the beam reads as a flaring circle with arcs radiating outward. Shows the charge-up best.",
       "side": "Hero view. Full length of the beam from hand to end point, wobble and peeling arcs visible, spark fountain at the far end.",
-      "top": "The beam is a straight line on the ground plane; its length and the end ring show the area it covers. Inflow arcs read as spokes pulling into the orb.",
-      "three_quarter": "Beam recedes diagonally into the scene, with both its length and its width visible."
+      "top": "The beam is a straight line on the ground plane; its length and the end ring show the area it covers. Inflow arcs read as spokes pulling into the orb. A rune circle spins up under the caster while charging, and the beam burns a streak into the ground where it ends.",
+      "three_quarter": "Beam recedes diagonally into the scene, with both its length and its width visible. The rune circle reads as a glowing ellipse under the caster."
     }
   },
   "palette": {
@@ -124,6 +124,78 @@
     }
   ],
   "layers": [
+    {
+      "id": "rune",
+      "type": "decal",
+      "beats": [
+        "charge",
+        "overload",
+        "fire"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 62,
+        "opacity": 0.8,
+        "fade_in_ms": 200,
+        "grow_ms": 350,
+        "start_scale": 0.3,
+        "spin_deg_per_s": 45,
+        "fade_ms": 350,
+        "detail": 0.6
+      }
+    },
+    {
+      "id": "end-scorch",
+      "type": "decal",
+      "beats": [
+        "end-hit",
+        "collapse"
+      ],
+      "anchor": "point",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 34,
+          "max": 42
+        },
+        "stretch": 1.7,
+        "rotation_deg": 0,
+        "opacity": 0.85,
+        "fade_in_ms": 150,
+        "grow_ms": 400,
+        "start_scale": 0.4,
+        "lifetime_ms": 1400,
+        "fade_ms": 600,
+        "detail": 0.5
+      }
+    },
+    {
+      "id": "end-burn",
+      "type": "decal",
+      "beats": [
+        "end-hit"
+      ],
+      "anchor": "point",
+      "plane": "ground",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": 30,
+        "stretch": 1.4,
+        "rotation_deg": 0,
+        "opacity": 0.85,
+        "fade_in_ms": 60,
+        "fade_ms": 350
+      }
+    },
     {
       "id": "orb",
       "type": "orb",
@@ -428,5 +500,5 @@
     "seeded": true,
     "notes": "Inflow arcs, beam arcs and sparks vary per cast. Orb growth and beam timing stay fixed for gameplay readability."
   },
-  "director_notes": "The 130 ms overload beat is the key choice: a beat of instability right before release makes the payoff land harder. The beam itself has low jaggedness so it reads as a controlled beam, while the attached arcs add chaos on top."
+  "director_notes": "The 130 ms overload beat is the key choice: a beat of instability right before release makes the payoff land harder. The beam itself has low jaggedness so it reads as a controlled beam, while the attached arcs add chaos on top. Decals: a spinning rune circle under the caster (add) sells the charge from every view, even edge-on; the beam end scorches a stretched mark (stretch along the cast direction, rotation 0) with a glowing burn while the beam is on."
 }

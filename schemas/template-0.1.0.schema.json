@@ -437,7 +437,189 @@
               }
             }
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "decal"
+                }
+              },
+              "required": [
+                "type"
+              ]
+            },
+            "then": {
+              "properties": {
+                "params": {
+                  "properties": {
+                    "shape": {
+                      "enum": [
+                        "scorch",
+                        "burn",
+                        "cracks",
+                        "crater",
+                        "puddle",
+                        "splash",
+                        "frost",
+                        "rune_circle",
+                        "warning_ring"
+                      ],
+                      "description": "What the mark looks like from above. See docs/template-format.md#decals."
+                    },
+                    "radius_px": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Radius of the mark at full size (100 px = one character height)."
+                    },
+                    "opacity": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Peak opacity, default 0.85."
+                    },
+                    "fade_in_ms": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Fade in from the start of its first beat, default 60."
+                    },
+                    "lifetime_ms": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "How long it stays at full strength from its start (default: until its last beat ends). May run past the spell's end: the mark stays on the ground."
+                    },
+                    "fade_ms": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Fade out after the lifetime, default 400."
+                    },
+                    "grow_ms": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Grow from start_scale to full size over this long (0 = appear at full size)."
+                    },
+                    "start_scale": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Size it grows from, default 0.6."
+                    },
+                    "rotation_deg": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Angle on the ground, counter-clockwise from the cast direction. Omit for a random angle per cast."
+                    },
+                    "spin_deg_per_s": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Turning speed (rune circles), default 0."
+                    },
+                    "stretch": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0.1,
+                          "maximum": 10
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Length along its rotation axis relative to its width, default 1."
+                    },
+                    "pulse_hz": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Opacity pulse rate (warning rings), default 0."
+                    },
+                    "detail": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "How busy the texture is (cracks, rays, glyphs), default 0.5."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     },
     "variation": {

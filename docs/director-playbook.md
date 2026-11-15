@@ -91,6 +91,12 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
 - **Payoff**: `flash` on release, `sparks` + `ring` on impact, `camera_shake` for weight, `light` on the target.
 - **Ground story**: anything vertical is a dot from the top view, so give it a `ring`, `decal`, radial `sparks` or ground `crackle`. Mandatory when the hero view is `top`.
 - **Tail**: `crackle` lingering, `smoke`, `decal` fading.
+- **Decals** (marks on the ground, see the decal table in the template format). Most spells want one; top-down and 3/4 games need them. Pick by moment:
+  - *Telegraph* (anticipation): a `warning_ring` (add, `pulse_hz` 3–5, sized to the danger zone, `grow_ms` so it closes in) for anything the player should dodge, especially boss attacks; a `rune_circle` (add, `spin_deg_per_s` 30–60, `grow_ms`) under a caster who is charging.
+  - *Impact* (impact): a glowing mark that cools fast (`cracks` with `blend: add`, or `burn`, `lifetime_ms` 100–400) stacked over a dark mark that stays (`scorch` for fire and lightning, `crater` for heavy hits, `puddle`/`splash` for water, `frost` for ice, alpha). The glowing one sells the heat; the dark one is the memory of the hit.
+  - *Aftermath*: let the dark mark outlive the spell (`lifetime_ms` past the duration, long `fade_ms`); the engine keeps it on the ground.
+  - Leave `rotation_deg` out so every cast lays the mark at a new angle; set it (with `stretch` > 1) only for marks with a direction, like a skid along a beam. Use `radius_px` ranges for size variation.
+  - Size it to the hit: about the impact ring's end radius for scorch, wider for wet ground, exactly the danger zone for a telegraph. Decals anchored to `target` repeat on every chain target.
 - **Sound cues**: one `sound_cue` layer per sound, listing the beats it plays in. Call `get_sound_cues` for the vocabulary (vocabulary §10). Turn the user's words into cues ("electric buzz" → `buzz`, "thunderclap" → `crack`, "explosion" → `boom`, "flames" → `fire`). A typical score:
   - anticipation: a sustained build (`charge`, `crackle`, `buzz`, `wind`, `shimmer`);
   - release: one sharp one-shot (`crack`, `zap`, `ignite`, `whoosh`);
@@ -100,9 +106,9 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
 
   Keep it to 2–5 cues, mix loud and quiet (`gain`), and give one-shots a small `pitch` range (e.g. 0.9–1.1) so repeated casts don't sound identical. If no cue fits, use the closest one and say what you wanted in `director_notes`; don't invent cue names.
 
-Know what the viewer draws today (see the known issues in [DESIGN.md](DESIGN.md#6-known-issues-and-limits)): several targets exist only for chains (`travel: chain` or `destination: targets`), so a "storm of strikes across an area" renders as strikes on one spot; projectile travel isn't drawn yet. Prefer designs the viewer can show, and say in `director_notes` when you go beyond it.
+Know what the viewer draws today (see the known issues in [DESIGN.md](DESIGN.md#6-known-issues-and-limits)): several targets exist only for chains (`travel: chain` or `destination: targets`), so a "storm of strikes across an area" renders as strikes on one spot. Projectile travel is drawn for an `orb` anchored at `caster_hand` in a `travel: projectile` spell. Prefer designs the viewer can show, and say in `director_notes` when you go beyond it.
 
-Set `z` back to front: shadow/smoke/decal → glow → bolt/beam → sparks → flash. Use only params listed in the template format; unknown params produce warnings and the renderer may ignore them.
+Set `z` back to front: shadow/smoke/decal → glow → bolt/beam → sparks → flash. Decals always draw on the ground under everything else; their `z` only orders them among themselves (a glowing crack decal above its scorch). Use only params listed in the template format; unknown params produce warnings and the renderer may ignore them.
 
 ### Sizes and weight
 

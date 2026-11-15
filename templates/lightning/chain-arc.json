@@ -48,7 +48,7 @@
     "reads": {
       "front": "Arcs zig-zag across the frame between targets at different depths; later hops look shorter as they recede. Good for checking arc brightness and writhe.",
       "side": "Shows hop order front-to-back and the slight lift of each arc above the ground.",
-      "top": "Hero view. The path of the chain is clearest here: a hand-off from caster through 3-4 targets inside a 70 degree cone, each hop thinner than the last.",
+      "top": "Hero view. The path of the chain is clearest here: a hand-off from caster through 3-4 targets inside a 70 degree cone, each hop thinner than the last. Each target gets a small glowing zap mark that cools into a scorch, so the chain's path stays readable after the arcs are gone.",
       "three_quarter": "Arcs read as both a path on the ground and a height above it; hit flashes and sparks are visible on each target."
     }
   },
@@ -56,7 +56,8 @@
     "core": "#FFFFFF",
     "primary": "#C7A6FF",
     "secondary": "#6A3DFF",
-    "accent": "#E8F6FF"
+    "accent": "#E8F6FF",
+    "shadow": "#140F26"
   },
   "beats": [
     {
@@ -144,6 +145,54 @@
         "radius_px": 22,
         "softness": 0.9,
         "pulse_hz": 12
+      }
+    },
+    {
+      "id": "burn-marks",
+      "type": "decal",
+      "beats": [
+        "hits",
+        "fizzle"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 32,
+          "max": 38
+        },
+        "opacity": 0.85,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1100,
+        "fade_ms": 500,
+        "detail": 0.4
+      }
+    },
+    {
+      "id": "zap-marks",
+      "type": "decal",
+      "beats": [
+        "hits"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 34,
+          "max": 40
+        },
+        "opacity": 1,
+        "fade_in_ms": 0,
+        "lifetime_ms": 120,
+        "fade_ms": 260,
+        "detail": 0.5
       }
     },
     {
@@ -321,5 +370,5 @@
     "seeded": true,
     "notes": "Arc shapes, branch placement and target order vary. Hop delay varies slightly so it never feels mechanical."
   },
-  "director_notes": "Fast regen (40-60 ms) on the arc is what makes it read as living electricity instead of a beam. Thinning width across the hop beat sells energy being spent. Violet palette distinguishes it from natural sky lightning."
+  "director_notes": "Fast regen (40-60 ms) on the arc is what makes it read as living electricity instead of a beam. Thinning width across the hop beat sells energy being spent. Violet palette distinguishes it from natural sky lightning. Decals anchored to target repeat on every chain target, delayed by each hop: a quick glowing crack mark that cools into a small scorch."
 }

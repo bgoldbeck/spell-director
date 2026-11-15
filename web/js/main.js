@@ -134,11 +134,11 @@ scene.add(key);
 
 const ground = new THREE.Mesh(
   new THREE.CircleGeometry(14, 64),
-  new THREE.MeshStandardMaterial({ color: "#1d212b", roughness: 0.95 }),
+  new THREE.MeshStandardMaterial({ color: "#5d6478", roughness: 0.95 }),
 );
 ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
-const grid = new THREE.GridHelper(28, 28, "#262a36", "#1f222c");
+const grid = new THREE.GridHelper(28, 28, "#3a3f4e", "#333846");
 grid.position.y = 0.002;
 scene.add(grid);
 

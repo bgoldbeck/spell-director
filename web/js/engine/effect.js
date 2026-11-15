@@ -12,6 +12,8 @@ import {
   seedFor,
 } from "./timeline.js";
 import { PX, buildStage } from "./stage.js";
+import { decalPlan, decalState } from "./decal.js";
+import { drawDecal } from "./decaltex.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -33,64 +35,6 @@ function soft() {
   softTexture = new THREE.CanvasTexture(c);
   softTexture.colorSpace = THREE.SRGBColorSpace;
   return softTexture;
-}
-
-function decalTexture(seed, shape) {
-  const c = document.createElement("canvas");
-  c.width = c.height = 256;
-  const g = c.getContext("2d");
-  if (shape === "puddle") {
-    // A lumpy wet patch: overlapping soft blobs with a faint brighter rim.
-    const r = rng(seedFor(seed, "decal"));
-    for (let i = 0; i < 9; i++) {
-      const a = r.range(0, Math.PI * 2);
-      const d = i === 0 ? 0 : r.range(20, 60);
-      const x = 128 + Math.cos(a) * d;
-      const y = 128 + Math.sin(a) * d;
-      const rad = i === 0 ? 70 : r.range(26, 48);
-      const blob = g.createRadialGradient(x, y, 0, x, y, rad);
-      blob.addColorStop(0, "rgba(255,255,255,0.3)");
-      blob.addColorStop(0.75, "rgba(255,255,255,0.25)");
-      blob.addColorStop(0.9, "rgba(255,255,255,0.5)");
-      blob.addColorStop(1, "rgba(255,255,255,0)");
-      g.fillStyle = blob;
-      g.beginPath();
-      g.arc(x, y, rad, 0, Math.PI * 2);
-      g.fill();
-    }
-    const tex = new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    return tex;
-  }
-  const grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
-  grad.addColorStop(0, "rgba(255,255,255,0.95)");
-  grad.addColorStop(0.5, "rgba(255,255,255,0.55)");
-  grad.addColorStop(1, "rgba(255,255,255,0)");
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 256, 256);
-  if (shape === "cracks") {
-    const r = rng(seedFor(seed, "decal"));
-    g.strokeStyle = "rgba(255,255,255,1)";
-    g.lineWidth = 3;
-    for (let i = 0; i < 7; i++) {
-      let a = r.range(0, Math.PI * 2);
-      let x = 128;
-      let y = 128;
-      g.beginPath();
-      g.moveTo(x, y);
-      for (let s = 0; s < 6; s++) {
-        a += r.range(-0.6, 0.6);
-        const len = r.range(10, 22);
-        x += Math.cos(a) * len;
-        y += Math.sin(a) * len;
-        g.lineTo(x, y);
-      }
-      g.stroke();
-    }
-  }
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
 }
 
 // ------------------------------------------------------------ colors
@@ -749,30 +693,44 @@ class RingLayer extends Layer {
   }
 }
 
+// A mark on the ground, drawn flat on the ground plane under everything else
+// on it. Its texture (seen from above) is generated from the shape and seed;
+// opacity, size and rotation over time come from engine/decal.js, which the
+// sprite export uses too.
 class DecalLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
+    this.plan = decalPlan(effect.template, def, effect.seed, instance);
+    this.canvas = drawDecal(this.plan.shape, seedFor(effect.seed, def.id, instance, "texture"), { detail: this.plan.detail });
+    const map = new THREE.CanvasTexture(this.canvas);
+    map.colorSpace = THREE.SRGBColorSpace;
+    map.anisotropy = 4;
     this.material = new THREE.MeshBasicMaterial({
-      map: decalTexture(effect.seed + instance, this.base.shape), color: this.colors[0], transparent: true,
-      depthWrite: false, opacity: 0,
+      map,
+      color: this.colors[0],
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      blending: this.plan.blend === "add" ? THREE.AdditiveBlending : this.plan.blend === "multiply" ? THREE.MultiplyBlending : THREE.NormalBlending,
+      premultipliedAlpha: this.plan.blend === "multiply",
+      polygonOffset: true,
+      polygonOffsetFactor: -4,
+      polygonOffsetUnits: -4,
     });
     this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), this.material);
-    this.mesh.rotation.x = -Math.PI / 2;
     this.group.add(this.mesh);
   }
 
   update(t) {
-    const w = this.window;
-    if (!w) return;
-    const fade = this.p("fade_ms", t, 400);
-    let o = 0;
-    if (t >= w.start && t <= w.end) o = 0.85;
-    else if (t > w.end && t < w.end + fade) o = 0.85 * (1 - (t - w.end) / fade);
-    this.group.visible = o > 0.001;
+    const st = decalState(this.plan, t);
+    this.group.visible = st.opacity > 0.001;
+    if (!this.group.visible) return;
     const at = this.anchorPos();
-    this.mesh.position.set(at.x, 0.012, at.z);
-    this.mesh.scale.setScalar(this.p("radius_px", t, 40) * PX * 2.2);
-    this.material.opacity = Math.max(0, o);
+    const size = this.plan.radius_px * PX * 2.2 * st.scale;
+    this.mesh.position.set(at.x, 0.004, at.z);
+    this.mesh.rotation.set(-Math.PI / 2, 0, THREE.MathUtils.degToRad(st.rotation_deg));
+    this.mesh.scale.set(size * this.plan.stretch, size, 1);
+    this.material.opacity = st.opacity;
   }
 }
 
@@ -1044,7 +1002,10 @@ export class Effect {
       const perTarget = isChain && def.anchor === "target" ? Math.max(1, this.stage.targets.length) : 1;
       for (let k = 0; k < perTarget; k++) {
         const layer = new Ctor(this, def, k);
-        layer.group.renderOrder = def.z ?? 0;
+        // Ground marks draw first (decals, then rings), in z order, so
+        // everything standing on the ground draws over them.
+        const ground = def.type === "decal" ? -1000 : def.type === "ring" ? -500 : 0;
+        layer.group.renderOrder = ground + (def.z ?? 0);
         this.layers.push(layer);
         this.group.add(layer.group);
       }
