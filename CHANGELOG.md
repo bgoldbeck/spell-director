@@ -6,6 +6,8 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-15
+
 ### Changed
 
 - Spells look much better in the viewer: bloom makes bright light glow, bolts, beams and crackle are drawn as soft ribbons instead of stacked tubes, sparks fly as streaks, and shockwave rings are soft with a bright leading edge. A **Bloom** checkbox (B) turns the glow off.
