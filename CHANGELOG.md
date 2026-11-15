@@ -6,6 +6,8 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-15
+
 ### Added
 
 - Two more **Water** spells: **Torrent Cannon** (a heavy, slow water cannon: a swelling sphere, a thick pounding torrent with recoil and a towering splash) and **Tidal Surge** (water wells up at the caster's feet, heaves into a curling wall that rolls across the ground and crashes over the target). Pressure Jet stays the quick, light water jet.
