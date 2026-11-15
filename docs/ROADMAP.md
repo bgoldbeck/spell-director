@@ -65,7 +65,7 @@ Sprite sheets are done (`docs/exporting.md`): one sheet per layer plus a whole-s
 
 ### 7. More elements
 
-- Fire (started: Dragon Breath, beam `style: fire`; Meteor Strike, orb `look: meteor`), ice, nature/roots (the Dryad motion study is a good test), arcane, shadow.
+- Earth (started: Ground Pound, Rending Quake, Rockfall, Stone Spires; `eruption` layer). Fire (started: Dragon Breath, beam `style: fire`; Meteor Strike, orb `look: meteor`), ice, nature/roots (the Dryad motion study is a good test), arcane, shadow.
 - New layer types as needed (e.g. `trail`, `ribbon`, `mesh_growth` for roots/vines, `distortion`). Add them to the vocabulary, schema, validator and viewer together.
 - Schema 0.2.0 when breaking changes are needed; keep 0.1.0 loading.
 

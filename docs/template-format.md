@@ -4,7 +4,7 @@ A **template** is what the director writes. It describes a spell effect well eno
 
 - Schema: [`schemas/template-0.1.0.schema.json`](../schemas/template-0.1.0.schema.json)
 - Terms: [`vocabulary.md`](vocabulary.md)
-- Examples: [`templates/lightning/`](../templates/lightning/), [`templates/water/`](../templates/water/), [`templates/fire/`](../templates/fire/)
+- Examples: [`templates/lightning/`](../templates/lightning/), [`templates/water/`](../templates/water/), [`templates/fire/`](../templates/fire/), [`templates/earth/`](../templates/earth/)
 - Check a template: `python tools/validate.py templates/lightning/*.json`
 
 ## Core ideas
@@ -58,7 +58,7 @@ Layers say how they sit in 3D with `plane`. If omitted, the default is:
 |---|---|
 | `ground` | `ring`, `decal` |
 | `billboard` | `glow`, `orb`, `flash`, `light` |
-| `volume` | `bolt`, `beam`, `crackle`, `sparks`, `smoke` |
+| `volume` | `bolt`, `beam`, `crackle`, `sparks`, `smoke`, `eruption` |
 | `vertical` | none by default; use for walls and pillars |
 
 ## Beats
@@ -111,11 +111,12 @@ Unknown params are allowed (the validator warns) so the director can experiment,
 | `bolt` | `segments`, `jaggedness` (0–1), `width_px`, `taper` (0–1), `branch_chance` (0–1), `branch_depth`, `branch_length_ratio`, `regen_ms` (0 = never redraw), `restrikes`, `restrike_gap_ms`, `leader_ms`, `afterimage_ms`, `glow_px` |
 | `glow` | `radius_px`, `softness` (0–1), `pulse_hz` |
 | `flash` | `scope` (`screen` / `local`), `radius_px`, `peak` (0–1) |
-| `sparks` | `count`, `speed`, `speed_spread`, `gravity`, `lifetime_ms`, `size_px`, `spread_deg`, `drag`, `emit_ms` (how long new sparks keep spawning, default 120), `streak_ms` (each spark is drawn as a streak from where it was this long ago, default 60; lower for round droplets), `look` (`spark` default; `droplet`: round water drops with a short wet trail instead of glowing streaks; `ember`: glowing flecks that flutter and flicker, pair with negative `gravity` so they float up; `debris`: lumpy rock chunks in the layer's color that tumble, land and stay on the ground, shrinking away at the end of their life), `glow` (debris only, 0–1: chunks start glowing in the palette's fire colors with a short hot streak and cool to rock over the first part of their flight) |
+| `sparks` | `count`, `speed`, `speed_spread`, `gravity`, `lifetime_ms`, `size_px`, `spread_deg`, `drag`, `emit_ms` (how long new sparks keep spawning, default 120), `streak_ms` (each spark is drawn as a streak from where it was this long ago, default 60; lower for round droplets), `look` (`spark` default; `droplet`: round water drops with a short wet trail instead of glowing streaks; `ember`: glowing flecks that flutter and flicker, pair with negative `gravity` so they float up; `debris`: lumpy rock chunks in the layer's color that tumble, land and stay on the ground, shrinking away at the end of their life), `glow` (debris only, 0–1: chunks start glowing in the palette's fire colors with a short hot streak and cool to rock over the first part of their flight), `emit_radius_px` (each spark starts somewhere on a disc this wide around the anchor instead of at one point: rocks raining over an area from `sky`, pebbles jolted all over the ground; default 0) |
 | `crackle` | `count`, `length_px`, `jaggedness`, `regen_ms`, `radius_px` |
 | `orb` | `radius_px`, `pulse_hz`, `wobble`, `crackle_count`; for `travel: projectile` an orb anchored at `caster_hand` flies to the target during its `travel` beat: `trail_ms` (streak behind it, default 140, 0 = none), `arc_height_px` (lob height at mid-flight, default 0), `travel_ease` (`linear` or `ease_in` to accelerate). An orb anchored at `sky` in a `travel: projectile` spell falls onto the target during its `travel` beat instead: `approach_deg` (tilt from vertical, 0–75, default 0 = straight down) and `approach_yaw_deg` (the heading it comes from, seen from above: 0 = from beyond the target, 90 = from the cast direction's left, 180 = from over the caster). `look`: `energy` (default) or `meteor`: a lumpy burning rock with molten seams and a white-hot leading face, a flame trail that cools hot to red over `trail_ms` (default 260) and a grey smoke trail that hangs in the air for `smoke_trail_ms` (default 0 = none) at `smoke_opacity` (default 0.45) |
 | `beam` | `width_px`, `wobble`, `wobble_hz`, `jaggedness`, `regen_ms`, `grow_ms` (time to reach full length, default 60), `style` (`energy` default; `water`: a turbulent liquid column with a noisy edge, foam streaks and a bright rim; `fire`: a flame cone, see below). Water and fire beams also take `flow_speed` (how fast the noise rushes toward the target), `turbulence` (0-1, edge break-up), `churn` (0-1, surges that travel down the column), and particles that peel off it: `shed_count`, `shed_speed`, `shed_size_px`, `shed_life_ms` (water drops fall, fire embers float up). Water beams take `foam` (0-1). Fire beams take `spread` (width at the far end relative to `width_px`, default 3: a cone), `puff_count` (billowing flame puffs riding the stream, default 24, max 64) and `puff_size_px`. Any beam can `sweep_px` (how far its far end swings across the target, sideways) with `sweep_ms` (one pass) |
-| `ring` | `start_radius_px`, `end_radius_px`, `thickness_px`, `softness` |
+| `ring` | `start_radius_px`, `end_radius_px`, `thickness_px`, `softness`, `arc_deg` (only the arc facing the cast direction, fading at its ends: a frontal shockwave; default 360), `ease` (`ease_out` default: a burst that slows; `linear`: a steady wave front that keeps pace with an `eruption`; `ease_in`) |
+| `eruption` | Rock bursting out of the ground in rows along an arc (or full circle) that sweeps outward from its anchor, each row bigger than the last: `shape` (`spikes` default: jagged pointed rocks; `slabs`: broken plates of ground shoved up on edge), `arc_deg` (default 100, centred on the cast direction; 360 = a ring), `rows` (default 5), `start_radius_px`, `end_radius_px` (first and last row, default 50 and 360; 0 puts one rock at the centre), `row_delay_ms` (default 120), `delay_growth` (each gap this many times the last, default 1; above 1 the rhythm slows so the big rows land with weight), `growth` (size per row, default 1.3; below 1 the centre is biggest: a crown of spikes), `height_px`, `width_px` (row 0), `spacing_px` (gap along the arc, default 40), `tilt_deg` (lean away from the anchor), `jitter` (0–1), `rise_ms` (thrust up with a small overshoot, default 90), `hold_ms` (default 300), `sink_ms` (crumble back down, default 350), `debris_count` (chunks thrown per rock, default 3), `debris_speed`, `debris_size_px`, `gravity`, `dust` (0–1 opacity of the dust kicked up at each rock), `dust_size_px`, `dust_life_ms`. Rocks take the layer's color and are lit by the scene; dust is the palette's `secondary` dulled toward the rock. |
 | `decal` | `shape`, `radius_px`, `opacity`, `fade_in_ms`, `lifetime_ms`, `fade_ms`, `grow_ms`, `start_scale`, `rotation_deg`, `spin_deg_per_s`, `stretch`, `pulse_hz`, `detail`. See [Decals](#decals). |
 | `smoke` | `count` (max 32), `rise_speed`, `size_px`, `lifetime_ms`, `opacity`, `spread_speed` (px/s the puffs also roll outward along the ground, evenly around the centre and slowing as they go: a dust wave or a spreading fireball; default 0). With the layer's `blend: add` the puffs glow instead of shading: billows of flame. |
 | `light` | `radius`, `energy` |
@@ -137,6 +138,7 @@ A `decal` layer is a mark on the ground: drawn flat on the ground plane under ev
 | `frost` | alpha | ice crystals spiking outward | ice, freeze |
 | `rune_circle` | add | rings, glyph marks and a star | casting, summoning, buffs |
 | `warning_ring` | add | faint fill, bright rim and ticks | telegraphs: "get out of here" |
+| `fissures` | alpha | long jagged ground splits fanning out from the centre, with shadow and rubble | quakes, ground pounds, earth waves (pair with `arc_deg` for a frontal fan) |
 
 The layer's `blend` overrides the default (e.g. `cracks` with `blend: add` are glowing cracks). The color is the layer's palette slot.
 
@@ -154,6 +156,8 @@ The layer's `blend` overrides the default (e.g. `cracks` with `blend: add` are g
 | `stretch` | 1 | Length along its rotation axis relative to its width (a skid mark). |
 | `pulse_hz` | 0 | Opacity throb (warning rings). |
 | `detail` | 0.5 | How busy the texture is: number of cracks, rays, glyphs, droplets. |
+| `arc_deg` | 360 | Keep only the sector facing the cast direction (a frontal fan of fissures). Without `rotation_deg`, an arc mark faces the cast direction. |
+| `reveal_ms` | 0 | The mark spreads outward from its centre over this long (cracks running across the ground), instead of appearing whole. Match it to the wave it follows. |
 
 Decal beats set when it appears (the start of its first beat) and, without `lifetime_ms`, how long it holds. A decal's brightness does not follow the beats' intensity curves: marks don't flicker. Stack two decals for a hot mark that cools: a glowing `burn`/`cracks` (add, short lifetime) over a dark `scorch` (alpha, long lifetime).
 

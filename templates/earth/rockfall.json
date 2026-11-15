@@ -74,9 +74,21 @@
       "intent": "Boulders break loose and tumble down one after another, spinning as they fall."
     },
     {
+      "id": "topple",
+      "phase": "travel",
+      "start_ms": 870,
+      "end_ms": 960,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "A last, much bigger boulder breaks loose above and drops."
+    },
+    {
       "id": "pound",
       "phase": "impact",
-      "start_ms": 1150,
+      "start_ms": 1250,
       "end_ms": 1650,
       "intensity": {
         "shape": "flicker",
@@ -253,37 +265,7 @@
       "id": "keystone",
       "type": "sparks",
       "beats": [
-        "crush"
-      ],
-      "anchor": "target",
-      "plane": "volume",
-      "blend": "alpha",
-      "color": "primary",
-      "z": 7,
-      "params": {
-        "count": 1,
-        "speed": 10,
-        "speed_spread": 0,
-        "gravity": 0,
-        "lifetime_ms": 1400,
-        "size_px": 46,
-        "spread_deg": 20,
-        "drag": 0.5,
-        "emit_ms": 1,
-        "look": "debris"
-      },
-      "shader": {
-        "material": "stone",
-        "look": "The last huge boulder, landed on top of the heap.",
-        "technique": "particles",
-        "lighting": "lit"
-      }
-    },
-    {
-      "id": "keystone-fall",
-      "type": "sparks",
-      "beats": [
-        "fall"
+        "topple"
       ],
       "anchor": "sky",
       "plane": "volume",
@@ -295,8 +277,8 @@
         "speed": 0,
         "speed_spread": 0,
         "gravity": 1500,
-        "lifetime_ms": 1050,
-        "size_px": 46,
+        "lifetime_ms": 2600,
+        "size_px": 44,
         "spread_deg": 10,
         "drag": 0.02,
         "emit_ms": 1,
@@ -304,7 +286,7 @@
       },
       "shader": {
         "material": "stone",
-        "look": "The last huge boulder dropping onto the heap.",
+        "look": "The last huge boulder, dropping onto the heap and staying on top of it.",
         "technique": "particles",
         "lighting": "lit"
       }

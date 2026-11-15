@@ -20,7 +20,7 @@ import {
   sheetFileName, spriteLayers, visibleRange,
 } from "./engine/spritesheet.js";
 
-const VISIBLE = 3; // a pixel channel above this (0-255) on black counts as drawn
+const VISIBLE = 3; // a pixel channel more than this (0-255) away from the empty background counts as drawn
 
 function makeRenderer(size) {
   const canvas = document.createElement("canvas");
@@ -111,20 +111,25 @@ export function matte(black, white, out) {
   return out;
 }
 
-function anyDrawn(px) {
+// Drawn: differs from the empty background (ref). The scan uses a mid-grey
+// background so dark alpha layers (soot, fissures, dust) count as well as
+// bright additive ones.
+const differs = (px, ref, i) => Math.abs(px[i] - ref[i]) > VISIBLE || Math.abs(px[i + 1] - ref[i + 1]) > VISIBLE || Math.abs(px[i + 2] - ref[i + 2]) > VISIBLE;
+
+function anyDrawn(px, ref) {
   for (let i = 0; i < px.length; i += 4) {
-    if (px[i] > VISIBLE || px[i + 1] > VISIBLE || px[i + 2] > VISIBLE) return true;
+    if (differs(px, ref, i)) return true;
   }
   return false;
 }
 
 // Grow box {x0, y0, x1, y1} (pixels) to hold every drawn pixel. Returns whether any were drawn.
-function growBox(px, size, box) {
+function growBox(px, size, box, ref) {
   let any = false;
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const i = (y * size + x) * 4;
-      if (px[i] > VISIBLE || px[i + 1] > VISIBLE || px[i + 2] > VISIBLE) {
+      if (differs(px, ref, i)) {
         any = true;
         if (x < box.x0) box.x0 = x;
         if (y < box.y0) box.y0 = y;
@@ -191,6 +196,13 @@ export async function exportSpriteSheets(template, opts = {}) {
     const flags = Object.fromEntries(ids.map((id) => [id, new Array(plan.count).fill(false)]));
     const allFlags = new Array(plan.count).fill(false);
     const boxes = Object.fromEntries(views.map((v) => [v, { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }]));
+    const scanBg = new THREE.Color("#808080");
+    const refs = {};
+    {
+      const undo = solo(effect, new Set());
+      for (const v of views) refs[v] = grab(post, scene, cams[v], scanBg, sctx, size, bloom).slice();
+      undo();
+    }
     const work1 = plan.count * views.length * (ids.length + 1);
     let done = 0;
     for (let f = 0; f < plan.count; f++) {
@@ -198,8 +210,8 @@ export async function exportSpriteSheets(template, opts = {}) {
       for (const v of views) {
         for (const id of [null, ...ids]) {
           const undo = solo(effect, id ? new Set([id]) : null);
-          const px = grab(post, scene, cams[v], black, sctx, size, bloom);
-          const drawn = id ? anyDrawn(px) : growBox(px, size, boxes[v]);
+          const px = grab(post, scene, cams[v], scanBg, sctx, size, bloom);
+          const drawn = id ? anyDrawn(px, refs[v]) : growBox(px, size, boxes[v], refs[v]);
           undo();
           if (id) flags[id][f] ||= drawn;
           else allFlags[f] ||= drawn;

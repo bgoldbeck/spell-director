@@ -34,7 +34,7 @@ Pull these out of what the user said, and note which are missing:
 
 | Decide | Words that tell you | If missing |
 |---|---|---|
-| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash" | ask (it's rarely missing) |
+| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash"; "earth", "rock", "stone", "ground", "quake", "slam", "boulder" | ask (it's rarely missing) |
 | `archetype` | strike (from above / one hit), projectile (thrown), chain (jumps), beam (continuous), aura (around the caster), nova (bursts outward) | infer, or ask as a choice |
 | weight | heavy, boss, big, ultimate → long anticipation, hold frames, shake. quick, light, basic → snappy | default to medium |
 | camera / hero view | top-down, isometric, side-scroller, fighting game, over-the-shoulder (see vocabulary §7) | **ask** |
@@ -52,6 +52,8 @@ Pick the questions whose answers change the template the most. Good ones, in pri
 3. **Shape**: *"One clean bolt, or a wild tree of forks?"* → `branch_chance`, `branch_depth`, `jaggedness`.
 4. **Area**: *"Hit one target, or blast the area around it?"* → footprint, sparks, ring size.
 5. **Color**: *"Classic white-blue, or a colored variant (violet, gold, red)?"* → palette.
+
+For earth, ask: *"A wave that runs out in front of you, or a quake all around you?"* → `eruption.arc_deg`, footprint `arc` or `circle`; *"Spikes, or heaving slabs of ground?"* → `eruption.shape`.
 
 For fire, swap the shape question for one of these: *"A tight jet that hits one target, or a wide cone that sweeps an area?"* → `spread`, `sweep_px`, footprint; *"Natural orange flame, or a magical color (blue, green, purple)?"* → palette.
 
@@ -119,6 +121,14 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
   - *Sound*: `wind` (inhale) or `charge` → `ignite` (+ `whoosh`) → `fire` (stream) → `impact` or `boom` for a blast → `fire` at gain 0.3–0.4 for the smolder.
   - *Shader intent*: `fiery` for flames, `plasma` for a ball of fire, `molten` for glowing ground and cracks, `ashen` for scorch, `smoky` for smoke; fBm noise flowing `along_path` or `upward`, `dissolve` with a red `edge_color`, `distortion` 0.3–0.6 for heat haze, `emissive.hdr` 3–6.
 
+- **Earth** (vocabulary "Earth-specific terms"). Build it from weight and rhythm, not light:
+  - *Ground pound / earth wave*: a gather (0.5–0.7 s: pebbles lifting, dust ring closing in, a dull fist `glow`, `rumble`), a 60–100 ms `hold` hang, a short slam (`impact` + `boom`, dust, `crater`, chunks, big shake), then an `eruption` at the `caster` (`arc_deg` 80–120, 4–6 `rows`, `growth` 1.3–1.45, `delay_growth` 1.1) with a matching `ring` (`arc_deg`, `ease: linear`, same radii) and a `fissures` decal (`arc_deg`, `reveal_ms` about the wave's length). Put the climax on the last row: a second, deeper `boom`, `sparks` `look: debris` and a dust plume at the target, the hardest shake. Footprint `arc` so the views frame the whole fan.
+  - *Quake around the caster*: `destination: caster`, footprint `circle`; `eruption` `shape: slabs`, `arc_deg` 360, slow rise, long hold; fissures all round; pebbles bouncing everywhere (`sparks` `look: debris`, `emit_radius_px` the whole area); a long flickering shake.
+  - *Spikes under a target*: a telegraph first (glowing `cracks` decal, add, pulsing; hopping pebbles; rumble, about 0.5 s), then `eruption` at the `target`, `arc_deg` 360, `start_radius_px` 0, `growth` 0.5–0.7 so the middle spike is tallest, a fast `rise_ms` (60–80), `crack` + `impact` + `boom`.
+  - *Rockfall*: a warning (falling grit, a dark patch spreading on the ground), then `sparks` `look: debris` at `sky` with `emit_radius_px` and big `size_px`, born over 300–500 ms so the crashes come one after another, and one last big rock a beat later for the climax.
+  - *Sound*: `rumble` (gather) → `whoosh` (swing) → `impact` + `boom` (slam) → `crash` with `repeat_ms` matching the row rhythm over a `rumble` → `boom` + `crash` (climax) → quiet `rumble`.
+  - *Shader intent*: `stone` for rock (`technique: mesh`, voronoi noise, lit), `dusty` for dust and shock rings, `stone` decals for fissures and craters; a dull `molten` only for glowing cracks in a magical variant.
+
 Know what the viewer draws today (see the known issues in [DESIGN.md](DESIGN.md#6-known-issues-and-limits)): several targets exist only for chains (`travel: chain` or `destination: targets`), so a "storm of strikes across an area" renders as strikes on one spot. Projectile travel is drawn for an `orb` anchored at `caster_hand` in a `travel: projectile` spell. Prefer designs the viewer can show, and say in `director_notes` when you go beyond it.
 
 Set `z` back to front: shadow/smoke/decal → glow → bolt/beam → sparks → flash. Decals always draw on the ground under everything else; their `z` only orders them among themselves (a glowing crack decal above its scorch). Use only params listed in the template format; unknown params produce warnings and the renderer may ignore them.
@@ -150,7 +160,7 @@ Sizes are in pixels at 100 px per world unit (1 unit = a character's height).
 
 ## Step 5. Palette
 
-Fill `core` and `primary`, and usually `secondary`. Add `accent` only for a contrasting spark color, and `shadow` only if something dark is drawn (smoke, scorch, sky-dim). Electricity is additive with a near-white core. Fire is a temperature ramp: `core` white-yellow, `primary` orange, `secondary` deep red, `accent` gold for embers, `shadow` a warm near-black for smoke and scorch. Colors should be original choices, not sampled from a game.
+Fill `core` and `primary`, and usually `secondary`. Add `accent` only for a contrasting spark color, and `shadow` only if something dark is drawn (smoke, scorch, sky-dim). Electricity is additive with a near-white core. Fire is a temperature ramp: `core` white-yellow, `primary` orange, `secondary` deep red, `accent` gold for embers, `shadow` a warm near-black for smoke and scorch. Earth is muted: `primary` the rock (a mid brown or grey), `secondary` a lighter dust tan, `core` a pale sunlit dust for pops, `accent` only for a dull glow in the fist or cracks, `shadow` near-black for fissures and craters; no bright, saturated colors unless it is magical earth. Colors should be original choices, not sampled from a game.
 
 ## Step 6. Views
 
@@ -194,5 +204,7 @@ Request: *"heavy boss lightning, top-down game"*.
 The result is [`templates/lightning/boss-storm-call.json`](../templates/lightning/boss-storm-call.json).
 
 A one-word request, *"meteor"*, became [`templates/fire/meteor-strike.json`](../templates/fire/meteor-strike.json): strike archetype with a 1.15 s warning circle and closing ring, a burning rock falling at an angle with a flame and smoke trail, then flash, fireball, shockwave, dust wave, glowing debris and a smoking crater, scored rumble → wind + fire + whoosh → boom + crash → quiet fire.
+
+An earth example: *"an earth ground pound that grows outward in an arc, ejecting earth upward with increasing effect"* became [`templates/earth/ground-pound.json`](../templates/earth/ground-pound.json): nova archetype, a 0.6 s gather and 80 ms hang, a hard slam, five rows of spikes across a 100° arc each 1.4× bigger and 10% later, a linear dust arc and fissures spreading with the front, a climax at the far end, then the rocks crumble.
 
 A fire example: *"a dragon-style fire breath"* became [`templates/fire/dragon-breath.json`](../templates/fire/dragon-breath.json): beam archetype, a 0.5 s inhale (growing fire in the mouth, contracting ring, smoke wisps, wind), an ignite flare, a widening fire cone that sweeps across the target, flame billows and embers on impact, a burning swath that cools to a long scorch, and wind → ignite + whoosh → fire → quiet fire for sound.

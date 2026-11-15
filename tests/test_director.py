@@ -40,6 +40,9 @@ def test_list_and_filter():
     chains = library.list_templates(archetype="chain")
     assert [t["id"] for t in chains] == ["lightning-chain-arc"]
     assert [t["id"] for t in library.list_templates(element="fire")] == ["fire-dragon-breath", "fire-meteor-strike"]
+    assert [t["id"] for t in library.list_templates(element="earth")] == [
+        "earth-ground-pound", "earth-rending-quake", "earth-rockfall", "earth-stone-spires",
+    ]
     assert library.list_templates(element="ice") == []
 
 

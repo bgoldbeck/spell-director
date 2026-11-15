@@ -224,8 +224,8 @@
           "min": 160,
           "max": 180
         },
-        "width_px": 30,
-        "spacing_px": 30,
+        "width_px": 42,
+        "spacing_px": 62,
         "tilt_deg": 14,
         "jitter": 0.3,
         "rise_ms": 70,

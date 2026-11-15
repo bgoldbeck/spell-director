@@ -264,7 +264,7 @@
           "max": 36
         },
         "width_px": 38,
-        "spacing_px": 55,
+        "spacing_px": 72,
         "tilt_deg": 32,
         "jitter": 0.55,
         "rise_ms": 150,
