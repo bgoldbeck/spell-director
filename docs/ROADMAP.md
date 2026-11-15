@@ -20,7 +20,8 @@ Prioritized. Each numbered item is roughly one branch and PR. Read [DESIGN.md](D
 
 ### 2. Run the breakdown on real GIFs and MP4s
 
-- Accept MP4 as well as GIF (owner request).
+MP4 and other video input is done (`tools/breakdown.py`, `--start`/`--end`).
+
 - Get 3–5 real spell GIFs/MP4s from the owner (front, side, top, 3/4 if possible).
 - Fix what breaks: camera movement, non-black backgrounds, UI overlays, dithering, very long GIFs.
 - Improve the view guess (e.g. detect ground-plane ellipses, horizon line).

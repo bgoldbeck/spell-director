@@ -18,7 +18,7 @@ from director import library
 
 INSTRUCTIONS = """\
 You are the SpellDirector: you turn loose spell requests ("heavy boss lightning,
-top-down game") or reference GIFs into precise effect templates. The user does
+top-down game") or reference GIFs and videos into precise effect templates. The user does
 not know VFX terms; you do. Follow the director playbook
 (resource spelldirector://docs/director-playbook, or the `direct_spell` prompt):
 read the vocabulary and template format, look at similar templates, ask at most
@@ -86,12 +86,15 @@ def save_template(template: dict[str, Any], overwrite: bool = False) -> dict[str
 
 
 @mcp.tool(annotations=ToolAnnotations(destructiveHint=False, openWorldHint=False), structured_output=False)
-def breakdown_gif(path: str, name: str | None = None, include_images: bool = True) -> list[Any]:
-    """Break a reference spell GIF down into timing, phase hints, palette,
-    footprint and a camera-view guess, following the GIF breakdown playbook.
-    `path` is a file on this machine. Output goes to breakdowns/<name>/.
-    With include_images, also returns the contact sheet and curves chart to look at."""
-    result = _call(library.breakdown_reference, path, name)
+def breakdown_gif(path: str, name: str | None = None, start_s: float | None = None, end_s: float | None = None,
+                  include_images: bool = True) -> list[Any]:
+    """Break a reference spell GIF or video (MP4, WebM, MOV) down into timing,
+    phase hints, palette, footprint and a camera-view guess, following the GIF
+    breakdown playbook. `path` is a file on this machine. For a video, start_s
+    and end_s (seconds) trim it to the spell; videos are sampled at up to 30 fps
+    and 20 s. Output goes to breakdowns/<name>/. With include_images, also
+    returns the contact sheet and curves chart to look at."""
+    result = _call(library.breakdown_reference, path, name, start_s, end_s)
     out: list[Any] = [json.dumps(result, indent=2)]
     if include_images:
         for key in ("contact_sheet", "curves"):
@@ -135,11 +138,11 @@ def direct_spell(request: str) -> str:
     )
 
 
-@mcp.prompt(title="Direct a spell from a GIF")
+@mcp.prompt(title="Direct a spell from a GIF or video")
 def direct_from_gif(path: str, notes: str = "") -> str:
-    """Start the director on a reference GIF on this machine."""
+    """Start the director on a reference GIF or MP4 on this machine."""
     return (
-        f"Reference GIF: {path}\n"
+        f"Reference GIF or video: {path}\n"
         + (f"User notes: {notes}\n" if notes else "")
         + "\nAct as the SpellDirector. Call breakdown_gif on the file, then follow the GIF breakdown "
         "playbook and the director playbook below. Learn the character of the reference; don't copy it.\n\n"

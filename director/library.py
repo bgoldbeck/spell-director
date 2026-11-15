@@ -8,6 +8,7 @@ they can be used directly from Python or tests. See docs/director-playbook.md.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -33,7 +34,6 @@ DOC_FILES = {
 }
 
 VIEWS = ("front", "side", "top", "three_quarter")
-VIEWER_URL = "http://localhost:8000/"
 _SAFE_NAME = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 
 
@@ -121,8 +121,16 @@ def validate_template(template: dict) -> dict:
     return {"valid": not errors, "errors": errors, "warnings": warnings}
 
 
+def viewer_url() -> str:
+    """Base URL of the local viewer (tools/serve.py, same port setting)."""
+    import serve  # tools/serve.py
+
+    port = os.environ.get("SPELLDIRECTOR_PORT") or serve.DEFAULT_PORT
+    return f"http://localhost:{port}/"
+
+
 def preview_url(template_id: str, view: str | None = None, t_ms: int | None = None) -> str:
-    url = f"{VIEWER_URL}?template={template_id}"
+    url = f"{viewer_url()}?template={template_id}"
     if view:
         url += f"&view={view}"
     if t_ms is not None:
@@ -178,8 +186,10 @@ def save_template(template: dict, overwrite: bool = False) -> dict:
 # ---------------------------------------------------------------- references
 
 
-def breakdown_reference(path: str, name: str | None = None) -> dict:
-    """Run the breakdown tool on a reference file; output goes to breakdowns/<name>/."""
+def breakdown_reference(path: str, name: str | None = None, start_s: float | None = None,
+                        end_s: float | None = None) -> dict:
+    """Run the breakdown tool on a reference GIF or video (MP4, WebM, MOV...);
+    output goes to breakdowns/<name>/. start_s/end_s trim a video."""
     src = Path(path).expanduser()
     if not src.is_file():
         raise LibraryError(f"no such file: {path}")
@@ -187,7 +197,12 @@ def breakdown_reference(path: str, name: str | None = None) -> dict:
     if not _SAFE_NAME.match(name):
         raise LibraryError(f"name must be kebab-case: {name!r}")
     out = BREAKDOWNS / name
-    result = _breakdown.breakdown(src, out)
+    opts = {}
+    if _breakdown.is_video(src):
+        opts = {"start_s": start_s or 0.0, "end_s": end_s}
+    elif start_s or end_s is not None:
+        raise LibraryError("start_s/end_s only apply to videos")
+    result = _breakdown.breakdown(src, out, **opts)
     images = {k: str(out / v) for k, v in result["images"].items() if isinstance(v, str)}
     return {
         "summary": _breakdown.summary(result),

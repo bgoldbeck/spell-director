@@ -24,11 +24,11 @@ Full design: [docs/DESIGN.md](docs/DESIGN.md). What's next: [docs/ROADMAP.md](do
 | [`web/`](web/) | The viewer (Three.js r169 vendored in `web/vendor`, no build step). |
 | [`tools/serve.py`](tools/serve.py) | Local server for the viewer. |
 | [`tools/validate.py`](tools/validate.py) | Validates templates (schema + timing/reference rules). |
-| [`tools/breakdown.py`](tools/breakdown.py) | Breaks a GIF down into timing, phases, palette, footprint and view hints, plus images for the AI. |
+| [`tools/breakdown.py`](tools/breakdown.py) | Breaks a GIF or video down into timing, phases, palette, footprint and view hints, plus images for the AI. |
 | [`docs/director-playbook.md`](docs/director-playbook.md) | How the director turns a request into a template: questions to ask, timing, layers, views, saving. |
 | [`director/`](director/) | The director's library functions and its MCP server. |
 | [`docs/gif-breakdown-playbook.md`](docs/gif-breakdown-playbook.md) | Step-by-step directions for turning a breakdown into a template. |
-| [`tools/sample_gif.py`](tools/sample_gif.py), [`samples/`](samples/) | A synthetic sky-strike GIF with a known timeline, for trying the tools. |
+| [`tools/sample_gif.py`](tools/sample_gif.py), [`samples/`](samples/) | A synthetic sky-strike GIF and MP4 with a known timeline, for trying the tools. |
 
 ## Director (MCP server)
 
@@ -59,12 +59,16 @@ Keys: Space play/pause, 1-4 views, 5 all four, F focus view (Esc to leave). Drag
 
 After adding a template file, run `python tools/build_index.py` so static hosting picks it up (the local server finds new files on its own).
 
-## Break down a GIF
+## Break down a GIF or MP4
 
 ```bash
 python -m pip install -r requirements-dev.txt
 python tools/breakdown.py samples/synthetic-sky-strike.gif --out breakdowns/sky-strike
+python tools/breakdown.py samples/synthetic-sky-strike.mp4 --out breakdowns/sky-strike-mp4
+python tools/breakdown.py my-capture.mp4 --start 1.2 --end 3.5   # trim a video to the spell
 ```
+
+Videos (MP4, WebM, MOV, MKV, AVI) are decoded with PyAV and sampled at up to 30 fps.
 
 Then follow the [playbook](docs/gif-breakdown-playbook.md).
 

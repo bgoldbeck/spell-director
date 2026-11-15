@@ -130,7 +130,7 @@ Set `views.hero` from the camera answer. Then write `views.reads` for **all four
 
 1. `validate_template` with the template. Fix every error; fix warnings unless you are deliberately trying a new param (say so in `director_notes`).
 2. `save_template`. It validates again, writes `templates/<element>/<id>.json` and rebuilds `templates/index.json`. It refuses to replace an existing template unless you pass `overwrite: true`, which you should only do when revising that template on purpose.
-3. Give the user the preview URL from the result (`http://localhost:8000/?template=<id>&view=<hero>`, with `python tools/serve.py` running) and a two-line summary: what you made and the choices you took.
+3. Give the user the preview URL from the result (`http://localhost:47811/?template=<id>&view=<hero>`, with the viewer running via `run.sh`, `run.bat` or `python tools/serve.py`; if the server picked another port because 47811 was busy, use that one) and a two-line summary: what you made and the choices you took.
 4. Offer one revision round in plain words ("heavier hit?", "fewer forks?"). Revise the same template id with `overwrite: true`.
 
 ## Library mode (no request)

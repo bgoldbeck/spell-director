@@ -1,6 +1,6 @@
 # GIF Breakdown Playbook
 
-How the director turns a reference GIF into a template. Follow the steps in order. The tool measures; **you** interpret, using the [vocabulary](vocabulary.md) and the [template format](template-format.md).
+How the director turns a reference GIF or video (MP4, WebM, MOV) into a template. Everything below says "GIF", but videos work the same way. Follow the steps in order. The tool measures; **you** interpret, using the [vocabulary](vocabulary.md) and the [template format](template-format.md).
 
 The goal is a template that recreates the *character* of the reference (timing, shape, palette, layering) as an original effect. Never trace or copy another game's art.
 
@@ -11,6 +11,14 @@ The goal is a template that recreates the *character* of the reference (timing, 
 ```bash
 python tools/breakdown.py path/to/spell.gif --out breakdowns/<name>
 ```
+
+For a video, trim it to the spell so the timeline starts near the cast:
+
+```bash
+python tools/breakdown.py path/to/spell.mp4 --start 1.2 --end 3.5 --out breakdowns/<name>
+```
+
+Videos are sampled at up to 30 fps (`--max-fps`) and 20 s (`--max-seconds`); `gif.video.truncated` tells you if the limit cut it off. Through MCP, `breakdown_gif` takes `start_s` and `end_s`. A video recorded from a game often has UI, a moving camera and a non-black background, so trust the contact sheet over the numbers.
 
 You get `breakdown.json` plus four images. Look at the images, not just the numbers:
 

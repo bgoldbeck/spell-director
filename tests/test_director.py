@@ -139,3 +139,15 @@ def test_mcp_server_end_to_end(lib, new_template):
             assert [x.type for x in r.content] == ["text", "image", "image"]
 
     anyio.run(run)
+
+
+def test_breakdown_reference_video(lib, tmp_path):
+    pytest.importorskip("av")
+    import sample_gif
+
+    mp4 = sample_gif.write_video(tmp_path / "ref.mp4", lead_in=25)
+    result = library.breakdown_reference(str(mp4), start_s=1.0, end_s=2.2)
+    assert result["gif"]["format"] == "video"
+    assert result["timing"]["main_peak_ms"] == 400
+    with pytest.raises(library.LibraryError, match="only apply to videos"):
+        library.breakdown_reference(str(SAMPLE_GIF), start_s=1.0)
