@@ -39,7 +39,8 @@ def test_list_and_filter():
     assert {"lightning-sky-strike", "lightning-chain-arc", "lightning-boss-storm-call"} <= all_ids
     chains = library.list_templates(archetype="chain")
     assert [t["id"] for t in chains] == ["lightning-chain-arc"]
-    assert library.list_templates(element="fire") == []
+    assert [t["id"] for t in library.list_templates(element="fire")] == ["fire-dragon-breath"]
+    assert library.list_templates(element="ice") == []
 
 
 def test_get_template_and_missing():

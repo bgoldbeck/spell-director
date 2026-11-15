@@ -160,6 +160,24 @@ Every effect must read from four standard cameras. Templates are authored in 3D 
 | static | `crackle` | Tiny crawling arcs, often during anticipation. |
 | afterimage | `bolt.afterimage_ms` | Path lingers as a fading ghost. |
 
+### Fire-specific terms
+
+Fire is soft and slow next to lightning: it billows, licks and drifts instead of snapping. It flickers at 5–9 Hz (lightning 10–16), its shapes are rounded tongues instead of zigzags, and it always leaves something behind (embers, smoke, scorch).
+
+| Term | Field | Meaning |
+|---|---|---|
+| temperature ramp | palette `core` → `primary` → `secondary` → `shadow` | Hottest is white-yellow, then orange, then red, then dark smoke. Hot parts glow (add), cool fringes and smoke are alpha. Never fully saturated red at the core. |
+| breath, flamethrower, gout, stream | `beam` `style: fire` | A sustained cone of flame from the mouth or hand. `spread` sets how wide the cone opens; `turbulence` how ragged its edges are. |
+| tongues, licking | `beam.turbulence`, shader `noise` fBm with `flow` | Flame edges torn by noise that flows along and sideways. |
+| billow, roll, plume of fire | `beam.puff_count`, or `smoke` with `blend: add` | Rounded clouds of flame that swell and roll upward as they cool. |
+| embers, cinders | `sparks` `look: ember` with negative `gravity`; beam `shed_*` | Glowing flecks that float up, flutter and wink out. |
+| sweep, rake | `beam.sweep_px`, `sweep_ms` | The far end of the stream swings across the target. Lay the scorch across the sweep (`rotation_deg` 90, `stretch` > 1). |
+| flare, catch, ignite | `flash` (local) + `sparks` at the mouth, `ignite` cue | The moment the fire lights: a short bright pop, not a white-out. |
+| inhale, gather, wind-up | `orb` + `glow` at the mouth, a contracting `ring` (`start_radius_px` > `end_radius_px`), `wind` cue | Drawing breath before a breath attack; the fire builds inside. |
+| heat haze, shimmer | shader `distortion` 0.3–0.6 | The air bends above and behind the flames. Shader intent only; the viewer doesn't draw it. |
+| burning ground, smolder | `decal` `burn` / glowing `cracks` (add, short) over `scorch` (alpha, long), `fire` cue at low gain | The ground catches, glows, then goes black. |
+| fireball | `orb` in a `travel: projectile` spell, `sparks` `look: ember` trailing | A thrown ball of fire (orb material `plasma` or `fiery`). |
+
 ## 9. How the director uses this
 
 1. Hear the request (text) or read a GIF breakdown.

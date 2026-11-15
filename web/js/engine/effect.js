@@ -308,9 +308,50 @@ float fbm(vec2 p) {
   return v;
 }
 #endif
+#ifdef FIRE
+uniform float time;      // seconds, layer time
+uniform float flow;      // how fast the flame rushes along the ribbon, units/s
+uniform float noiseAmt;  // 0..1, how much the noise tears the edges into tongues
+uniform float noiseScale;
+uniform float lick;      // sideways licking speed
+uniform float total;     // ribbon length in world units (to cool the far end)
+uniform float seed;
+uniform vec3 hot;        // white-yellow core
+uniform vec3 mid;        // orange body
+uniform vec3 cool;       // red edges
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7)) + seed) * 43758.5453); }
+float vnoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p) {
+  float v = 0.0, a = 0.5;
+  for (int k = 0; k < 5; k++) { v += a * vnoise(p); p = p * 2.03 + 17.1; a *= 0.5; }
+  return v;
+}
+#endif
 void main() {
   float x = abs(vSide);
-#ifdef FLUID
+#ifdef FIRE
+  // A temperature field: two layers of fBm rush along the ribbon and lick
+  // sideways, tear the edges into tongues, and map heat to a ramp from the
+  // white-yellow core through orange to red. The far end runs cooler.
+  float u = clamp(vAlong / max(0.001, total), 0.0, 1.0);
+  vec2 q = vec2(vAlong * noiseScale - time * flow, vSide * 1.7 - time * lick);
+  float n = fbm(q);
+  float n2 = fbm(q * 2.3 + vec2(-time * flow * 0.8, 5.2));
+  float edge = max(0.12, 1.0 - noiseAmt * (0.1 + 0.8 * n));
+  float xe = x / edge;
+  float body = xe >= 1.0 ? 0.0 : pow(1.0 - xe * xe, hardness);
+  // Hot pockets come and go; the cone cools with distance from the mouth.
+  float heat = body * (0.35 + 1.2 * n2 * n2 + 0.2 * n) * mix(1.25, 0.5, u);
+  heat = clamp(heat, 0.0, 1.4);
+  vec3 c = mix(cool, mid, smoothstep(0.15, 0.55, heat));
+  c = mix(c, hot, smoothstep(0.75, 1.15, heat));
+  float a = smoothstep(0.02, 0.25, heat);
+  gl_FragColor = vec4(c * (0.45 + 0.45 * heat), a * opacity);
+#elif defined(FLUID)
   // Noise scrolls along the ribbon (flow), eats into the edges (a ragged,
   // churning silhouette), streaks foam and adds a bright rim like light
   // catching the surface of a water column.
@@ -378,8 +419,20 @@ class RibbonMesh {
           seed: { value: opts.fluid.seed ?? 0 },
           foamColor: { value: new THREE.Color(opts.fluid.foamColor ?? "#ffffff") },
         } : {}),
+        ...(opts.fire ? {
+          time: { value: 0 },
+          flow: { value: opts.fire.flow ?? 5 },
+          noiseAmt: { value: opts.fire.noise ?? 0.6 },
+          noiseScale: { value: opts.fire.scale ?? 2.5 },
+          lick: { value: opts.fire.lick ?? 1.5 },
+          total: { value: 1 },
+          seed: { value: opts.fire.seed ?? 0 },
+          hot: { value: new THREE.Color(opts.fire.hot ?? "#fff6d0") },
+          mid: { value: new THREE.Color(opts.fire.mid ?? "#ff8a1e") },
+          cool: { value: new THREE.Color(opts.fire.cool ?? "#c42a0c") },
+        } : {}),
       },
-      defines: opts.fluid ? { FLUID: 1 } : {},
+      defines: opts.fire ? { FIRE: 1 } : opts.fluid ? { FLUID: 1 } : {},
       transparent: true,
       depthWrite: false,
       blending: opts.blending ?? THREE.AdditiveBlending,
@@ -445,6 +498,11 @@ class RibbonMesh {
         }
       }
       v += m;
+    }
+    if (this.material.uniforms.total) {
+      let longest = 0;
+      for (let k = 0; k < v; k++) longest = Math.max(longest, L[k * 2]);
+      this.material.uniforms.total.value = Math.max(0.001, longest);
     }
     for (const a of [this.pos, this.prev, this.next, this.width, this.along, this.index]) a.needsUpdate = true;
     this.mesh.geometry.setDrawRange(0, ii);
@@ -755,6 +813,9 @@ class SparksLayer extends Layer {
     // look "droplet": liquid drops (alpha-blended body with a bright glint)
     // instead of glowing sparks.
     this.droplet = this.base.look === "droplet";
+    // look "ember": glowing flecks that flutter and flicker as they drift
+    // (pair with negative gravity so they float up on the heat).
+    this.ember = this.base.look === "ember";
     if (this.droplet) {
       this.streaks = new RibbonMesh(this.max * 4, outer.clone().lerp(core, 0.25), 1, 1.2, { blending: THREE.NormalBlending });
       this.hot = new RibbonMesh(this.max * 4, core, 1, 0.5);
@@ -789,7 +850,7 @@ class SparksLayer extends Layer {
     const sz = this.p("size_px", 0, 3) * PX;
     // Sparks are born over emit_ms (default 120 ms: one burst); longer reads as a fountain.
     const span = Math.max(1, Math.min(w.end - w.start, this.p("emit_ms", 0, 120)));
-    const streakS = this.p("streak_ms", 0, this.droplet ? 30 : 60) / 1000;
+    const streakS = this.p("streak_ms", 0, this.droplet ? 30 : this.ember ? 35 : 60) / 1000;
     const paths = [];
     for (let i = 0; i < count; i++) {
       const born = r.range(0, span);
@@ -803,15 +864,18 @@ class SparksLayer extends Layer {
       const dz = Math.sin(phi) * Math.sin(theta);
       const age = (local - born) / 1000;
       if (age < 0 || age * 1000 > lifeI) continue;
+      const ph = i * 2.399; // not from r: sparks skipped above would shift the sequence
       const at = (a) => {
         const travel = (v * (1 - Math.exp(-drag * a))) / drag;
+        const flutter = this.ember ? Math.sin(a * 7 + ph) * 0.18 * a : 0;
         return new THREE.Vector3(
-          origin.x + dx * travel,
+          origin.x + dx * travel + flutter,
           Math.max(0.01, origin.y + dy * travel - 0.5 * gravity * a * a),
-          origin.z + dz * travel,
+          origin.z + dz * travel + (this.ember ? Math.cos(a * 5 + ph) * 0.18 * a : 0),
         );
       };
-      const fade = 1 - (age * 1000) / lifeI;
+      let fade = 1 - (age * 1000) / lifeI;
+      if (this.ember) fade *= 0.55 + 0.45 * Math.abs(Math.sin(age * 23 + ph * 3));
       const head = at(age);
       const tail = at(Math.max(0, age - streakS));
       if (head.distanceTo(tail) < sz * 0.5) tail.copy(head).addScaledVector(UP, -sz * 0.5);
@@ -954,7 +1018,9 @@ class SmokeLayer extends Layer {
     super(effect, def, instance);
     this.sprites = [];
     for (let i = 0; i < 16; i++) {
-      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloud(i % 4), color: this.colors[0], transparent: true, depthWrite: false }));
+      // blend "add": glowing billows of flame instead of lit smoke.
+      const blending = def.blend === "add" ? THREE.AdditiveBlending : THREE.NormalBlending;
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloud(i % 4), color: this.colors[0], transparent: true, depthWrite: false, blending }));
       this.sprites.push(s);
       this.group.add(s);
     }
@@ -1090,10 +1156,17 @@ class OrbLayer extends Layer {
 // alpha-blended body whose edges are eaten by scrolling noise, foam streaks
 // and bright rims flowing toward the target, a thin bright core, a soft halo,
 // width that swells and pinches (churn) and droplets that peel off it (shed).
+// style "fire": a flame cone (breath, flamethrower): a temperature field that
+// rushes along a widening ribbon (spread) and tears its edges into licking
+// tongues, white-yellow at the core through orange to red, with billowing
+// flame puffs riding the stream (puff_count), embers shed off it that float
+// up (shed_*), and an optional side-to-side sweep (sweep_px, sweep_ms).
 class BeamLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
     this.water = this.base.style === "water";
+    this.fire = this.base.style === "fire";
+    this.fluid = this.water || this.fire;
     const [core, outer] = this.colors;
     const secondary = new THREE.Color(effect.template.palette.secondary || effect.template.palette.primary);
     const seed = (seedFor(effect.seed, def.id, instance, "noise") % 1000) / 10;
@@ -1111,6 +1184,32 @@ class BeamLayer extends Layer {
       this.drops = new RibbonMesh(160, outer.clone().lerp(core, 0.3), 0.6, 1.2, { blending: THREE.NormalBlending });
       this.dropHeads = new DropletPoints(160, outer.clone().lerp(core, 0.35));
       this.group.add(this.halo.mesh, this.outer.mesh, this.core.mesh, this.drops.mesh, this.dropHeads.points);
+    } else if (this.fire) {
+      const flow = this.base.flow_speed ?? 5;
+      const flame = (o) => ({ flow, seed, hot: core, mid: outer, cool: secondary, ...o });
+      this.halo = new RibbonMesh(120, outer, 0.15, 2.5);
+      // The body is alpha-blended so its red fringes stay saturated on any
+      // background; the core and puffs add light on top.
+      this.outer = new RibbonMesh(120, outer, 0.9, 0.7, {
+        blending: THREE.NormalBlending,
+        fire: flame({ noise: this.base.turbulence ?? 0.65, scale: 1.6, lick: 1.8 }),
+      });
+      this.core = new RibbonMesh(120, core, 0.9, 1.1, {
+        fire: flame({ flow: flow * 1.3, noise: 0.5, scale: 2.6, lick: 2.4, mid: core.clone().lerp(outer, 0.45) }),
+      });
+      this.hotColor = core;
+      this.midColor = outer;
+      this.coolColor = secondary;
+      this.puffs = [];
+      for (let i = 0; i < 64; i++) {
+        const sp = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: cloud(i % 4), color: outer.clone(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+        }));
+        sp.visible = false;
+        this.puffs.push(sp);
+      }
+      this.drops = new RibbonMesh(160, core.clone().lerp(outer, 0.35), 1, 0.6);
+      this.group.add(this.halo.mesh, this.outer.mesh, ...this.puffs, this.core.mesh, this.drops.mesh);
     } else {
       this.core = new RibbonMesh(120, core, 1, 0.45);
       this.outer = new RibbonMesh(120, outer, 0.8, 1.2);
@@ -1135,11 +1234,20 @@ class BeamLayer extends Layer {
       this.path = [];
       return;
     }
-    const [[a, b]] = this.endpoints();
+    const [[a, b0]] = this.endpoints();
+    const b = b0.clone();
+    // Sweep: the far end swings across the target, one pass every sweep_ms.
+    const sweep = this.p("sweep_px", t, 0) * PX;
+    if (sweep) {
+      const h = new THREE.Vector3(b.x - a.x, 0, b.z - a.z).normalize();
+      const across = new THREE.Vector3(-h.z, 0, h.x);
+      const ms = Math.max(50, this.p("sweep_ms", t, 600));
+      b.addScaledVector(across, -sweep * Math.cos((Math.PI * Math.max(0, this.local(t))) / ms));
+    }
     const regen = this.p("regen_ms", t, 50);
     const tick = Math.floor(Math.max(0, this.local(t)) / Math.max(10, regen));
     const r = this.rng("beam", tick);
-    const n = this.water ? 48 : 24;
+    const n = this.fluid ? 48 : 24;
     const dir = new THREE.Vector3().subVectors(b, a);
     const len = dir.length();
     dir.normalize();
@@ -1153,7 +1261,7 @@ class BeamLayer extends Layer {
       const u = i / n;
       const env = Math.sin(Math.PI * u) * 0.8 + 0.2;
       const s = Math.sin(u * 9 + sec * hz * Math.PI * 2) * wob * 0.12 * env;
-      const s2 = this.water ? Math.sin(u * 5.3 - sec * hz * 4.1 + 1.7) * wob * 0.06 * env : 0;
+      const s2 = this.fluid ? Math.sin(u * 5.3 - sec * hz * 4.1 + 1.7) * wob * 0.06 * env : 0;
       const j = r.range(-1, 1) * jag * 0.06 * env;
       pts.push(a.clone().addScaledVector(dir, len * u).addScaledVector(p1, s + j).addScaledVector(p2, s2 + r.range(-1, 1) * jag * 0.04 * env));
     }
@@ -1165,8 +1273,13 @@ class BeamLayer extends Layer {
     for (let i = 0; i < shown - 1; i++) segs.push({ a: pts[i], b: pts[i + 1], w: 1 });
     this.segs = segs;
     this.path = pts.slice(0, shown);
+    this.fullPath = pts;
     const width = this.p("width_px", t, 14) * PX;
     this.halfWidth = width * 0.5;
+    if (this.fire) {
+      this.updateFire(t, width, I, n, len, sec, grow);
+      return;
+    }
     if (!this.water) {
       this.core.set(segs, width * 0.18);
       this.outer.set(segs, width * 0.55);
@@ -1200,6 +1313,83 @@ class BeamLayer extends Layer {
     this.updateShed(t, width, I);
   }
 
+  // Fire: the cone widens from the mouth to `spread` times its width at the
+  // far end, surges travel down it (churn), and it flares where it hits.
+  updateFire(t, width, I, n, len, sec, grow) {
+    const churn = this.p("churn", t, 0.3);
+    const flow = this.p("flow_speed", t, 5);
+    const spread = this.p("spread", t, 3);
+    const profile = (u) => 0.3 + (spread - 0.3) * Math.pow(u, 0.75);
+    const w = this.path.map((_, i) => {
+      const u = i / n;
+      const d = u * len - sec * flow;
+      const surge = 0.5 * Math.sin(d * 2.3) + 0.3 * Math.sin(d * 5.9 + 1.1) + 0.2 * Math.sin(d * 11.3 + 2.9);
+      // Bulges where it breaks on the target, then rounds off (no hard end).
+      const flare = 1 + 0.35 * Math.exp(-(1 - u) * 8);
+      const end = Math.min(1, (1 - u) * 9 + 0.3);
+      return Math.max(0.05, profile(u) * (1 + churn * surge) * flare * end);
+    });
+    const path = [{ pts: this.path, w }];
+    for (const m of [this.halo, this.outer, this.core]) m.setTime(this.local(t));
+    const hw = w.map((x, i) => x * Math.min(1, (i / n) * 5 + 0.2, (1 - i / n) * 4));
+    this.halo.setPaths([{ pts: this.path, w: hw }], width * 1.2);
+    this.outer.setPaths(path, width * 0.75);
+    // The white-hot jet is strongest at the mouth and burns out along the cone.
+    this.core.setPaths([{ pts: this.path, w: w.map((x, i) => x * Math.max(0.05, 1 - 0.8 * (i / n))) }], width * 0.24);
+    this.halo.opacity = 0.12 * I;
+    this.outer.opacity = Math.min(1, 0.9 * I);
+    this.core.opacity = Math.min(1, 0.6 * I);
+    this.updatePuffs(t, width, I, len, flow, spread, profile, grow);
+    this.updateShed(t, width, I);
+  }
+
+  // Billowing flame puffs that ride the stream from the mouth to the target,
+  // swelling and cooling from white-yellow to orange to red, then rolling up
+  // where the stream breaks on the target. Seeded per puff, a function of t.
+  updatePuffs(t, width, I, len, flow, spread, profile, grow) {
+    const count = Math.min(this.puffs.length, Math.round(this.p("puff_count", t, 24)));
+    const size = this.p("puff_size_px", t, 0) * PX || width * 0.9;
+    const local = this.local(t);
+    const span = Math.max(1, (this.window?.end ?? 0) - (this.window?.start ?? 0));
+    const r = this.rng("puffs");
+    const speed = Math.max(0.5, flow * 0.9);
+    const travel = (len / speed) * 1000; // ms from mouth to target
+    const path = this.fullPath;
+    const m = path.length - 1;
+    const hot = this.hotColor;
+    const tmp = new THREE.Color();
+    this.puffs.forEach((sp, i) => {
+      const born = ((i + r.range(0, 1)) / Math.max(1, count)) * span * 0.92;
+      const offA = r.range(-1, 1);
+      const offB = r.range(-1, 1);
+      const k = r.range(0.75, 1.35);
+      const spin0 = r.range(0, Math.PI * 2);
+      const age = local - born;
+      const raw = age / travel;
+      sp.visible = i < count && age >= 0 && raw <= 1.35 && m >= 1 && raw <= grow + 0.02;
+      if (!sp.visible) return;
+      const u = Math.min(1, raw);
+      const extra = Math.max(0, raw - 1);
+      const f = u * m;
+      const j = Math.min(m - 1, Math.floor(f));
+      const at = path[j].clone().lerp(path[j + 1], f - j);
+      const dir = new THREE.Vector3().subVectors(path[j + 1], path[j]).normalize();
+      const [p1, p2] = perpendiculars(dir);
+      const lateral = width * 0.3 * profile(u) * (1 + extra * 2);
+      at.addScaledVector(p1, offA * lateral).addScaledVector(p2, offB * lateral * 0.7);
+      at.y += 0.15 * u * u + extra * 0.9;
+      sp.position.copy(at);
+      sp.scale.setScalar(size * k * (0.5 + profile(u) * 0.55 + extra * 1.5));
+      sp.material.rotation = spin0 + age * 0.002;
+      if (u < 0.5) tmp.copy(hot).lerp(this.midColor, u * 2);
+      else tmp.copy(this.midColor).lerp(this.coolColor, Math.min(1, (u - 0.5) * 2 + extra * 2));
+      sp.material.color.copy(tmp);
+      const fadeIn = Math.min(1, raw * 6);
+      const fadeOut = 1 - Math.min(1, extra / 0.35);
+      sp.material.opacity = I * 0.6 * fadeIn * fadeOut * (1 - 0.3 * u);
+    });
+  }
+
   // Droplets that break off the column and fall. Each one is born at a seeded
   // time and place along the beam, flies off sideways and drops under gravity;
   // all of it is a function of t, so scrubbing works.
@@ -1210,7 +1400,8 @@ class BeamLayer extends Layer {
     const life = this.p("shed_life_ms", t, 420);
     const speed = this.p("shed_speed", t, 160) * PX;
     const size = this.p("shed_size_px", t, 3) * PX;
-    const g = 9;
+    // Water drops fall; fire embers are carried up by the heat.
+    const g = this.fire ? -2.2 : 9;
     const r = this.rng("shed");
     const paths = [];
     const path = this.path;
@@ -1237,6 +1428,11 @@ class BeamLayer extends Layer {
       paths.push({ pts: [head, head.clone().lerp(tail, 0.5), tail], w: [fade, 0.9 * fade, 0.3 * fade], sz });
     }
     const s = paths.length ? paths.reduce((m, p) => m + p.sz, 0) / paths.length : size;
+    if (this.fire) {
+      this.drops.setPaths(paths, s * 0.5);
+      this.drops.opacity = I;
+      return;
+    }
     this.drops.setPaths(paths, s * 0.4);
     this.dropHeads.set(paths.map((q) => ({ p: q.pts[0], s: q.sz * 1.6 * (0.5 + 0.5 * q.w[0]) })));
   }
