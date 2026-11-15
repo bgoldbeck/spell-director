@@ -41,6 +41,13 @@ Done: bloom, soft camera-facing ribbons for bolts, beams and crackle, arcs that 
 - Screen flash per quadrant in "All four" mode.
 - Softer smoke (animated noise instead of round sprites).
 
+### 4b. Decals
+
+Done: decals are first-class (nine shapes, fade-in/out, lifetime past the spell, grow, rotation, spin, pulse, seeded angle), drawn under everything on the ground, exported as top-down textures with curves and Unity/Godot projector steps, used by every template and by the director playbook.
+
+- Try the decal export with Unity's URP Decal Projector and Godot's Decal node end to end.
+- Decals on uneven ground in the viewer (a bumpy test floor) to check the projection reads.
+
 ### 5. Export
 
 Sprite sheets are done (`docs/exporting.md`): one sheet per layer plus a whole-spell sheet, frames as columns and views as rows, a JSON file and an assembly guide, from the viewer, `tools/export_sprites.py` or the director's `export_sprites` tool.

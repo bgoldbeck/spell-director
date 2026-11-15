@@ -91,3 +91,25 @@ def test_template_index_is_current():
 
     index = json.loads((ROOT / "templates" / "index.json").read_text(encoding="utf-8"))
     assert index == build(), "run: python tools/build_index.py"
+
+
+def test_decal_params_are_checked(base):
+    doc = copy.deepcopy(base)
+    scorch = next(layer for layer in doc["layers"] if layer["type"] == "decal")
+    scorch["params"]["shape"] = "lava_lake"
+    errors, _ = check(doc)
+    assert any("lava_lake" in e for e in errors)
+    scorch["params"]["shape"] = "rune_circle"
+    scorch["params"]["opacity"] = 1.5
+    errors, _ = check(doc)
+    assert any("opacity" in e or "1.5" in e for e in errors)
+    scorch["params"]["opacity"] = {"min": 0.6, "max": 0.9}
+    scorch["params"]["spin_deg_per_s"] = 40
+    errors, warnings = check(doc)
+    assert not errors and not warnings
+
+
+def test_every_template_has_a_ground_mark():
+    for path in TEMPLATES:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        assert any(layer["type"] == "decal" for layer in doc["layers"]), path.name

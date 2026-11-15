@@ -11,6 +11,7 @@
 
 import { layerIntensity, layerWindow, paramAtFrom, resolveParams } from "./timeline.js";
 import { soundEvents } from "./sound.js";
+import { decalBlend, decalPlan, decalState } from "./decal.js";
 
 export const FORMAT = "spelldirector.spritesheet/1";
 export const SHEET_VIEWS = ["front", "side", "top", "three_quarter"];
@@ -91,6 +92,53 @@ export function cellRect(layout, viewRow, k) {
   const col = k % layout.columns;
   const row = Math.floor(k / layout.columns) * layout.views + viewRow;
   return { x: col * layout.frame, y: row * layout.frame, w: layout.frame, h: layout.frame };
+}
+
+export function decalFileName(id) {
+  return `decal-${id}.png`;
+}
+
+export const DECAL_TEXTURE_PX = 512;
+
+// Decals for an engine's decal projector: a top-down texture per decal layer
+// plus its timing and per-frame curves (opacity 0-1, scale x full size,
+// rotation in degrees). Viewer and export share decalPlan/decalState.
+export function buildDecals(template, seed, plan) {
+  const chain = template.space?.travel === "chain";
+  return (template.layers || []).filter((l) => l.type === "decal").map((l) => {
+    const d = decalPlan(template, l, seed, 0);
+    const states = plan.times.map((t) => decalState(d, t));
+    return {
+      layer: l.id,
+      shape: d.shape,
+      blend: d.blend,
+      texture: decalFileName(l.id),
+      texture_px: DECAL_TEXTURE_PX,
+      color: colorHexes(template, l.color)[0],
+      anchor: l.anchor || "target",
+      per_target: chain && (l.anchor || "target") === "target",
+      // The texture's full width on the ground at scale 1, in world units (1 = one character height).
+      size_units: r3((d.radius_px * 2.2) / 100),
+      stretch: r3(d.stretch),
+      opacity: r3(d.opacity),
+      start_ms: r1(d.start_ms),
+      fade_in_ms: r1(d.fade_in_ms),
+      hold_until_ms: r1(d.hold_until_ms),
+      fade_out_ms: r1(d.fade_out_ms),
+      end_ms: r1(d.end_ms),
+      outlives_spell: d.end_ms > plan.duration,
+      grow_ms: r1(d.grow_ms),
+      start_scale: r3(d.grow_ms > 0 ? d.start_scale : 1),
+      rotation_deg: r1(d.rotation_deg),
+      spin_deg_per_s: r1(d.spin_deg_per_s),
+      pulse_hz: r3(d.pulse_hz),
+      curves: {
+        opacity: states.map((x) => r3(x.opacity)),
+        scale: states.map((x) => r3(x.scale)),
+        rotation_deg: states.map((x) => r1(x.rotation_deg)),
+      },
+    };
+  });
 }
 
 export function sheetFileName(id) {
@@ -206,7 +254,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       end_ms: sheet?.end_ms ?? null,
       beats: l.beats || [],
       beat_window_ms: win ? [win.start, win.end] : null,
-      blend: l.blend || (["smoke", "decal"].includes(l.type) ? "alpha" : "add"),
+      blend: l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" ? "alpha" : "add"),
       color_slot: l.color || "primary",
       colors: colorHexes(template, l.color),
       z: l.z ?? 0,
@@ -220,6 +268,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
     };
   });
   const tracksOut = tracks || { screen_flashes: [], camera_shake: [], lights: [], sounds: [] };
+  const decals = buildDecals(template, seed, plan);
   return {
     format: FORMAT,
     generator: `SpellDirector ${version}`.trim(),
@@ -250,6 +299,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       intent: b.intent || "",
     })),
     palette: template.palette || {},
+    decals,
     ...tracksOut,
   };
 }
@@ -311,6 +361,7 @@ export function guideMarkdown(m, { files } = {}) {
   add("## Files", "");
   const fileRows = m.sheets.map((sh) => [`\`${sh.image}\``, sh.id === ALL_ID ? "The whole spell, every layer together" : `Layer \`${sh.id}\``]);
   for (const f of files || []) fileRows.push([`\`${f.name}\``, f.about]);
+  for (const d of m.decals || []) fileRows.push([`\`${d.texture}\``, `Top-down texture of decal \`${d.layer}\` for a decal projector`]);
   add(table(["File", "What it is"], fileRows), "");
 
   add("## How the sheets are laid out", "");
@@ -370,6 +421,49 @@ export function guideMarkdown(m, { files } = {}) {
     if (params.length) add(`- Settings for this seed: ${params.map(([k, v]) => `${k} ${typeof v === "number" ? r3(v) : v}`).join(", ")}.`);
     if (l.keyframes?.length) add(`- Keyframes (already baked into the frames): ${l.keyframes.map((k) => `${k.param} → ${k.value} at ${k.t_ms} ms`).join("; ")}.`);
     add("");
+  }
+
+  if (m.decals?.length) {
+    add("## Decals (marks on the ground)", "");
+    add(
+      "Decal layers are marks on the ground: scorch, cracks, puddles, frost, rune circles, warning rings. Each one is exported twice: like any layer, in its sheet (use that in a 2D game), and as a **top-down texture plus a timing curve** for a 3D engine's decal projector, which lays the mark on whatever ground is there, slopes and all.",
+      "",
+    );
+    add(table(
+      ["Decal", "Shape", "Blend", "Texture", "Size on the ground", "Fade in", "Full until", "Fade out", "Rotation"],
+      m.decals.map((d) => [
+        d.layer, d.shape, d.blend === "add" ? "add (glows)" : d.blend, `\`${d.texture}\``,
+        `${d.size_units}${d.stretch !== 1 ? ` × ${r3(d.size_units * d.stretch)} (stretched)` : ""} units${d.grow_ms ? `, grows from ${d.start_scale}× over ${d.grow_ms} ms` : ""}`,
+        `${d.start_ms}–${r1(d.start_ms + d.fade_in_ms)} ms`, `${d.hold_until_ms} ms`, `${d.fade_out_ms} ms, gone at ${d.end_ms} ms${d.outlives_spell ? " (after the spell ends)" : ""}`,
+        `${d.rotation_deg}°${d.spin_deg_per_s ? `, spins ${d.spin_deg_per_s}°/s` : ""}`,
+      ]),
+    ), "");
+    add(
+      `- **The texture** is ${m.decals[0].texture_px} × ${m.decals[0].texture_px} px, seen from straight above, straight alpha, with the palette color already in it. Its right edge points along the cast direction (caster to target) and its top edge to the caster's left, exactly as it looks in the Top view. The mark fills the middle 92% of the image.`,
+      "- **Size** is the texture's full width in world units, where 1 unit is one character height; multiply by your character's height. A stretched decal is wider along its rotation axis.",
+      "- **Rotation** is counter-clockwise as seen from above, starting from the cast direction. Without a fixed rotation in the template, each seed lays the mark at a different angle.",
+      "- **Timing**: it fades in from its start, stays until *full until*, then fades out. A mark that outlives the spell is meant to stay on the ground: keep the projector alive until its end time. `pulse_hz` (warning rings) makes its opacity throb.",
+      "- **Curves** in the JSON (`decals[].curves`) give opacity (0–1), scale (× full size) and rotation (degrees) for every spell frame, already including fades, growth, spin and pulse. Read them, or rebuild them from the timing fields.",
+      "- **Per target**: a decal marked `per_target` repeats on every chain target, delayed by each hop.",
+      "- **Blend**: `alpha` decals paint the ground (scorch darkens it, puddles tint it). `add` decals are light on the ground (glowing cracks, rune circles, warning rings): use emission, not albedo.",
+      "",
+      "**Unity (URP or HDRP Decal Projector).** URP: add the **Decal** renderer feature to your URP Renderer asset first.",
+      "",
+      "1. Import the decal PNG with **Alpha Is Transparency** on, **Wrap Mode: Clamp**.",
+      "2. Make a material with **Shader Graphs/Decal** (URP) or **HDRP/Decal**. For `alpha` decals put the texture in **Base Map**; for `add` decals put it in the **Emissive** map (HDRP: enable Affect Emission; URP: a decal Shader Graph that outputs Emission) and set the base alpha to 0.",
+      "3. Add a **Decal Projector** at the decal's anchor (usually the target), rotated to point down (X = 90). Set **Width** to `size_units × stretch × character height`, **Height** to `size_units × character height`, **Projection Depth** about 0.5 units. Turn it about the world up axis by `rotation_deg` (plus however your texture's right edge maps to your cast direction).",
+      "4. Each frame, set the projector's **Fade Factor** (`fadeFactor`) from the `opacity` curve, scale width and height by the `scale` curve, and set the up-axis angle from the `rotation_deg` curve. Destroy it at `end_ms`.",
+      "",
+      "**Godot 4 (Decal node).**",
+      "",
+      "1. Add a **Decal** node at the anchor. A Decal projects down its -Y axis, so it lays on the ground as is.",
+      "2. **Size** = `(size_units × stretch × character height, about 0.5, size_units × character height)`. Rotate it about Y by `rotation_deg`.",
+      "3. `alpha` decals: set **Textures → Albedo** to the PNG. `add` decals: set **Textures → Emission** to the PNG and raise **Emission Energy**; leave Albedo empty or set **Albedo Mix** to 0.",
+      "4. Each frame, set **Modulate** alpha from the `opacity` curve, multiply Size by the `scale` curve, and set the Y rotation from `rotation_deg`. Free it at `end_ms`.",
+      "",
+      "**2D engines.** Use the decal layer's sheet in your view's row, or draw the texture as a sprite under the characters (top-down games), squashed vertically into an ellipse for a 3/4 camera. Drive its alpha, scale and rotation from the same curves.",
+      "",
+    );
   }
 
   add("## Not in the sheets: flashes, shake, lights and sound", "");
@@ -506,7 +600,7 @@ export function guideMarkdown(m, { files } = {}) {
 
   add("## Machine-readable data", "");
   add(
-    `The JSON file has everything above in format \`${m.format}\`: \`sheets\` (image, first_frame, frame_count, start_ms, end_ms, columns, rows), \`view_rows\` and \`views\` (row, pivots, px_per_unit), \`layers\` (blend, colors, z, anchor, params for this seed), \`beats\`, \`screen_flashes\`, \`camera_shake\`, \`lights\` and \`sounds\`. Curves have one value per spell frame. An importer script can build the whole effect from it.`,
+    `The JSON file has everything above in format \`${m.format}\`: \`sheets\` (image, first_frame, frame_count, start_ms, end_ms, columns, rows), \`view_rows\` and \`views\` (row, pivots, px_per_unit), \`layers\` (blend, colors, z, anchor, params for this seed), \`beats\`, \`decals\` (texture, size, timing and per-frame opacity, scale and rotation), \`screen_flashes\`, \`camera_shake\`, \`lights\` and \`sounds\`. Curves have one value per spell frame. An importer script can build the whole effect from it.`,
     "",
   );
   return lines.join("\n").replace(/\n{3,}/g, "\n\n");

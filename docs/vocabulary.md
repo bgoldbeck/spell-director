@@ -85,13 +85,26 @@ An effect is a stack of layers. Each layer has one job.
 | `orb` | A ball of energy (charge-up, projectile head). |
 | `beam` | A continuous ribbon between two points. |
 | `ring` | Expanding shockwave circle (overhead) or ripple. |
-| `decal` | Mark left on the ground (scorch, burn, frost). |
+| `decal` | Mark on the ground: scorch, burn, cracks, crater, puddle, splash, frost, rune circle, warning ring (telegraph). Fades in, stays, fades out; can outlive the spell. |
 | `smoke` | Soft alpha volume, slow drift. |
 | `light` | Dynamic light cast on the environment. |
 | `camera_shake` | Screen shake. |
 | `sound_cue` | A named sound that plays in sync with its beats (see §10). |
 
 Order matters: draw back to front, usually `shadow/smoke → glow → bolt/beam → sparks → flash`.
+
+### Decal words
+
+| Word | Means | Field |
+|---|---|---|
+| telegraph, AoE marker, danger zone | a glowing circle showing where a hit will land, before it lands | `decal` `warning_ring` in the anticipation beat, `pulse_hz` |
+| magic circle, sigil, summoning circle | a glowing pattern under the caster | `decal` `rune_circle`, `spin_deg_per_s` |
+| scorch, burn mark, soot | dark mark left by fire or lightning | `decal` `scorch` (dark, long `lifetime_ms`) |
+| cooling, embers, molten | the mark glows and then cools | a `burn` or glowing `cracks` decal (add) with a short lifetime over a `scorch` |
+| crater, impact crack | the ground broke | `decal` `crater` or `cracks` |
+| wet ground, puddle, splash | water left behind | `decal` `puddle` / `splash`, `grow_ms` to spread |
+| frost, frozen ground | ice spreading on the ground | `decal` `frost`, `grow_ms` |
+| lingering mark | stays after the spell | `lifetime_ms` longer than the spell |
 
 ## 6. Space and staging
 

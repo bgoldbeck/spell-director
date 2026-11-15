@@ -14,6 +14,7 @@ import * as THREE from "three";
 import { Effect } from "./engine/effect.js";
 import { viewCamera } from "./engine/stage.js";
 import { Post } from "./engine/post.js";
+import { tintDecal } from "./engine/decaltex.js";
 import {
   ALL_ID, DEFAULTS, SHEET_VIEWS, buildManifest, buildTracks, cellRect, framePlan, guideMarkdown, layoutSheet,
   sheetFileName, spriteLayers, visibleRange,
@@ -270,6 +271,12 @@ export async function exportSpriteSheets(template, opts = {}) {
     for (const sh of sheets) {
       files.push({ name: sheetFileName(sh.id), data: new Uint8Array(await (await toPng(sh.canvas)).arrayBuffer()) });
       progress({ stage: "encode", sheet: sh.id });
+    }
+    // Decal textures for engine decal projectors (top-down, color baked in).
+    for (const d of manifest.decals) {
+      const layer = effect.layers.find((l) => l.def.id === d.layer && l.instance === 0);
+      if (!layer?.canvas) continue;
+      files.push({ name: d.texture, data: new Uint8Array(await (await toPng(tintDecal(layer.canvas, d.color))).arrayBuffer()) });
     }
     files.push({ name: extra[0].name, data: `${JSON.stringify(manifest, null, 2)}\n` });
     files.push({ name: extra[1].name, data: guideMarkdown(manifest, { files: extra }) });

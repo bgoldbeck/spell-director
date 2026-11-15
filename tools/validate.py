@@ -33,7 +33,10 @@ KNOWN_PARAMS = {
     "orb": {"radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease"},
     "beam": {"width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms"},
     "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness"},
-    "decal": {"radius_px", "shape", "fade_ms"},
+    "decal": {
+        "radius_px", "shape", "opacity", "fade_in_ms", "lifetime_ms", "fade_ms", "grow_ms", "start_scale",
+        "rotation_deg", "spin_deg_per_s", "stretch", "pulse_hz", "detail",
+    },
     "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity"},
     "light": {"radius", "energy"},
     "camera_shake": {"amplitude_px", "frequency_hz", "decay"},

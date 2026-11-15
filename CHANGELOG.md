@@ -10,10 +10,14 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 - Spells look much better in the viewer: bloom makes bright light glow, bolts, beams and crackle are drawn as soft ribbons instead of stacked tubes, sparks fly as streaks, and shockwave rings are soft with a bright leading edge. A **Bloom** checkbox (B) turns the glow off.
 - Arcs that ride on a beam (Charge and Discharge) now hug the beam instead of flailing across the screen.
+- The viewer's ground is a little lighter so dark marks like scorch show up.
 - Sprite exports bake in the same bloom glow (untick **Bake bloom** or use `--no-bloom` if your engine adds its own).
 
 ### Added
 
+- Decals are first-class: marks on the ground in nine shapes (scorch, burn, cracks, crater, puddle, splash, frost, rune circle, warning ring) with fade in, a lifetime that can outlast the spell, fade out, growing, rotation, spinning, pulsing and a fresh angle each cast. They are drawn flat on the ground under everything standing there.
+- Sprite export: each decal also comes out as a top-down texture (`decal-<id>.png`) with its timing and per-frame opacity, scale and rotation curves, and the guide explains how to set it up with Unity's Decal Projector and Godot's Decal node.
+- Every template now uses decals: a pulsing warning circle before the Boss Storm Call lands and a crater with glowing cracks after it, a spinning rune circle under Charge and Discharge, glowing cracks that cool into scorch marks for Sky Strike, Ball Lightning and each Chain Arc target, and a spreading puddle with splashes for Pressure Jet. The director's playbook says when to use which.
 - A **Getting started** page for new users, opened from **? Help** in the viewer (or the `?` key), with a one-time hint on first launch. It explains that SpellDirector is mostly driven by an AI director: how to connect the director's MCP server to Claude Code or another client, example prompts and the questions the director asks, then a tour of the viewer, the keys, and the sprite sheet export layout. Works in the Windows app too.
 - Projectiles fly: in a `travel: projectile` spell, an orb in the caster's hand flies to the target during its travel beat with a streak behind it, optionally lobbed (`trail_ms`, `arc_height_px`, `travel_ease`). New **Ball Lightning** template shows it off.
 
