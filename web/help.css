@@ -1,0 +1,55 @@
+/* Getting-started page (help.html) and the viewer's first-run hint. */
+.help { max-width: 900px; }
+.help .top { margin-bottom: 12px; }
+.help .panel { margin-bottom: 16px; }
+.help h3 { margin: 14px 0 6px; font-size: 15px; }
+.help p, .help ul, .help ol { margin: 0 0 10px; }
+.help ul, .help ol { padding-left: 20px; }
+.help li { margin: 3px 0; }
+.help a { color: var(--accent); }
+.help code, .help pre { font: 13px/1.45 ui-monospace, "Cascadia Mono", Consolas, monospace; background: var(--panel-2); border-radius: 4px; }
+.help code { padding: 1px 5px; overflow-wrap: anywhere; }
+.help pre { margin: 0; padding: 10px 12px; overflow-x: auto; border: 1px solid var(--line); }
+kbd { font: 12px ui-monospace, Consolas, monospace; background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+
+.help-toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 14px; font-size: 13px; }
+.help-toc a { color: var(--muted); text-decoration: none; }
+.help-toc a:hover { color: var(--text); }
+.help-lead { border: 1px solid var(--accent); }
+.help-lead h2 { color: var(--accent); }
+.flow { list-style: none; padding: 0 !important; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; counter-reset: step; }
+.flow li { background: var(--panel-2); border-radius: 6px; padding: 8px 10px 8px 34px; position: relative; margin: 0 !important; }
+.flow li::before { counter-increment: step; content: counter(step); position: absolute; left: 10px; top: 8px; width: 17px; height: 17px; border-radius: 50%; background: var(--accent); color: var(--bg); font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+.note { background: var(--panel-2); border-left: 3px solid #ffd27a; border-radius: 4px; padding: 8px 12px; }
+
+.code-wrap { position: relative; margin-bottom: 8px; }
+.code-wrap .copy { position: absolute; top: 6px; right: 6px; }
+.prompts { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin-bottom: 6px; }
+.prompt-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; }
+.prompt-card h3 { margin: 0 0 2px; font-size: 14px; }
+.prompt-card .say { flex: 1; font-style: italic; }
+.prompt-card .copy { align-self: flex-start; }
+.btn.copy { padding: 3px 10px; font-size: 12px; }
+
+.tour { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0 0 10px; }
+.tour dt { font-weight: 600; }
+.tour dd { margin: 0; color: #c9cbd3; }
+.keys { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); }
+
+.sheet-demo { display: grid; grid-template-columns: 3.5em repeat(4, minmax(0, 44px)); gap: 4px; align-items: center; margin: 4px 0 12px; font-size: 11px; color: var(--muted); }
+.sheet-demo .col { text-align: center; }
+.sheet-demo .row { text-transform: uppercase; letter-spacing: .05em; }
+.sheet-demo i { aspect-ratio: 1; border: 1px solid var(--line); border-radius: 3px; background: radial-gradient(circle at 50% 55%, #b9a6ff55, transparent 60%), var(--stage); }
+.sheet-demo i.more { background: var(--stage); border-style: dashed; }
+.help-foot { margin-top: 8px; }
+
+@media (max-width: 640px) {
+  .tour { grid-template-columns: 1fr; }
+  .tour dd { margin-bottom: 6px; }
+}
+
+/* First-run hint in the viewer */
+.help-hint { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0 0; padding: 8px 12px; background: var(--panel); border: 1px solid var(--accent); border-radius: 8px; }
+.help-hint p { margin: 0; flex: 1 1 260px; }
+.help-hint a.btn.active { color: var(--text); }
+body.focus .help-hint { display: none; }

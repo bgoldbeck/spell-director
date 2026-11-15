@@ -69,7 +69,9 @@ Sound cues play in time with the beats (placeholder sounds for now). Sound start
 
 **Export sprites…** saves the current spell and seed as sprite sheets for a game engine: one per layer plus one for the whole spell, with the frames across and the four views down, a JSON file, and a guide for rebuilding it in Unity or Godot. See [docs/exporting.md](docs/exporting.md).
 
-Keys: Space play/pause, 1-4 views, 5 all four, M sound, F focus view (Esc to leave). Drag to orbit, scroll to zoom.
+**? Help** (or the `?` key) opens a getting-started page for new users: connecting the AI director, what to ask it, and a tour of the viewer.
+
+Keys: Space play/pause, 1-4 views, 5 all four, [ ] previous/next spell, M sound, F focus view (Esc to leave), ? help. Drag to orbit, scroll to zoom.
 
 After adding a template file, run `python tools/build_index.py` so static hosting picks it up (the local server finds new files on its own).
 

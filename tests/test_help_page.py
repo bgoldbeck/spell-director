@@ -1,0 +1,40 @@
+"""The getting-started page: reachable from the viewer, local links resolve, and it names real director prompts."""
+
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+WEB = ROOT / "web"
+HELP = (WEB / "help.html").read_text(encoding="utf-8")
+
+
+def test_viewer_and_analyze_pages_link_to_help():
+    for page in ("index.html", "analyze.html"):
+        assert 'href="help.html"' in (WEB / page).read_text(encoding="utf-8"), page
+
+
+def test_help_page_local_links_exist():
+    refs = re.findall(r'(?:href|src)="([^"#:]+)"', HELP)
+    assert refs
+    for ref in refs:
+        target = WEB / ref
+        if ref.endswith("/") or ref == "./":
+            target = target / "index.html"
+        assert target.exists(), ref
+
+
+def test_help_page_names_real_director_prompts():
+    server = (ROOT / "director" / "mcp_server.py").read_text(encoding="utf-8")
+    for prompt in re.findall(r"/mcp__spelldirector__(\w+)", HELP):
+        assert f"def {prompt}(" in server, prompt
+    mcp_json = (ROOT / ".mcp.json").read_text(encoding="utf-8")
+    assert '"spelldirector"' in mcp_json and "director.mcp_server" in HELP
+
+
+def test_help_page_ships_in_the_exe():
+    import sys
+
+    sys.path.insert(0, str(ROOT / "tools"))
+    import build_exe
+
+    assert "web" in build_exe.BUNDLED
