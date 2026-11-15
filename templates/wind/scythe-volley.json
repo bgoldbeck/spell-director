@@ -1,0 +1,556 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "wind-scythe-volley",
+  "name": "Scythe Volley",
+  "element": "wind",
+  "archetype": "projectile",
+  "description": "The caster gathers the air into a blade, then flings three razor-thin crescents of wind in quick succession: two curve in from either side, tilted opposite ways, and the third flies straight down the middle. They slice through the target with sharp glints, flick off chips and leaves, and leave crossing cuts in the ground.",
+  "tags": [
+    "crescent",
+    "slash",
+    "volley",
+    "multi-hit",
+    "quick",
+    "precise"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A wind slash spell: crescent blades of air thrown at a target (original, game-agnostic)."
+  },
+  "timing": {
+    "duration_ms": 1500,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 3.6,
+      "angle_deg": 30,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Three crescents fly away from the camera, shrinking as they go: two curving in from the sides, tilted opposite ways, the last flat down the middle; small glints and chips at the target.",
+      "side": "Each blade crosses left to right as a bright arc with fading after-images, the first two dipping and rising along their tilt; cuts flick chips up at the target.",
+      "top": "Three arcs converge on the target: two swing in from either side, one straight; the crossing cut marks on the ground tell where they landed.",
+      "three_quarter": "The volley's fan and timing: three blades, staggered by about 0.1 s, curving together onto the target with after-images, then chips, leaves and cut marks."
+    }
+  },
+  "palette": {
+    "core": "#F6FBF8",
+    "primary": "#B4CEC6",
+    "secondary": "#9A8466",
+    "accent": "#86A84E",
+    "shadow": "#3A3833"
+  },
+  "beats": [
+    {
+      "id": "wind-up",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 320,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.8
+      },
+      "intent": "The caster draws back: pale air streaks spiral into the hand and a first blade of wind takes shape in it."
+    },
+    {
+      "id": "release",
+      "phase": "release",
+      "start_ms": 300,
+      "end_ms": 360,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "A snap of the arm: the volley is released with a sharp whoosh."
+    },
+    {
+      "id": "throw-1",
+      "phase": "travel",
+      "start_ms": 320,
+      "end_ms": 560,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The first crescent blade is flung out, tilted one way, curving in from the left."
+    },
+    {
+      "id": "throw-2",
+      "phase": "travel",
+      "start_ms": 430,
+      "end_ms": 670,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The second follows a beat later, tilted the other way, curving in from the right."
+    },
+    {
+      "id": "throw-3",
+      "phase": "travel",
+      "start_ms": 540,
+      "end_ms": 780,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The third flies straight and flat down the middle."
+    },
+    {
+      "id": "cuts",
+      "phase": "impact",
+      "start_ms": 560,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.8,
+        "to": 1.0,
+        "flicker_hz": 9
+      },
+      "intent": "Each blade lands with a sharp cut: a thin bright slice through the target, chips and leaves flicked off, cut marks gouged into the ground."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 950,
+      "end_ms": 1500,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The air settles; cut grass and leaves drift down over three crossing gouges."
+    }
+  ],
+  "layers": [
+    {
+      "id": "cut-marks",
+      "type": "decal",
+      "beats": [
+        "cuts",
+        "fade"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "slash",
+        "radius_px": {
+          "min": 58,
+          "max": 66
+        },
+        "opacity": 0.85,
+        "fade_in_ms": 80,
+        "lifetime_ms": 2500,
+        "fade_ms": 1500,
+        "rotation_deg": 90,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Thin, clean gouges cut across the ground where the blades struck, with flicked chips along them.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 6,
+          "speed": 0,
+          "contrast": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.15
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hand-gather",
+      "type": "sparks",
+      "beats": [
+        "wind-up"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "count": {
+          "min": 12,
+          "max": 14
+        },
+        "gather_px": 110,
+        "swirl": 1.2,
+        "spread_deg": 360,
+        "lifetime_ms": 300,
+        "size_px": 1.6,
+        "emit_ms": 260,
+        "streak_ms": 35
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Pale streaks of air spiralling into the hand.",
+        "technique": "particles",
+        "flow": {
+          "direction": "inward",
+          "speed": 3
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "blade-1",
+      "type": "orb",
+      "beats": [
+        "wind-up",
+        "throw-1"
+      ],
+      "anchor": "caster_hand",
+      "blend": "alpha",
+      "color": "gradient_core_to_primary",
+      "z": 13,
+      "params": {
+        "look": "crescent",
+        "radius_px": {
+          "min": 30,
+          "max": 34
+        },
+        "crescent_deg": 150,
+        "tilt_deg": -30,
+        "side_offset_px": -90,
+        "trail_ms": 110,
+        "travel_ease": "ease_in"
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A razor-thin crescent of compressed air: a bright, hard leading edge over a pale, see-through body, leaving fading after-images.",
+        "technique": "mesh",
+        "noise": {
+          "type": "streaks",
+          "scale": 4,
+          "speed": 6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "distortion": 0.5,
+        "fresnel": 0.6,
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "hard",
+          "core_ratio": 0.25
+        },
+        "lighting": "unlit",
+        "notes": "A flat crescent mesh (or a curved ribbon) aligned to the velocity, with a sharp rim on the leading edge and screen distortion behind it; spawn 2-3 after-image copies along the path that fade over trail_ms."
+      }
+    },
+    {
+      "id": "blade-2",
+      "type": "orb",
+      "beats": [
+        "throw-2"
+      ],
+      "anchor": "caster_hand",
+      "blend": "alpha",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "look": "crescent",
+        "radius_px": {
+          "min": 30,
+          "max": 34
+        },
+        "crescent_deg": 150,
+        "tilt_deg": 30,
+        "side_offset_px": 90,
+        "trail_ms": 110,
+        "travel_ease": "ease_in"
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A razor-thin crescent of compressed air: a bright, hard leading edge over a pale, see-through body, leaving fading after-images.",
+        "technique": "mesh",
+        "noise": {
+          "type": "streaks",
+          "scale": 4,
+          "speed": 6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "distortion": 0.5,
+        "fresnel": 0.6,
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "hard",
+          "core_ratio": 0.25
+        },
+        "lighting": "unlit",
+        "notes": "A flat crescent mesh (or a curved ribbon) aligned to the velocity, with a sharp rim on the leading edge and screen distortion behind it; spawn 2-3 after-image copies along the path that fade over trail_ms."
+      }
+    },
+    {
+      "id": "blade-3",
+      "type": "orb",
+      "beats": [
+        "throw-3"
+      ],
+      "anchor": "caster_hand",
+      "blend": "alpha",
+      "color": "gradient_core_to_primary",
+      "z": 15,
+      "params": {
+        "look": "crescent",
+        "radius_px": {
+          "min": 30,
+          "max": 34
+        },
+        "crescent_deg": 150,
+        "tilt_deg": 0,
+        "side_offset_px": 0,
+        "trail_ms": 110,
+        "travel_ease": "ease_in"
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A razor-thin crescent of compressed air: a bright, hard leading edge over a pale, see-through body, leaving fading after-images.",
+        "technique": "mesh",
+        "noise": {
+          "type": "streaks",
+          "scale": 4,
+          "speed": 6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "distortion": 0.5,
+        "fresnel": 0.6,
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "hard",
+          "core_ratio": 0.25
+        },
+        "lighting": "unlit",
+        "notes": "A flat crescent mesh (or a curved ribbon) aligned to the velocity, with a sharp rim on the leading edge and screen distortion behind it; spawn 2-3 after-image copies along the path that fade over trail_ms."
+      }
+    },
+    {
+      "id": "slice-flash",
+      "type": "flash",
+      "beats": [
+        "cuts"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 18,
+      "params": {
+        "scope": "local",
+        "radius_px": 40,
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A brief, thin glint where each blade cuts through.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard",
+          "core_ratio": 0.3
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "cut-chips",
+      "type": "sparks",
+      "beats": [
+        "cuts"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 14,
+      "params": {
+        "look": "debris",
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 200,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 150,
+        "drag": 0.3,
+        "emit_ms": 300
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chips and grit flicked off by the cuts.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "cut-leaves",
+      "type": "sparks",
+      "beats": [
+        "cuts",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 15,
+      "params": {
+        "look": "leaf",
+        "count": {
+          "min": 24,
+          "max": 30
+        },
+        "speed": 150,
+        "speed_spread": 0.6,
+        "gravity": 160,
+        "lifetime_ms": 1100,
+        "size_px": 5.5,
+        "spread_deg": 170,
+        "drag": 0.9,
+        "emit_ms": 400,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Sliced grass and leaves fluttering down.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "cut-dust",
+      "type": "smoke",
+      "beats": [
+        "cuts"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "count": 10,
+        "rise_speed": 12,
+        "size_px": {
+          "min": 20,
+          "max": 26
+        },
+        "lifetime_ms": 550,
+        "opacity": 0.3,
+        "spread_speed": 150
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A thin puff of dust kicked out by each cut.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 1,
+          "contrast": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "cuts"
+      ],
+      "params": {
+        "amplitude_px": 1.5,
+        "frequency_hz": 16,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "windup-sound",
+      "type": "sound_cue",
+      "beats": [
+        "wind-up"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.3,
+        "pitch": 1.5
+      }
+    },
+    {
+      "id": "whoosh-1",
+      "type": "sound_cue",
+      "beats": [
+        "throw-1"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.7,
+        "pitch": 1.15
+      }
+    },
+    {
+      "id": "whoosh-2",
+      "type": "sound_cue",
+      "beats": [
+        "throw-2"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.7,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "whoosh-3",
+      "type": "sound_cue",
+      "beats": [
+        "throw-3"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.7,
+        "pitch": 1.05
+      }
+    },
+    {
+      "id": "cut-sound",
+      "type": "sound_cue",
+      "beats": [
+        "cuts"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.35,
+        "pitch": 1.8,
+        "repeat_ms": 110
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Blade sizes, where the chips and leaves fly and the cut marks' shapes vary per cast. The three throws stay 110 ms apart and land on fixed frames (about 0.56, 0.67 and 0.78 s) so a game can hit three times on those frames."
+  },
+  "director_notes": "An original take on the wind slash, a staple of air magic. Choices: (1) a 0.32 s wind-up where pale streaks spiral into the hand and the first blade forms, so the volley reads as charged; (2) each blade is an orb with look crescent: a thin bow of air flying edge-first with a hard bright leading edge and fading after-images, because a slash needs a sharp, readable shape rather than a soft cloud; (3) three blades staggered by 110 ms, two curving in from opposite sides (side_offset_px) tilted opposite ways (tilt_deg) and one straight, so the volley reads as a fan in the top view and as crossing arcs in the side view; (4) each lands with a small local glint, chips, leaves and a dust puff, and a slash decal leaves crossing gouges; (5) sound: a high wind for the wind-up, three rising whooshes, and quick high cracks for the cuts. Blades are alpha-blended pale air with only a small HDR on the edge: wind cuts, it doesn't glow."
+}

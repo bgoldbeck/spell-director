@@ -1731,6 +1731,20 @@ class OrbLayer extends Layer {
       this.core.visible = this.shell.visible = false;
       this.group.add(this.meteor.group);
     }
+    // look "crescent": a thin curved blade (a wind slash, a thrown sickle of
+    // energy) flying edge-first, with fading after-images behind it.
+    if (this.base.look === "crescent") {
+      const [core, outer] = this.colors;
+      const alpha = def.blend !== "add";
+      const blending = alpha ? THREE.NormalBlending : THREE.AdditiveBlending;
+      this.crescent = {
+        ghosts: new RibbonMesh(64 * 5, outer, 0.35, 1.6, { blending }),
+        body: new RibbonMesh(64, outer.clone().lerp(core, 0.35), 0.75, 1.2, { blending }),
+        edge: new RibbonMesh(64, core, 1, 0.6, { blending }),
+      };
+      this.core.visible = this.shell.visible = false;
+      this.group.add(this.crescent.ghosts.mesh, this.crescent.body.mesh, this.crescent.edge.mesh);
+    }
   }
 
   // Where a falling orb starts: above the target, tilted approach_deg from
@@ -1758,13 +1772,83 @@ class OrbLayer extends Layer {
     const u = Math.max(0, Math.min(1, (t - f.start_ms) / Math.max(1, f.end_ms - f.start_ms)));
     const e = this.p("travel_ease", t, "linear") === "ease_in" ? u * u : u;
     const arc = this.p("arc_height_px", t, 0) * PX * 4 * e * (1 - e);
-    return from.lerp(to, e).add(new THREE.Vector3(0, arc, 0));
+    const out = from.lerp(to, e).add(new THREE.Vector3(0, arc, 0));
+    // side_offset_px: starts this far to the side (left of the cast
+    // direction, seen from above, for positive values) and curves in to the
+    // target, so a volley fans out and converges.
+    const side = this.p("side_offset_px", t, 0) * PX;
+    if (side) {
+      const d = new THREE.Vector3().subVectors(to, from).setY(0).normalize();
+      out.addScaledVector(new THREE.Vector3(d.z, 0, -d.x), side * Math.sin(Math.PI * 0.5 * (1 - e)) * (1 - e * 0.2));
+    }
+    return out;
+  }
+
+  // The blade's points at time t: a crescent centred on the flight path,
+  // bulging forward along its heading, rolled by tilt_deg about it.
+  crescentPath(t, radius) {
+    const pos = this.posAt(t);
+    const st = this.effect.stage;
+    const dir = this.posAt(t + 12).sub(this.posAt(t - 12));
+    if (dir.lengthSq() < 1e-8) dir.subVectors(st.anchor("target"), st.caster).setY(0);
+    dir.normalize();
+    const side = new THREE.Vector3().crossVectors(dir, UP);
+    if (side.lengthSq() < 1e-6) side.set(0, 0, 1);
+    side.normalize();
+    const up = new THREE.Vector3().crossVectors(side, dir).normalize();
+    const roll = THREE.MathUtils.degToRad(this.p("tilt_deg", t, 0));
+    const s = side.clone().multiplyScalar(Math.cos(roll)).addScaledVector(up, Math.sin(roll));
+    const half = THREE.MathUtils.degToRad(Math.max(20, Math.min(300, this.p("crescent_deg", t, 140)))) / 2;
+    const pts = [];
+    const w = [];
+    const N = 24;
+    for (let i = 0; i <= N; i++) {
+      const th = -half + (2 * half * i) / N;
+      pts.push(pos.clone().addScaledVector(dir, radius * (Math.cos(th) - 0.75)).addScaledVector(s, radius * Math.sin(th)));
+      w.push(Math.pow(Math.max(0, Math.cos((Math.PI / 2) * (th / half))), 0.8));
+    }
+    return { pts, w, dir };
+  }
+
+  updateCrescent(t, I) {
+    const c = this.crescent;
+    this.group.visible = I > 0.001;
+    if (!this.group.visible) return;
+    const f = this.flight;
+    // It forms in the hand (grows with the layer's intensity), then flies.
+    const formed = f && t >= f.start_ms ? 1 : Math.min(1, I * 1.2);
+    const R = this.p("radius_px", t, 30) * PX * (0.35 + 0.65 * formed);
+    this.pos = this.posAt(t);
+    this.currentRadius = R;
+    const blade = this.crescentPath(t, R);
+    const edge = { pts: blade.pts.map((p) => p.clone().addScaledVector(blade.dir, R * 0.06)), w: blade.w };
+    c.body.setPaths([blade], R * 0.16);
+    c.edge.setPaths([edge], R * 0.05);
+    c.body.opacity = Math.min(1, 0.8 * I);
+    c.edge.opacity = Math.min(1, I * 1.1);
+    // After-images: where the blade was over the last trail_ms.
+    const ms = this.p("trail_ms", t, 120);
+    const ghosts = [];
+    if (f && t > f.start_ms && ms > 0) {
+      for (let k = 1; k <= 4; k++) {
+        const tk = t - (ms * k) / 4;
+        if (tk < f.start_ms) break;
+        const g = this.crescentPath(tk, R);
+        ghosts.push({ pts: g.pts, w: g.w.map((x) => x * (1 - k / 5)) });
+      }
+    }
+    c.ghosts.setPaths(ghosts, R * 0.12);
+    c.ghosts.opacity = Math.min(1, 0.5 * I);
   }
 
   update(t) {
     const I = this.intensityAt(t);
     if (this.meteor) {
       this.updateMeteor(t, I);
+      return;
+    }
+    if (this.crescent) {
+      this.updateCrescent(t, I);
       return;
     }
     this.group.visible = I > 0.001;
