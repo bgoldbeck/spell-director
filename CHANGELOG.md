@@ -26,4 +26,4 @@ First versioned release.
 - Three.js motion-study viewer with front, side, top and 3/4 views.
 - One-step launch scripts (`run.bat`, `run.sh`); the viewer serves on port 47811.
 - The director: playbook and MCP server (`python -m director.mcp_server`).
-- Versioning: a `VERSION` file, this changelog, and GitHub Releases created from version tags or the *Run workflow* button.
+- Versioning: a `VERSION` file, this changelog, and GitHub Releases made by hand from the changelog.
