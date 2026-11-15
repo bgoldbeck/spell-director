@@ -7,22 +7,21 @@ Prioritized. Each numbered item is roughly one branch and PR. Read [DESIGN.md](D
 - **PR #1** Vocabulary, template format and schema 0.1.0, validator, three lightning templates, four camera views in the format.
 - **PR #2** GIF breakdown tool and playbook, synthetic sample GIF.
 - **PR #3** Three.js motion-study viewer.
+- **PR #4** Design doc, roadmap and agent notes.
+- **Director v1**: director playbook, MCP server (`director/`), `save_template`, boss storm call template from "heavy boss lightning, top-down game".
 
 ## Next
 
-### 1. The director (plan step 3) — highest priority
+### 1. Director follow-ups
 
-The core of the product. The director turns a loose request or a GIF breakdown into a template, asking the user a few plain-word choices along the way.
+- Try the director end to end from a real MCP client (Claude Code or Desktop) with a few requests, and tighten the playbook where it asks too much or guesses wrong.
+- Library mode: generate a spread of lightning templates and keep the good ones.
+- Optional: an `open_preview` tool that starts the viewer server and returns screenshots of all four views, so the director can check its own work.
 
-- `docs/director-playbook.md`: how the director talks. Pick an archetype and hero view, propose phases with durations, ask at most 2–3 choices in plain words (examples are in `vocabulary.md` §9), pick palette and layers, fill `views.reads`, write ranges and variation notes, validate.
-- A way for an AI agent to drive it. Recommended: an MCP server (Python, official SDK) exposing tools like `list_templates`, `get_template`, `get_vocabulary`, `validate_template`, `save_template`, `breakdown_gif`, plus resources for the vocabulary, format and playbooks. Keep it a thin adapter over the same Python functions the CLI tools use. Decide with the owner whether MCP is the bridge before building.
-- `save_template` writes to `templates/<element>/<id>.json`, validates first, and rebuilds `templates/index.json`.
-- Template generation without a request ("build the library"): the director writes N varied templates for an element/archetype.
-- Acceptance: from "heavy boss lightning, top-down game" the director produces a template that validates and looks right in the viewer.
+### 2. Run the breakdown on real GIFs and MP4s
 
-### 2. Run the breakdown on real GIFs
-
-- Get 3–5 real spell GIFs from the owner (front, side, top, 3/4 if possible).
+- Accept MP4 as well as GIF (owner request).
+- Get 3–5 real spell GIFs/MP4s from the owner (front, side, top, 3/4 if possible).
 - Fix what breaks: camera movement, non-black backgrounds, UI overlays, dithering, very long GIFs.
 - Improve the view guess (e.g. detect ground-plane ellipses, horizon line).
 - Write one template from a real GIF end to end with the playbook, and note playbook gaps.
@@ -69,7 +68,6 @@ The core of the product. The director turns a loose request or a GIF breakdown i
 
 ## Open questions for the owner
 
-- Is MCP the bridge for the director, or something else (CLI, chat-only with files)?
 - Which games/cameras matter most (decides default hero view)?
 - Where will real reference GIFs come from, and how will they be stored (repo vs. local only)?
 - Target export resolutions and frame rates.

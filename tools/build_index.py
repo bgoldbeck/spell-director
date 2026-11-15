@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "templates"
 
 
-def build() -> dict:
-    files = sorted(p.relative_to(TEMPLATES).as_posix() for p in TEMPLATES.rglob("*.json") if p.name != "index.json")
+def build(templates: Path = TEMPLATES) -> dict:
+    files = sorted(p.relative_to(templates).as_posix() for p in templates.rglob("*.json") if p.name != "index.json")
     return {"templates": files}
 
 

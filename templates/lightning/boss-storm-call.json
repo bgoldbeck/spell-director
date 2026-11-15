@@ -1,0 +1,442 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-boss-storm-call",
+  "name": "Boss Storm Call",
+  "description": "A boss calls down one colossal strike. A wide ring of static marks the danger zone for over half a second, then a thick forked bolt slams down, restrikes three times and blasts a shockwave, sparks and a big scorch across the area.",
+  "element": "lightning",
+  "archetype": "strike",
+  "tags": [
+    "boss",
+    "heavy",
+    "area",
+    "telegraphed",
+    "top-down"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "heavy boss lightning, top-down game"
+  },
+  "timing": {
+    "duration_ms": 1800,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "target",
+    "travel": "instant",
+    "scale": {
+      "min": 5.5,
+      "max": 6.5
+    },
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.8,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "top",
+    "reads": {
+      "front": "A towering bolt from the top of frame, thick and forked, with a second strand twisting around it. The warning ring, shockwave and scorch are thin bright lines on the ground, so the bolt and screen flash carry this view.",
+      "side": "Same column edge-on with a different branch pattern; checks the bolt and its strands have depth. The shockwave reads as a flat line expanding left and right.",
+      "top": "Hero view. The bolt is a blinding point, so the ground tells the story: a wide static-filled warning ring that tightens during the charge, then a big shockwave ring, sparks spraying out radially and a large cracked scorch that lingers.",
+      "three_quarter": "Bolt reads tall and heavy, and the warning ring, shockwave and scorch read as wide ellipses, so you see both the strike and how much ground it covers."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#B49CFF",
+    "secondary": "#5B3DFF",
+    "accent": "#E8F4FF",
+    "shadow": "#120E2A"
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 650,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.05,
+        "to": 0.65
+      },
+      "intent": "The sky darkens and a wide ring of static crawls on the ground. This is the warning: the player has over half a second to get out."
+    },
+    {
+      "id": "strike",
+      "phase": "release",
+      "start_ms": 650,
+      "end_ms": 740,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "A thick forked bolt slams down with a blinding flash. Hold the brightest frame for 3 frames so it feels huge."
+    },
+    {
+      "id": "barrage",
+      "phase": "impact",
+      "start_ms": 740,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.45,
+        "to": 1.0,
+        "flicker_hz": 12
+      },
+      "intent": "The same bolt restrikes three times while a big shockwave rolls out, sparks spray in every direction and the screen shakes hard."
+    },
+    {
+      "id": "aftermath",
+      "phase": "dissipation",
+      "start_ms": 1100,
+      "end_ms": 1800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.55,
+        "to": 0.0
+      },
+      "intent": "The afterimage fades slowly, crackles keep crawling over a wide scorch mark and smoke drifts up. Let the eye rest after the hit."
+    }
+  ],
+  "layers": [
+    {
+      "id": "sky-dim",
+      "type": "flash",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "screen",
+      "blend": "multiply",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      }
+    },
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "barrage",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "radius_px": 120,
+        "shape": "cracks",
+        "fade_ms": 650
+      }
+    },
+    {
+      "id": "warning-static",
+      "type": "crackle",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "count": {
+          "min": 8,
+          "max": 12
+        },
+        "length_px": {
+          "min": 18,
+          "max": 34
+        },
+        "jaggedness": 0.85,
+        "regen_ms": 45,
+        "radius_px": 150
+      }
+    },
+    {
+      "id": "warning-ring",
+      "type": "ring",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 190,
+        "end_radius_px": 150,
+        "thickness_px": 5,
+        "softness": 0.4
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "barrage"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 210,
+        "thickness_px": 12,
+        "softness": 0.6
+      }
+    },
+    {
+      "id": "smoke",
+      "type": "smoke",
+      "beats": [
+        "aftermath"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 5,
+      "params": {
+        "count": 10,
+        "rise_speed": 35,
+        "size_px": 40,
+        "lifetime_ms": 700,
+        "opacity": 0.4
+      }
+    },
+    {
+      "id": "linger-crackle",
+      "type": "crackle",
+      "beats": [
+        "aftermath"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": {
+          "min": 4,
+          "max": 7
+        },
+        "length_px": 20,
+        "jaggedness": 0.85,
+        "regen_ms": 70,
+        "radius_px": 90
+      }
+    },
+    {
+      "id": "bolt-glow",
+      "type": "glow",
+      "beats": [
+        "strike",
+        "barrage"
+      ],
+      "attach_to": "main-bolt",
+      "plane": "billboard",
+      "color": "secondary",
+      "z": 8,
+      "params": {
+        "radius_px": 60,
+        "softness": 0.85
+      }
+    },
+    {
+      "id": "side-strand",
+      "type": "bolt",
+      "beats": [
+        "strike",
+        "barrage"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "segments": {
+          "min": 20,
+          "max": 28
+        },
+        "jaggedness": {
+          "min": 0.7,
+          "max": 0.85
+        },
+        "width_px": {
+          "min": 3,
+          "max": 5
+        },
+        "taper": 0.7,
+        "branch_chance": 0.2,
+        "branch_depth": 1,
+        "branch_length_ratio": 0.3,
+        "regen_ms": 60,
+        "afterimage_ms": 120,
+        "glow_px": 12
+      }
+    },
+    {
+      "id": "main-bolt",
+      "type": "bolt",
+      "beats": [
+        "strike",
+        "barrage"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "segments": {
+          "min": 24,
+          "max": 32
+        },
+        "jaggedness": {
+          "min": 0.55,
+          "max": 0.7
+        },
+        "width_px": {
+          "min": 11,
+          "max": 14
+        },
+        "taper": 0.45,
+        "branch_chance": {
+          "min": 0.35,
+          "max": 0.5
+        },
+        "branch_depth": 3,
+        "branch_length_ratio": 0.4,
+        "regen_ms": 0,
+        "leader_ms": 50,
+        "restrikes": 3,
+        "restrike_gap_ms": 70,
+        "afterimage_ms": 380,
+        "glow_px": 28
+      },
+      "keyframes": [
+        {
+          "t_ms": 1150,
+          "param": "width_px",
+          "value": 3,
+          "ease": "ease_out"
+        }
+      ]
+    },
+    {
+      "id": "impact-sparks",
+      "type": "sparks",
+      "beats": [
+        "barrage"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "color": "accent",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 36,
+          "max": 50
+        },
+        "speed": 560,
+        "speed_spread": 0.6,
+        "gravity": 800,
+        "lifetime_ms": {
+          "min": 350,
+          "max": 600
+        },
+        "size_px": 4,
+        "spread_deg": 180,
+        "drag": 0.12
+      }
+    },
+    {
+      "id": "strike-flash",
+      "type": "flash",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 20,
+      "params": {
+        "scope": "screen",
+        "peak": {
+          "min": 0.7,
+          "max": 0.85
+        }
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "strike",
+        "barrage"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 11,
+          "max": 15
+        },
+        "frequency_hz": 24,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "impact-light",
+      "type": "light",
+      "beats": [
+        "strike",
+        "barrage"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 4.0
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "charge"
+      }
+    },
+    {
+      "id": "crack-sound",
+      "type": "sound_cue",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "cue": "crack"
+      }
+    },
+    {
+      "id": "boom-sound",
+      "type": "sound_cue",
+      "beats": [
+        "barrage"
+      ],
+      "params": {
+        "cue": "boom"
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Bolt path, fork pattern, side-strand shape, spark spray and shake strength change per cast. Timing and the warning-ring size stay fixed: players learn the 650 ms telegraph and the danger radius."
+  },
+  "director_notes": "Request: heavy boss lightning for a top-down game, so the hero view is top and the ground carries the effect: a wide warning ring with static during a long 650 ms charge (fair telegraph for a boss attack), then a 210 px shockwave and 120 px scorch. Weight comes from the long charge against a 90 ms strike with a held frame, three restrikes and heavy shake. Violet palette sets it apart from the natural blue sky strike. A thin regenerating side strand twists around the solid main bolt so the column reads thick from front and side."
+}
