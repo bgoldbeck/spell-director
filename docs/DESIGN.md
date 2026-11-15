@@ -38,14 +38,14 @@ Key principles:
 | Vocabulary (the director's language) | done | `docs/vocabulary.md` |
 | Template format + JSON Schema 0.1.0 | done | `docs/template-format.md`, `schemas/template-0.1.0.schema.json` |
 | Validator | done | `tools/validate.py` |
-| Example templates (lightning) | done, 3 | `templates/lightning/*.json` |
+| Example templates (lightning) | done, 4 | `templates/lightning/*.json` |
 | GIF breakdown tool + playbook | done | `tools/breakdown.py`, `docs/gif-breakdown-playbook.md` |
 | Viewer (Three.js motion study) | done, v1 | `web/`, `tools/serve.py` |
-| Director | **not started** | see ROADMAP step 3 |
+| Director: playbook + MCP server | done, v1 | `docs/director-playbook.md`, `director/` |
 | Exports (sprite sheets, PNG sequences, GIF) | not started | ROADMAP |
 | Engine integration | not started | ROADMAP |
 
-Languages: Python 3.11+ for tools (jsonschema, numpy, Pillow, pytest), plain ES modules for the web viewer (no build step, Three.js r169 vendored in `web/vendor`). No CI; tests run locally.
+Languages: Python 3.11+ for tools and the director (jsonschema, numpy, Pillow, pytest, mcp 2.x), plain ES modules for the web viewer (no build step, Three.js r169 vendored in `web/vendor`). No CI; tests run locally.
 
 ## 3. The template format
 
@@ -69,7 +69,17 @@ The [playbook](gif-breakdown-playbook.md) tells the AI how to turn that into a t
 
 Background is estimated as the 10th-percentile brightness per pixel (spell effects are mostly additive light).
 
-## 5. Viewer
+## 5. Director
+
+The director is an AI agent following [director-playbook.md](director-playbook.md), connected through an MCP server (`python -m director.mcp_server`, stdio; `.mcp.json` registers it for Claude Code).
+
+- `director/library.py`: plain functions over the library: `list_templates`, `get_template`, `get_doc`, `get_schema`, `validate_template` (wraps `tools/validate.py`), `save_template`, `breakdown_reference` (wraps `tools/breakdown.py`). Tests use these directly.
+- `director/mcp_server.py`: thin MCP adapter (mcp Python SDK 2.x, `MCPServer`). Tools mirror the library; the docs and schema are resources; `direct_spell`, `direct_from_gif` and `grow_library` are prompts that load the playbooks. It must never print to stdout (the stdio channel).
+- `save_template` validates first, writes `templates/<element>/<id without the element prefix>.json`, rebuilds `templates/index.json`, refuses to replace a template unless `overwrite` is set, and never replaces a file holding a different id. `breakdown_gif` writes to `breakdowns/<name>/` (git-ignored) and returns the contact sheet and curves images.
+- The playbook caps questions at 2–3, maps weight words to durations and sizes, requires `views.reads` for all four views and a ground story for top-down heroes, and has a library mode for generating templates without a request.
+- Acceptance example: "heavy boss lightning, top-down game" → `templates/lightning/boss-storm-call.json`.
+
+## 6. Viewer
 
 `run.bat` (Windows) or `./run.sh` → http://localhost:47811 (default port; `--port` or `SPELLDIRECTOR_PORT` to change, next free port if busy). Laid out like the motion study:
 
@@ -87,7 +97,7 @@ Engine (`web/js/engine/`):
 
 Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists the templates. A live preview was published as a private claude.ai artifact.
 
-## 6. Known issues and limits
+## 7. Known issues and limits
 
 - **Beam-attached arcs** (`beam-arcs` in charge-discharge) spread too far from the beam. Arcs attached to a beam should hug it.
 - **Glow, flash and smoke are basic** (sprites and a CSS screen overlay). No bloom post-processing; bolts are instanced cylinders.
@@ -97,8 +107,10 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 - Projectile travel (`travel: projectile`) is in the format but the viewer has no projectile layer behavior yet.
 - Screen flash in "All four" mode covers all quadrants at once.
 - No export of rendered frames yet.
+- The viewer only lays out several targets for chains, so an area "storm" of strikes can't be previewed yet; the director playbook tells the AI to stay within what the viewer draws.
+- An unknown `?template=` id silently falls back to the first template.
 
-## 7. Decisions log
+## 8. Decisions log
 
 | Date | Decision |
 |---|---|
@@ -110,3 +122,5 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 | 2026-11-15 | Use Codex for any image generation (e.g. the app icon). |
 | 2026-11-15 | UI in Three.js as a web app (not Godot); built before the director. |
 | 2026-11-15 | Every feature on its own branch → PR → merge → delete branch. |
+| 2026-11-15 | The director's bridge is an MCP server (Python, official SDK), a thin adapter over the library functions. |
+| 2026-11-15 | Breakdown should accept MP4 references as well as GIFs. |

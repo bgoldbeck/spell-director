@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "spelldirector": {
+      "command": "python",
+      "args": ["-m", "director.mcp_server"]
+    }
+  }
+}

@@ -24,6 +24,7 @@ After adding or renaming a template, run `python tools/build_index.py` (a test f
 
 ## Conventions
 
+- The director: follow [docs/director-playbook.md](docs/director-playbook.md). Its MCP server (`python -m director.mcp_server`) is a thin adapter over `director/library.py`; put logic in the library, and never print to stdout from server code.
 - Template changes: update the schema, `docs/template-format.md`, `tools/validate.py` (`KNOWN_PARAMS`), and the viewer's layer classes together.
 - The viewer must stay a pure function of (template, seed, time). No accumulated per-frame state.
 - Viewer has no build step; Three.js r169 is vendored in `web/vendor`.
