@@ -86,6 +86,7 @@
           </select>
         </label>
         <label class="check"><input id="loop" type="checkbox" checked> Loop</label>
+        <label class="check" title="Bloom: bright light glows past its edges (B)"><input id="bloom" type="checkbox" checked> Bloom</label>
         <label>Seed <input id="seed" type="number" min="0" step="1" value="1"></label>
         <button id="reroll" class="btn" title="New random seed: same template, different cast">New cast</button>
         <button id="mute" class="btn" aria-pressed="false" title="Turn the sound cues on or off (M). Off by default. Placeholder sounds until real samples are added.">Sound off</button>
@@ -143,6 +144,7 @@
           </select>
         </label>
         <label class="check"><input type="checkbox" name="layers" checked> A sheet per layer</label>
+        <label class="check" title="Bake the viewer's bloom glow into the sprites. Turn off if your engine adds its own bloom."><input type="checkbox" name="bloom" checked> Bake bloom</label>
       </div>
       <p id="export-status" class="muted" aria-live="polite"></p>
       <div class="export-actions">

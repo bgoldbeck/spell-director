@@ -67,7 +67,7 @@ def _version() -> str:
 
 def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | None = None,
            views: list[str] | None = None, layers: bool = True, out: Path | str | None = None,
-           timeout_s: float = 300) -> dict:
+           timeout_s: float = 300, bloom: bool = True) -> dict:
     """Export sprite sheets. `template` is a template id, a path to a JSON file, or a dict.
 
     Returns {"out": folder, "files": [paths], "manifest": {...}}.
@@ -105,7 +105,8 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
                 page.goto(f"http://127.0.0.1:{port}/?sound=off&t=0")
                 page.wait_for_function("window.spellDirector && window.spellDirector.templates.length > 0 "
                                        "&& typeof window.spellDirectorExport === 'function'", timeout=30000)
-                opts = {"seed": seed, "frame": frame, "views": views, "layers": layers, "version": _version()}
+                opts = {"seed": seed, "frame": frame, "views": views, "layers": layers, "bloom": bloom,
+                        "version": _version()}
                 if fps:
                     opts["fps"] = fps
                 if tpl_obj is not None:
@@ -145,12 +146,13 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--fps", type=int, help="frame rate (default: the template's fps_hint, else 30)")
     ap.add_argument("--views", default=",".join(VIEWS), help="comma-separated views (default all four)")
     ap.add_argument("--no-layers", action="store_true", help="only the whole-spell row, no row per layer")
+    ap.add_argument("--no-bloom", action="store_true", help="don't bake the bloom glow into the sprites")
     ap.add_argument("--out", help="output folder (default exports/<id>-seed<seed>)")
     args = ap.parse_args(argv)
     try:
         res = export(args.template, seed=args.seed, frame=args.frame, fps=args.fps,
                      views=[v.strip() for v in args.views.split(",") if v.strip()],
-                     layers=not args.no_layers, out=args.out)
+                     layers=not args.no_layers, out=args.out, bloom=not args.no_bloom)
     except ExportError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

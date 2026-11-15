@@ -1,5 +1,6 @@
 {
   "templates": [
+    "lightning/ball-lightning.json",
     "lightning/boss-storm-call.json",
     "lightning/chain-arc.json",
     "lightning/charge-discharge.json",
