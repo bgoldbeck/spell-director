@@ -1711,7 +1711,8 @@ class BeamLayer extends Layer {
     super(effect, def, instance);
     this.water = this.base.style === "water";
     this.fire = this.base.style === "fire";
-    this.fluid = this.water || this.fire;
+    this.wind = this.base.style === "wind";
+    this.fluid = this.water || this.fire || this.wind;
     const [core, outer] = this.colors;
     const secondary = new THREE.Color(effect.template.palette.secondary || effect.template.palette.primary);
     const seed = (seedFor(effect.seed, def.id, instance, "noise") % 1000) / 10;
@@ -1729,6 +1730,18 @@ class BeamLayer extends Layer {
       this.drops = new RibbonMesh(160, outer.clone().lerp(core, 0.3), 0.6, 1.2, { blending: THREE.NormalBlending });
       this.dropHeads = new DropletPoints(160, outer.clone().lerp(core, 0.35));
       this.group.add(this.halo.mesh, this.outer.mesh, this.core.mesh, this.drops.mesh, this.dropHeads.points);
+    } else if (this.wind) {
+      // A gust: a faint, streaky cone of moving air (alpha) with pale gust
+      // lines rushing through it and dust or leaves shed off its edges.
+      const flow = this.base.flow_speed ?? 7;
+      this.halo = new RibbonMesh(120, outer, 0.08, 2.5, { blending: THREE.NormalBlending });
+      this.outer = new RibbonMesh(120, outer, 0.35, 0.5, {
+        blending: THREE.NormalBlending,
+        fluid: { flow, seed, noise: this.base.turbulence ?? 0.6, scale: 1.4, rim: 0.15, foam: 0.45, foamColor: core },
+      });
+      this.lines = new RibbonMesh(40 * 14, core, 0.8, 1.0, { blending: THREE.NormalBlending });
+      this.drops = new RibbonMesh(160, secondary, 0.9, 0.3, { blending: THREE.NormalBlending });
+      this.group.add(this.halo.mesh, this.outer.mesh, this.lines.mesh, this.drops.mesh);
     } else if (this.fire) {
       const flow = this.base.flow_speed ?? 5;
       const flame = (o) => ({ flow, seed, hot: core, mid: outer, cool: secondary, ...o });
@@ -1877,6 +1890,10 @@ class BeamLayer extends Layer {
       this.updateFire(t, width, I, n, len, sec, grow);
       return;
     }
+    if (this.wind) {
+      this.updateWind(t, width, I, n, len, sec, grow);
+      return;
+    }
     if (!this.water) {
       this.core.set(segs, width * 0.18);
       this.outer.set(segs, width * 0.55);
@@ -1940,6 +1957,66 @@ class BeamLayer extends Layer {
     this.updateShed(t, width, I);
   }
 
+  // Wind: a widening cone (spread) of faint streaky air, with gust lines:
+  // short pale streaks that rush from the hand to the target at flow_speed,
+  // spread through the cone and rippling sideways as they go.
+  updateWind(t, width, I, n, len, sec, grow) {
+    const flow = this.p("flow_speed", t, 7);
+    const spread = this.p("spread", t, 2.5);
+    const profile = (u) => 0.35 + (spread - 0.35) * Math.pow(u, 0.8);
+    const w = this.path.map((_, i) => {
+      const u = i / n;
+      const d = u * len - sec * flow;
+      const surge = 0.6 * Math.sin(d * 2.1) + 0.4 * Math.sin(d * 5.3 + 1.7);
+      const end = Math.min(1, (1 - u) * 6 + 0.25);
+      return Math.max(0.05, profile(u) * (1 + 0.2 * surge) * end);
+    });
+    for (const m of [this.halo, this.outer]) m.setTime(this.local(t));
+    this.halo.setPaths([{ pts: this.path, w }], width * 1.1);
+    this.outer.setPaths([{ pts: this.path, w }], width * 0.6);
+    this.halo.opacity = 0.1 * I;
+    this.outer.opacity = Math.min(1, 0.2 * I);
+    // Gust lines.
+    const count = Math.min(40, Math.round(this.p("line_count", t, 18)));
+    const lineLen = Math.max(0.05, Math.min(0.8, this.p("line_length", t, 0.25)));
+    const path = this.fullPath;
+    const m = path.length - 1;
+    const r = this.rng("gust-lines");
+    const local = Math.max(0, this.local(t)) / 1000;
+    const lines = [];
+    const dirAt = (j) => new THREE.Vector3().subVectors(path[Math.min(m, j + 1)], path[Math.max(0, j - 1)]).normalize();
+    for (let i = 0; i < count; i++) {
+      const offA = r.range(-1, 1);
+      const offB = r.range(-0.8, 0.8);
+      const ph = r();
+      const speed = (flow / Math.max(0.1, len)) * r.range(0.8, 1.3);
+      const ripple = r.range(0.4, 1);
+      const L = lineLen * r.range(0.7, 1.3);
+      // Each line loops: it rushes through the cone, then a new one starts at the hand.
+      const head = ((ph + local * speed) % (1 + L));
+      const pts = [];
+      const ws = [];
+      const N = 12;
+      for (let q = 0; q <= N; q++) {
+        const u = head - (L * q) / N;
+        if (u < 0 || u > Math.min(1, grow)) continue;
+        const f = u * m;
+        const j = Math.min(m - 1, Math.floor(f));
+        const at = path[j].clone().lerp(path[j + 1], f - j);
+        const [p1, p2] = perpendiculars(dirAt(j));
+        const lat = width * 0.5 * profile(u);
+        const wig = Math.sin(u * 14 * ripple + local * 9 + i) * 0.12;
+        at.addScaledVector(p1, (offA + wig) * lat).addScaledVector(p2, (offB + wig * 0.5) * lat * 0.7);
+        pts.push(at);
+        ws.push(Math.sin((Math.PI * q) / N) * (1 - 0.5 * u));
+      }
+      if (pts.length > 1) lines.push({ pts, w: ws });
+    }
+    this.lines.setPaths(lines, width * 0.05);
+    this.lines.opacity = Math.min(1, 0.85 * I);
+    this.updateShed(t, width, I);
+  }
+
   // Billowing flame puffs that ride the stream from the mouth to the target,
   // swelling and cooling from white-yellow to orange to red, then rolling up
   // where the stream breaks on the target. Seeded per puff, a function of t.
@@ -1998,7 +2075,8 @@ class BeamLayer extends Layer {
     const speed = this.p("shed_speed", t, 160) * PX;
     const size = this.p("shed_size_px", t, 3) * PX;
     // Water drops fall; fire embers are carried up by the heat.
-    const g = this.fire ? -2.2 : 9;
+    // (Dust and leaves off a gust drift down slowly.)
+    const g = this.fire ? -2.2 : this.wind ? 2.5 : 9;
     const r = this.rng("shed");
     const paths = [];
     const path = this.path;
@@ -2025,7 +2103,7 @@ class BeamLayer extends Layer {
       paths.push({ pts: [head, head.clone().lerp(tail, 0.5), tail], w: [fade, 0.9 * fade, 0.3 * fade], sz });
     }
     const s = paths.length ? paths.reduce((m, p) => m + p.sz, 0) / paths.length : size;
-    if (this.fire) {
+    if (this.fire || this.wind) {
       this.drops.setPaths(paths, s * 0.5);
       this.drops.opacity = I;
       return;

@@ -24,7 +24,7 @@ The current version is in [`VERSION`](VERSION); what changed is in [`CHANGELOG.m
 | [`docs/vocabulary.md`](docs/vocabulary.md) | Terms the director uses: phases, timing, shape, color, layers, space, lightning terms. |
 | [`docs/template-format.md`](docs/template-format.md) | The template format, field by field. |
 | [`schemas/`](schemas/) | JSON Schema for templates. |
-| [`templates/`](templates/) | Templates by element: lightning (sky strike, chain arc, charge and discharge, boss storm call, ball lightning), water (pressure jet), fire (dragon breath, meteor strike) wind (tornado), light (sunlance), energy (annihilator beam) and psychic (mind crush). |
+| [`templates/`](templates/) | Templates by element: lightning (sky strike, chain arc, charge and discharge, boss storm call, ball lightning), water (pressure jet), fire (dragon breath, meteor strike) wind (tornado, gale shove), light (sunlance), energy (annihilator beam) and psychic (mind crush). |
 | [`web/`](web/) | The viewer (Three.js r169 vendored in `web/vendor`, no build step). |
 | [`web/sounds/`](web/sounds/) | Sound cue library (`cues.json`) and where real samples go. |
 | [`tools/serve.py`](tools/serve.py) | Local server for the viewer. |

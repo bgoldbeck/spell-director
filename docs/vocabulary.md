@@ -105,6 +105,7 @@ Order matters: draw back to front, usually `shadow/smoke → glow → bolt/beam 
 | wet ground, puddle, splash | water left behind | `decal` `puddle` / `splash`, `grow_ms` to spread |
 | frost, frozen ground | ice spreading on the ground | `decal` `frost`, `grow_ms` |
 | scoured ground, wind swirl | spiral grooves where a vortex ground | `decal` `swirl`, `grow_ms` |
+| swept dust | dust blown into streaks along the wind | `decal` `swept`, `rotation_deg` 0 |
 | lingering mark | stays after the spell | `lifetime_ms` longer than the spell |
 
 ## 6. Space and staging
@@ -189,6 +190,8 @@ Air is invisible: wind reads through what it carries (dust, leaves, debris, stre
 
 | Term | Field | Meaning |
 |---|---|---|
+| gust, gale, blast of wind, push | `beam` `style: wind` (`spread`, `line_count`) | A cone of rushing air from the hand; sold at the target by a dust wave (`smoke` `spread_speed`), blown leaves and grit. |
+| gust lines, wind lines | `beam.line_count`, `line_length` | Pale streaks rushing through the gust. |
 | tornado, twister, whirlwind, cyclone, dust devil | `vortex` | A spinning funnel standing on the ground, narrow at the foot, wide at the top. |
 | funnel, wall | `vortex` wall (`turbulence`, `strands`, `twist`) | The spinning sheet of dust-laden air; streaks spiral up it. |
 | spin up, wind up, wind down | `vortex.spin_hz` keyframes | How fast it turns; spin up during the release, slow down as it dies. |
