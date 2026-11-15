@@ -346,6 +346,7 @@
               "orb",
               "beam",
               "eruption",
+              "vortex",
               "ring",
               "decal",
               "smoke",
@@ -467,6 +468,7 @@
                         "puddle",
                         "splash",
                         "frost",
+                        "swirl",
                         "rune_circle",
                         "warning_ring",
                         "fissures"
@@ -807,6 +809,7 @@
             "smoky",
             "ashen",
             "dusty",
+            "airy",
             "ethereal",
             "arcane",
             "shadowy",

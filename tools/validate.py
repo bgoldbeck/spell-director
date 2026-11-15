@@ -40,6 +40,10 @@ KNOWN_PARAMS = {
         "foam", "churn", "shed_count", "shed_speed", "shed_size_px", "shed_life_ms", "spread", "sweep_px", "sweep_ms",
         "puff_count", "puff_size_px",
     },
+    "vortex": {
+        "height_px", "base_radius_px", "top_radius_px", "flare", "spin_hz", "strands", "twist", "turbulence",
+        "sway_px", "sway_hz", "grow_ms", "opacity", "start_offset_px", "meander_px", "wander_px",
+    },
     "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness", "arc_deg", "ease"},
     "eruption": {
         "shape", "arc_deg", "rows", "start_radius_px", "end_radius_px", "row_delay_ms", "delay_growth", "growth",
@@ -50,7 +54,7 @@ KNOWN_PARAMS = {
         "radius_px", "shape", "opacity", "fade_in_ms", "lifetime_ms", "fade_ms", "grow_ms", "start_scale",
         "rotation_deg", "spin_deg_per_s", "stretch", "pulse_hz", "detail", "arc_deg", "reveal_ms",
     },
-    "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity", "spread_speed"},
+    "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity", "spread_speed", "spread_px"},
     "light": {"radius", "energy"},
     "camera_shake": {"amplitude_px", "frequency_hz", "decay"},
     "sound_cue": {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms"},

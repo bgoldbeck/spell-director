@@ -105,6 +105,7 @@ Order matters: draw back to front, usually `shadow/smoke → glow → bolt/beam 
 | crater, impact crack | the ground broke | `decal` `crater` or `cracks` |
 | wet ground, puddle, splash | water left behind | `decal` `puddle` / `splash`, `grow_ms` to spread |
 | frost, frozen ground | ice spreading on the ground | `decal` `frost`, `grow_ms` |
+| scoured ground, wind swirl | spiral grooves where a vortex ground | `decal` `swirl`, `grow_ms` |
 | lingering mark | stays after the spell | `lifetime_ms` longer than the spell |
 
 ## 6. Space and staging
@@ -183,6 +184,24 @@ Fire is soft and slow next to lightning: it billows, licks and drifts instead of
 | dust wave, blast wave of dust | `smoke` (alpha) with `spread_speed` | A low ring of dust rolling outward along the ground. |
 | fireball (explosion) | `smoke` `blend: add` with a small `spread_speed` | The ball of flame that boils up out of a big impact. |
 
+### Wind-specific terms
+
+Air is invisible: wind reads through what it carries (dust, leaves, debris, streaks) and what it does to the ground. Keep it alpha-blended and desaturated (pale grey-green to dusty brown); nothing glows except a magical tint. Its rhythm is a build: it gathers, spins up, holds with a steady roar, then ropes out.
+
+| Term | Field | Meaning |
+|---|---|---|
+| tornado, twister, whirlwind, cyclone, dust devil | `vortex` | A spinning funnel standing on the ground, narrow at the foot, wide at the top. |
+| funnel, wall | `vortex` wall (`turbulence`, `strands`, `twist`) | The spinning sheet of dust-laden air; streaks spiral up it. |
+| spin up, wind up, wind down | `vortex.spin_hz` keyframes | How fast it turns; spin up during the release, slow down as it dies. |
+| touchdown, form | `vortex.grow_ms` or `height_px` keyframes | The funnel rising (or dropping) to full height. |
+| walk, track, wander | `vortex.start_offset_px`, `meander_px`, `wander_px` | A tornado that is sent travels to the target with a weave, then drifts as it grinds. |
+| rope out, collapse | dissipation beat; `top_radius_px` and `base_radius_px` keyframed down, `sway_px` up | The funnel thins, snakes and breaks into streaks from the top. |
+| debris, grit, clods | `sparks` `look: debris` | Solid chunks; attached to a vortex they orbit and are flung when it dies. |
+| leaves, petals, paper | `sparks` `look: leaf` | Flat flakes that flutter edge-on and back. |
+| dust skirt, debris cloud | `smoke` (alpha, dusty color) attached to the vortex | The churning dust at the funnel's foot. |
+| cloud cap | drawn by `vortex` | Dark puffs turning at the top of the funnel. |
+| scoured ground | `decal` `swirl` | Spiral grooves left where it ground. |
+| gust, howl, roar | `wind` cue (pitch for size: low for a gathering wind, 1.0–1.1 for a roaring funnel), `whoosh` for a snap | The sound of the air. Add `rumble` for a heavy grind. |
 ### Earth-specific terms
 
 Earth is heavy and physical. It has no glow to hide behind: it sells weight through timing (a long gather, a held beat, a hard slam), through solid, lit rock that moves fast and stops dead, and through what it throws around (debris, dust, cracks) and the camera shake. Rhythm matters more than color: staggered hits that grow (crack, crack, CRACK) read as power building.
@@ -261,6 +280,7 @@ Rendered frames show *when* and *where* things happen. They don't carry the magi
 | `smoky` | smoke | curl noise, slow upward flow, lit, soft dissolve |
 | `ashen` | burnt, charred, embers | fBm, dark, a thin glowing dissolve edge |
 | `dusty` | dirt, debris, sand | Voronoi or fBm, lit, alpha |
+| `airy` | moving air, wind, a funnel wall | streak noise flowing around (swirl) or along the gust, mostly see-through with dense edges (fresnel into alpha), distortion, lit |
 | `ethereal` | light, aura, glow with no body | soft gaussian falloff, little noise, unlit |
 | `arcane` | runes, magic circles, mana | clean shapes, scrolling patterns, fresnel, pulsing emission |
 | `shadowy` | darkness, void | multiply or alpha, curl noise, inward flow |

@@ -34,7 +34,7 @@ Pull these out of what the user said, and note which are missing:
 
 | Decide | Words that tell you | If missing |
 |---|---|---|
-| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash"; "earth", "rock", "stone", "ground", "quake", "slam", "boulder" | ask (it's rarely missing) |
+| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "earth", "rock", "stone", "ground", "quake", "slam", "boulder" | ask (it's rarely missing) |
 | `archetype` | strike (from above / one hit), projectile (thrown), chain (jumps), beam (continuous), aura (around the caster), nova (bursts outward) | infer, or ask as a choice |
 | weight | heavy, boss, big, ultimate → long anticipation, hold frames, shake. quick, light, basic → snappy | default to medium |
 | camera / hero view | top-down, isometric, side-scroller, fighting game, over-the-shoulder (see vocabulary §7) | **ask** |
@@ -56,6 +56,8 @@ Pick the questions whose answers change the template the most. Good ones, in pri
 For earth, ask: *"A wave that runs out in front of you, or a quake all around you?"* → `eruption.arc_deg`, footprint `arc` or `circle`; *"Spikes, or heaving slabs of ground?"* → `eruption.shape`.
 
 For fire, swap the shape question for one of these: *"A tight jet that hits one target, or a wide cone that sweeps an area?"* → `spread`, `sweep_px`, footprint; *"Natural orange flame, or a magical color (blue, green, purple)?"* → palette.
+
+For wind, ask: *"Do you send it to the target, or does it appear on top of them?"* → `start_offset_px` and a `travel` beat; *"A tight dust devil or a towering storm funnel?"* → `height_px`, `top_radius_px`, weight.
 
 Phrase each as a choice between two or three named options with what each feels like. Put your recommendation first. If the user says "you pick", pick and move on.
 
@@ -83,7 +85,7 @@ Write the beats first; everything else hangs off them.
    | heavy / boss | 1300–2200 ms | 450–800 ms | 60–100 ms | 250–450 ms | 500–900 ms |
 
    Contrast is what sells weight: a long anticipation and a long tail around a very short release.
-3. Choose each beat's intensity curve: anticipation `ease_in`, release `spike`, lightning impact `flicker` (10–16 Hz), fire stream or impact `flicker` (5–9 Hz: flames are slower than electricity), dissipation `ease_out`. Let impact and dissipation overlap by 30–60 ms so the hit doesn't cut off.
+3. Choose each beat's intensity curve: anticipation `ease_in`, release `spike`, lightning impact `flicker` (10–16 Hz), fire stream or impact `flicker` (5–9 Hz: flames are slower than electricity), a wind hold `flicker` (4–6 Hz, a narrow `from`–`to` range: a steady roar), dissipation `ease_out`. Let impact and dissipation overlap by 30–60 ms so the hit doesn't cut off.
 4. Write each beat's `intent` in plain words a non-artist understands. It's shown as the caption in the viewer. Mention hold frames in the release intent if you use them.
 
 ## Step 4. Choose layers
@@ -121,6 +123,13 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
   - *Sound*: `wind` (inhale) or `charge` → `ignite` (+ `whoosh`) → `fire` (stream) → `impact` or `boom` for a blast → `fire` at gain 0.3–0.4 for the smolder.
   - *Shader intent*: `fiery` for flames, `plasma` for a ball of fire, `molten` for glowing ground and cracks, `ashen` for scorch, `smoky` for smoke; fBm noise flowing `along_path` or `upward`, `dissolve` with a red `edge_color`, `distortion` 0.3–0.6 for heat haze, `emissive.hdr` 3–6.
 
+- **Wind** (vocabulary "Wind-specific terms"). Air is invisible; build it from what it carries:
+  - *Tornado or whirlwind*: a `vortex` (`material: airy`, alpha). Keyframe `spin_hz` from ~0.4 up to 2–3 during the release, and `height_px`/`top_radius_px` from a low swirl in the anticipation to full size. To send it, set `start_offset_px` 150–250 and `meander_px` 20–40 with a `travel` beat; to drop it on the target, leave them at 0.
+  - *What it carries*: `sparks` `look: debris` (color `shadow`) and `look: leaf` (color `accent`) with `attach_to` the vortex: `speed` 90–150 is how fast they climb, `emit_ms` spans the whole hold, `gravity` 300 (leaves) to 900 (debris) for when they are flung. A dusty `smoke` (alpha, `secondary`) attached to it is the dust skirt.
+  - *Rope-out*: in the dissipation beat keyframe `top_radius_px` and `base_radius_px` down and `sway_px` up; the attached debris is flung outward when it starts. Add a low settling-dust `smoke` at the target.
+  - *Ground*: a `swirl` decal (alpha, dusty color, `grow_ms` 600–900, outlives the spell).
+  - *Sound*: `wind` at low pitch (0.7) for the gather → `whoosh` as it forms → `wind` at 1.0–1.1 plus `rumble` while it travels and grinds → `wind` at 0.75, quiet, as it dies.
+  - *Shader intent*: `airy` for the funnel and gusts (streak noise flowing `swirl`, `fresnel` into alpha, `distortion` 0.3–0.5), `dusty` for dust and the mark, `stone` for debris, `organic` for leaves. No emission unless the wind is magical.
 - **Earth** (vocabulary "Earth-specific terms"). Build it from weight and rhythm, not light:
   - *Ground pound / earth wave*: a gather (0.5–0.7 s: pebbles lifting, dust ring closing in, a dull fist `glow`, `rumble`), a 60–100 ms `hold` hang, a short slam (`impact` + `boom`, dust, `crater`, chunks, big shake), then an `eruption` at the `caster` (`arc_deg` 80–120, 4–6 `rows`, `growth` 1.3–1.45, `delay_growth` 1.1) with a matching `ring` (`arc_deg`, `ease: linear`, same radii) and a `fissures` decal (`arc_deg`, `reveal_ms` about the wave's length). Put the climax on the last row: a second, deeper `boom`, `sparks` `look: debris` and a dust plume at the target, the hardest shake. Footprint `arc` so the views frame the whole fan.
   - *Quake around the caster*: `destination: caster`, footprint `circle`; `eruption` `shape: slabs`, `arc_deg` 360, slow rise, long hold; fissures all round; pebbles bouncing everywhere (`sparks` `look: debris`, `emit_radius_px` the whole area); a long flickering shake.
@@ -131,7 +140,7 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
 
 Know what the viewer draws today (see the known issues in [DESIGN.md](DESIGN.md#6-known-issues-and-limits)): several targets exist only for chains (`travel: chain` or `destination: targets`), so a "storm of strikes across an area" renders as strikes on one spot. Projectile travel is drawn for an `orb` anchored at `caster_hand` in a `travel: projectile` spell. Prefer designs the viewer can show, and say in `director_notes` when you go beyond it.
 
-Set `z` back to front: shadow/smoke/decal → glow → bolt/beam → sparks → flash. Decals always draw on the ground under everything else; their `z` only orders them among themselves (a glowing crack decal above its scorch). Use only params listed in the template format; unknown params produce warnings and the renderer may ignore them.
+Set `z` back to front: shadow/smoke/decal → glow → bolt/beam/vortex → sparks → flash. Decals always draw on the ground under everything else; their `z` only orders them among themselves (a glowing crack decal above its scorch). Use only params listed in the template format; unknown params produce warnings and the renderer may ignore them.
 
 ### Shader intent (every drawn layer)
 
@@ -208,3 +217,5 @@ A one-word request, *"meteor"*, became [`templates/fire/meteor-strike.json`](../
 An earth example: *"an earth ground pound that grows outward in an arc, ejecting earth upward with increasing effect"* became [`templates/earth/ground-pound.json`](../templates/earth/ground-pound.json): nova archetype, a 0.6 s gather and 80 ms hang, a hard slam, five rows of spikes across a 100° arc each 1.4× bigger and 10% later, a linear dust arc and fissures spreading with the front, a climax at the far end, then the rocks crumble.
 
 A fire example: *"a dragon-style fire breath"* became [`templates/fire/dragon-breath.json`](../templates/fire/dragon-breath.json): beam archetype, a 0.5 s inhale (growing fire in the mouth, contracting ring, smoke wisps, wind), an ignite flare, a widening fire cone that sweeps across the target, flame billows and embers on impact, a burning swath that cools to a long scorch, and wind → ignite + whoosh → fire → quiet fire for sound.
+
+A wind example: *"tornado (wind)"* became [`templates/wind/tornado.json`](../templates/wind/tornado.json): a 0.7 s gather (a low swirl, dust and leaves circling), a funnel that snaps up and spins up with a whoosh, walks to the target with a weave, grinds over it with debris and leaves orbiting and a spiral scoured into the ground, then ropes out and flings its debris; wind → whoosh → roaring wind + rumble → dying wind.

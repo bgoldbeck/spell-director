@@ -14,6 +14,7 @@ import {
 import { PX, buildStage } from "./stage.js";
 import { decalPlan, decalState } from "./decal.js";
 import { drawDecal } from "./decaltex.js";
+import { centerAt, radiusAt, shapeAt, spinTurns, wallPoint, vortexPlan } from "./vortex.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -867,7 +868,9 @@ class BoltLayer extends Layer {
           });
           return hops;
         }
-        return [[st.hand, st.anchor(tp.space.destination === "point" ? "point" : "target")]];
+        // A bolt thrown at a single target lands on its chest, not its feet.
+        if (tp.space.destination === "point") return [[st.hand, st.anchor("point")]];
+        return [[st.hand, st.chest(0)]];
       default:
         return [[this.anchorPos().setY(1.5), this.anchorPos()]];
     }
@@ -1116,7 +1119,13 @@ class SparksLayer extends Layer {
       this.group.add(this.rocks, this.streaks.mesh, this.hot.mesh);
       return;
     }
-    if (this.droplet) {
+    // look "leaf": flat flakes (leaves, paper, petals) that flutter, turning
+    // edge-on and back.
+    this.leaf = this.base.look === "leaf";
+    if (this.leaf) {
+      this.streaks = new RibbonMesh(this.max * 4, outer, 1, 0.5, { blending: THREE.NormalBlending });
+      this.hot = new RibbonMesh(this.max * 4, core.clone().lerp(outer, 0.5), 1, 0.3, { blending: THREE.NormalBlending });
+    } else if (this.droplet) {
       this.streaks = new RibbonMesh(this.max * 4, outer.clone().lerp(core, 0.25), 1, 1.2, { blending: THREE.NormalBlending });
       this.hot = new RibbonMesh(this.max * 4, core, 1, 0.5);
       this.heads = new DropletPoints(this.max, outer.clone().lerp(core, 0.35));
@@ -1128,7 +1137,18 @@ class SparksLayer extends Layer {
     this.group.add(this.streaks.mesh, this.hot.mesh);
   }
 
+  // The vortex this layer orbits, if it is attached to one.
+  vortex() {
+    const attached = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
+    return attached instanceof VortexLayer ? attached : null;
+  }
+
   update(t) {
+    const vx = this.vortex();
+    if (vx) {
+      this.updateOrbit(t, vx);
+      return;
+    }
     const w = this.window;
     const local = this.local(t);
     const count = Math.min(this.max, Math.round(this.p("count", 0, 20)));
@@ -1204,7 +1224,17 @@ class SparksLayer extends Layer {
       const k = 0.45 + 0.9 * ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
       paths.push({ pts: [head, mid, tail], w: [fade, fade * 0.8, 0.15 * fade], k });
     }
-    if (this.droplet) {
+    this.draw(paths, sz);
+  }
+
+  // Draw spark paths [{pts: [head, mid, tail], w, k}] in this layer's look.
+  draw(paths, sz) {
+    if (this.leaf) {
+      this.streaks.setPaths(paths, sz * 0.6);
+      this.hot.setPaths(paths, sz * 0.25);
+      this.streaks.opacity = 0.95;
+      this.hot.opacity = 0.6;
+    } else if (this.droplet) {
       // A round drop at the head with a thin wet trail behind it.
       this.heads.set(paths.map((q) => ({ p: q.pts[0], s: sz * 1.5 * q.k * (0.5 + 0.5 * q.w[0]) })));
       this.streaks.setPaths(paths, sz * 0.45);
@@ -1290,6 +1320,107 @@ SparksLayer.prototype.updateDebris = function updateDebris(o) {
   this.hot.setPaths(paths, o.sz * 0.2);
   this.streaks.opacity = 0.8;
   this.hot.opacity = 1;
+};
+
+// Sparks attached to a vortex orbit it: each one is caught near the ground,
+// spirals up the funnel (speed = how fast it climbs, px/s) while it turns
+// with the wall, and is flung off along its orbit to fall (gravity) when the
+// vortex starts to dissipate. A pure function of t: the flight before the
+// release is worked out from the vortex's shape at each moment.
+SparksLayer.prototype.updateOrbit = function updateOrbit(t, vx) {
+  const w = this.window;
+  const local = this.local(t);
+  const life = this.p("lifetime_ms", 0, 1200);
+  const plan = vx.plan;
+  const release = plan.release;
+  const tail = Math.max(life, 1500);
+  if (!w || local < 0 || local > (w.end - w.start) + tail) {
+    this.group.visible = false;
+    return;
+  }
+  this.group.visible = true;
+  const count = Math.min(this.max, Math.round(this.p("count", 0, 20)));
+  const r = this.rng("orbit");
+  const climb = this.p("speed", 0, 120) * PX;
+  const gravity = this.p("gravity", 0, 800) * PX;
+  const drag = Math.max(0.01, this.p("drag", 0, 0.2) * 3);
+  const sz = this.p("size_px", 0, 3) * PX;
+  const span = Math.max(1, Math.min(w.end - w.start, this.p("emit_ms", 0, w.end - w.start)));
+  const streakS = this.p("streak_ms", 0, this.leaf ? 30 : 40);
+  const paths = [];
+  for (let i = 0; i < count; i++) {
+    const bornAt = w.start + r.range(0, span);
+    const lifeI = life * r.range(0.7, 1.3);
+    const a0 = r();
+    const out = r.range(1.15, 1.9);
+    const h0 = r.range(0, 0.12);
+    const climbI = climb * r.range(0.6, 1.4);
+    const k = r.range(0.7, 1.15) / Math.sqrt(out);
+    const ph = i * 2.399;
+    const age = (t - bornAt) / 1000;
+    const flungLife = release - bornAt < lifeI ? (release - bornAt) + 1400 : lifeI;
+    if (age < 0 || age * 1000 > flungLife) continue;
+    const before = (ta) => {
+      const sh = vx.shapeAt(ta);
+      const H = Math.max(0.05, sh.height);
+      const h = Math.min(0.92, h0 + (climbI * (ta - bornAt)) / 1000 / H);
+      const turn = a0 + k * (sh.turns - spinTurns(plan, bornAt));
+      // Caught gradually: it starts out wide and is pulled in to its orbit.
+      const pull = Math.min(1, (ta - bornAt) / 250);
+      const p = wallPoint(sh, h, turn, out * (1.6 - 0.6 * pull));
+      return new THREE.Vector3(p.x, Math.max(0.02, p.y + 0.03), p.z);
+    };
+    const at = (ta) => {
+      if (ta <= release) return before(ta);
+      const p0 = before(release);
+      const v = p0.clone().sub(before(release - 20)).multiplyScalar(1000 / 20);
+      // Flung off along its orbit, but not faster than a strong throw.
+      const vmax = 3.2;
+      if (v.length() > vmax) v.multiplyScalar(vmax / v.length());
+      v.y = Math.max(v.y, 0) + 0.8;
+      const dt = (ta - release) / 1000;
+      const travel = (1 - Math.exp(-drag * dt)) / drag;
+      return new THREE.Vector3(
+        p0.x + v.x * travel,
+        Math.max(0.02, p0.y + v.y * travel - 0.5 * gravity * dt * dt),
+        p0.z + v.z * travel,
+      );
+    };
+    const fadeIn = Math.min(1, age * 6);
+    let fade = fadeIn * (1 - Math.max(0, (age * 1000 - flungLife * 0.75) / (flungLife * 0.25)));
+    if (this.leaf) fade *= 0.3 + 0.7 * Math.abs(Math.sin(age * 9 + ph));
+    const head = at(t);
+    const tailP = at(Math.max(bornAt, t - streakS));
+    if (head.distanceTo(tailP) < sz * 0.5) tailP.copy(head).addScaledVector(UP, -sz * 0.5);
+    const mid = head.clone().lerp(tailP, 0.5);
+    const kk = 0.5 + 0.9 * ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
+    paths.push({ pts: [head, mid, tailP], w: [fade * kk, fade * kk, 0.4 * fade * kk], k: kk, i, age, fade });
+  }
+  if (this.debris) {
+    // Rock chunks (the debris look's tumbling rocks), shrinking as they fade.
+    const m = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const sc = new THREE.Vector3();
+    const axis = new THREE.Vector3();
+    let n = 0;
+    for (const p of paths) {
+      const rr = rng(seedFor(this.effect.seed, this.def.id, "tumble", p.i));
+      axis.set(rr.range(-1, 1), rr.range(-1, 1), rr.range(-1, 1)).normalize();
+      q.setFromAxisAngle(axis, rr.range(4, 12) * p.age);
+      sc.setScalar(sz * p.k * Math.min(1, p.fade * 1.5));
+      m.compose(p.pts[0], q, sc);
+      this.rocks.setMatrixAt(n, m);
+      this.rocks.setColorAt(n, this.rockColor);
+      n++;
+    }
+    this.rocks.count = n;
+    this.rocks.instanceMatrix.needsUpdate = true;
+    if (this.rocks.instanceColor) this.rocks.instanceColor.needsUpdate = true;
+    this.streaks.setPaths([], 0);
+    this.hot.setPaths([], 0);
+    return;
+  }
+  this.draw(paths, sz);
 };
 
 const RING_FRAGMENT = /* glsl */ `
@@ -1462,18 +1593,31 @@ class SmokeLayer extends Layer {
     // the centre (a dust wave), slowing as they go.
     const outward = this.p("spread_speed", t, 0) * PX;
     const ro = this.rng("spread");
+    const attached = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
+    const vx = attached instanceof VortexLayer && attached.shape ? attached : null;
+    const scatter = this.p("spread_px", 0, 15) * PX;
     this.sprites.forEach((s, i) => {
       const ang = ((i + ro.range(-0.35, 0.35)) / Math.max(1, count)) * Math.PI * 2;
       const kOut = ro.range(0.75, 1.2);
       const born = r.range(0, Math.max(1, (w.end - w.start) * 0.5));
-      const dx = r.range(-0.15, 0.15);
-      const dz = r.range(-0.15, 0.15);
+      const dx = r.range(-scatter, scatter);
+      const dz = r.range(-scatter, scatter);
       const spin0 = r.range(0, Math.PI * 2);
       const spin = r.range(-1.2, 1.2);
       const age = (local - born) / life;
       s.visible = i < count && age >= 0 && age <= 1;
       if (!s.visible) return;
-      s.position.set(origin.x + dx * (1 + age), origin.y + 0.1 + rise * age * (life / 1000) * 3, origin.z + dz * (1 + age));
+      if (vx) {
+        // A dust skirt: puffs swirl around the foot of the vortex, spreading
+        // out and lifting a little.
+        const sh = vx.shape;
+        const turn = spin0 / (Math.PI * 2) + 0.55 * (sh.turns - spinTurns(vx.plan, w.start + born));
+        const out = radiusAt(sh, 0) * (1.6 + 2.2 * age) + Math.abs(dx) * (1 + age);
+        const a = turn * Math.PI * 2;
+        s.position.set(sh.base.x + Math.cos(a) * out, 0.06 + rise * age * (life / 1000) * 2, sh.base.z + Math.sin(a) * out);
+      } else {
+        s.position.set(origin.x + dx * (1 + age), origin.y + 0.1 + rise * age * (life / 1000) * 3, origin.z + dz * (1 + age));
+      }
       if (outward) {
         const secs = (age * life) / 1000;
         const d = (outward * kOut * (1 - Math.exp(-2.5 * secs))) / 2.5;
@@ -2117,6 +2261,244 @@ class EruptionLayer extends Layer {
   }
 }
 
+// A spinning funnel of air (tornado, whirlwind, dust devil). Its shape and
+// motion come from engine/vortex.js. Drawn as a translucent wall whose
+// streaky noise spirals up and around it (alpha-blended, densest at the
+// silhouette like a real funnel), a few wind streaks climbing around it, and
+// a slowly turning cloud cap at the top. Sparks and smoke attached to a
+// vortex orbit it (debris, leaves, the dust skirt at its base).
+const VORTEX_VERTEX = /* glsl */ `
+varying vec2 vUv;
+varying vec3 vN;
+varying vec3 vV;
+void main() {
+  vUv = uv;
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  vN = normalize(normalMatrix * normal);
+  vV = isOrthographic ? vec3(0.0, 0.0, -1.0) : mv.xyz;
+  gl_Position = projectionMatrix * mv;
+}`;
+
+const VORTEX_FRAGMENT = /* glsl */ `
+uniform vec3 top;
+uniform vec3 body;
+uniform vec3 dust;
+uniform float opacity;
+uniform float turns;     // how far the wall has spun
+uniform float twist;     // turns of the streaks from bottom to top
+uniform float bands;     // streaks around (integer, so the pattern wraps)
+uniform float turb;      // 0..1 raggedness
+uniform float fade;      // 1 whole, 0 gone (erodes into streaks)
+uniform float time;
+uniform float seed;
+varying vec2 vUv;
+varying vec3 vN;
+varying vec3 vV;
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7)) + seed) * 43758.5453); }
+// Value noise that wraps every 'per' cells in x (around the funnel).
+float vnoise(vec2 p, float per) {
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  float x0 = mod(i.x, per), x1 = mod(i.x + 1.0, per);
+  return mix(mix(hash(vec2(x0, i.y)), hash(vec2(x1, i.y)), u.x),
+             mix(hash(vec2(x0, i.y + 1.0)), hash(vec2(x1, i.y + 1.0)), u.x), u.y);
+}
+void main() {
+  float h = vUv.y;
+  // Streaks: noise stretched along a spiral that turns with the wall.
+  float s = fract(vUv.x + h * twist - turns);
+  float n = 0.0, a = 0.5, per = bands, sc = 1.0;
+  for (int k = 0; k < 4; k++) {
+    n += a * vnoise(vec2(s * per, (h * 3.0 - time * 0.7) * sc + float(k) * 7.1), per);
+    per *= 2.0; sc *= 2.0; a *= 0.5;
+  }
+  float streak = smoothstep(0.3 + 0.15 * (1.0 - turb), 0.85, n);
+  vec3 vdir = normalize(-vV);
+  float ndv = abs(dot(normalize(vN), vdir));
+  // Seen edge-on the wall is thicker: the silhouette is the densest part.
+  float rim = mix(0.3, 1.0, pow(1.0 - ndv, 1.4));
+  float alpha = mix(1.0 - turb * 0.6, 1.0, streak) * rim;
+  alpha *= smoothstep(0.0, 0.05, h) * (1.0 - smoothstep(0.8, 1.0, h));
+  // Fading out, the wall breaks up into its streaks before it goes.
+  float th = (1.0 - fade) * 1.1;
+  alpha *= smoothstep(th - 0.15, th + 0.1, n + 0.2 * streak);
+  vec3 c = mix(dust, body, smoothstep(0.0, 0.4, h));
+  c = mix(c, top, streak * 0.55);
+  gl_FragColor = vec4(c, clamp(alpha, 0.0, 1.0) * opacity);
+  #include <colorspace_fragment>
+}`;
+
+class VortexLayer extends Layer {
+  constructor(effect, def, instance) {
+    super(effect, def, instance);
+    const pal = effect.template.palette || {};
+    const col = (k, fb) => new THREE.Color(pal[k] || fb);
+    const [core, outer] = this.colors;
+    const anchor = this.anchorPos();
+    const caster = effect.stage.caster;
+    let dx = anchor.x - caster.x;
+    let dz = anchor.z - caster.z;
+    const len = Math.hypot(dx, dz);
+    if (len < 1e-3) { dx = 1; dz = 0; } else { dx /= len; dz /= len; }
+    this.plan = vortexPlan(effect.template, def, effect.seed, anchor, { x: dx, z: dz }, instance);
+    // The wall: a (radial x height) grid moved onto the funnel each frame.
+    this.S = 48;
+    this.H = 36;
+    const n = (this.S + 1) * (this.H + 1);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3).setUsage(THREE.DynamicDrawUsage));
+    geo.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(n * 3), 3).setUsage(THREE.DynamicDrawUsage));
+    const uv = new Float32Array(n * 2);
+    const idx = [];
+    for (let j = 0; j <= this.H; j++) {
+      for (let i = 0; i <= this.S; i++) {
+        const k = j * (this.S + 1) + i;
+        uv[k * 2] = i / this.S;
+        uv[k * 2 + 1] = j / this.H;
+        if (i < this.S && j < this.H) {
+          const a = k;
+          const b = k + 1;
+          const c = k + this.S + 1;
+          const d = c + 1;
+          idx.push(a, c, b, b, c, d);
+        }
+      }
+    }
+    geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+    geo.setIndex(idx);
+    const seed = (seedFor(effect.seed, def.id, instance, "noise") % 1000) / 10;
+    this.material = new THREE.ShaderMaterial({
+      vertexShader: VORTEX_VERTEX,
+      fragmentShader: VORTEX_FRAGMENT,
+      uniforms: {
+        top: { value: core.clone() },
+        body: { value: outer.clone() },
+        dust: { value: col("secondary", "#" + outer.getHexString()) },
+        opacity: { value: 0 },
+        turns: { value: 0 },
+        twist: { value: 1 },
+        bands: { value: 8 },
+        turb: { value: 0.5 },
+        fade: { value: 1 },
+        time: { value: 0 },
+        seed: { value: seed },
+      },
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      blending: def.blend === "add" ? THREE.AdditiveBlending : THREE.NormalBlending,
+    });
+    this.wall = new THREE.Mesh(geo, this.material);
+    this.wall.frustumCulled = false;
+    // Wind streaks climbing around the wall, a little outside it.
+    this.streaks = new RibbonMesh(24 * 26, core.clone().lerp(outer, 0.25), 0.6, 1.1, { blending: THREE.NormalBlending });
+    // A cloud cap: dark puffs turning with the top of the funnel.
+    this.cap = [];
+    for (let i = 0; i < 10; i++) {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: cloud(i % 4), color: outer.clone().lerp(col("shadow", "#" + outer.getHexString()), 0.35),
+        transparent: true, depthWrite: false,
+      }));
+      this.cap.push(sp);
+    }
+    this.group.add(this.wall, this.streaks.mesh, ...this.cap);
+    this.shape = null;
+    this.capSeed = this.rng("cap");
+    this.capPuffs = Array.from({ length: 10 }, () => ({ a: this.capSeed(), r: this.capSeed.range(0.6, 1.15), s: this.capSeed.range(0.8, 1.3), h: this.capSeed.range(0.86, 1.0) }));
+    const sr = this.rng("streaks");
+    this.strandSeeds = Array.from({ length: 24 }, () => ({ a: sr(), h: sr(), len: sr.range(0.25, 0.55), rise: sr.range(0.25, 0.5), out: sr.range(1.04, 1.2), k: sr.range(0.9, 1.25) }));
+  }
+
+  // The funnel at time t (layer time), for layers that orbit it.
+  shapeAt(t) {
+    return shapeAt(this.plan, t);
+  }
+
+  update(t) {
+    const I = this.intensityAt(t);
+    this.group.visible = I > 0.001;
+    if (!this.group.visible) {
+      this.shape = null;
+      return;
+    }
+    const sh = shapeAt(this.plan, t);
+    this.shape = sh;
+    if (sh.height < 0.02) {
+      this.group.visible = false;
+      return;
+    }
+    // The wall.
+    const S = this.S;
+    const H = this.H;
+    const pos = this.wall.geometry.attributes.position.array;
+    for (let j = 0; j <= H; j++) {
+      const h = j / H;
+      const c = centerAt(sh, h);
+      const r = radiusAt(sh, h);
+      for (let i = 0; i <= S; i++) {
+        const a = (i / S) * Math.PI * 2;
+        const k = (j * (S + 1) + i) * 3;
+        pos[k] = c.x + Math.cos(a) * r;
+        pos[k + 1] = c.y;
+        pos[k + 2] = c.z + Math.sin(a) * r;
+      }
+    }
+    this.wall.geometry.attributes.position.needsUpdate = true;
+    this.wall.geometry.computeVertexNormals();
+    const u = this.material.uniforms;
+    u.turns.value = sh.turns;
+    u.twist.value = this.p("twist", t, 1.2);
+    u.bands.value = Math.max(2, Math.round(this.p("strands", t, 8)));
+    u.turb.value = Math.max(0, Math.min(1, this.p("turbulence", t, 0.5)));
+    u.fade.value = Math.min(1, I * 1.15);
+    u.time.value = t / 1000;
+    u.opacity.value = this.p("opacity", t, 0.75) * Math.min(1, 0.35 + I);
+
+    // Streaks: short spirals that climb the wall and turn a little faster than it.
+    const paths = [];
+    const count = Math.min(24, Math.round(this.p("strands", t, 8)));
+    const twist = u.twist.value;
+    const sec = t / 1000;
+    for (let k = 0; k < count; k++) {
+      const s = this.strandSeeds[k];
+      const h0 = ((s.h + sec * s.rise) % 1) * 0.9 - 0.15;
+      const pts = [];
+      const w = [];
+      const N = 24;
+      for (let q = 0; q <= N; q++) {
+        const h = h0 + (s.len * q) / N;
+        if (h < 0.02 || h > 0.95) continue;
+        const p = wallPoint(sh, h, s.a + h * twist - sh.turns * s.k, s.out);
+        pts.push(new THREE.Vector3(p.x, p.y, p.z));
+        w.push(Math.sin((Math.PI * q) / N));
+      }
+      if (pts.length > 1) paths.push({ pts, w });
+    }
+    this.streaks.setPaths(paths, 0.022 * (0.5 + 0.5 * sh.grow));
+    this.streaks.opacity = 0.4 * Math.min(1, I * 1.2);
+
+    // Cloud cap.
+    const capOn = Math.max(0, (sh.grow - 0.5) * 2);
+    this.cap.forEach((sp, i) => {
+      const c = this.capPuffs[i];
+      const h = c.h;
+      const p = wallPoint(sh, h, c.a - sh.turns * 0.6, c.r);
+      sp.position.set(p.x, p.y, p.z);
+      sp.scale.setScalar(radiusAt(sh, h) * 0.9 * c.s);
+      sp.material.rotation = c.a * 6 - sh.turns * 2;
+      sp.material.opacity = 0.45 * capOn * Math.min(1, I * 1.2);
+    });
+  }
+
+  points() {
+    if (!this.shape) return [this.anchorPos()];
+    return [0.1, 0.4, 0.7].map((h) => {
+      const c = centerAt(this.shape, h);
+      return new THREE.Vector3(c.x, c.y, c.z);
+    });
+  }
+}
+
 class LightLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
@@ -2161,6 +2543,7 @@ const TYPES = {
   orb: OrbLayer,
   beam: BeamLayer,
   eruption: EruptionLayer,
+  vortex: VortexLayer,
   light: LightLayer,
   camera_shake: ShakeLayer,
   sound_cue: SoundLayer,

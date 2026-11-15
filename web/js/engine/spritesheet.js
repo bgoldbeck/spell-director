@@ -233,7 +233,7 @@ export function buildTracks(template, seed, plan, cueLibrary = { cues: {} }) {
 // layer first, then its support, then particles, then decals, then the
 // finishing tracks (lights, screen flashes, shake, sound) and the timing pass.
 export const BUILD_STAGES = [
-  { stage: "core", types: ["bolt", "beam", "orb", "eruption"], about: "the hero shape that reads as the spell on its own" },
+  { stage: "core", types: ["bolt", "beam", "orb", "eruption", "vortex"], about: "the hero shape that reads as the spell on its own" },
   { stage: "secondary", types: ["glow", "crackle", "ring", "flash"], about: "glows, rings and crackle that support the core" },
   { stage: "particles", types: ["sparks", "smoke"], about: "sparks, spray and smoke" },
   { stage: "decals", types: ["decal"], about: "marks on the ground" },

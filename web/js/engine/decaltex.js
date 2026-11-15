@@ -264,6 +264,45 @@ const SHAPES = {
     }
   },
 
+  // Ground scoured by a vortex: curved grooves spiralling out from a bare
+  // centre, dust swept into arcs between them and grit flung outward.
+  swirl(g, s, R, detail) {
+    const c = s / 2;
+    radial(g, c, c, s * 0.46, [[0, "rgba(255,255,255,0.12)"], [0.35, "rgba(255,255,255,0.4)"], [0.8, "rgba(255,255,255,0.22)"], [1, "rgba(255,255,255,0)"]]);
+    g.lineCap = "round";
+    const arms = 5 + Math.round(detail * 6);
+    const turn = R.range(0.9, 1.3);
+    for (let i = 0; i < arms * 3; i++) {
+      const a0 = (i / (arms * 3)) * TAU + R.range(-0.2, 0.2);
+      const r0 = s * R.range(0.04, 0.14);
+      const r1 = s * R.range(0.3, 0.47);
+      const main = i % 3 === 0;
+      g.strokeStyle = `rgba(255,255,255,${main ? R.range(0.7, 0.95) : R.range(0.25, 0.5)})`;
+      g.lineWidth = s * (main ? R.range(0.012, 0.02) : R.range(0.004, 0.009));
+      g.beginPath();
+      const steps = 40;
+      for (let k = 0; k <= steps; k++) {
+        const u = k / steps;
+        const rr = r0 + (r1 - r0) * u;
+        const a = a0 + turn * Math.log(1 + 3 * u) + 0.04 * Math.sin(u * 17 + i);
+        const x = c + Math.cos(a) * rr;
+        const y = c + Math.sin(a) * rr;
+        if (k === 0) g.moveTo(x, y);
+        else g.lineTo(x, y);
+      }
+      g.stroke();
+    }
+    // Grit flung off the rim.
+    g.fillStyle = "rgba(255,255,255,0.6)";
+    for (let i = 0; i < 30 + detail * 60; i++) {
+      const a = R.range(0, TAU);
+      const d = s * R.range(0.3, 0.48);
+      g.beginPath();
+      g.arc(c + Math.cos(a) * d, c + Math.sin(a) * d, R.range(1, 3.5) * (s / 512), 0, TAU);
+      g.fill();
+    }
+  },
+
   rune_circle(g, s, R, detail) {
     const c = s / 2;
     g.strokeStyle = "rgba(255,255,255,1)";

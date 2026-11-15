@@ -1,0 +1,617 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "wind-tornado",
+  "name": "Tornado",
+  "element": "wind",
+  "archetype": "projectile",
+  "description": "Wind gathers into a dusty swirl in front of the caster, snaps up into a towering funnel that spins up with a roar, weaves across the ground to the target, grinds over it with debris and leaves whirling around it, then ropes out and flings everything it carried, leaving a spiral of scoured ground.",
+  "tags": [
+    "vortex",
+    "summon",
+    "travel",
+    "sustained",
+    "area",
+    "debris",
+    "control"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A tornado (wind) spell: gathering swirl and dust at the base, funnel forming and spinning up, debris and leaves orbiting, travel to and hold over the target, dissipation, swirl ground decal, wind sound, dramatic timing."
+  },
+  "timing": {
+    "duration_ms": 3600,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "ground",
+    "destination": "target",
+    "travel": "projectile",
+    "scale": 3.6,
+    "footprint": {
+      "shape": "circle",
+      "length": 3.6,
+      "radius": 1.0,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A tall funnel stands up in front of the caster and walks away down the lane, shrinking a little with distance; its wide top and the dust skirt at its foot frame the target, and the debris it flings at the end scatters toward the camera.",
+      "side": "The full silhouette: a narrow foot on the ground flaring to a wide top under a turning cloud cap, the axis snaking as it weaves from left to right; debris and leaves climb around it in spirals.",
+      "top": "Seen from above the funnel is a ring of streaks turning around a dark eye; the dust skirt, the orbiting debris and the spiral scoured into the ground carry the read, and the path from the caster to the target shows as it travels.",
+      "three_quarter": "Both at once: the funnel's height and flare, the spiral wind streaks climbing it, debris ringing it as ellipses, and the swirl mark spreading under it."
+    }
+  },
+  "palette": {
+    "core": "#EEF4F1",
+    "primary": "#A3B6B1",
+    "secondary": "#8C775A",
+    "accent": "#7EA046",
+    "shadow": "#3E3A33"
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.05,
+        "to": 0.55
+      },
+      "intent": "The air stirs in front of the caster: dust lifts and starts to circle a patch of ground, a few leaves get caught, and a thin wisp of a swirl begins to rise, turning slowly."
+    },
+    {
+      "id": "form",
+      "phase": "release",
+      "start_ms": 700,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.85
+      },
+      "intent": "The funnel snaps up to full height with a whoosh and spins up hard: the wall fills in, streaks wrap it and a cloud cap forms at its top."
+    },
+    {
+      "id": "advance",
+      "phase": "travel",
+      "start_ms": 1050,
+      "end_ms": 1750,
+      "intensity": {
+        "shape": "hold",
+        "from": 0.9
+      },
+      "intent": "It walks across the ground to the target, weaving a little, dragging its dust skirt and picking up debris as it goes."
+    },
+    {
+      "id": "grind",
+      "phase": "impact",
+      "start_ms": 1700,
+      "end_ms": 2800,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.85,
+        "to": 1.0,
+        "flicker_hz": 5
+      },
+      "intent": "It parks over the target and grinds: debris and leaves whirl around it, the ground is scoured into a spiral, a burst of grit sprays out on arrival and the camera shakes."
+    },
+    {
+      "id": "rope-out",
+      "phase": "dissipation",
+      "start_ms": 2750,
+      "end_ms": 3600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "The funnel ropes out: it thins, slows and breaks into streaks from the top down, flinging what it carried outward to fall; the dust settles over the spiral it left behind."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scoured-ground",
+      "type": "decal",
+      "beats": [
+        "grind",
+        "rope-out"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "swirl",
+        "radius_px": {
+          "min": 88,
+          "max": 100
+        },
+        "opacity": 0.7,
+        "fade_in_ms": 300,
+        "grow_ms": 900,
+        "start_scale": 0.35,
+        "lifetime_ms": 4000,
+        "fade_ms": 2000,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Earth scoured into curved grooves spiralling out from a bare centre, with loose grit thrown past the rim.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.5
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "dust-skirt",
+      "type": "smoke",
+      "beats": [
+        "gather",
+        "form",
+        "advance",
+        "grind"
+      ],
+      "attach_to": "funnel",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "count": 16,
+        "rise_speed": 18,
+        "size_px": {
+          "min": 36,
+          "max": 44
+        },
+        "lifetime_ms": 1500,
+        "opacity": 0.5
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A low skirt of brown dust churned up at the funnel's foot, swirling around it and spreading out as it lifts.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 1.2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 2
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "funnel",
+      "type": "vortex",
+      "beats": [
+        "gather",
+        "form",
+        "advance",
+        "grind",
+        "rope-out"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "gradient_core_to_primary",
+      "z": 8,
+      "keyframes": [
+        {
+          "t_ms": 2750,
+          "param": "base_radius_px",
+          "value": 16
+        },
+        {
+          "t_ms": 3400,
+          "param": "base_radius_px",
+          "value": 4,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 0,
+          "param": "height_px",
+          "value": 45
+        },
+        {
+          "t_ms": 700,
+          "param": "height_px",
+          "value": 95,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 1050,
+          "param": "height_px",
+          "value": 285,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 0,
+          "param": "spin_hz",
+          "value": 0.4
+        },
+        {
+          "t_ms": 1100,
+          "param": "spin_hz",
+          "value": 2.4,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 2750,
+          "param": "spin_hz",
+          "value": 2.6
+        },
+        {
+          "t_ms": 3500,
+          "param": "spin_hz",
+          "value": 0.9,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 2750,
+          "param": "sway_px",
+          "value": 26
+        },
+        {
+          "t_ms": 3400,
+          "param": "sway_px",
+          "value": 60,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 0,
+          "param": "top_radius_px",
+          "value": 30
+        },
+        {
+          "t_ms": 700,
+          "param": "top_radius_px",
+          "value": 48,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 1050,
+          "param": "top_radius_px",
+          "value": 100,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 2750,
+          "param": "top_radius_px",
+          "value": 100
+        },
+        {
+          "t_ms": 3400,
+          "param": "top_radius_px",
+          "value": 30,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "height_px": {
+          "min": 270,
+          "max": 295
+        },
+        "base_radius_px": 16,
+        "top_radius_px": {
+          "min": 95,
+          "max": 108
+        },
+        "flare": 1.9,
+        "spin_hz": 0.4,
+        "strands": 10,
+        "twist": 1.3,
+        "turbulence": 0.55,
+        "sway_px": 26,
+        "sway_hz": 0.5,
+        "grow_ms": 300,
+        "opacity": 0.72,
+        "start_offset_px": 200,
+        "meander_px": 35,
+        "wander_px": 10
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A wall of churning, dust-laden air: pale streaks spiral up and around a darker body, thickest at the silhouette, thin and see-through face-on.",
+        "technique": "mesh",
+        "noise": {
+          "type": "streaks",
+          "scale": 3,
+          "speed": 2.5,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 5
+        },
+        "distortion": 0.4,
+        "fresnel": 0.6,
+        "dissolve": {
+          "pattern": "streaks",
+          "edge_width": 0.25
+        },
+        "lighting": "lit",
+        "notes": "Build as a tapered, open cylinder mesh whose rings follow a snaking spine (bone chain or vertex offset by height). Scroll the streak noise around and up (UV.x + UV.y * twist - time * spin). Alpha = noise * fresnel so the edges read dense. Dissolve the streaks out from the top as it ropes out."
+      }
+    },
+    {
+      "id": "caster-gust",
+      "type": "ring",
+      "beats": [
+        "form"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 12,
+        "end_radius_px": 80,
+        "thickness_px": 4,
+        "softness": 1
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A soft gust of disturbed air pushing out from the caster's feet as the spell is thrown.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "distortion": 0.3,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "debris",
+      "type": "sparks",
+      "beats": [
+        "form",
+        "advance",
+        "grind"
+      ],
+      "attach_to": "funnel",
+      "color": "shadow",
+      "z": 10,
+      "params": {
+        "look": "debris",
+        "count": {
+          "min": 70,
+          "max": 80
+        },
+        "speed": 110,
+        "lifetime_ms": 1500,
+        "size_px": {
+          "min": 3.5,
+          "max": 4.5
+        },
+        "emit_ms": 1900,
+        "gravity": 900,
+        "drag": 0.35,
+        "streak_ms": 45
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Clods of dirt, grit and pebbles caught in the wind, tumbling as they orbit and climb.",
+        "technique": "particles",
+        "lighting": "lit",
+        "notes": "Mesh or flipbook particles with random rotation and tumble; orbit the funnel's axis (VFX Graph: Conform to Sphere / custom orbit velocity; Godot: orbit_velocity + radial accel), released with tangential velocity when it ropes out."
+      }
+    },
+    {
+      "id": "leaves",
+      "type": "sparks",
+      "beats": [
+        "gather",
+        "form",
+        "advance",
+        "grind"
+      ],
+      "attach_to": "funnel",
+      "color": "accent",
+      "z": 11,
+      "params": {
+        "look": "leaf",
+        "count": {
+          "min": 34,
+          "max": 40
+        },
+        "speed": 150,
+        "lifetime_ms": 1700,
+        "size_px": {
+          "min": 5,
+          "max": 6
+        },
+        "emit_ms": 2500,
+        "gravity": 300,
+        "drag": 0.8,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Leaves whirled up by the wind, fluttering edge-on and flat again as they spin around the funnel.",
+        "technique": "particles",
+        "lighting": "lit",
+        "notes": "Flat quads with a leaf texture, random spin on two axes so they flash edge-on; flutter, then drift down slowly when released."
+      }
+    },
+    {
+      "id": "arrival-grit",
+      "type": "sparks",
+      "beats": [
+        "grind"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 12,
+      "params": {
+        "look": "debris",
+        "count": {
+          "min": 34,
+          "max": 40
+        },
+        "speed": 280,
+        "speed_spread": 0.5,
+        "gravity": 950,
+        "lifetime_ms": 650,
+        "size_px": 3,
+        "spread_deg": 170,
+        "drag": 0.25,
+        "emit_ms": 180,
+        "streak_ms": 35
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A spray of grit thrown out sideways where the funnel bites into the ground.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "settling-dust",
+      "type": "smoke",
+      "beats": [
+        "rope-out"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 4,
+      "params": {
+        "count": 12,
+        "rise_speed": 12,
+        "size_px": {
+          "min": 46,
+          "max": 56
+        },
+        "lifetime_ms": 1100,
+        "opacity": 0.28
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A broad, low cloud of dust hanging over the spiral and slowly settling once the wind dies.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.2,
+          "speed": 0.4,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 0.3
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "grind"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 2,
+          "max": 3
+        },
+        "frequency_hz": 9,
+        "decay": 0.3
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.4,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "form-whoosh",
+      "type": "sound_cue",
+      "beats": [
+        "form"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.75,
+        "pitch": {
+          "min": 0.75,
+          "max": 0.85
+        }
+      }
+    },
+    {
+      "id": "roar-sound",
+      "type": "sound_cue",
+      "beats": [
+        "advance",
+        "grind"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.9,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.1
+        }
+      }
+    },
+    {
+      "id": "grind-rumble",
+      "type": "sound_cue",
+      "beats": [
+        "grind"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.5,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "die-down-sound",
+      "type": "sound_cue",
+      "beats": [
+        "rope-out"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.35,
+        "pitch": 0.75
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The funnel's height, top width, sway and weave, the streak pattern, where each piece of debris and each leaf is caught and how it is flung, and the spiral mark's grooves vary per cast. The 0.7 s gather, the snap-up at 0.7 s, the 0.7 s walk and the arrival at 1.7 s stay fixed so the hit is readable and dodgeable."
+  },
+  "director_notes": "Built from a list of common game spells (a tornado is a staple of wind/air magic), with no visual reference, so the look is original. Choices: (1) a long 0.7 s gather where only dust, leaves and a faint low swirl show, so the player sees where it will form before it exists; (2) the funnel is a new vortex layer: a translucent wall with spiral streak noise, densest at the silhouette, narrow at the ground and flaring to a wide top under a cloud cap, spinning up from 0.4 to 2.4 turns per second as it forms; (3) it forms 2 units short of the target and walks to it with a slight weave (start_offset_px, meander_px), so it reads as sent, not dropped; (4) debris and leaves are sparks attached to the funnel: they climb it in spirals and are flung off along their orbit when it ropes out, which is the payoff of the dissipation; (5) the rope-out narrows the foot and top, raises the sway so the funnel snakes, and erodes the wall into streaks from the top; (6) a swirl decal (scoured spiral grooves) is the lasting mark; (7) sound: low wind for the gather, a whoosh as it snaps up, full-pitch wind plus a rumble while it travels and grinds, then a low wind as it dies. Wind has no light of its own, so there is no light layer and nothing is additive except the caster's gust ring."
+}
