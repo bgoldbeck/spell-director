@@ -7,6 +7,7 @@
     "lightning/chain-arc.json",
     "lightning/charge-discharge.json",
     "lightning/sky-strike.json",
-    "water/pressure-jet.json"
+    "water/pressure-jet.json",
+    "wind/tornado.json"
   ]
 }

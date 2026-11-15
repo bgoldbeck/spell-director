@@ -4,7 +4,7 @@ A **template** is what the director writes. It describes a spell effect well eno
 
 - Schema: [`schemas/template-0.1.0.schema.json`](../schemas/template-0.1.0.schema.json)
 - Terms: [`vocabulary.md`](vocabulary.md)
-- Examples: [`templates/lightning/`](../templates/lightning/), [`templates/water/`](../templates/water/), [`templates/fire/`](../templates/fire/)
+- Examples: [`templates/lightning/`](../templates/lightning/), [`templates/water/`](../templates/water/), [`templates/fire/`](../templates/fire/), [`templates/wind/`](../templates/wind/)
 - Check a template: `python tools/validate.py templates/lightning/*.json`
 
 ## Core ideas
@@ -58,7 +58,7 @@ Layers say how they sit in 3D with `plane`. If omitted, the default is:
 |---|---|
 | `ground` | `ring`, `decal` |
 | `billboard` | `glow`, `orb`, `flash`, `light` |
-| `volume` | `bolt`, `beam`, `crackle`, `sparks`, `smoke` |
+| `volume` | `bolt`, `beam`, `vortex`, `crackle`, `sparks`, `smoke` |
 | `vertical` | none by default; use for walls and pillars |
 
 ## Beats
@@ -111,13 +111,14 @@ Unknown params are allowed (the validator warns) so the director can experiment,
 | `bolt` | `segments`, `jaggedness` (0–1), `width_px`, `taper` (0–1), `branch_chance` (0–1), `branch_depth`, `branch_length_ratio`, `regen_ms` (0 = never redraw), `restrikes`, `restrike_gap_ms`, `leader_ms`, `afterimage_ms`, `glow_px` |
 | `glow` | `radius_px`, `softness` (0–1), `pulse_hz` |
 | `flash` | `scope` (`screen` / `local`), `radius_px`, `peak` (0–1) |
-| `sparks` | `count`, `speed`, `speed_spread`, `gravity`, `lifetime_ms`, `size_px`, `spread_deg`, `drag`, `emit_ms` (how long new sparks keep spawning, default 120), `streak_ms` (each spark is drawn as a streak from where it was this long ago, default 60; lower for round droplets), `look` (`spark` default; `droplet`: round water drops with a short wet trail instead of glowing streaks; `ember`: glowing flecks that flutter and flicker, pair with negative `gravity` so they float up; `debris`: lumpy rock chunks in the layer's color that tumble, land and stay on the ground, shrinking away at the end of their life), `glow` (debris only, 0–1: chunks start glowing in the palette's fire colors with a short hot streak and cool to rock over the first part of their flight) |
+| `sparks` | `count`, `speed`, `speed_spread`, `gravity`, `lifetime_ms`, `size_px`, `spread_deg`, `drag`, `emit_ms` (how long new sparks keep spawning, default 120), `streak_ms` (each spark is drawn as a streak from where it was this long ago, default 60; lower for round droplets), `look` (`spark` default; `droplet`: round water drops with a short wet trail instead of glowing streaks; `ember`: glowing flecks that flutter and flicker, pair with negative `gravity` so they float up; `debris`: lumpy rock chunks in the layer's color that tumble, land and stay on the ground, shrinking away at the end of their life), `glow` (debris only, 0–1: chunks start glowing in the palette's fire colors with a short hot streak and cool to rock over the first part of their flight). `look: leaf`: flat flakes (leaves, paper, petals) that flutter edge-on and back. Sparks with `attach_to` a `vortex` orbit it instead of bursting: see [Vortex](#vortex) |
 | `crackle` | `count`, `length_px`, `jaggedness`, `regen_ms`, `radius_px` |
 | `orb` | `radius_px`, `pulse_hz`, `wobble`, `crackle_count`; for `travel: projectile` an orb anchored at `caster_hand` flies to the target during its `travel` beat: `trail_ms` (streak behind it, default 140, 0 = none), `arc_height_px` (lob height at mid-flight, default 0), `travel_ease` (`linear` or `ease_in` to accelerate). An orb anchored at `sky` in a `travel: projectile` spell falls onto the target during its `travel` beat instead: `approach_deg` (tilt from vertical, 0–75, default 0 = straight down) and `approach_yaw_deg` (the heading it comes from, seen from above: 0 = from beyond the target, 90 = from the cast direction's left, 180 = from over the caster). `look`: `energy` (default) or `meteor`: a lumpy burning rock with molten seams and a white-hot leading face, a flame trail that cools hot to red over `trail_ms` (default 260) and a grey smoke trail that hangs in the air for `smoke_trail_ms` (default 0 = none) at `smoke_opacity` (default 0.45) |
 | `beam` | `width_px`, `wobble`, `wobble_hz`, `jaggedness`, `regen_ms`, `grow_ms` (time to reach full length, default 60), `style` (`energy` default; `water`: a turbulent liquid column with a noisy edge, foam streaks and a bright rim; `fire`: a flame cone, see below). Water and fire beams also take `flow_speed` (how fast the noise rushes toward the target), `turbulence` (0-1, edge break-up), `churn` (0-1, surges that travel down the column), and particles that peel off it: `shed_count`, `shed_speed`, `shed_size_px`, `shed_life_ms` (water drops fall, fire embers float up). Water beams take `foam` (0-1). Fire beams take `spread` (width at the far end relative to `width_px`, default 3: a cone), `puff_count` (billowing flame puffs riding the stream, default 24, max 64) and `puff_size_px`. Any beam can `sweep_px` (how far its far end swings across the target, sideways) with `sweep_ms` (one pass) |
+| `vortex` | `height_px`, `base_radius_px`, `top_radius_px`, `flare`, `spin_hz`, `strands`, `twist`, `turbulence`, `sway_px`, `sway_hz`, `grow_ms`, `opacity`, `start_offset_px`, `meander_px`, `wander_px`. See [Vortex](#vortex). |
 | `ring` | `start_radius_px`, `end_radius_px`, `thickness_px`, `softness` |
 | `decal` | `shape`, `radius_px`, `opacity`, `fade_in_ms`, `lifetime_ms`, `fade_ms`, `grow_ms`, `start_scale`, `rotation_deg`, `spin_deg_per_s`, `stretch`, `pulse_hz`, `detail`. See [Decals](#decals). |
-| `smoke` | `count` (max 32), `rise_speed`, `size_px`, `lifetime_ms`, `opacity`, `spread_speed` (px/s the puffs also roll outward along the ground, evenly around the centre and slowing as they go: a dust wave or a spreading fireball; default 0). With the layer's `blend: add` the puffs glow instead of shading: billows of flame. |
+| `smoke` | `count` (max 32), `rise_speed`, `size_px`, `lifetime_ms`, `opacity`, `spread_speed` (px/s the puffs also roll outward along the ground, evenly around the centre and slowing as they go: a dust wave or a spreading fireball; default 0). With the layer's `blend: add` the puffs glow instead of shading: billows of flame. With `attach_to` a `vortex` they swirl around its foot (a dust skirt). |
 | `light` | `radius`, `energy` |
 | `camera_shake` | `amplitude_px`, `frequency_hz`, `decay` (0–1) |
 | `sound_cue` | `cue` (one of the cues in [`web/sounds/cues.json`](../web/sounds/cues.json): `charge`, `hum`, `buzz`, `crackle`, `sizzle`, `zap`, `crack`, `boom`, `rumble`, `impact`, `crash`, `shatter`, `ignite`, `fire`, `whoosh`, `wind`, `shimmer`), `gain` (0–1, default 0.8), `pitch` (playback-rate multiplier 0.5–2, default 1), `offset_ms` (delay after the beat starts), `duration_ms` (override length), `repeat_ms` (one-shots: retrigger every N ms inside each beat) |
@@ -135,6 +136,7 @@ A `decal` layer is a mark on the ground: drawn flat on the ground plane under ev
 | `puddle` | alpha | lumpy wet patch with a bright rim | water, blood, slime |
 | `splash` | alpha | wet patch with droplets thrown outward | water impacts |
 | `frost` | alpha | ice crystals spiking outward | ice, freeze |
+| `swirl` | alpha | spiral grooves scoured from a bare centre, grit flung past the rim | tornadoes, whirlwinds, vortex spells |
 | `rune_circle` | add | rings, glyph marks and a star | casting, summoning, buffs |
 | `warning_ring` | add | faint fill, bright rim and ticks | telegraphs: "get out of here" |
 
@@ -156,6 +158,34 @@ The layer's `blend` overrides the default (e.g. `cracks` with `blend: add` are g
 | `detail` | 0.5 | How busy the texture is: number of cracks, rays, glyphs, droplets. |
 
 Decal beats set when it appears (the start of its first beat) and, without `lifetime_ms`, how long it holds. A decal's brightness does not follow the beats' intensity curves: marks don't flicker. Stack two decals for a hot mark that cools: a glowing `burn`/`cracks` (add, short lifetime) over a dark `scorch` (alpha, long lifetime).
+
+## Vortex
+
+A `vortex` layer is a spinning funnel of air standing on the ground at its anchor: a tornado, whirlwind, dust devil or water spout. It is narrow where it touches the ground and flares out to a wide top under a turning cloud cap; streaky noise spirals up and around its translucent wall, which is densest at the silhouette. Its axis snakes (`sway_px`), pinned at the ground. Drawn alpha-blended unless the layer's `blend` is `add`. The color is the layer's palette slot (`gradient_core_to_primary`: pale streaks over the body); the palette's `secondary` tints its dusty foot.
+
+| Param | Default | Meaning |
+|---|---|---|
+| `height_px` | 260 | Height of the funnel. |
+| `base_radius_px`, `top_radius_px` | 16, 90 | Radius at the ground and at the top. |
+| `flare` | 1.8 | How the radius opens with height: 1 a straight cone, higher a trumpet. |
+| `spin_hz` | 1.5 | Turns per second of the wall. Keyframe it to spin up and wind down. |
+| `strands`, `twist` | 8, 1.2 | Wind streaks around the funnel, and the turns each makes from the ground to the top. |
+| `turbulence` | 0.5 | 0–1: how ragged and streaky the wall is. |
+| `sway_px`, `sway_hz` | 22, 0.45 | How far, and how fast, the middle of the funnel snakes off its axis. |
+| `grow_ms` | 450 | Time to rise to full height from the start of its first beat. |
+| `opacity` | 0.75 | Peak opacity of the wall. |
+| `start_offset_px`, `meander_px` | 0, 0 | Form this far short of the anchor (toward the caster), then walk to it during the layer's `travel` beat, weaving this far sideways. |
+| `wander_px` | 8 | Drift of the foot while it holds in place. |
+
+The layer's intensity fades the wall by eroding it into its streaks (a rope-out), not by a plain fade. Keyframe `top_radius_px` and `base_radius_px` down and `sway_px` up during dissipation to make it thin and snake as it dies.
+
+Layers attached to a vortex (`attach_to`) follow it:
+
+- `sparks` orbit it: each is caught near the ground, climbs the funnel at `speed` px/s while it turns with the wall, and is flung off along its orbit to fall (`gravity`, `drag`) when the vortex's dissipation beat starts. `emit_ms` defaults to the whole window; `lifetime_ms` is how long each piece rides. Use `look: debris` and `look: leaf`.
+- `smoke` swirls around its foot as a dust skirt.
+- `glow` wraps its axis.
+
+Decals don't follow a travelling vortex: anchor the mark where it ends up.
 
 ## Validation rules beyond the schema
 

@@ -345,6 +345,7 @@
               "crackle",
               "orb",
               "beam",
+              "vortex",
               "ring",
               "decal",
               "smoke",
@@ -466,6 +467,7 @@
                         "puddle",
                         "splash",
                         "frost",
+                        "swirl",
                         "rune_circle",
                         "warning_ring"
                       ],
@@ -780,6 +782,7 @@
             "smoky",
             "ashen",
             "dusty",
+            "airy",
             "ethereal",
             "arcane",
             "shadowy",

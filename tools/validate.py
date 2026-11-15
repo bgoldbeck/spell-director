@@ -39,6 +39,10 @@ KNOWN_PARAMS = {
         "foam", "churn", "shed_count", "shed_speed", "shed_size_px", "shed_life_ms", "spread", "sweep_px", "sweep_ms",
         "puff_count", "puff_size_px",
     },
+    "vortex": {
+        "height_px", "base_radius_px", "top_radius_px", "flare", "spin_hz", "strands", "twist", "turbulence",
+        "sway_px", "sway_hz", "grow_ms", "opacity", "start_offset_px", "meander_px", "wander_px",
+    },
     "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness"},
     "decal": {
         "radius_px", "shape", "opacity", "fade_in_ms", "lifetime_ms", "fade_ms", "grow_ms", "start_scale",
