@@ -6,6 +6,10 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Changed
+
+- Viewer: sound is off by default. Turn it on with the Sound button or M; the viewer remembers your choice.
+
 ### Added
 
 - Update scripts (`update.bat`, `update.sh`): one double-click brings your checkout up to date with `main`, stopping safely if you have uncommitted changes, and refreshes Python packages when they changed.

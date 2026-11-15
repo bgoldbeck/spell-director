@@ -43,14 +43,15 @@ const sound = {
   playing: false,
 };
 
+// Sound starts off; the Sound button or M turns it on, and the choice is remembered.
 function soundPref() {
   const q = new URLSearchParams(location.search).get("sound");
   if (q === "off" || q === "0") return true;
   if (q === "on" || q === "1") return false;
   try {
-    return localStorage.getItem("spelldirector.muted") === "1";
+    return localStorage.getItem("spelldirector.muted") !== "0";
   } catch {
-    return false;
+    return true;
   }
 }
 
