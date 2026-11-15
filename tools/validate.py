@@ -37,8 +37,15 @@ KNOWN_PARAMS = {
     "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity"},
     "light": {"radius", "energy"},
     "camera_shake": {"amplitude_px", "frequency_hz", "decay"},
-    "sound_cue": {"cue"},
+    "sound_cue": {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms"},
 }
+
+CUE_LIBRARY = ROOT / "web" / "sounds" / "cues.json"
+
+
+def known_cues() -> dict:
+    """The sound cue library (web/sounds/cues.json): cue id -> definition."""
+    return json.loads(CUE_LIBRARY.read_text(encoding="utf-8"))["cues"]
 
 
 def _ranges(node, path="$"):
@@ -98,6 +105,16 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
         for kf in layer.get("keyframes", []):
             if active and not any(b["start_ms"] <= kf["t_ms"] <= b["end_ms"] for b in active):
                 errors.append(f"layer {lid!r}: keyframe at {kf['t_ms']} ms is outside its active beats")
+        if layer["type"] == "sound_cue":
+            cue = layer.get("params", {}).get("cue")
+            cues = known_cues()
+            if not isinstance(cue, str):
+                warnings.append(f"layer {lid!r} (sound_cue): no cue name, so nothing plays")
+            elif cue not in cues:
+                warnings.append(
+                    f"layer {lid!r} (sound_cue): unknown cue {cue!r}; the viewer captions it but plays nothing. "
+                    f"Known cues: {', '.join(sorted(cues))}"
+                )
         known = KNOWN_PARAMS.get(layer["type"], set())
         for key in layer.get("params", {}):
             if key not in known:

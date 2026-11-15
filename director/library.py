@@ -103,6 +103,30 @@ def get_doc(name: str) -> str:
     return DOC_FILES[name].read_text(encoding="utf-8")
 
 
+def get_sound_cues(category: str | None = None) -> dict:
+    """The sound cue vocabulary (web/sounds/cues.json): what each cue sounds like,
+    whether it's a one-shot or sustained, the words that map to it and the phases
+    it suits. Optionally only one category (electric, fire, impact, ...)."""
+    cues = _validate.known_cues()
+    if category:
+        cues = {k: v for k, v in cues.items() if v.get("category") == category}
+    return {
+        "cues": {
+            k: {f: v.get(f) for f in ("label", "category", "kind", "duration_ms", "describes", "words", "phases")}
+            for k, v in cues.items()
+        },
+        "categories": sorted({v.get("category") for v in _validate.known_cues().values()}),
+        "params": {
+            "cue": "cue id from this list (required)",
+            "gain": "0-1 loudness, default 0.8",
+            "pitch": "playback-rate multiplier, 0.5-2, default 1; a {min, max} range varies it per cast",
+            "offset_ms": "delay after the beat starts, default 0",
+            "duration_ms": "override length; sustained cues otherwise last the layer's beats",
+            "repeat_ms": "one-shots only: retrigger every N ms inside each beat (hops, restrikes)",
+        },
+    }
+
+
 def get_schema(version: str = "0.1.0") -> dict:
     path = SCHEMAS / f"template-{version}.schema.json"
     if not path.is_file():

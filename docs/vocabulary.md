@@ -89,7 +89,7 @@ An effect is a stack of layers. Each layer has one job.
 | `smoke` | Soft alpha volume, slow drift. |
 | `light` | Dynamic light cast on the environment. |
 | `camera_shake` | Screen shake. |
-| `sound_cue` | Marker for where audio hits (not audio itself). |
+| `sound_cue` | A named sound that plays in sync with its beats (see §10). |
 
 Order matters: draw back to front, usually `shadow/smoke → glow → bolt/beam → sparks → flash`.
 
@@ -157,3 +157,32 @@ Every effect must read from four standard cameras. Templates are authored in 3D 
 4. Choose palette and layers.
 5. Describe what the effect should look like in each of the four views.
 6. Write the template, with ranges and variation knobs so every cast looks a little different.
+
+## 10. Sound cues
+
+Sound is described as **timed cues**, not audio: "crackle during the charge, crack on release, boom on impact". A `sound_cue` layer names one cue from a small generic library ([`web/sounds/cues.json`](../web/sounds/cues.json)) and plays during that layer's beats. The cues are element-agnostic, so fire, ice or arcane spells use the same list.
+
+- **one-shot** cues fire at the start of each of the layer's beats (and every `repeat_ms` inside a beat if set: chain hops, restrikes).
+- **sustained** cues last from the layer's first beat to its last (or `duration_ms`).
+
+| Cue | Kind | Sounds like | Words that map to it |
+|---|---|---|---|
+| `charge` | sustained | rising swell of energy, cuts off | charge up, power up, wind up |
+| `hum` | sustained | steady low smooth hum | drone, beam hum, aura |
+| `buzz` | sustained | harsh gritty electrical buzz | electric buzz, live wire, transformer |
+| `crackle` | sustained | random small electric pops | static, snaps, arcing |
+| `sizzle` | sustained | bright fluttering hiss | hiss, fizz, fizzle |
+| `zap` | one-shot | short electric zap, pitch drops | zip, shock, jolt, hop |
+| `crack` | one-shot | sharp bright snap | thunderclap, whip crack, strike |
+| `boom` | one-shot | deep heavy boom | explosion, blast, bang |
+| `rumble` | sustained | low rolling rumble | rolling thunder, quake, aftershock |
+| `impact` | one-shot | short punchy thud | hit, punch, slam |
+| `crash` | one-shot | crash with scattering debris | smash, rubble, rocks breaking |
+| `shatter` | one-shot | glassy pings and tinkles | glass, ice break, crystal |
+| `ignite` | one-shot | soft fwoomp into flame | fwoosh, flare, fireball launch |
+| `fire` | sustained | roaring, crackling fire | flames, burning, blaze |
+| `whoosh` | one-shot | air rushing past | swoosh, swing, fly by |
+| `wind` | sustained | breathy gust rising and falling | gust, breeze, vortex |
+| `shimmer` | sustained | twinkling high chimes | sparkle, magic, heal |
+
+The viewer plays a procedural placeholder for every cue today; real recordings can replace any cue later without changing templates (see [`web/sounds/README.md`](../web/sounds/README.md)).

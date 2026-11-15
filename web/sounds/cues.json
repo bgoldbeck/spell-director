@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "about": "SpellDirector sound cue library. A template's sound_cue layer names one of these cues; the viewer plays it in sync with the layer's beats. Every cue has a procedural Web Audio placeholder (web/js/audio.js, recipe = the cue id). To use real recordings, list files under 'samples' (paths relative to web/sounds/) and credit each one in web/sounds/CREDITS.md. 'sfx_prompt' is a ready text prompt for a text-to-SFX service. See web/sounds/README.md.",
+  "cues": {
+    "charge": {
+      "label": "Energy charge",
+      "category": "energy",
+      "kind": "sustained",
+      "duration_ms": 800,
+      "describes": "A rising swell of energy that builds in pitch and volume, then cuts off.",
+      "words": ["charge up", "power up", "build up", "wind up", "swell", "gathering energy"],
+      "phases": ["anticipation"],
+      "sfx_prompt": "magical energy charging up, rising pitch swell, building tension, cuts off cleanly",
+      "samples": []
+    },
+    "hum": {
+      "label": "Low hum",
+      "category": "energy",
+      "kind": "sustained",
+      "duration_ms": 800,
+      "describes": "A steady, low, smooth hum, like a powered beam or a held aura.",
+      "words": ["hum", "drone", "thrum", "power hum", "beam hum", "aura"],
+      "phases": ["travel", "impact"],
+      "sfx_prompt": "steady low energy hum, smooth sci-fi drone, seamless loop",
+      "samples": []
+    },
+    "buzz": {
+      "label": "Electric buzz",
+      "category": "electric",
+      "kind": "sustained",
+      "duration_ms": 700,
+      "describes": "A harsh, gritty electrical buzz, like a live wire or a transformer.",
+      "words": ["electric buzz", "electrical buzz", "live wire", "transformer", "static buzz", "electric hum"],
+      "phases": ["anticipation", "travel", "impact"],
+      "sfx_prompt": "harsh electrical buzz, live wire arcing, gritty transformer hum, loop",
+      "samples": []
+    },
+    "crackle": {
+      "label": "Electric crackle",
+      "category": "electric",
+      "kind": "sustained",
+      "duration_ms": 600,
+      "describes": "Random small electric pops and snaps, like static discharge.",
+      "words": ["crackle", "static", "electric crackle", "pops", "snaps", "arcing"],
+      "phases": ["anticipation", "dissipation"],
+      "sfx_prompt": "random electric static crackle, small sharp snaps and pops, sparse",
+      "samples": []
+    },
+    "sizzle": {
+      "label": "Sizzle",
+      "category": "electric",
+      "kind": "sustained",
+      "duration_ms": 500,
+      "describes": "A bright fluttering hiss, like current running through the air or meat on a grill.",
+      "words": ["sizzle", "hiss", "fizz", "fizzle", "electric hiss"],
+      "phases": ["travel", "impact", "dissipation"],
+      "sfx_prompt": "bright electric sizzle, fluttering high hiss, crackling energy",
+      "samples": []
+    },
+    "zap": {
+      "label": "Zap",
+      "category": "electric",
+      "kind": "one_shot",
+      "duration_ms": 180,
+      "describes": "A short electric zap that sweeps down in pitch.",
+      "words": ["zap", "zip", "shock", "jolt", "spark", "hop"],
+      "phases": ["release", "travel", "impact"],
+      "sfx_prompt": "short electric zap, quick downward pitch sweep, sharp spark",
+      "samples": []
+    },
+    "crack": {
+      "label": "Sharp crack",
+      "category": "impact",
+      "kind": "one_shot",
+      "duration_ms": 450,
+      "describes": "A sharp, bright snap with a short ring-out, like a thunder crack or a whip.",
+      "words": ["crack", "snap", "thunder crack", "thunderclap", "whip crack", "lightning strike"],
+      "phases": ["release"],
+      "sfx_prompt": "sharp lightning thunder crack, bright snap, short ring-out, close",
+      "samples": []
+    },
+    "boom": {
+      "label": "Deep boom",
+      "category": "impact",
+      "kind": "one_shot",
+      "duration_ms": 1200,
+      "describes": "A deep, heavy boom that drops in pitch, like an explosion or a big hit.",
+      "words": ["boom", "explosion", "blast", "detonation", "bang", "thunder boom"],
+      "phases": ["impact"],
+      "sfx_prompt": "deep cinematic boom, heavy low-end explosion impact, short tail",
+      "samples": []
+    },
+    "rumble": {
+      "label": "Low rumble",
+      "category": "impact",
+      "kind": "sustained",
+      "duration_ms": 1200,
+      "describes": "A low rolling rumble that wobbles, like distant thunder or a quake.",
+      "words": ["rumble", "rolling thunder", "quake", "tremor", "earthquake", "aftershock"],
+      "phases": ["impact", "dissipation"],
+      "sfx_prompt": "low rolling thunder rumble, distant, slowly fading",
+      "samples": []
+    },
+    "impact": {
+      "label": "Thud",
+      "category": "impact",
+      "kind": "one_shot",
+      "duration_ms": 350,
+      "describes": "A short, punchy body hit or thud with a click on top.",
+      "words": ["impact", "hit", "thud", "punch", "thump", "slam"],
+      "phases": ["impact"],
+      "sfx_prompt": "short punchy impact thud, solid hit, tight",
+      "samples": []
+    },
+    "crash": {
+      "label": "Crash",
+      "category": "impact",
+      "kind": "one_shot",
+      "duration_ms": 900,
+      "describes": "A noisy crash with debris scattering after it, like rocks or a wall breaking.",
+      "words": ["crash", "smash", "debris", "rubble", "rocks", "breaking"],
+      "phases": ["impact"],
+      "sfx_prompt": "heavy crash with scattering debris and rubble, rocks breaking",
+      "samples": []
+    },
+    "shatter": {
+      "label": "Shatter",
+      "category": "impact",
+      "kind": "one_shot",
+      "duration_ms": 800,
+      "describes": "Bright glassy pings and tinkles, like glass or ice breaking.",
+      "words": ["shatter", "glass", "ice break", "crystal", "tinkle", "frost"],
+      "phases": ["impact", "dissipation"],
+      "sfx_prompt": "glass or ice shattering, bright tinkling shards falling",
+      "samples": []
+    },
+    "ignite": {
+      "label": "Ignite",
+      "category": "fire",
+      "kind": "one_shot",
+      "duration_ms": 650,
+      "describes": "A soft fwoomp as something bursts into flame.",
+      "words": ["ignite", "fwoosh", "fwoomp", "burst into flames", "flare", "fireball launch"],
+      "phases": ["release", "impact"],
+      "sfx_prompt": "fire ignition whoosh, soft fwoomp as flames burst up",
+      "samples": []
+    },
+    "fire": {
+      "label": "Burning fire",
+      "category": "fire",
+      "kind": "sustained",
+      "duration_ms": 1000,
+      "describes": "A roaring, crackling fire, like a torch or a burning area.",
+      "words": ["fire", "flames", "burning", "blaze", "torch", "inferno", "roar"],
+      "phases": ["travel", "impact", "dissipation"],
+      "sfx_prompt": "roaring fire with crackling embers, steady burning flames, loop",
+      "samples": []
+    },
+    "whoosh": {
+      "label": "Whoosh",
+      "category": "motion",
+      "kind": "one_shot",
+      "duration_ms": 500,
+      "describes": "Air rushing past, like a fast swing or a projectile flying by.",
+      "words": ["whoosh", "swoosh", "swish", "fly by", "swing", "dash"],
+      "phases": ["release", "travel"],
+      "sfx_prompt": "fast air whoosh, swoosh passing by, clean",
+      "samples": []
+    },
+    "wind": {
+      "label": "Wind",
+      "category": "air",
+      "kind": "sustained",
+      "duration_ms": 1200,
+      "describes": "A breathy gust of wind that rises and falls.",
+      "words": ["wind", "gust", "breeze", "storm wind", "tornado", "vortex"],
+      "phases": ["anticipation", "travel", "dissipation"],
+      "sfx_prompt": "howling wind gust rising and falling, airy",
+      "samples": []
+    },
+    "shimmer": {
+      "label": "Shimmer",
+      "category": "magic",
+      "kind": "sustained",
+      "duration_ms": 900,
+      "describes": "Twinkling high chimes, like sparkles, healing or a magic glow.",
+      "words": ["shimmer", "sparkle", "twinkle", "chime", "magic", "heal", "glitter"],
+      "phases": ["anticipation", "impact", "dissipation"],
+      "sfx_prompt": "magical shimmer, twinkling bell chimes and sparkles, soft",
+      "samples": []
+    }
+  }
+}

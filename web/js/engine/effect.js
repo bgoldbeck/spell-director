@@ -728,12 +728,9 @@ class ShakeLayer extends Layer {
   }
 }
 
-class SoundLayer extends Layer {
-  update(t) {
-    const w = this.window;
-    if (w && t >= w.start && t <= w.start + 220) this.effect.cues.push(this.p("cue", t, "sound"));
-  }
-}
+// Draws nothing. Sound cues are scheduled by engine/sound.js and played by
+// web/js/audio.js; the viewer captions them from the same schedule.
+class SoundLayer extends Layer {}
 
 const TYPES = {
   bolt: BoltLayer,
@@ -762,7 +759,6 @@ export class Effect {
     this.layers = [];
     this.hidden = new Set();
     this.screen = [];
-    this.cues = [];
     this.shake = { x: 0, y: 0 };
     const isChain = template.space.travel === "chain";
     const ordered = [...template.layers].sort((a, b) => (a.z ?? 0) - (b.z ?? 0));
@@ -790,7 +786,6 @@ export class Effect {
 
   update(t) {
     this.screen = [];
-    this.cues = [];
     this.shake = { x: 0, y: 0 };
     // Attached layers read their parent's state, so update parents first.
     const parentsFirst = [...this.layers].sort((a, b) => (a.def.attach_to ? 1 : 0) - (b.def.attach_to ? 1 : 0));

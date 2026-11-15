@@ -120,7 +120,7 @@ def test_mcp_server_end_to_end(lib, new_template):
         async with Client(mcp) as c:
             tools = {t.name for t in (await c.list_tools()).tools}
             assert {"list_templates", "get_template", "get_vocabulary", "validate_template",
-                    "save_template", "breakdown_gif"} <= tools
+                    "save_template", "breakdown_gif", "get_sound_cues"} <= tools
             uris = {str(r.uri) for r in (await c.list_resources()).resources}
             assert "spelldirector://docs/director-playbook" in uris
             prompt = await c.get_prompt("direct_spell", {"request": "heavy boss lightning"})
@@ -132,6 +132,8 @@ def test_mcp_server_end_to_end(lib, new_template):
             assert not r.is_error and r.structured_content["saved"]
             r = await c.call_tool("save_template", {"template": new_template})
             assert r.is_error and "already exists" in r.content[0].text
+            r = await c.call_tool("get_sound_cues", {"category": "electric"})
+            assert not r.is_error and "buzz" in r.structured_content["cues"]
             r = await c.call_tool("get_template", {"template_id": "nope"})
             assert r.is_error and "no template" in r.content[0].text
             r = await c.call_tool("breakdown_gif", {"path": str(SAMPLE_GIF)})
