@@ -111,10 +111,10 @@ Unknown params are allowed (the validator warns) so the director can experiment,
 | `bolt` | `segments`, `jaggedness` (0–1), `width_px`, `taper` (0–1), `branch_chance` (0–1), `branch_depth`, `branch_length_ratio`, `regen_ms` (0 = never redraw), `restrikes`, `restrike_gap_ms`, `leader_ms`, `afterimage_ms`, `glow_px` |
 | `glow` | `radius_px`, `softness` (0–1), `pulse_hz` |
 | `flash` | `scope` (`screen` / `local`), `radius_px`, `peak` (0–1) |
-| `sparks` | `count`, `speed`, `speed_spread`, `gravity`, `lifetime_ms`, `size_px`, `spread_deg`, `drag`, `emit_ms` (how long new sparks keep spawning, default 120), `streak_ms` (each spark is drawn as a streak from where it was this long ago, default 60; lower for round droplets) |
+| `sparks` | `count`, `speed`, `speed_spread`, `gravity`, `lifetime_ms`, `size_px`, `spread_deg`, `drag`, `emit_ms` (how long new sparks keep spawning, default 120), `streak_ms` (each spark is drawn as a streak from where it was this long ago, default 60; lower for round droplets), `look` (`spark` default, or `droplet`: round water drops with a short wet trail instead of glowing streaks) |
 | `crackle` | `count`, `length_px`, `jaggedness`, `regen_ms`, `radius_px` |
 | `orb` | `radius_px`, `pulse_hz`, `wobble`, `crackle_count`; for `travel: projectile` an orb anchored at `caster_hand` flies to the target during its `travel` beat: `trail_ms` (streak behind it, default 140, 0 = none), `arc_height_px` (lob height at mid-flight, default 0), `travel_ease` (`linear` or `ease_in` to accelerate) |
-| `beam` | `width_px`, `wobble`, `wobble_hz`, `jaggedness`, `regen_ms`, `grow_ms` (time to reach full length, default 60) |
+| `beam` | `width_px`, `wobble`, `wobble_hz`, `jaggedness`, `regen_ms`, `grow_ms` (time to reach full length, default 60), `style` (`energy` default, or `water`: a turbulent liquid column with a noisy edge, foam streaks and a bright rim). Water beams also take `flow_speed` (how fast the noise rushes toward the target), `turbulence` (0-1, edge break-up), `foam` (0-1), `churn` (0-1, surges that travel down the column), and droplets that peel off the jet: `shed_count`, `shed_speed`, `shed_size_px`, `shed_life_ms` |
 | `ring` | `start_radius_px`, `end_radius_px`, `thickness_px`, `softness` |
 | `decal` | `shape`, `radius_px`, `opacity`, `fade_in_ms`, `lifetime_ms`, `fade_ms`, `grow_ms`, `start_scale`, `rotation_deg`, `spin_deg_per_s`, `stretch`, `pulse_hz`, `detail`. See [Decals](#decals). |
 | `smoke` | `count`, `rise_speed`, `size_px`, `lifetime_ms`, `opacity` |
