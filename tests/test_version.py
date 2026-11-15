@@ -64,6 +64,12 @@ def test_exe_build_bundles_viewer_and_templates():
     for item in ("web", "templates", "schemas", "VERSION"):
         assert str(ROOT / item) in joined
     assert args[-1].endswith("exe_main.py")
+    # The Analyze page's breakdown (numpy, Pillow, PyAV) must be in the exe.
+    assert args[args.index("--hidden-import") + 1] == "breakdown"
+    assert "av" in args[args.index("--collect-submodules") + 1:]
+    reqs = (ROOT / "requirements-build.txt").read_text()
+    for pkg in ("pyinstaller", "numpy", "Pillow", "av"):
+        assert f"\n{pkg}>=" in "\n" + reqs
 
 
 def test_release_builds_then_creates_then_uploads(monkeypatch, tmp_path):

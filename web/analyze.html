@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpellDirector · Analyze a clip</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="analyze">
+    <header class="top">
+      <div>
+        <h1>Analyze a clip <span id="app-version" class="app-version" title="App version" hidden></span></h1>
+        <p class="sub">Drop a reference GIF or MP4 to see its camera shots, phase timeline, palette, footprint and view hints. Nothing leaves this computer.</p>
+      </div>
+      <div class="top-actions">
+        <a class="btn" href="./" title="Back to the motion-study viewer">‹ Viewer</a>
+      </div>
+    </header>
+
+    <section id="drop" class="drop" tabindex="0" aria-label="Drop a GIF or video here">
+      <p class="drop-main">Drop a GIF or video here</p>
+      <p class="muted">or <label class="btn file-btn">Choose file…<input id="clip-file" type="file" accept=".gif,.mp4,.m4v,.mov,.webm,.mkv,.avi,image/gif,video/*" hidden></label></p>
+      <p class="muted small">GIF, MP4, WebM, MOV, MKV or AVI. Videos are sampled at up to 30 fps and 20 seconds, so trim long clips to the spell.</p>
+    </section>
+
+    <section id="prep" class="panel prep" hidden>
+      <div class="prep-preview">
+        <video id="prep-video" controls muted playsinline hidden></video>
+        <img id="prep-img" alt="Picked GIF" hidden>
+      </div>
+      <div class="prep-side">
+        <p><strong id="prep-name"></strong> <span id="prep-meta" class="muted"></span></p>
+        <div class="trim">
+          <label>Start <input id="trim-start" type="number" min="0" step="0.01" placeholder="0"> s</label>
+          <button id="mark-start" class="btn" type="button" title="Use the video's current time as the start" hidden>Set to current</button>
+          <label>End <input id="trim-end" type="number" min="0" step="0.01" placeholder="end"> s</label>
+          <button id="mark-end" class="btn" type="button" title="Use the video's current time as the end" hidden>Set to current</button>
+        </div>
+        <p class="muted small">Leave both empty to analyze the whole clip. Only frames that start inside the window are kept.</p>
+        <div class="prep-actions">
+          <button id="analyze-go" class="btn active" type="button">Analyze</button>
+          <button id="pick-other" class="btn" type="button">Pick another file</button>
+        </div>
+        <p id="status" class="muted" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <p id="error" class="error" hidden></p>
+
+    <section id="results" hidden>
+      <p id="summary-line" class="summary-line"></p>
+      <ul id="warnings" class="warnings"></ul>
+
+      <div class="split">
+        <div class="panel player">
+          <div class="player-stage">
+            <canvas id="clip"></canvas>
+            <canvas id="overlay"></canvas>
+            <div id="clip-time" class="time-readout">0 ms</div>
+            <div id="clip-phase" class="clip-phase"></div>
+          </div>
+          <div class="controls">
+            <button id="clip-play" class="btn">Pause</button>
+            <button id="clip-prev" class="btn" title="Previous frame (,)">‹ Frame</button>
+            <button id="clip-next" class="btn" title="Next frame (.)">Frame ›</button>
+            <label>Speed
+              <select id="clip-speed">
+                <option value="0.1">0.1×</option>
+                <option value="0.25">0.25×</option>
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+              </select>
+            </label>
+            <label class="check"><input id="clip-loop" type="checkbox" checked> Loop</label>
+            <label class="check" title="The box around everywhere the effect shows up"><input id="show-footprint" type="checkbox" checked> Footprint</label>
+            <label class="check" title="Where on screen the effect happens across the whole clip"><input id="show-heatmap" type="checkbox"> Heatmap</label>
+            <label class="check" title="This frame's effect box and center"><input id="show-frame-box" type="checkbox"> Frame box</label>
+          </div>
+        </div>
+
+        <div class="panel timeline-panel">
+          <h2>Timeline</h2>
+          <canvas id="timeline" aria-label="Clip timeline: click or drag to seek"></canvas>
+          <div id="legend" class="legend"></div>
+          <ul id="phase-list" class="phase-list"></ul>
+          <div id="frame-facts" class="frame-facts"></div>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="panel">
+          <h2>Palette</h2>
+          <div id="swatches" class="swatches"></div>
+          <p class="muted small">Effect colors, brightest first, with the template palette slot each one suggests.</p>
+        </div>
+        <div class="panel">
+          <h2>Footprint and view</h2>
+          <dl id="space" class="facts"></dl>
+          <div id="view-scores" class="view-scores"></div>
+          <p class="muted small">The view is a rough guess from shape and travel. Check it against the clip.</p>
+        </div>
+        <div class="panel">
+          <h2>Timing</h2>
+          <dl id="timing" class="facts"></dl>
+        </div>
+        <div class="panel">
+          <h2>Camera shots</h2>
+          <ul id="shots" class="shot-list"></ul>
+        </div>
+      </div>
+
+      <div class="panel actions-panel">
+        <h2>Use it</h2>
+        <div class="prep-actions">
+          <button id="save-zip" class="btn active" type="button" title="breakdown.json plus the contact sheet, curves, palette and heatmap images">Save breakdown (.zip)</button>
+          <button id="copy-prompt" class="btn" type="button" title="Copy a request for the director (Claude Code in the repo folder) to build a template from this breakdown">Copy director prompt</button>
+          <button id="analyze-again" class="btn" type="button">Analyze another clip</button>
+        </div>
+        <p id="use-status" class="muted small" aria-live="polite">To start a template, copy the director prompt and paste it into Claude Code opened in the SpellDirector folder.</p>
+        <details class="sheet">
+          <summary>Contact sheet</summary>
+          <img id="contact-sheet" alt="Labelled frames of the clip">
+        </details>
+      </div>
+    </section>
+  </div>
+  <script type="module" src="js/analyze.js"></script>
+</body>
+</html>

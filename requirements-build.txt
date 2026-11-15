@@ -1,1 +1,6 @@
+# Building the SpellDirector exe (tools/build_exe.py).
 pyinstaller>=6.10
+# Bundled into the exe for the viewer's Analyze page (GIF and video breakdown).
+numpy>=1.26
+Pillow>=10.1
+av>=12

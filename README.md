@@ -65,6 +65,8 @@ Use another port with `run.bat 50123` / `./run.sh 50123`, or set `SPELLDIRECTOR_
 
 Sound cues play in time with the beats (placeholder sounds for now). Sound starts **off**: click **Sound off** or press M to turn it on, and the viewer remembers your choice.
 
+**Analyze GIF/MP4…** opens a page where you drop a reference clip and see its breakdown (camera shots, phase timeline, palette, footprint and view hints) next to the clip, then save it or copy a prompt for the director. It runs on your computer through the local server; from a source checkout it needs `pip install -r requirements-dev.txt`.
+
 **Export sprites…** saves the current spell and seed as sprite sheets for a game engine: one per layer plus one for the whole spell, with the frames across and the four views down, a JSON file, and a guide for rebuilding it in Unity or Godot. See [docs/exporting.md](docs/exporting.md).
 
 Keys: Space play/pause, 1-4 views, 5 all four, M sound, F focus view (Esc to leave). Drag to orbit, scroll to zoom.
@@ -77,7 +79,7 @@ After adding a template file, run `python tools/build_index.py` so static hostin
 python -m pip install -r requirements-dev.txt
 python tools/breakdown.py samples/synthetic-sky-strike.gif --out breakdowns/sky-strike
 python tools/breakdown.py samples/synthetic-sky-strike.mp4 --out breakdowns/sky-strike-mp4
-python tools/breakdown.py my-capture.mp4 --start 1.2 --end 3.5   # trim a video to the spell
+python tools/breakdown.py my-capture.mp4 --start 1.2 --end 3.5   # trim to the spell (GIFs too)
 ```
 
 Videos (MP4, WebM, MOV, MKV, AVI) are decoded with PyAV and sampled at up to 30 fps.

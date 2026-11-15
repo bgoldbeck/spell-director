@@ -215,7 +215,7 @@ def save_template(template: dict, overwrite: bool = False) -> dict:
 def breakdown_reference(path: str, name: str | None = None, start_s: float | None = None,
                         end_s: float | None = None) -> dict:
     """Run the breakdown tool on a reference GIF or video (MP4, WebM, MOV...);
-    output goes to breakdowns/<name>/. start_s/end_s trim a video."""
+    output goes to breakdowns/<name>/. start_s/end_s (seconds) trim it."""
     src = Path(path).expanduser()
     if not src.is_file():
         raise LibraryError(f"no such file: {path}")
@@ -223,12 +223,10 @@ def breakdown_reference(path: str, name: str | None = None, start_s: float | Non
     if not _SAFE_NAME.match(name):
         raise LibraryError(f"name must be kebab-case: {name!r}")
     out = BREAKDOWNS / name
-    opts = {}
-    if _breakdown.is_video(src):
-        opts = {"start_s": start_s or 0.0, "end_s": end_s}
-    elif start_s or end_s is not None:
-        raise LibraryError("start_s/end_s only apply to videos")
-    result = _breakdown.breakdown(src, out, **opts)
+    try:
+        result = _breakdown.breakdown(src, out, start_s=start_s or 0.0, end_s=end_s)
+    except ValueError as exc:
+        raise LibraryError(str(exc)) from exc
     images = {k: str(out / v) for k, v in result["images"].items() if isinstance(v, str)}
     return {
         "summary": _breakdown.summary(result),

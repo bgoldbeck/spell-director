@@ -151,5 +151,7 @@ def test_breakdown_reference_video(lib, tmp_path):
     result = library.breakdown_reference(str(mp4), start_s=1.0, end_s=2.2)
     assert result["gif"]["format"] == "video"
     assert result["timing"]["main_peak_ms"] == 400
-    with pytest.raises(library.LibraryError, match="only apply to videos"):
-        library.breakdown_reference(str(SAMPLE_GIF), start_s=1.0)
+    gif = library.breakdown_reference(str(SAMPLE_GIF), name="trimmed", start_s=0.2, end_s=0.8)
+    assert gif["gif"]["trim"]["start_s"] == 0.2
+    with pytest.raises(library.LibraryError, match="end must be after start"):
+        library.breakdown_reference(str(SAMPLE_GIF), start_s=1.0, end_s=0.5)

@@ -29,6 +29,8 @@ MP4 and other video input is done (`tools/breakdown.py`, `--start`/`--end`). Fir
 
 ### 3. Viewer: side-by-side reference
 
+The Analyze page (`web/analyze.html`) already plays a dropped clip frame by frame against its breakdown timeline.
+
 - Load a GIF next to the render (same view, synced time) for comparison, as the playbook's step 7 describes.
 - Optional onion-skin overlay.
 

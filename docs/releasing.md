@@ -19,7 +19,7 @@ Each PR that changes behavior adds a line under `## [Unreleased]` in [`CHANGELOG
 3. Publish it from the latest `main`, **on Windows** so the attached exe is a Windows build:
 
    ```bash
-   python -m pip install -r requirements-build.txt   # once: PyInstaller
+   python -m pip install -r requirements-build.txt   # PyInstaller plus numpy, Pillow, PyAV (rerun when it changes)
    python tools/release.py --dry-run   # check the tag and notes
    python tools/release.py             # build the exe, publish, attach the exe
    ```
