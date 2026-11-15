@@ -25,6 +25,7 @@
     "water/tidal-surge.json",
     "water/torrent-cannon.json",
     "wind/gale-shove.json",
+    "wind/maelstrom.json",
     "wind/scythe-volley.json",
     "wind/tornado.json"
   ]
