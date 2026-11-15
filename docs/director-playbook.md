@@ -34,7 +34,7 @@ Pull these out of what the user said, and note which are missing:
 
 | Decide | Words that tell you | If missing |
 |---|---|---|
-| `element` | "lightning", "storm", "shock" | ask (it's rarely missing) |
+| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash" | ask (it's rarely missing) |
 | `archetype` | strike (from above / one hit), projectile (thrown), chain (jumps), beam (continuous), aura (around the caster), nova (bursts outward) | infer, or ask as a choice |
 | weight | heavy, boss, big, ultimate → long anticipation, hold frames, shake. quick, light, basic → snappy | default to medium |
 | camera / hero view | top-down, isometric, side-scroller, fighting game, over-the-shoulder (see vocabulary §7) | **ask** |
@@ -52,6 +52,8 @@ Pick the questions whose answers change the template the most. Good ones, in pri
 3. **Shape**: *"One clean bolt, or a wild tree of forks?"* → `branch_chance`, `branch_depth`, `jaggedness`.
 4. **Area**: *"Hit one target, or blast the area around it?"* → footprint, sparks, ring size.
 5. **Color**: *"Classic white-blue, or a colored variant (violet, gold, red)?"* → palette.
+
+For fire, swap the shape question for one of these: *"A tight jet that hits one target, or a wide cone that sweeps an area?"* → `spread`, `sweep_px`, footprint; *"Natural orange flame, or a magical color (blue, green, purple)?"* → palette.
 
 Phrase each as a choice between two or three named options with what each feels like. Put your recommendation first. If the user says "you pick", pick and move on.
 
@@ -79,7 +81,7 @@ Write the beats first; everything else hangs off them.
    | heavy / boss | 1300–2200 ms | 450–800 ms | 60–100 ms | 250–450 ms | 500–900 ms |
 
    Contrast is what sells weight: a long anticipation and a long tail around a very short release.
-3. Choose each beat's intensity curve: anticipation `ease_in`, release `spike`, lightning impact `flicker` (10–16 Hz), dissipation `ease_out`. Let impact and dissipation overlap by 30–60 ms so the hit doesn't cut off.
+3. Choose each beat's intensity curve: anticipation `ease_in`, release `spike`, lightning impact `flicker` (10–16 Hz), fire stream or impact `flicker` (5–9 Hz: flames are slower than electricity), dissipation `ease_out`. Let impact and dissipation overlap by 30–60 ms so the hit doesn't cut off.
 4. Write each beat's `intent` in plain words a non-artist understands. It's shown as the caption in the viewer. Mention hold frames in the release intent if you use them.
 
 ## Step 4. Choose layers
@@ -105,6 +107,16 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
   - dissipation: a quiet tail (`crackle`, `rumble`, `fire`, `sizzle`) at `gain` 0.3–0.5.
 
   Keep it to 2–5 cues, mix loud and quiet (`gain`), and give one-shots a small `pitch` range (e.g. 0.9–1.1) so repeated casts don't sound identical. If no cue fits, use the closest one and say what you wanted in `director_notes`; don't invent cue names.
+
+- **Fire** (vocabulary "Fire-specific terms"). Build it from heat, not from lines:
+  - *Breath or flamethrower*: a `beam` with `style: fire` (`spread` 2.5–4 for a cone, `turbulence` 0.6–0.8, `churn` 0.3, `flow_speed` 4–7, `puff_count` 30–50 for volume, `shed_*` for embers off the edges, `sweep_px` 40–80 to rake an area). Its palette ramp does the coloring: give it `gradient_core_to_primary` and a red `secondary`. Don't stack a second white beam inside it: the stream already has a hot jet that burns out along the cone.
+  - *Fireball*: an `orb` (plasma/fiery) flying in a `travel: projectile` spell, with `sparks` `look: ember` behind it.
+  - *Explosion or eruption*: `flash` + additive `smoke` (`blend: add`, flame billows) + `sparks` `look: ember` + a dark `smoke` plume + `ring`.
+  - *Anticipation*: fire builds before it's released: an `orb` growing at the mouth or hand with a pulsing `glow`, dark wisps (`smoke`, `shadow` color), a few embers escaping, a contracting `ring` for an inhale.
+  - *Ground*: a `burn` decal (add, `lifetime_ms` 400–800) and glowing `cracks` (add) over a `scorch` (alpha, outlives the spell). For a sweep, lay them across the line of fire (`rotation_deg` 90, `stretch` 1.6–2.2).
+  - *Tail*: embers (`sparks` `look: ember`, `gravity` −80 to −200, long `emit_ms`), a dark smoke plume, and a quiet `fire` cue.
+  - *Sound*: `wind` (inhale) or `charge` → `ignite` (+ `whoosh`) → `fire` (stream) → `impact` or `boom` for a blast → `fire` at gain 0.3–0.4 for the smolder.
+  - *Shader intent*: `fiery` for flames, `plasma` for a ball of fire, `molten` for glowing ground and cracks, `ashen` for scorch, `smoky` for smoke; fBm noise flowing `along_path` or `upward`, `dissolve` with a red `edge_color`, `distortion` 0.3–0.6 for heat haze, `emissive.hdr` 3–6.
 
 Know what the viewer draws today (see the known issues in [DESIGN.md](DESIGN.md#6-known-issues-and-limits)): several targets exist only for chains (`travel: chain` or `destination: targets`), so a "storm of strikes across an area" renders as strikes on one spot. Projectile travel is drawn for an `orb` anchored at `caster_hand` in a `travel: projectile` spell. Prefer designs the viewer can show, and say in `director_notes` when you go beyond it.
 
@@ -137,7 +149,7 @@ Sizes are in pixels at 100 px per world unit (1 unit = a character's height).
 
 ## Step 5. Palette
 
-Fill `core` and `primary`, and usually `secondary`. Add `accent` only for a contrasting spark color, and `shadow` only if something dark is drawn (smoke, scorch, sky-dim). Electricity is additive with a near-white core. Colors should be original choices, not sampled from a game.
+Fill `core` and `primary`, and usually `secondary`. Add `accent` only for a contrasting spark color, and `shadow` only if something dark is drawn (smoke, scorch, sky-dim). Electricity is additive with a near-white core. Fire is a temperature ramp: `core` white-yellow, `primary` orange, `secondary` deep red, `accent` gold for embers, `shadow` a warm near-black for smoke and scorch. Colors should be original choices, not sampled from a game.
 
 ## Step 6. Views
 
@@ -179,3 +191,5 @@ Request: *"heavy boss lightning, top-down game"*.
 - Views: top is the hero, so the ground story (warning ring, static, shockwave, scorch, radial sparks) carries it; front and side show the tall bolt; 3/4 shows both.
 
 The result is [`templates/lightning/boss-storm-call.json`](../templates/lightning/boss-storm-call.json).
+
+A fire example: *"a dragon-style fire breath"* became [`templates/fire/dragon-breath.json`](../templates/fire/dragon-breath.json): beam archetype, a 0.5 s inhale (growing fire in the mouth, contracting ring, smoke wisps, wind), an ignite flare, a widening fire cone that sweeps across the target, flame billows and embers on impact, a burning swath that cools to a long scorch, and wind → ignite + whoosh → fire → quiet fire for sound.

@@ -6,6 +6,12 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Added
+
+- A **Fire** spell type, starting with **Dragon Breath**: a creature draws a deep breath while fire builds in its mouth, then pours out a roaring cone of flame that sweeps across the target, splashes into billows and embers, and leaves a burning swath that cools to a long black scorch, with wind, ignite, whoosh and fire sounds.
+- The viewer draws fire: beam `style: fire` is a widening flame cone (`spread`) with licking, noise-torn edges that run white-yellow to orange to red, billowing flame puffs riding the stream (`puff_count`, `puff_size_px`) and embers floating off it. Any beam can sweep across its target (`sweep_px`, `sweep_ms`). Sparks have an `ember` look (glowing flecks that flutter and flicker as they float up) and smoke with `blend: add` glows like rolling flame.
+- The director's playbook and vocabulary cover fire: temperature-ramp palettes, slower flicker, breath, fireball and explosion recipes, burning ground, embers, heat haze and the fire sound score.
+
 ## [0.5.0] - 2026-11-15
 
 ### Changed

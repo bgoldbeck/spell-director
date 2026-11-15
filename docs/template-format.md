@@ -4,7 +4,7 @@ A **template** is what the director writes. It describes a spell effect well eno
 
 - Schema: [`schemas/template-0.1.0.schema.json`](../schemas/template-0.1.0.schema.json)
 - Terms: [`vocabulary.md`](vocabulary.md)
-- Examples: [`templates/lightning/`](../templates/lightning/)
+- Examples: [`templates/lightning/`](../templates/lightning/), [`templates/water/`](../templates/water/), [`templates/fire/`](../templates/fire/)
 - Check a template: `python tools/validate.py templates/lightning/*.json`
 
 ## Core ideas
@@ -111,13 +111,13 @@ Unknown params are allowed (the validator warns) so the director can experiment,
 | `bolt` | `segments`, `jaggedness` (0–1), `width_px`, `taper` (0–1), `branch_chance` (0–1), `branch_depth`, `branch_length_ratio`, `regen_ms` (0 = never redraw), `restrikes`, `restrike_gap_ms`, `leader_ms`, `afterimage_ms`, `glow_px` |
 | `glow` | `radius_px`, `softness` (0–1), `pulse_hz` |
 | `flash` | `scope` (`screen` / `local`), `radius_px`, `peak` (0–1) |
-| `sparks` | `count`, `speed`, `speed_spread`, `gravity`, `lifetime_ms`, `size_px`, `spread_deg`, `drag`, `emit_ms` (how long new sparks keep spawning, default 120), `streak_ms` (each spark is drawn as a streak from where it was this long ago, default 60; lower for round droplets), `look` (`spark` default, or `droplet`: round water drops with a short wet trail instead of glowing streaks) |
+| `sparks` | `count`, `speed`, `speed_spread`, `gravity`, `lifetime_ms`, `size_px`, `spread_deg`, `drag`, `emit_ms` (how long new sparks keep spawning, default 120), `streak_ms` (each spark is drawn as a streak from where it was this long ago, default 60; lower for round droplets), `look` (`spark` default; `droplet`: round water drops with a short wet trail instead of glowing streaks; `ember`: glowing flecks that flutter and flicker, pair with negative `gravity` so they float up) |
 | `crackle` | `count`, `length_px`, `jaggedness`, `regen_ms`, `radius_px` |
 | `orb` | `radius_px`, `pulse_hz`, `wobble`, `crackle_count`; for `travel: projectile` an orb anchored at `caster_hand` flies to the target during its `travel` beat: `trail_ms` (streak behind it, default 140, 0 = none), `arc_height_px` (lob height at mid-flight, default 0), `travel_ease` (`linear` or `ease_in` to accelerate) |
-| `beam` | `width_px`, `wobble`, `wobble_hz`, `jaggedness`, `regen_ms`, `grow_ms` (time to reach full length, default 60), `style` (`energy` default, or `water`: a turbulent liquid column with a noisy edge, foam streaks and a bright rim). Water beams also take `flow_speed` (how fast the noise rushes toward the target), `turbulence` (0-1, edge break-up), `foam` (0-1), `churn` (0-1, surges that travel down the column), and droplets that peel off the jet: `shed_count`, `shed_speed`, `shed_size_px`, `shed_life_ms` |
+| `beam` | `width_px`, `wobble`, `wobble_hz`, `jaggedness`, `regen_ms`, `grow_ms` (time to reach full length, default 60), `style` (`energy` default; `water`: a turbulent liquid column with a noisy edge, foam streaks and a bright rim; `fire`: a flame cone, see below). Water and fire beams also take `flow_speed` (how fast the noise rushes toward the target), `turbulence` (0-1, edge break-up), `churn` (0-1, surges that travel down the column), and particles that peel off it: `shed_count`, `shed_speed`, `shed_size_px`, `shed_life_ms` (water drops fall, fire embers float up). Water beams take `foam` (0-1). Fire beams take `spread` (width at the far end relative to `width_px`, default 3: a cone), `puff_count` (billowing flame puffs riding the stream, default 24, max 64) and `puff_size_px`. Any beam can `sweep_px` (how far its far end swings across the target, sideways) with `sweep_ms` (one pass) |
 | `ring` | `start_radius_px`, `end_radius_px`, `thickness_px`, `softness` |
 | `decal` | `shape`, `radius_px`, `opacity`, `fade_in_ms`, `lifetime_ms`, `fade_ms`, `grow_ms`, `start_scale`, `rotation_deg`, `spin_deg_per_s`, `stretch`, `pulse_hz`, `detail`. See [Decals](#decals). |
-| `smoke` | `count`, `rise_speed`, `size_px`, `lifetime_ms`, `opacity` |
+| `smoke` | `count`, `rise_speed`, `size_px`, `lifetime_ms`, `opacity`. With the layer's `blend: add` the puffs glow instead of shading: billows of flame. |
 | `light` | `radius`, `energy` |
 | `camera_shake` | `amplitude_px`, `frequency_hz`, `decay` (0–1) |
 | `sound_cue` | `cue` (one of the cues in [`web/sounds/cues.json`](../web/sounds/cues.json): `charge`, `hum`, `buzz`, `crackle`, `sizzle`, `zap`, `crack`, `boom`, `rumble`, `impact`, `crash`, `shatter`, `ignite`, `fire`, `whoosh`, `wind`, `shimmer`), `gain` (0–1, default 0.8), `pitch` (playback-rate multiplier 0.5–2, default 1), `offset_ms` (delay after the beat starts), `duration_ms` (override length), `repeat_ms` (one-shots: retrigger every N ms inside each beat) |
