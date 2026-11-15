@@ -196,6 +196,8 @@ Air is invisible: wind reads through what it carries (dust, leaves, debris, stre
 | gust, gale, blast of wind, push | `beam` `style: wind` (`spread`, `line_count`) | A cone of rushing air from the hand; sold at the target by a dust wave (`smoke` `spread_speed`), blown leaves and grit. |
 | gust lines, wind lines | `beam.line_count`, `line_length` | Pale streaks rushing through the gust. |
 | air slash, wind blade, crescent, sickle | `orb` `look: crescent` in a `travel: projectile` spell | A thin bow of air thrown edge-first with after-images; `tilt_deg` and `side_offset_px` make a volley fan out and converge. |
+| hurricane, maelstrom, cyclone, storm | two `vortex` layers (a wide eyewall and a low outer band), a cloud deck (`smoke` at `sky`), rain sparks orbiting, lightning | An area storm wider than it is tall, with a calm eye. |
+| eye, eyewall | `vortex` with a wide `base_radius_px` | The calm centre and the wall of wind around it. |
 | tornado, twister, whirlwind, cyclone, dust devil | `vortex` | A spinning funnel standing on the ground, narrow at the foot, wide at the top. |
 | funnel, wall | `vortex` wall (`turbulence`, `strands`, `twist`) | The spinning sheet of dust-laden air; streaks spiral up it. |
 | spin up, wind up, wind down | `vortex.spin_hz` keyframes | How fast it turns; spin up during the release, slow down as it dies. |
