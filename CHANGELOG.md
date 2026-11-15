@@ -9,6 +9,7 @@ To release, see [docs/releasing.md](docs/releasing.md).
 ### Changed
 
 - Viewer: sound is off by default. Turn it on with the Sound button or M; the viewer remembers your choice.
+- Viewer: the camera view you pick (Front, Side, Top, 3/4 or All four) stays put when you switch spells and is remembered next time. Until you pick one, each spell opens in its hero view.
 
 ### Added
 

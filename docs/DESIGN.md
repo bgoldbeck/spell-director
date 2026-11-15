@@ -87,7 +87,7 @@ The director is an AI agent following [director-playbook.md](director-playbook.m
 
 - **Type** and **Spell** dropdowns: templates are grouped by their `element` (new types show up on their own), with "All types" listing every spell under its type; **‹ Prev / Next ›** (or `[` / `]`) step through the chosen type. Beat buttons (jump to a beat) with a **Clear** button; beat-intent captions on the stage; sound cues play in sync and show as captions, with a **Sound on/off** toggle (off by default; M; remembered per browser; `?sound=on` or `?sound=off` in the URL).
 - Scrubber with colored phase bands; Replay, Pause/Play, speed 0.1×–2×, Loop, Seed + **New cast**, **Focus view** (F) for recording.
-- **Front / Side / Top / 3/4 / All four** camera presets; hero view starred and opened by default; each view shows that template's `views.reads`. OrbitControls for free orbit. Top is orthographic.
+- **Front / Side / Top / 3/4 / All four** camera presets; hero view starred and opened until the user picks a view, which then sticks across spells and visits (saved in the browser; `?view=` overrides it for one visit without saving); each view shows that template's `views.reads`. OrbitControls for free orbit. Top is orthographic.
 - Layer toggles, palette swatches, description and director's notes. **Open JSON…** loads any template file.
 - URL parameters for automation: `?template=<id>&type=<element>&view=<front|side|top|three_quarter|quad>&t=<ms>` (with `t`, playback starts paused). An unknown `template` or `type` shows an error naming it, then falls back to the first spell. Picking a spell updates the URL, so it can be bookmarked or shared.
 
