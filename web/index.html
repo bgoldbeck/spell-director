@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpellDirector</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="top">
+      <div>
+        <h1>SpellDirector</h1>
+        <p class="sub">Motion study: replay a template, inspect its beats, and check it from front, side, top and 3/4.</p>
+      </div>
+      <div class="top-actions">
+        <label class="btn file-btn" title="Open a template JSON file">Open JSON…<input id="file" type="file" accept=".json,application/json" hidden></label>
+        <button id="focus" class="btn" title="Hide everything but the stage (F)">Focus view</button>
+      </div>
+    </header>
+
+    <nav id="tabs" class="tabs" aria-label="Templates"></nav>
+
+    <section class="stage-wrap">
+      <div id="stage" class="stage">
+        <canvas id="canvas"></canvas>
+        <div id="flash" class="flash"></div>
+        <div id="dim" class="flash"></div>
+        <div id="quad-labels" class="quad-labels" hidden>
+          <span>Front</span><span>Side</span><span>Top</span><span>3/4</span>
+        </div>
+        <div class="stage-title">
+          <div id="title" class="title"></div>
+          <div id="subtitle" class="subtitle"></div>
+        </div>
+        <div class="caption">
+          <div id="beat-names" class="beat-names"></div>
+          <div id="beat-intent" class="beat-intent"></div>
+          <div id="cues" class="cues"></div>
+        </div>
+        <div id="time" class="time-readout">0 ms</div>
+      </div>
+
+      <div class="views" role="group" aria-label="Camera view">
+        <button class="btn view" data-view="front">Front</button>
+        <button class="btn view" data-view="side">Side</button>
+        <button class="btn view" data-view="top">Top</button>
+        <button class="btn view" data-view="three_quarter">3/4</button>
+        <button class="btn view" data-view="quad">All four</button>
+        <span id="view-read" class="view-read"></span>
+      </div>
+
+      <div class="controls">
+        <button id="replay" class="btn">Replay</button>
+        <button id="play" class="btn">Pause</button>
+        <label>Speed
+          <select id="speed">
+            <option value="0.1">0.1×</option>
+            <option value="0.25">0.25×</option>
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+          </select>
+        </label>
+        <label class="check"><input id="loop" type="checkbox" checked> Loop</label>
+        <label>Seed <input id="seed" type="number" min="0" step="1" value="1"></label>
+        <button id="reroll" class="btn" title="New random seed: same template, different cast">New cast</button>
+      </div>
+
+      <div class="scrub">
+        <div id="bands" class="bands"></div>
+        <input id="scrubber" type="range" min="0" max="1000" step="1" value="0" aria-label="Time">
+      </div>
+      <div id="beats" class="beats"></div>
+    </section>
+
+    <section class="info">
+      <div class="info-col">
+        <h2>About this effect</h2>
+        <p id="description"></p>
+        <div id="palette" class="palette"></div>
+        <p id="notes" class="notes"></p>
+      </div>
+      <div class="info-col">
+        <h2>Layers</h2>
+        <ul id="layers" class="layers"></ul>
+      </div>
+    </section>
+    <p id="error" class="error" hidden></p>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

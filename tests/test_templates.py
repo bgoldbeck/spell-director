@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from validate import check  # noqa: E402
 
-TEMPLATES = sorted((ROOT / "templates").rglob("*.json"))
+TEMPLATES = sorted(p for p in (ROOT / "templates").rglob("*.json") if p.name != "index.json")
 
 
 def load(path):
@@ -83,3 +83,11 @@ def test_requires_all_four_views(base):
     del doc["views"]["reads"]["top"]
     errors, _ = check(doc)
     assert any("top" in e for e in errors)
+
+
+def test_template_index_is_current():
+    sys.path.insert(0, str(ROOT / "tools"))
+    from build_index import build
+
+    index = json.loads((ROOT / "templates" / "index.json").read_text(encoding="utf-8"))
+    assert index == build(), "run: python tools/build_index.py"

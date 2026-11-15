@@ -1,0 +1,7 @@
+{
+  "templates": [
+    "lightning/chain-arc.json",
+    "lightning/charge-discharge.json",
+    "lightning/sky-strike.json"
+  ]
+}
