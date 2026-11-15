@@ -441,6 +441,67 @@ export function guideMarkdown(m, { files } = {}) {
     "",
   );
 
+  add("## Reading the sheets as an AI model (Claude, GPT, ...)", "");
+  const exView = m.view_rows.includes(m.hero_view) ? m.hero_view : m.view_rows[0];
+  const exSheet = m.sheets.find((x) => x.id !== ALL_ID && x.frame_count > 1) || m.sheets[0];
+  const exK = Math.min(exSheet.frame_count - 1, Math.floor(exSheet.frame_count / 2));
+  const exF = exSheet.first_frame + exK;
+  const exV = m.view_rows.indexOf(exView);
+  const exCol = exK % exSheet.columns;
+  const exRow = Math.floor(exK / exSheet.columns) * nViews + exV;
+  add(
+    "The sheets have no numbers or gridlines drawn on them, so the engine gets clean pixels. The JSON file is the map. Don't try to read a whole sheet as one image: it gets scaled down, the cells blur together and you can't tell which column is which frame. Instead, use the map to cut out the cells you need and look at those.",
+    "",
+    "**The grid, for every sheet in this export:**",
+    "",
+    `- Cells are ${fw} × ${fh} px. Pixel (0, 0) is the top-left corner of the sheet, y goes down.`,
+    `- Spell frame \`f\` is at time \`f × ${m.frame_ms}\` ms. Frame 0 is 0 ms; the last frame is ${m.frame_count - 1}.`,
+    `- View rows: ${m.view_rows.map((v, i) => `\`${v}\` = ${i}`).join(", ")}.`,
+    "- For a sheet `s` from `sheets` in the JSON, a view row `v` and a spell frame `f`:",
+    "  1. `k = f - s.first_frame`. If `k < 0` or `k >= s.frame_count`, that layer isn't drawn at frame `f` (nothing to crop).",
+    "  2. `column = k % s.columns`, `row = floor(k / s.columns) × " + nViews + " + v`.",
+    `  3. The cell is the rectangle \`x = column × ${fw}\`, \`y = row × ${fh}\`, width ${fw}, height ${fh}.`,
+    "",
+    `**Worked example:** layer \`${exSheet.id}\` (\`${exSheet.image}\`, first_frame ${exSheet.first_frame}, ${exSheet.columns} columns), view \`${exView}\` (row ${exV}), spell frame ${exF} (${Math.round(exF * m.frame_ms)} ms): k = ${exF} - ${exSheet.first_frame} = ${exK}, column = ${exCol}, row = ${exRow}, so the cell is x ${exCol * fw}, y ${exRow * fh}, ${fw} × ${fh}.`,
+    "",
+    "**Transparent background:** the cells are mostly transparent, and additive layers are light on nothing. Paste a cell onto a dark background (for example #181B24) before looking at it, or it may look empty.",
+    "",
+    "**Tools in the SpellDirector repo** (Pillow only). They write labeled PNGs to an `ai/` folder next to the sheets and print the path:",
+    "",
+    "```bash",
+    `python tools/sheet_cells.py cell    <export folder> --sheet ${exSheet.id} --view ${exView} --frame ${exF}`,
+    `python tools/sheet_cells.py frame   <export folder> --frame ${exF} --layers   # one moment, every view, every layer`,
+    `python tools/sheet_cells.py contact <export folder> --sheet ${exSheet.id}       # a whole sheet, each cell tagged with frame, ms and view`,
+    "python tools/sheet_cells.py labeled <export folder>   # <sheet>_labeled.png copies with gridlines and labels",
+    "python tools/sheet_cells.py map     <export folder>   # every cell's rectangle as text",
+    "```",
+    "",
+    "Through the SpellDirector MCP server the same thing is the `look_at_sprite_sheet` tool, which returns the image directly.",
+    "",
+    "**Without the repo**, crop with any image library. In Python:",
+    "",
+    "```python",
+    "import json, math",
+    "from PIL import Image",
+    `m = json.load(open("${m.template.id}.spritesheet.json"))`,
+    "def cell(sheet_id, view, f):",
+    '    s = next(x for x in m["sheets"] if x["id"] == sheet_id)',
+    '    k = f - s["first_frame"]',
+    '    if not 0 <= k < s["frame_count"]:',
+    "        return None  # not drawn at this frame",
+    '    w, h = m["frame"]["width"], m["frame"]["height"]',
+    '    col, row = k % s["columns"], (k // s["columns"]) * len(m["view_rows"]) + m["view_rows"].index(view)',
+    '    img = Image.open(s["image"]).convert("RGBA").crop((col * w, row * h, col * w + w, row * h + h))',
+    '    bg = Image.new("RGBA", img.size, (24, 27, 36, 255))',
+    "    bg.alpha_composite(img)",
+    "    return bg",
+    `cell("${exSheet.id}", "${exView}", ${exF}).save("check.png")`,
+    "```",
+    "",
+    "A good review order: the `all` sheet's contact sheet for the overall timing, then one frame across every layer at the peak of each beat (the beat table gives the frames), then single cells where something looks off.",
+    "",
+  );
+
   add("## Machine-readable data", "");
   add(
     `The JSON file has everything above in format \`${m.format}\`: \`sheets\` (image, first_frame, frame_count, start_ms, end_ms, columns, rows), \`view_rows\` and \`views\` (row, pivots, px_per_unit), \`layers\` (blend, colors, z, anchor, params for this seed), \`beats\`, \`screen_flashes\`, \`camera_shake\`, \`lights\` and \`sounds\`. Curves have one value per spell frame. An importer script can build the whole effect from it.`,

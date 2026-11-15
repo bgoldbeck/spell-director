@@ -14,6 +14,7 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 - **Analyze GIF/MP4…** in the viewer opens a new page where you drop a reference GIF or video (optionally trimmed with Start/End) and see its breakdown: the clip playing frame by frame beside a timeline of camera shots, phases, intensity, coverage, motion and peaks, plus palette swatches with suggested slots, footprint and view hints. You can save the breakdown as a .zip or copy a prompt that asks the director to build a template from it. Works in the exe too, which now bundles numpy, Pillow and PyAV (so it is larger).
 - `tools/breakdown.py --start/--end` (and the director's `breakdown_gif`) now trim GIFs as well as videos.
+- AI models can check exported sprite sheets cell by cell: each export guide has a section explaining the grid (which column is which frame, which row is which view) with a worked example, and `tools/sheet_cells.py` (also the director's `look_at_sprite_sheet` tool) crops a single cell, one frame across every view and layer, or a labeled contact sheet, and can write `*_labeled.png` copies with gridlines and frame/view labels.
 - The viewer shows the app version next to the SpellDirector title (also in the browser tab), read from `VERSION`. The server reports it at `/version.json`.
 
 ## [0.3.0] - 2026-11-15
