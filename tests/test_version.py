@@ -31,3 +31,25 @@ def test_cli_prints_current_notes():
     out = subprocess.run([sys.executable, str(ROOT / "tools" / "release_notes.py")],
                          capture_output=True, text=True, check=True).stdout
     assert "First versioned release" in out
+
+
+def test_release_payload_uses_version_and_changelog():
+    import release
+    changelog = "## [Unreleased]\n\n## [1.2.3] - x\n\n- thing\n"
+    payload = release.build_release("1.2.3", changelog)
+    assert payload["tag_name"] == "v1.2.3"
+    assert payload["target_commitish"] == "main"
+    assert payload["body"] == "- thing"
+
+
+def test_release_refuses_missing_changelog_section():
+    import pytest
+    import release
+    with pytest.raises(SystemExit):
+        release.build_release("9.9.9", "## [Unreleased]\n")
+
+
+def test_release_dry_run_changes_nothing():
+    out = subprocess.run([sys.executable, str(ROOT / "tools" / "release.py"), "--dry-run"],
+                         capture_output=True, text=True, check=True).stdout
+    assert f"v{director.__version__}" in out and "First versioned release" in out
