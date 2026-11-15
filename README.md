@@ -15,7 +15,7 @@ Full design: [docs/DESIGN.md](docs/DESIGN.md). What's next: [docs/ROADMAP.md](do
 
 ## Versions
 
-The current version is in [`VERSION`](VERSION); what changed is in [`CHANGELOG.md`](CHANGELOG.md). Each version gets a [GitHub Release](https://github.com/bgoldbeck/spell-director/releases). How to cut one: [docs/releasing.md](docs/releasing.md).
+The current version is in [`VERSION`](VERSION); what changed is in [`CHANGELOG.md`](CHANGELOG.md). Each version gets a [GitHub Release](https://github.com/bgoldbeck/spell-director/releases) with a Windows app: download `SpellDirector-<version>-windows.exe` and double-click it to open the viewer, no Python needed. How to cut one: [docs/releasing.md](docs/releasing.md).
 
 ## Repository layout
 

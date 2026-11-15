@@ -7,9 +7,11 @@ Run after adding or renaming a template:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+# In the packaged exe, bundled files live under sys._MEIPASS.
+ROOT = Path(getattr(sys, "_MEIPASS", None) or Path(__file__).resolve().parent.parent)
 TEMPLATES = ROOT / "templates"
 
 

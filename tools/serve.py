@@ -25,7 +25,8 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+# In the packaged exe, bundled files live under sys._MEIPASS.
+ROOT = Path(getattr(sys, "_MEIPASS", None) or Path(__file__).resolve().parent.parent)
 sys.path.insert(0, str(ROOT / "tools"))
 
 from build_index import build  # noqa: E402
