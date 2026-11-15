@@ -1,0 +1,298 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-chain-arc",
+  "name": "Chain Arc",
+  "description": "A crackling arc leaps from the caster's hand to the nearest enemy, then hops to two or three more. Each hop is a little weaker than the last.",
+  "element": "lightning",
+  "archetype": "chain",
+  "tags": [
+    "multi-target",
+    "snappy",
+    "caster"
+  ],
+  "source": {
+    "kind": "handwritten"
+  },
+  "timing": {
+    "duration_ms": 900,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "targets",
+    "travel": "chain",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "cone",
+      "length": {
+        "min": 6,
+        "max": 8
+      },
+      "angle_deg": 70,
+      "distribution": "random"
+    },
+    "targets": {
+      "count": {
+        "min": 3,
+        "max": 4
+      },
+      "hop_delay_ms": {
+        "min": 70,
+        "max": 100
+      },
+      "max_hop_distance": 4
+    }
+  },
+  "views": {
+    "hero": "top",
+    "reads": {
+      "front": "Arcs zig-zag across the frame between targets at different depths; later hops look shorter as they recede. Good for checking arc brightness and writhe.",
+      "side": "Shows hop order front-to-back and the slight lift of each arc above the ground.",
+      "top": "Hero view. The path of the chain is clearest here: a hand-off from caster through 3-4 targets inside a 70 degree cone, each hop thinner than the last.",
+      "three_quarter": "Arcs read as both a path on the ground and a height above it; hit flashes and sparks are visible on each target."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#C7A6FF",
+    "secondary": "#6A3DFF",
+    "accent": "#E8F6FF"
+  },
+  "beats": [
+    {
+      "id": "spark-up",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 120,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 0.8
+      },
+      "intent": "Quick crackle around the hand. Short on purpose so the spell feels responsive."
+    },
+    {
+      "id": "hops",
+      "phase": "travel",
+      "start_ms": 120,
+      "end_ms": 520,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.6,
+        "to": 1.0,
+        "flicker_hz": 20
+      },
+      "intent": "Arc jumps target to target. Each arc redraws every few frames so it writhes. Later hops are thinner."
+    },
+    {
+      "id": "hits",
+      "phase": "impact",
+      "start_ms": 140,
+      "end_ms": 600,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "A small flash and spark burst on each target as the arc lands."
+    },
+    {
+      "id": "fizzle",
+      "phase": "dissipation",
+      "start_ms": 520,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.4,
+        "to": 0.0
+      },
+      "intent": "Arcs snap off; tiny crackles cling to each target for a moment."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-crackle",
+      "type": "crackle",
+      "beats": [
+        "spark-up",
+        "hops"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": 4,
+        "length_px": 12,
+        "jaggedness": 0.9,
+        "regen_ms": 33,
+        "radius_px": 16
+      }
+    },
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "spark-up",
+        "hops"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "radius_px": 22,
+        "softness": 0.9,
+        "pulse_hz": 12
+      }
+    },
+    {
+      "id": "arc",
+      "type": "bolt",
+      "beats": [
+        "hops"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "segments": {
+          "min": 10,
+          "max": 14
+        },
+        "jaggedness": {
+          "min": 0.6,
+          "max": 0.8
+        },
+        "width_px": {
+          "min": 3,
+          "max": 5
+        },
+        "taper": 0.2,
+        "branch_chance": 0.12,
+        "branch_depth": 1,
+        "branch_length_ratio": 0.25,
+        "regen_ms": {
+          "min": 40,
+          "max": 60
+        },
+        "afterimage_ms": 80,
+        "glow_px": 10
+      },
+      "keyframes": [
+        {
+          "t_ms": 120,
+          "param": "width_px",
+          "value": 5
+        },
+        {
+          "t_ms": 520,
+          "param": "width_px",
+          "value": 2,
+          "ease": "linear"
+        }
+      ]
+    },
+    {
+      "id": "arc-glow",
+      "type": "glow",
+      "beats": [
+        "hops"
+      ],
+      "attach_to": "arc",
+      "plane": "billboard",
+      "color": "secondary",
+      "z": 8,
+      "params": {
+        "radius_px": 16,
+        "softness": 0.85
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "hits"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 40,
+        "peak": 0.8
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "hits"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "color": "accent",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 6,
+          "max": 10
+        },
+        "speed": 300,
+        "speed_spread": 0.6,
+        "gravity": 700,
+        "lifetime_ms": 280,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.2
+      }
+    },
+    {
+      "id": "target-crackle",
+      "type": "crackle",
+      "beats": [
+        "hits",
+        "fizzle"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": 3,
+        "length_px": 10,
+        "jaggedness": 0.9,
+        "regen_ms": 45,
+        "radius_px": 20
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "hits"
+      ],
+      "params": {
+        "amplitude_px": 3,
+        "frequency_hz": 30,
+        "decay": 0.9
+      }
+    },
+    {
+      "id": "zap-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hops"
+      ],
+      "params": {
+        "cue": "sizzle"
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Arc shapes, branch placement and target order vary. Hop delay varies slightly so it never feels mechanical."
+  },
+  "director_notes": "Fast regen (40-60 ms) on the arc is what makes it read as living electricity instead of a beam. Thinning width across the hop beat sells energy being spent. Violet palette distinguishes it from natural sky lightning."
+}

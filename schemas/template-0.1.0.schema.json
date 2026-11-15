@@ -1,0 +1,579 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bgoldbeck/spell-director/schemas/template-0.1.0.schema.json",
+  "title": "SpellDirector effect template",
+  "description": "A director-written recipe for a spell effect. A renderer turns template + seed into frames. See docs/template-format.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "name",
+    "element",
+    "archetype",
+    "timing",
+    "space",
+    "views",
+    "palette",
+    "beats",
+    "layers"
+  ],
+  "properties": {
+    "schema": {
+      "const": "spelldirector.template/0.1.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "description": {
+      "type": "string"
+    },
+    "element": {
+      "enum": [
+        "lightning",
+        "fire",
+        "ice",
+        "water",
+        "earth",
+        "wind",
+        "light",
+        "shadow",
+        "arcane",
+        "nature",
+        "poison"
+      ]
+    },
+    "archetype": {
+      "enum": [
+        "strike",
+        "projectile",
+        "chain",
+        "beam",
+        "aura",
+        "nova"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "source": {
+      "description": "Where this template came from.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "handwritten",
+            "director_text",
+            "director_gif"
+          ]
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "reference": {
+          "type": "string",
+          "description": "File name or URL of the reference GIF, if any."
+        }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "duration_ms"
+      ],
+      "properties": {
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 20000
+        },
+        "fps_hint": {
+          "type": "integer",
+          "minimum": 6,
+          "maximum": 120,
+          "default": 30
+        },
+        "loop": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "space": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin",
+        "destination",
+        "travel",
+        "footprint"
+      ],
+      "properties": {
+        "origin": {
+          "$ref": "#/$defs/anchor"
+        },
+        "destination": {
+          "enum": [
+            "caster",
+            "sky",
+            "ground",
+            "target",
+            "point",
+            "targets",
+            "none"
+          ]
+        },
+        "travel": {
+          "enum": [
+            "instant",
+            "projectile",
+            "beam",
+            "chain",
+            "none"
+          ]
+        },
+        "scale": {
+          "$ref": "#/$defs/number_or_range",
+          "description": "World units; 1 = one character height."
+        },
+        "footprint": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "shape"
+          ],
+          "properties": {
+            "shape": {
+              "enum": [
+                "point",
+                "line",
+                "cone",
+                "circle",
+                "arc",
+                "ring"
+              ]
+            },
+            "length": {
+              "$ref": "#/$defs/number_or_range"
+            },
+            "radius": {
+              "$ref": "#/$defs/number_or_range"
+            },
+            "angle_deg": {
+              "$ref": "#/$defs/number_or_range"
+            },
+            "distribution": {
+              "enum": [
+                "even",
+                "random",
+                "center_weighted",
+                "edge_weighted",
+                "spiral"
+              ]
+            }
+          }
+        },
+        "targets": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "count": {
+              "$ref": "#/$defs/int_or_range"
+            },
+            "hop_delay_ms": {
+              "$ref": "#/$defs/number_or_range"
+            },
+            "max_hop_distance": {
+              "$ref": "#/$defs/number_or_range"
+            }
+          }
+        }
+      }
+    },
+    "views": {
+      "description": "How the effect reads from each standard camera. Every template is authored in 3D so all four views render from the same data. See docs/vocabulary.md#camera-views.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hero",
+        "reads"
+      ],
+      "properties": {
+        "hero": {
+          "$ref": "#/$defs/view",
+          "description": "The view the effect is designed to look best from (usually the game's camera)."
+        },
+        "reads": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "front",
+            "side",
+            "top",
+            "three_quarter"
+          ],
+          "properties": {
+            "front": {
+              "type": "string",
+              "minLength": 1,
+              "description": "What the player should see in the front view."
+            },
+            "side": {
+              "type": "string",
+              "minLength": 1,
+              "description": "What the player should see in the side view."
+            },
+            "top": {
+              "type": "string",
+              "minLength": 1,
+              "description": "What the player should see in the top view."
+            },
+            "three_quarter": {
+              "type": "string",
+              "minLength": 1,
+              "description": "What the player should see in the three_quarter view."
+            }
+          }
+        }
+      }
+    },
+    "palette": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "core",
+        "primary"
+      ],
+      "properties": {
+        "core": {
+          "$ref": "#/$defs/color"
+        },
+        "primary": {
+          "$ref": "#/$defs/color"
+        },
+        "secondary": {
+          "$ref": "#/$defs/color"
+        },
+        "accent": {
+          "$ref": "#/$defs/color"
+        },
+        "shadow": {
+          "$ref": "#/$defs/color"
+        }
+      }
+    },
+    "beats": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "phase",
+          "start_ms",
+          "end_ms",
+          "intensity"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/local_id"
+          },
+          "phase": {
+            "enum": [
+              "anticipation",
+              "release",
+              "travel",
+              "impact",
+              "dissipation"
+            ]
+          },
+          "start_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end_ms": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "intensity": {
+            "$ref": "#/$defs/curve"
+          },
+          "intent": {
+            "type": "string",
+            "description": "Plain-language note on what this beat should feel like."
+          }
+        }
+      }
+    },
+    "layers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "beats"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/local_id"
+          },
+          "type": {
+            "enum": [
+              "bolt",
+              "glow",
+              "flash",
+              "sparks",
+              "crackle",
+              "orb",
+              "beam",
+              "ring",
+              "decal",
+              "smoke",
+              "light",
+              "camera_shake",
+              "sound_cue"
+            ]
+          },
+          "beats": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/$defs/local_id"
+            },
+            "description": "Beat ids this layer is active in."
+          },
+          "anchor": {
+            "$ref": "#/$defs/anchor"
+          },
+          "plane": {
+            "enum": [
+              "billboard",
+              "ground",
+              "vertical",
+              "volume"
+            ],
+            "description": "How the layer sits in 3D, which decides how it looks in each view. Defaults per layer type are in docs/template-format.md."
+          },
+          "attach_to": {
+            "$ref": "#/$defs/local_id",
+            "description": "Another layer this one follows (e.g. glow around a bolt)."
+          },
+          "blend": {
+            "enum": [
+              "add",
+              "alpha",
+              "screen",
+              "multiply"
+            ],
+            "default": "add"
+          },
+          "color": {
+            "enum": [
+              "core",
+              "primary",
+              "secondary",
+              "accent",
+              "shadow",
+              "gradient_core_to_primary",
+              "gradient_primary_to_secondary"
+            ]
+          },
+          "z": {
+            "type": "integer",
+            "description": "Draw order; higher is in front."
+          },
+          "params": {
+            "$ref": "#/$defs/params"
+          },
+          "keyframes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "t_ms",
+                "param",
+                "value"
+              ],
+              "properties": {
+                "t_ms": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "param": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "number"
+                },
+                "ease": {
+                  "enum": [
+                    "linear",
+                    "ease_in",
+                    "ease_out",
+                    "ease_in_out",
+                    "step"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "variation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "seeded": {
+          "type": "boolean",
+          "default": true
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "director_notes": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "local_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,47}$"
+    },
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"
+    },
+    "anchor": {
+      "enum": [
+        "caster",
+        "caster_hand",
+        "sky",
+        "ground",
+        "target",
+        "point",
+        "screen"
+      ]
+    },
+    "range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min",
+        "max"
+      ],
+      "properties": {
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      }
+    },
+    "number_or_range": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "$ref": "#/$defs/range"
+        }
+      ]
+    },
+    "int_or_range": {
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "$ref": "#/$defs/range"
+        }
+      ]
+    },
+    "curve": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shape"
+      ],
+      "properties": {
+        "shape": {
+          "enum": [
+            "linear",
+            "ease_in",
+            "ease_out",
+            "ease_in_out",
+            "spike",
+            "flicker",
+            "hold"
+          ]
+        },
+        "from": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "to": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "flicker_hz": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "params": {
+      "description": "Layer parameters. Any value may be a number, a {min,max} range (picked per cast from the seed), a boolean or a short enum string. Known keys per layer type are listed in docs/template-format.md.",
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "number"
+          },
+          {
+            "$ref": "#/$defs/range"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "view": {
+      "enum": [
+        "front",
+        "side",
+        "top",
+        "three_quarter"
+      ]
+    }
+  }
+}

@@ -1,0 +1,420 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-charge-discharge",
+  "name": "Charge and Discharge",
+  "description": "The caster gathers a crackling orb of electricity, which swells and destabilizes, then releases it as a thick, wobbling beam in a straight line.",
+  "element": "lightning",
+  "archetype": "beam",
+  "tags": [
+    "line",
+    "charged",
+    "boss",
+    "heavy"
+  ],
+  "source": {
+    "kind": "handwritten"
+  },
+  "timing": {
+    "duration_ms": 1600,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "point",
+    "travel": "beam",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": {
+        "min": 8,
+        "max": 10
+      },
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "side",
+    "reads": {
+      "front": "Beam points at the camera: the orb grows into a bright disk, then the beam reads as a flaring circle with arcs radiating outward. Shows the charge-up best.",
+      "side": "Hero view. Full length of the beam from hand to end point, wobble and peeling arcs visible, spark fountain at the far end.",
+      "top": "The beam is a straight line on the ground plane; its length and the end ring show the area it covers. Inflow arcs read as spokes pulling into the orb.",
+      "three_quarter": "Beam recedes diagonally into the scene, with both its length and its width visible."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#8CF0FF",
+    "secondary": "#1E8CFF",
+    "accent": "#FFFFFF",
+    "shadow": "#0B1530"
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 650,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.9
+      },
+      "intent": "Orb grows in the hand. Small arcs get pulled into it from around the caster. It should feel like pressure building."
+    },
+    {
+      "id": "overload",
+      "phase": "anticipation",
+      "start_ms": 650,
+      "end_ms": 780,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.8,
+        "to": 1.0,
+        "flicker_hz": 22
+      },
+      "intent": "A short unstable moment: the orb shudders and crackles wildly just before release."
+    },
+    {
+      "id": "fire",
+      "phase": "release",
+      "start_ms": 780,
+      "end_ms": 840,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.85
+      },
+      "intent": "The beam snaps out to full length in two frames, with a white flash at the hand."
+    },
+    {
+      "id": "sustain",
+      "phase": "travel",
+      "start_ms": 840,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.75,
+        "to": 0.95,
+        "flicker_hz": 16
+      },
+      "intent": "The beam holds and writhes, with sparks peeling off along its length."
+    },
+    {
+      "id": "end-hit",
+      "phase": "impact",
+      "start_ms": 800,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "hold",
+        "from": 0.8
+      },
+      "intent": "A spark fountain and ring of light where the beam ends."
+    },
+    {
+      "id": "collapse",
+      "phase": "dissipation",
+      "start_ms": 1200,
+      "end_ms": 1600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "The beam thins from the hand outward and breaks into a few fading arcs. Thin smoke trails from the hand."
+    }
+  ],
+  "layers": [
+    {
+      "id": "orb",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "overload"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "radius_px": 8,
+        "pulse_hz": 6,
+        "wobble": 0.15,
+        "crackle_count": 3
+      },
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 4
+        },
+        {
+          "t_ms": 650,
+          "param": "radius_px",
+          "value": 22,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 780,
+          "param": "wobble",
+          "value": 0.5,
+          "ease": "linear"
+        }
+      ]
+    },
+    {
+      "id": "inflow-arcs",
+      "type": "crackle",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": {
+          "min": 3,
+          "max": 5
+        },
+        "length_px": 30,
+        "jaggedness": 0.75,
+        "regen_ms": 60,
+        "radius_px": 70
+      }
+    },
+    {
+      "id": "orb-glow",
+      "type": "glow",
+      "beats": [
+        "charge",
+        "overload",
+        "fire"
+      ],
+      "attach_to": "orb",
+      "plane": "billboard",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "radius_px": 40,
+        "softness": 0.85,
+        "pulse_hz": 6
+      }
+    },
+    {
+      "id": "beam",
+      "type": "beam",
+      "beats": [
+        "fire",
+        "sustain",
+        "collapse"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "width_px": {
+          "min": 14,
+          "max": 18
+        },
+        "wobble": 0.25,
+        "wobble_hz": 9,
+        "jaggedness": 0.3,
+        "regen_ms": 50
+      },
+      "keyframes": [
+        {
+          "t_ms": 1200,
+          "param": "width_px",
+          "value": 16
+        },
+        {
+          "t_ms": 1450,
+          "param": "width_px",
+          "value": 1,
+          "ease": "ease_in"
+        }
+      ]
+    },
+    {
+      "id": "beam-arcs",
+      "type": "bolt",
+      "beats": [
+        "sustain",
+        "collapse"
+      ],
+      "attach_to": "beam",
+      "plane": "volume",
+      "color": "primary",
+      "z": 13,
+      "params": {
+        "segments": 12,
+        "jaggedness": 0.8,
+        "width_px": 2,
+        "taper": 0.5,
+        "branch_chance": 0.3,
+        "branch_depth": 1,
+        "branch_length_ratio": 0.3,
+        "regen_ms": 45,
+        "glow_px": 6
+      }
+    },
+    {
+      "id": "beam-glow",
+      "type": "glow",
+      "beats": [
+        "fire",
+        "sustain"
+      ],
+      "attach_to": "beam",
+      "plane": "billboard",
+      "color": "secondary",
+      "z": 9,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.8
+      }
+    },
+    {
+      "id": "muzzle-flash",
+      "type": "flash",
+      "beats": [
+        "fire"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 20,
+      "params": {
+        "scope": "local",
+        "radius_px": 90,
+        "peak": 1.0
+      }
+    },
+    {
+      "id": "end-sparks",
+      "type": "sparks",
+      "beats": [
+        "end-hit"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 30,
+          "max": 45
+        },
+        "speed": 360,
+        "speed_spread": 0.6,
+        "gravity": 800,
+        "lifetime_ms": 380,
+        "size_px": 3,
+        "spread_deg": 120,
+        "drag": 0.1
+      }
+    },
+    {
+      "id": "end-ring",
+      "type": "ring",
+      "beats": [
+        "end-hit"
+      ],
+      "anchor": "point",
+      "plane": "ground",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 12,
+        "end_radius_px": 60,
+        "thickness_px": 5,
+        "softness": 0.5
+      }
+    },
+    {
+      "id": "hand-smoke",
+      "type": "smoke",
+      "beats": [
+        "collapse"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 3,
+      "params": {
+        "count": 4,
+        "rise_speed": 30,
+        "size_px": 18,
+        "lifetime_ms": 400,
+        "opacity": 0.3
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "overload",
+        "fire",
+        "sustain"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 3,
+          "max": 5
+        },
+        "frequency_hz": 24,
+        "decay": 0.3
+      }
+    },
+    {
+      "id": "beam-light",
+      "type": "light",
+      "beats": [
+        "fire",
+        "sustain"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "params": {
+        "radius": 8,
+        "energy": 2.5
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "charge"
+      }
+    },
+    {
+      "id": "fire-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fire"
+      ],
+      "params": {
+        "cue": "crack"
+      }
+    },
+    {
+      "id": "hum-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "hum"
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Inflow arcs, beam arcs and sparks vary per cast. Orb growth and beam timing stay fixed for gameplay readability."
+  },
+  "director_notes": "The 130 ms overload beat is the key choice: a beat of instability right before release makes the payoff land harder. The beam itself has low jaggedness so it reads as a controlled beam, while the attached arcs add chaos on top."
+}
