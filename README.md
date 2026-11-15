@@ -6,6 +6,8 @@ You don't need to know VFX terminology. The director does, and it offers you con
 
 ## Plan
 
+Full design: [docs/DESIGN.md](docs/DESIGN.md). What's next: [docs/ROADMAP.md](docs/ROADMAP.md).
+
 1. **Vocabulary and template format** (done): the director's language, the template schema, and hand-written lightning templates.
 2. **GIF breakdown** (done): a tool that extracts frames, timing, colors and a brightness curve from a GIF, plus a playbook the AI follows to turn that into a template.
 3. **Director**: text or GIF in, a few guided choices, template out. Also generates templates on its own to grow the library.
