@@ -44,6 +44,7 @@ def test_list_and_filter():
     assert all(t["element"] == "fire" for t in fire)
     assert {"wind-gale-shove", "wind-scythe-volley", "wind-tornado"} <= {t["id"] for t in library.list_templates(element="wind")}
     assert [t["id"] for t in library.list_templates(element="psychic")] == ["psychic-mind-crush"]
+    assert {"ice-rime-ray", "ice-whiteout-gale"} <= {t["id"] for t in library.list_templates(element="ice")}
     assert library.list_templates(element="no-such-element") == []
     assert [t["id"] for t in library.list_templates(element="earth")] == [
         "earth-ground-pound", "earth-rending-quake", "earth-rockfall", "earth-stone-spires",

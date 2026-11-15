@@ -1,0 +1,1031 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "water-torrent-cannon",
+  "name": "Torrent Cannon",
+  "description": "The caster braces while a huge sphere of water swells and churns in their hands, then lets it go as a thick, pounding torrent that shoves the caster back and smashes into the target in a towering burst of spray.",
+  "element": "water",
+  "archetype": "beam",
+  "tags": [
+    "line",
+    "cannon",
+    "heavy",
+    "knockback",
+    "single-target",
+    "boss"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "a heavy water cannon blast, much bigger and slower than a water jet, for a side-scroller"
+  },
+  "timing": {
+    "duration_ms": 1950,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "beam",
+    "scale": 1.3,
+    "footprint": {
+      "shape": "line",
+      "length": 4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "side",
+    "reads": {
+      "front": "The torrent points away from the camera: the swelling sphere at the hands fills the bottom of the frame, then the column punches away and a tall crown of spray erupts over the target.",
+      "side": "Hero view. A thick churning column, as wide as the caster's head, with surges pounding down it; the caster's ripple ring and recoil shake on release, and the towering splash at the target.",
+      "top": "A wide blue band from hand to target with foam racing along it. The inward ring at the caster during the gather, the big ripples and the wide puddle at the target carry the timing.",
+      "three_quarter": "The column recedes diagonally to the target; the gather sphere, the splash crown and the spreading puddle all read in full."
+    }
+  },
+  "palette": {
+    "core": "#F2FBFF",
+    "primary": "#2F95E0",
+    "secondary": "#0B3F8F",
+    "accent": "#A8E4FF",
+    "shadow": "#082440"
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 620,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.9
+      },
+      "intent": "The caster braces. A big sphere of water swells and churns at their hands, ripples run inward over the ground and the air hums under the pressure."
+    },
+    {
+      "id": "fire",
+      "phase": "release",
+      "start_ms": 620,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.9
+      },
+      "intent": "The sphere bursts forward with a heavy thump and a blast of spray; the caster is shoved back by the recoil."
+    },
+    {
+      "id": "torrent",
+      "phase": "travel",
+      "start_ms": 640,
+      "end_ms": 1380,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.85,
+        "to": 1.0,
+        "flicker_hz": 5
+      },
+      "intent": "A thick column of water pounds toward the target in 140 ms, then holds, surging and pulsing like a fire hose at full pressure."
+    },
+    {
+      "id": "smash",
+      "phase": "impact",
+      "start_ms": 760,
+      "end_ms": 1380,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.8,
+        "to": 1.0,
+        "flicker_hz": 5
+      },
+      "intent": "The torrent smashes into the target: a towering crown of spray, sheets of water flung out and a big ripple across the ground."
+    },
+    {
+      "id": "drain",
+      "phase": "dissipation",
+      "start_ms": 1380,
+      "end_ms": 1950,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The pressure drops: the column thins and breaks into drops, spray rains back down and a wide puddle is left behind."
+    }
+  ],
+  "layers": [
+    {
+      "id": "soaked-ground",
+      "type": "decal",
+      "beats": [
+        "smash",
+        "drain"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "puddle",
+        "radius_px": {
+          "min": 120,
+          "max": 135
+        },
+        "opacity": 0.4,
+        "fade_in_ms": 200,
+        "grow_ms": 600,
+        "start_scale": 0.3,
+        "lifetime_ms": 2600,
+        "fade_ms": 1300,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "wet",
+        "look": "A wide dark soaked patch that dries from the edges in.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.25
+        },
+        "distortion": 0.05,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "puddle",
+      "type": "decal",
+      "beats": [
+        "smash",
+        "drain"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": {
+          "min": 70,
+          "max": 85
+        },
+        "opacity": 0.75,
+        "fade_in_ms": 120,
+        "grow_ms": 500,
+        "start_scale": 0.35,
+        "lifetime_ms": 2200,
+        "fade_ms": 1000,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "wet",
+        "look": "A deep puddle that keeps rippling from the falling spray.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.25
+        },
+        "distortion": 0.15,
+        "fresnel": 0.5,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-marks",
+      "type": "decal",
+      "beats": [
+        "smash"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "shape": "splash",
+        "radius_px": {
+          "min": 110,
+          "max": 125
+        },
+        "opacity": 0.6,
+        "fade_in_ms": 80,
+        "grow_ms": 300,
+        "start_scale": 0.5,
+        "lifetime_ms": 800,
+        "fade_ms": 600,
+        "detail": 0.75
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "Heavy splatter blasted out around the hit.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "brace-ring",
+      "type": "ring",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "start_radius_px": 130,
+        "end_radius_px": 25,
+        "thickness_px": 6,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Ripples pulled inward over the ground toward the caster as the water gathers.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "inward",
+          "speed": 1.5
+        },
+        "distortion": 0.4,
+        "fresnel": 0.4,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "recoil-ripple",
+      "type": "ring",
+      "beats": [
+        "fire",
+        "torrent"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 85,
+        "thickness_px": 3,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A ring of water kicked out from the caster's feet by the recoil.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 2
+        },
+        "distortion": 0.4,
+        "fresnel": 0.4,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "water-sphere",
+      "type": "orb",
+      "beats": [
+        "gather",
+        "fire"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 6
+        },
+        {
+          "t_ms": 600,
+          "param": "radius_px",
+          "value": 34,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 700,
+          "param": "radius_px",
+          "value": 12,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "radius_px": 10,
+        "pulse_hz": 4,
+        "wobble": 0.5,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A heavy, churning sphere of water, glassy at the rim and dark in the middle, straining to hold its shape.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 2,
+          "speed": 1.6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 1.2
+        },
+        "distortion": 0.6,
+        "fresnel": 0.8,
+        "emissive": {
+          "hdr": 1.4,
+          "falloff": "soft",
+          "core_ratio": 0.1
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "sphere-glow",
+      "type": "glow",
+      "beats": [
+        "gather",
+        "fire"
+      ],
+      "attach_to": "water-sphere",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 50,
+        "softness": 0.9,
+        "pulse_hz": 4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A faint caustic shimmer around the sphere.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 1.4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "sphere-drips",
+      "type": "sparks",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "accent",
+      "z": 12,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 36,
+          "max": 44
+        },
+        "speed": 90,
+        "speed_spread": 0.6,
+        "gravity": 900,
+        "lifetime_ms": 420,
+        "size_px": 3.5,
+        "spread_deg": 220,
+        "drag": 0.2,
+        "emit_ms": 600
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Water dripping and slopping off the straining sphere.",
+        "technique": "particles",
+        "flow": {
+          "direction": "downward",
+          "speed": 2
+        },
+        "fresnel": 0.4,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "torrent",
+      "type": "beam",
+      "beats": [
+        "torrent",
+        "drain"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "gradient_primary_to_secondary",
+      "z": 11,
+      "keyframes": [
+        {
+          "t_ms": 1380,
+          "param": "width_px",
+          "value": 60
+        },
+        {
+          "t_ms": 1620,
+          "param": "width_px",
+          "value": 1,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "style": "water",
+        "width_px": {
+          "min": 72,
+          "max": 78
+        },
+        "wobble": 0.25,
+        "wobble_hz": 3,
+        "jaggedness": 0.03,
+        "regen_ms": 80,
+        "grow_ms": 140,
+        "flow_speed": 9,
+        "turbulence": 0.55,
+        "foam": 0.7,
+        "churn": 0.8,
+        "shed_count": 120,
+        "shed_speed": 200,
+        "shed_size_px": 5,
+        "shed_life_ms": 520
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A thick, pounding column of water: dense blue, see-through at the edges, foam racing down it and surges swelling as they travel.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "streaks",
+          "scale": 3.5,
+          "speed": 10,
+          "contrast": 0.65
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 12
+        },
+        "distortion": 0.55,
+        "fresnel": 0.5,
+        "emissive": {
+          "hdr": 1.3,
+          "falloff": "soft",
+          "core_ratio": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "torrent-core",
+      "type": "beam",
+      "beats": [
+        "torrent"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "accent",
+      "z": 12,
+      "params": {
+        "style": "water",
+        "width_px": 22,
+        "wobble": 0.35,
+        "wobble_hz": 6,
+        "jaggedness": 0.05,
+        "regen_ms": 50,
+        "grow_ms": 140,
+        "flow_speed": 13,
+        "turbulence": 0.8,
+        "foam": 0.9,
+        "churn": 0.5
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The dense bright heart of the torrent, white foam streaking along it.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "streaks",
+          "scale": 7,
+          "speed": 15,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 16
+        },
+        "emissive": {
+          "hdr": 1.8,
+          "falloff": "gaussian",
+          "core_ratio": 0.5
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "muzzle-blast",
+      "type": "sparks",
+      "beats": [
+        "fire"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 340,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 380,
+        "size_px": 4.5,
+        "spread_deg": 220,
+        "drag": 0.2
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "A blast of spray bursting off the hands as the sphere lets go.",
+        "technique": "particles",
+        "flow": {
+          "direction": "toward_target",
+          "speed": 6
+        },
+        "fresnel": 0.4,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "muzzle-pop",
+      "type": "flash",
+      "beats": [
+        "fire"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 70,
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "A quick white burst of spray at the hands.",
+        "technique": "procedural",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.5
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.3
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crown",
+      "type": "sparks",
+      "beats": [
+        "smash"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 190,
+          "max": 200
+        },
+        "speed": 640,
+        "speed_spread": 0.45,
+        "gravity": 1200,
+        "lifetime_ms": 760,
+        "size_px": 6,
+        "spread_deg": 70,
+        "drag": 0.06,
+        "emit_ms": 560
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "A towering crown of spray thrown up from the hit for as long as the torrent pounds it.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 8,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 6
+        },
+        "fresnel": 0.4,
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "sheets",
+      "type": "sparks",
+      "beats": [
+        "smash"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "color": "primary",
+      "z": 14,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 110,
+          "max": 130
+        },
+        "speed": 460,
+        "speed_spread": 0.4,
+        "gravity": 1200,
+        "lifetime_ms": 620,
+        "size_px": 4.5,
+        "spread_deg": 190,
+        "drag": 0.08,
+        "emit_ms": 560,
+        "wind_px": 140
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "Sheets of water deflected outward and onward past the target.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 8,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "fresnel": 0.4,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "foam-burst",
+      "type": "smoke",
+      "beats": [
+        "smash"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "count": 12,
+        "rise_speed": 28,
+        "size_px": {
+          "min": 42,
+          "max": 50
+        },
+        "lifetime_ms": 650,
+        "opacity": 0.3
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "Churning white froth boiling at the point of impact.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 1
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.3
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "ripples",
+      "type": "ring",
+      "beats": [
+        "smash"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": {
+          "min": 120,
+          "max": 135
+        },
+        "thickness_px": 5,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Big rings of water shoved across the ground from the hit.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 2
+        },
+        "distortion": 0.5,
+        "fresnel": 0.4,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "mist",
+      "type": "smoke",
+      "beats": [
+        "smash",
+        "drain"
+      ],
+      "anchor": "point",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "count": 9,
+        "rise_speed": 16,
+        "size_px": {
+          "min": 40,
+          "max": 48
+        },
+        "lifetime_ms": 850,
+        "opacity": 0.2
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Fine mist hanging in the air after the blast.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.4,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.2
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "rain-back",
+      "type": "sparks",
+      "beats": [
+        "drain"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 40,
+          "max": 50
+        },
+        "speed": 90,
+        "speed_spread": 0.6,
+        "gravity": 1000,
+        "lifetime_ms": 520,
+        "size_px": 4,
+        "spread_deg": 120,
+        "drag": 0.1,
+        "emit_ms": 300,
+        "emit_radius_px": 70
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Spray raining back down into the puddle.",
+        "technique": "particles",
+        "flow": {
+          "direction": "downward",
+          "speed": 3
+        },
+        "fresnel": 0.4,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "recoil-shake",
+      "type": "camera_shake",
+      "beats": [
+        "fire"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 8,
+          "max": 10
+        },
+        "frequency_hz": 14,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "pound-shake",
+      "type": "camera_shake",
+      "beats": [
+        "smash"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 3,
+          "max": 4
+        },
+        "frequency_hz": 18,
+        "decay": 0.3
+      }
+    },
+    {
+      "id": "water-light",
+      "type": "light",
+      "beats": [
+        "torrent",
+        "smash"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 4.5,
+        "energy": 1.2
+      },
+      "shader": {
+        "technique": "light",
+        "look": "Cool blue bounce light with caustics flickering on the ground.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.5,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "pressure-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.35,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "fire-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fire"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.8,
+        "pitch": {
+          "min": 1.15,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "whoosh-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fire"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.7,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "torrent-sound",
+      "type": "sound_cue",
+      "beats": [
+        "torrent"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.6,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "smash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "smash"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.75,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.0
+        }
+      }
+    },
+    {
+      "id": "fizz-sound",
+      "type": "sound_cue",
+      "beats": [
+        "drain"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.3,
+        "pitch": 0.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Column width, surges, spray and puddle shape vary per cast. The 620 ms gather, the release frame and the 140 ms travel stay fixed so the hit always lands at the same time."
+  },
+  "director_notes": "Made to sit next to Pressure Jet without repeating it: Pressure Jet is a quick medium hose; this is a heavy cannon. Differences that matter: (1) a 620 ms brace with a swelling 34 px sphere, inward ripples and a hum, so the release has weight; (2) the column is three times as wide with strong churn (0.8), so surges visibly pound down it; (3) recoil on release (shake and a ripple kicked out from the caster's feet) and a towering crown at the target that sprays for the whole contact. Hero view is side, the view a side-scroller uses."
+}

@@ -1,0 +1,849 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "water-tidal-surge",
+  "name": "Tidal Surge",
+  "description": "Water pools and churns at the caster's feet, heaves up into a curling wall of water that rolls across the ground, and crashes over the target in a burst of spray and foam, leaving the whole area soaked.",
+  "element": "water",
+  "archetype": "projectile",
+  "tags": [
+    "wave",
+    "area",
+    "heavy",
+    "ground",
+    "knockback"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "a heavy surging tidal wave that rolls over the enemy, for a 3/4 action RPG"
+  },
+  "timing": {
+    "duration_ms": 2300,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "target",
+    "travel": "projectile",
+    "scale": 1.6,
+    "footprint": {
+      "shape": "line",
+      "length": 4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster the wall rises up in front of them, fills the frame and rolls away toward the target, its crest curling forward; the crash throws spray high above the target.",
+      "side": "The clearest view of the shape: a gentle back slope, a hollow front face and a curling lip that rolls left to right, then throws forward and collapses over the target in a tall crown of spray.",
+      "top": "A wide band of water with a white foam line on its crest sweeps across the ground from the caster to the target. The pool at the caster, the ripples and the big puddle spreading after the crash tell the story once the wall is gone.",
+      "three_quarter": "Hero view. The wall reads as a wide, curling wave rolling diagonally away, tall enough to swallow the target; the crash, foam cloud and soaked ground land in full view."
+    }
+  },
+  "palette": {
+    "core": "#F4FCFF",
+    "primary": "#3FA6E8",
+    "secondary": "#0E4A9E",
+    "accent": "#B8ECFF",
+    "shadow": "#0A2A4A"
+  },
+  "beats": [
+    {
+      "id": "swell",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 420,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.8
+      },
+      "intent": "Water wells up out of the ground around the caster's feet, churning and rising, and the ground starts to rumble."
+    },
+    {
+      "id": "heave",
+      "phase": "release",
+      "start_ms": 420,
+      "end_ms": 500,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.85
+      },
+      "intent": "The pool heaves up into a wall of water in front of the caster with a burst of spray."
+    },
+    {
+      "id": "surge",
+      "phase": "travel",
+      "start_ms": 440,
+      "end_ms": 1220,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.85,
+        "to": 1.0
+      },
+      "intent": "The wave rolls across the ground toward the target, growing taller, its crest curling forward and throwing spray off the top."
+    },
+    {
+      "id": "crash",
+      "phase": "impact",
+      "start_ms": 1180,
+      "end_ms": 1650,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.8,
+        "to": 1.0,
+        "flicker_hz": 6
+      },
+      "intent": "The wave throws its lip over the target and collapses on it: a tall crown of spray, a cloud of foam and a shove of water spreading outward."
+    },
+    {
+      "id": "recede",
+      "phase": "dissipation",
+      "start_ms": 1600,
+      "end_ms": 2300,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The water drains away in sheets and drips; mist hangs for a moment and a wide puddle stays behind."
+    }
+  ],
+  "layers": [
+    {
+      "id": "soaked-ground",
+      "type": "decal",
+      "beats": [
+        "crash",
+        "recede"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "puddle",
+        "radius_px": {
+          "min": 150,
+          "max": 170
+        },
+        "opacity": 0.4,
+        "fade_in_ms": 200,
+        "grow_ms": 600,
+        "start_scale": 0.3,
+        "lifetime_ms": 3200,
+        "fade_ms": 1500,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "wet",
+        "look": "A wide dark soaked patch, glossy at first, drying from the edges in.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 2.5,
+          "speed": 0,
+          "contrast": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3
+        },
+        "distortion": 0.05,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "puddle",
+      "type": "decal",
+      "beats": [
+        "crash",
+        "recede"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": {
+          "min": 90,
+          "max": 110
+        },
+        "opacity": 0.7,
+        "fade_in_ms": 150,
+        "grow_ms": 500,
+        "start_scale": 0.35,
+        "lifetime_ms": 2600,
+        "fade_ms": 1200,
+        "detail": 0.55
+      },
+      "shader": {
+        "material": "wet",
+        "look": "A broad shallow puddle that mirrors the sky and still ripples.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.25
+        },
+        "distortion": 0.15,
+        "fresnel": 0.5,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-marks",
+      "type": "decal",
+      "beats": [
+        "crash"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "shape": "splash",
+        "radius_px": {
+          "min": 140,
+          "max": 160
+        },
+        "opacity": 0.55,
+        "fade_in_ms": 80,
+        "grow_ms": 350,
+        "start_scale": 0.5,
+        "lifetime_ms": 900,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "Foam and splatter thrown out in a wide fan around the crash, soaking away.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "well-pool",
+      "type": "decal",
+      "beats": [
+        "swell",
+        "heave",
+        "surge"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": {
+          "min": 70,
+          "max": 80
+        },
+        "opacity": 0.6,
+        "fade_in_ms": 150,
+        "grow_ms": 400,
+        "start_scale": 0.2,
+        "lifetime_ms": 1400,
+        "fade_ms": 700,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "wet",
+        "look": "Water welling up out of the ground at the caster's feet.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.25
+        },
+        "distortion": 0.2,
+        "fresnel": 0.4,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "well-ring",
+      "type": "ring",
+      "beats": [
+        "swell"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "start_radius_px": 110,
+        "end_radius_px": 30,
+        "thickness_px": 6,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Ripples running inward over the pool as the water gathers.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "inward",
+          "speed": 1.5
+        },
+        "distortion": 0.4,
+        "fresnel": 0.4,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "well-bubbles",
+      "type": "sparks",
+      "beats": [
+        "swell"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "color": "accent",
+      "z": 12,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 40,
+          "max": 50
+        },
+        "speed": 160,
+        "speed_spread": 0.6,
+        "gravity": 700,
+        "lifetime_ms": 380,
+        "size_px": 3.5,
+        "spread_deg": 70,
+        "drag": 0.15,
+        "emit_ms": 420,
+        "emit_radius_px": 60
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Water bubbling and jumping up out of the pool as it gathers.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 2
+        },
+        "fresnel": 0.4,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "heave-spray",
+      "type": "sparks",
+      "beats": [
+        "heave"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 60,
+          "max": 70
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 1100,
+        "lifetime_ms": 550,
+        "size_px": 4.5,
+        "spread_deg": 90,
+        "drag": 0.1,
+        "emit_ms": 80,
+        "emit_radius_px": 50
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "A burst of spray as the wall rips up out of the ground.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 8,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 4
+        },
+        "fresnel": 0.4,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "wave",
+      "type": "wave",
+      "beats": [
+        "surge",
+        "crash"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "width_px": {
+          "min": 360,
+          "max": 400
+        },
+        "height_px": {
+          "min": 150,
+          "max": 170
+        },
+        "travel_ms": 760,
+        "crash_ms": 380,
+        "curl": 0.7,
+        "flow_speed": 1.4,
+        "turbulence": 0.55,
+        "foam": 0.75,
+        "shed_count": 140,
+        "shed_speed": 260,
+        "shed_size_px": 4.5,
+        "shed_life_ms": 650
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A heavy wall of water: deep blue and see-through at the base, lighter up the hollow face, a churning white lip curling over, light bending through it.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 1.4,
+          "contrast": 0.55
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1.5
+        },
+        "distortion": 0.55,
+        "fresnel": 0.6,
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.25
+        },
+        "emissive": {
+          "hdr": 1.1,
+          "falloff": "soft",
+          "core_ratio": 0.1
+        },
+        "lighting": "lit",
+        "notes": "Build as a scrolling-UV mesh or a vertex-animated wave strip; foam on the crest from a height mask; spray as a particle system emitting from the crest."
+      }
+    },
+    {
+      "id": "crash-crown",
+      "type": "sparks",
+      "beats": [
+        "crash"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 180,
+          "max": 200
+        },
+        "speed": 620,
+        "speed_spread": 0.45,
+        "gravity": 1200,
+        "lifetime_ms": 800,
+        "size_px": 6,
+        "spread_deg": 80,
+        "drag": 0.06,
+        "emit_ms": 320,
+        "emit_radius_px": 90
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "A tall crown of spray thrown straight up where the wave breaks, falling back in heavy drops.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 8,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 6
+        },
+        "fresnel": 0.4,
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crash-sheet",
+      "type": "sparks",
+      "beats": [
+        "crash"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "color": "primary",
+      "z": 14,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 110,
+          "max": 130
+        },
+        "speed": 480,
+        "speed_spread": 0.4,
+        "gravity": 1300,
+        "lifetime_ms": 650,
+        "size_px": 4.5,
+        "spread_deg": 170,
+        "drag": 0.08,
+        "emit_ms": 250,
+        "wind_px": 160
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "Sheets of water flung outward and forward from the crash.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 8,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "fresnel": 0.4,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "foam-cloud",
+      "type": "smoke",
+      "beats": [
+        "crash"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "count": 16,
+        "rise_speed": 30,
+        "size_px": {
+          "min": 45,
+          "max": 55
+        },
+        "lifetime_ms": 700,
+        "opacity": 0.28,
+        "spread_px": 60,
+        "spread_speed": 160
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "A rolling cloud of white foam and spray where the wave lands, thinning out as it spreads.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0.6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 1.2
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.3
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "ripples",
+      "type": "ring",
+      "beats": [
+        "crash"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": {
+          "min": 170,
+          "max": 190
+        },
+        "thickness_px": 8,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A ring of water shoved outward over the ground from the crash.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 2
+        },
+        "distortion": 0.5,
+        "fresnel": 0.4,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "mist",
+      "type": "smoke",
+      "beats": [
+        "crash",
+        "recede"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "count": 10,
+        "rise_speed": 16,
+        "size_px": {
+          "min": 45,
+          "max": 55
+        },
+        "lifetime_ms": 900,
+        "opacity": 0.2
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Fine cool mist hanging over the soaked ground.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.4,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.2
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "last-drips",
+      "type": "sparks",
+      "beats": [
+        "recede"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 30,
+          "max": 40
+        },
+        "speed": 110,
+        "speed_spread": 0.6,
+        "gravity": 1000,
+        "lifetime_ms": 500,
+        "size_px": 4,
+        "spread_deg": 100,
+        "drag": 0.1,
+        "emit_ms": 350,
+        "emit_radius_px": 80
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Last drops pattering down into the puddle.",
+        "technique": "particles",
+        "flow": {
+          "direction": "downward",
+          "speed": 3
+        },
+        "fresnel": 0.4,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "crash"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 6,
+          "max": 8
+        },
+        "frequency_hz": 16,
+        "decay": 0.6
+      }
+    },
+    {
+      "id": "rumble-shake",
+      "type": "camera_shake",
+      "beats": [
+        "swell"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 1,
+          "max": 2
+        },
+        "frequency_hz": 22,
+        "decay": 0.2
+      }
+    },
+    {
+      "id": "water-light",
+      "type": "light",
+      "beats": [
+        "surge",
+        "crash"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 1.0
+      },
+      "shader": {
+        "technique": "light",
+        "look": "Cool blue bounce light and caustics from the wave onto the ground.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rumble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "swell",
+        "surge"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.6,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "heave-sound",
+      "type": "sound_cue",
+      "beats": [
+        "heave"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.8,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "surge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "surge"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.55,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "crash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "crash"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "fizz-sound",
+      "type": "sound_cue",
+      "beats": [
+        "recede"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.35,
+        "pitch": 0.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Wave width and height, the bumps along the crest, spray and the puddle shape vary per cast. The 760 ms roll and the crash moment stay fixed so the hit always lands on the same frame."
+  },
+  "director_notes": "Heavy area spell built around a new `wave` layer: a curling wall that rises out of a pool at the caster's feet, rolls about 3.5 units and collapses over the target. Choices: (1) a 420 ms swell with ground rumble so the player sees it coming; (2) the wall grows as it travels and the lip curls further until it throws over, so it reads as a breaking wave rather than a sliding block; (3) the crash is a tall crown plus a forward-flung sheet and a foam cloud, then a wide puddle that outlasts the spell. Hero view 3/4; side shows the profile best. Water stays mid-blue with white only in the foam so it reads on any background."
+}

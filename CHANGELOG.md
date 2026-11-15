@@ -8,6 +8,10 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ### Added
 
+- Two more **Water** spells: **Torrent Cannon** (a heavy, slow water cannon: a swelling sphere, a thick pounding torrent with recoil and a towering splash) and **Tidal Surge** (water wells up at the caster's feet, heaves into a curling wall that rolls across the ground and crashes over the target). Pressure Jet stays the quick, light water jet.
+- An **Ice** spell type: **Rime Ray** (a glassy freezing ray; ice crystals spike out of the target, frost spreads on the ground, then the crystals shatter) and **Whiteout Gale** (a telegraphed boss blizzard: driving, wind-slanted snow over the whole area, whiteout and frost cover).
+- The viewer draws waves and ice: a new `wave` layer (a curling wall of water with a foamy crest and spray that rolls to the target and crashes), beam `style: ice`, and sparks that look like snowflakes (`look: flake`, falling at a steady speed) or ice crystals that freeze in place (`look: shard`). Sparks can drift in the wind (`wind_px`).
+- The director's playbook and vocabulary cover water and ice: cannons, waves, freezing rays, blizzards, frost and their sounds and shaders.
 - A **Wind** spell type, starting with **Tornado**: wind gathers into a dusty swirl in front of the caster, snaps up into a towering funnel that spins up with a roar, weaves across to the target, grinds over it with debris and leaves whirling around it, then ropes out and flings everything it carried, leaving a spiral of scoured ground. Wind, whoosh and rumble sounds.
 - The viewer draws vortices: a new `vortex` layer is a spinning funnel (narrow foot, flared top, spiral wind streaks, a turning cloud cap) that can form short of its target and walk to it, and ropes out by breaking into streaks. Sparks and smoke attached to a vortex orbit it (debris, leaves, a dust skirt) and are flung off when it dies. Sparks have `debris` and `leaf` looks, and there is a `swirl` ground decal. Shader intent has an `airy` material.
 - The director's playbook and vocabulary cover wind.

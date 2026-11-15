@@ -34,7 +34,7 @@ Pull these out of what the user said, and note which are missing:
 
 | Decide | Words that tell you | If missing |
 |---|---|---|
-| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "sun", "solar", "holy", "radiant" (light); "raw power", "hyper", "cannon", "annihilate" (energy); "psychic", "mind", "telekinetic" (psychic); "earth", "rock", "stone", "ground", "quake", "slam", "boulder" | ask (it's rarely missing) |
+| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash", "wave", "tide"; "ice", "frost", "freeze", "snow", "blizzard"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "sun", "solar", "holy", "radiant" (light); "raw power", "hyper", "cannon", "annihilate" (energy); "psychic", "mind", "telekinetic" (psychic); "earth", "rock", "stone", "ground", "quake", "slam", "boulder" | ask (it's rarely missing) |
 | `archetype` | strike (from above / one hit), projectile (thrown), chain (jumps), beam (continuous), aura (around the caster), nova (bursts outward) | infer, or ask as a choice |
 | weight | heavy, boss, big, ultimate → long anticipation, hold frames, shake. quick, light, basic → snappy | default to medium |
 | camera / hero view | top-down, isometric, side-scroller, fighting game, over-the-shoulder (see vocabulary §7) | **ask** |
@@ -147,6 +147,17 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
   - *Sound*: `rumble` (gather) → `whoosh` (swing) → `impact` + `boom` (slam) → `crash` with `repeat_ms` matching the row rhythm over a `rumble` → `boom` + `crash` (climax) → quiet `rumble`.
   - *Shader intent*: `stone` for rock (`technique: mesh`, voronoi noise, lit), `dusty` for dust and shock rings, `stone` decals for fissures and craters; a dull `molten` only for glowing cracks in a magical variant.
 
+- **Water** (vocabulary "Water- and ice-specific terms"). Water is heavy and catches light rather than making it:
+  - *Jet or cannon*: a `beam` with `style: water`. Light jets are 20–26 px; a heavy cannon is 40–60 px with strong `churn`, a long gather (a swelling `orb` plus an inward `ring`), a recoil `camera_shake` on release and a big crown splash (`sparks` `look: droplet`).
+  - *Wave or surge*: a `wave` layer (`width_px` 300–500, `height_px` 120–200, `curl` 0.5–0.8), with droplet sparks and a `smoke` alpha spray cloud where it crashes, and a wide `puddle` decal that outlasts the spell.
+  - *Ground*: `puddle` and `splash` decals (alpha), a darker wide wet patch under them.
+  - *Sound*: `wind` (gather) → `whoosh` → `wind` or `rumble` (stream, surge) → `crash` or `impact` → `sizzle` at low gain, low pitch (fizz).
+  - *Shader intent*: `liquid` for the body, `foamy` for spray and crests, `wet` for decals; streaks or fBm noise, `distortion` 0.4–0.6, `fresnel` 0.4–0.6, `lighting: lit`.
+- **Ice**. Ice snaps into place and stays, so contrast fast motion with frozen holds:
+  - *Freezing ray*: a `beam` with `style: ice` and a slow `flow_speed`, then `sparks` `look: shard` bursting out of the target and freezing there, a `frost` decal spreading with `grow_ms`, and a `shatter` cue as it breaks up in the tail.
+  - *Blizzard or hail storm*: an area spell from `sky`. Two or three `sparks` `look: flake` layers with `emit_radius_px` sized to the danger zone, `wind_px` 80–200 so the snow slants, pale `smoke` for the whiteout, a `frost` decal growing over the area, and a `wind` cue. Telegraph it with a `warning_ring` like any area attack.
+  - *Shader intent*: `crystalline` for shards and rays (Voronoi, hard edges, `fresnel` 0.6–0.9), `icy` for mist, flakes and frost (soft fBm, slow flow, pale emission).
+
 Know what the viewer draws today (see the known issues in [DESIGN.md](DESIGN.md#6-known-issues-and-limits)): several targets exist only for chains (`travel: chain` or `destination: targets`), so a "storm of strikes across an area" renders as strikes on one spot. Projectile travel is drawn for an `orb` anchored at `caster_hand` in a `travel: projectile` spell. Prefer designs the viewer can show, and say in `director_notes` when you go beyond it.
 
 Set `z` back to front: shadow/smoke/decal → glow → bolt/beam/vortex → sparks → flash. Decals always draw on the ground under everything else; their `z` only orders them among themselves (a glowing crack decal above its scorch). Use only params listed in the template format; unknown params produce warnings and the renderer may ignore them.
@@ -178,7 +189,7 @@ Sizes are in pixels at 100 px per world unit (1 unit = a character's height).
 
 ## Step 5. Palette
 
-Fill `core` and `primary`, and usually `secondary`. Add `accent` only for a contrasting spark color, and `shadow` only if something dark is drawn (smoke, scorch, sky-dim). Electricity is additive with a near-white core. Fire is a temperature ramp: `core` white-yellow, `primary` orange, `secondary` deep red, `accent` gold for embers, `shadow` a warm near-black for smoke and scorch. Earth is muted: `primary` the rock (a mid brown or grey), `secondary` a lighter dust tan, `core` a pale sunlit dust for pops, `accent` only for a dull glow in the fist or cracks, `shadow` near-black for fissures and craters; no bright, saturated colors unless it is magical earth. Colors should be original choices, not sampled from a game.
+Fill `core` and `primary`, and usually `secondary`. Add `accent` only for a contrasting spark color, and `shadow` only if something dark is drawn (smoke, scorch, sky-dim). Electricity is additive with a near-white core. Fire is a temperature ramp: `core` white-yellow, `primary` orange, `secondary` deep red, `accent` gold for embers, `shadow` a warm near-black for smoke and scorch. Earth is muted: `primary` the rock (a mid brown or grey), `secondary` a lighter dust tan, `core` a pale sunlit dust for pops, `accent` only for a dull glow in the fist or cracks, `shadow` near-black for fissures and craters; no bright, saturated colors unless it is magical earth. Water is mid-blue (`primary`) over a deep blue (`secondary`) with white only for foam (`core`), so it reads as water on any background. Ice is paler and cooler than water: a white `core`, pale cyan `primary`, a steel-blue `secondary`; keep saturated blue out of it or it reads as water. Colors should be original choices, not sampled from a game.
 
 ## Step 6. Views
 

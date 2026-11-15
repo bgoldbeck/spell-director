@@ -1,0 +1,705 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "ice-whiteout-gale",
+  "name": "Whiteout Gale",
+  "description": "A frost circle marks the ground, then a howling blizzard pours down over the whole area: driving snow slanted by the wind, swirling whiteout and frost spreading across the ground, before the storm blows itself out.",
+  "element": "ice",
+  "archetype": "aura",
+  "tags": [
+    "area",
+    "storm",
+    "boss",
+    "telegraph",
+    "lingering"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "a blizzard that buries an area in a snowstorm, boss attack, top-down game"
+  },
+  "timing": {
+    "duration_ms": 2600,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 3.5,
+    "footprint": {
+      "shape": "circle",
+      "radius": 2.2,
+      "distribution": "random"
+    }
+  },
+  "views": {
+    "hero": "top",
+    "reads": {
+      "front": "Snow drives down and across in front of the camera over the target area, slanting with the wind; the whiteout mist thickens near the ground and frost spreads beneath it.",
+      "side": "Snow falls from high above across a wide area and slants left to right in the wind; the frost layer and the low whiteout show where the storm sits.",
+      "top": "Hero view. The pulsing frost telegraph shows the danger zone, then flakes fill the circle, drifting with the wind, over a frost patch that grows to the edge of the zone and stays after the storm.",
+      "three_quarter": "The storm column over the area reads in depth: falling, slanted snow above, swirling whiteout at ground level and the frost patch under it."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#CFEFFF",
+    "secondary": "#7FB8E8",
+    "accent": "#E8F8FF",
+    "shadow": "#2B4A6B"
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 620,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 0.85
+      },
+      "intent": "A frost circle pulses on the ground where the storm will land, the first flakes drift down and the wind starts to rise."
+    },
+    {
+      "id": "onset",
+      "phase": "release",
+      "start_ms": 620,
+      "end_ms": 720,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.9
+      },
+      "intent": "The storm hits at once: a gust slams into the area and the snow turns heavy."
+    },
+    {
+      "id": "storm",
+      "phase": "impact",
+      "start_ms": 680,
+      "end_ms": 1950,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.8,
+        "to": 1.0,
+        "flicker_hz": 3
+      },
+      "intent": "A blizzard rages over the whole area: driving snow slanting with the wind, gusts swirling the whiteout, frost creeping to the edge of the circle."
+    },
+    {
+      "id": "blow-out",
+      "phase": "dissipation",
+      "start_ms": 1900,
+      "end_ms": 2600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "The wind drops, the last flakes settle and the whiteout thins; frost covers the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "warning",
+      "type": "decal",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "warning_ring",
+        "radius_px": 220,
+        "opacity": 0.75,
+        "fade_in_ms": 120,
+        "grow_ms": 300,
+        "start_scale": 0.5,
+        "pulse_hz": 3,
+        "lifetime_ms": 650,
+        "fade_ms": 120
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A frosted ring marking the storm zone, spreading out to its edge and pulsing.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0.5,
+          "contrast": 0.6
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "frost-cover",
+      "type": "decal",
+      "beats": [
+        "storm",
+        "blow-out"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 0,
+      "params": {
+        "shape": "frost",
+        "radius_px": {
+          "min": 210,
+          "max": 230
+        },
+        "opacity": 0.35,
+        "fade_in_ms": 300,
+        "grow_ms": 1200,
+        "start_scale": 0.25,
+        "lifetime_ms": 3200,
+        "fade_ms": 1500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Frost and a thin crust of snow spreading over the ground from the middle of the storm out to its edge.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.25,
+          "edge_color": "core"
+        },
+        "fresnel": 0.3,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "snow-cover",
+      "type": "decal",
+      "beats": [
+        "storm",
+        "blow-out"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "core",
+      "z": -1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": {
+          "min": 200,
+          "max": 220
+        },
+        "opacity": 0.22,
+        "fade_in_ms": 400,
+        "grow_ms": 1200,
+        "start_scale": 0.3,
+        "lifetime_ms": 3200,
+        "fade_ms": 1500,
+        "detail": 0.4
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A thin, soft dusting of snow settling over the ground.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.3
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gusts",
+      "type": "ring",
+      "beats": [
+        "onset",
+        "storm"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 230,
+        "thickness_px": 5,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A gust of freezing wind rushing out over the ground when the storm hits.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 1.2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 2.5
+        },
+        "distortion": 0.3,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "first-flakes",
+      "type": "sparks",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "color": "core",
+      "z": 12,
+      "params": {
+        "look": "flake",
+        "count": {
+          "min": 40,
+          "max": 50
+        },
+        "speed": 30,
+        "speed_spread": 0.5,
+        "gravity": 1000,
+        "lifetime_ms": 1500,
+        "size_px": 4,
+        "spread_deg": 360,
+        "drag": 0.8,
+        "emit_ms": 600,
+        "emit_radius_px": 200,
+        "wind_px": 40
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A few big flakes drifting down ahead of the storm.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "downward",
+          "speed": 1
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "heavy-snow",
+      "type": "sparks",
+      "beats": [
+        "storm"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "color": "core",
+      "z": 12,
+      "params": {
+        "look": "flake",
+        "count": 200,
+        "speed": 40,
+        "speed_spread": 0.5,
+        "gravity": 1800,
+        "lifetime_ms": 1300,
+        "size_px": 4.5,
+        "spread_deg": 360,
+        "drag": 0.6,
+        "emit_ms": 1250,
+        "emit_radius_px": 230,
+        "wind_px": 150
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Thick, tumbling snow driven down and sideways by the wind.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 1,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "downward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 1,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "fine-snow",
+      "type": "sparks",
+      "beats": [
+        "onset",
+        "storm"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "look": "flake",
+        "count": 200,
+        "speed": 60,
+        "speed_spread": 0.5,
+        "gravity": 2300,
+        "lifetime_ms": 1050,
+        "size_px": 2.5,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_ms": 1300,
+        "emit_radius_px": 240,
+        "wind_px": 220
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Fine, fast snow filling the air between the big flakes.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 5,
+          "speed": 1.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "downward",
+          "speed": 4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "sleet",
+      "type": "sparks",
+      "beats": [
+        "storm"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "color": "primary",
+      "z": 14,
+      "params": {
+        "count": 120,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 900,
+        "lifetime_ms": 900,
+        "size_px": 1.5,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_ms": 1250,
+        "emit_radius_px": 230,
+        "wind_px": 320,
+        "streak_ms": 70
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "Hard streaks of sleet and ice needles whipping past in the gusts.",
+        "technique": "particles",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 4,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "downward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "hard"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "whiteout",
+      "type": "smoke",
+      "beats": [
+        "storm",
+        "blow-out"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "count": 24,
+        "rise_speed": 6,
+        "size_px": {
+          "min": 55,
+          "max": 65
+        },
+        "lifetime_ms": 1100,
+        "opacity": 0.18,
+        "spread_px": 180,
+        "spread_speed": 40
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Swirling, wind-blown whiteout hugging the ground and hiding what's in the storm.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 1.2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 1.2
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "ground-drift",
+      "type": "sparks",
+      "beats": [
+        "storm",
+        "blow-out"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "color": "core",
+      "z": 11,
+      "params": {
+        "look": "flake",
+        "count": {
+          "min": 70,
+          "max": 80
+        },
+        "speed": 120,
+        "speed_spread": 0.6,
+        "gravity": 120,
+        "lifetime_ms": 700,
+        "size_px": 3,
+        "spread_deg": 140,
+        "drag": 0.6,
+        "emit_ms": 1500,
+        "emit_radius_px": 200,
+        "wind_px": 260
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Snow kicked up and blown along the ground by the gusts.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 1,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "settle",
+      "type": "sparks",
+      "beats": [
+        "blow-out"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "color": "core",
+      "z": 12,
+      "params": {
+        "look": "flake",
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 20,
+        "speed_spread": 0.5,
+        "gravity": 1100,
+        "lifetime_ms": 1500,
+        "size_px": 3.5,
+        "spread_deg": 360,
+        "drag": 0.8,
+        "emit_ms": 400,
+        "emit_radius_px": 210,
+        "wind_px": 30
+      },
+      "shader": {
+        "material": "icy",
+        "look": "The last flakes drifting gently down as the wind dies.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0.4,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "downward",
+          "speed": 0.8
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "storm-shake",
+      "type": "camera_shake",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 5,
+          "max": 7
+        },
+        "frequency_hz": 12,
+        "decay": 0.6
+      }
+    },
+    {
+      "id": "gust-shake",
+      "type": "camera_shake",
+      "beats": [
+        "storm"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 1,
+          "max": 2
+        },
+        "frequency_hz": 8,
+        "decay": 0.1
+      }
+    },
+    {
+      "id": "cold-light",
+      "type": "light",
+      "beats": [
+        "storm"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 0.8
+      },
+      "shader": {
+        "technique": "light",
+        "look": "Flat, cold, overcast light under the storm.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rising-wind",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.5,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "telegraph-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.3,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "gust-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.8,
+        "pitch": {
+          "min": 0.6,
+          "max": 0.7
+        }
+      }
+    },
+    {
+      "id": "storm-sound",
+      "type": "sound_cue",
+      "beats": [
+        "storm"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.75,
+        "pitch": 1.15
+      }
+    },
+    {
+      "id": "ice-hiss",
+      "type": "sound_cue",
+      "beats": [
+        "storm"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.25,
+        "pitch": 1.6
+      }
+    },
+    {
+      "id": "dying-wind",
+      "type": "sound_cue",
+      "beats": [
+        "blow-out"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.35,
+        "pitch": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Where each flake falls, the whiteout puffs and the frost shape vary per cast. The 620 ms telegraph and the storm window stay fixed so players can learn to dodge it."
+  },
+  "director_notes": "Boss-weight area storm for a top-down camera. Choices: (1) a 620 ms pulsing frost telegraph sized exactly to the 2.2-unit storm zone, so it's fair; (2) the storm is three stacked snow layers (big tumbling flakes, fine fast snow, hard sleet streaks) falling over the whole zone (sparks emit_radius_px) and slanted by the wind (wind_px), with low whiteout and ground drift for the top view; (3) frost grows to the edge of the circle and outlasts the storm. Sound is mostly wind, rising, gusting and dying, with a thin icy hiss."
+}

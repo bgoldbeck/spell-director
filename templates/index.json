@@ -10,6 +10,8 @@
     "fire/flame-jet.json",
     "fire/inferno-burst.json",
     "fire/meteor-strike.json",
+    "ice/rime-ray.json",
+    "ice/whiteout-gale.json",
     "light/sunlance.json",
     "lightning/ball-lightning.json",
     "lightning/boss-storm-call.json",
@@ -20,6 +22,8 @@
     "lightning/volt-lash.json",
     "psychic/mind-crush.json",
     "water/pressure-jet.json",
+    "water/tidal-surge.json",
+    "water/torrent-cannon.json",
     "wind/gale-shove.json",
     "wind/scythe-volley.json",
     "wind/tornado.json"
