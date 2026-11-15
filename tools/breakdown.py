@@ -41,6 +41,13 @@ VIDEO_SUFFIXES = {".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi"}
 VIDEO_MAX_FPS = 30.0
 VIDEO_MAX_SECONDS = 20.0
 FULL_MAX_SIDE = 640  # cap stored full-size video frames (contact sheet only needs small ones)
+# Camera cuts. A cut changes the picture both ways at once: many pixels get
+# brighter AND many get darker. Spell light is mostly additive, so a flash,
+# bolt or fade moves the picture one way, or only a few pixels both ways.
+CUT_MIN_MOTION = 0.04  # mean absolute luma change between the two frames
+CUT_STEP = 0.05  # per-pixel luma change that counts as "changed"
+CUT_MIN_TWO_SIDED = 0.12  # fraction of pixels that must change in each direction
+BRIGHT_BACKGROUND = 0.35  # mean background luma above which intensities read low
 
 PHASE_COLORS = {
     "none": (90, 90, 90),
@@ -208,29 +215,60 @@ def luma(rgb: np.ndarray) -> np.ndarray:
     return rgb[..., 0] * 0.2126 + rgb[..., 1] * 0.7152 + rgb[..., 2] * 0.0722
 
 
+def find_cuts(lumas: np.ndarray) -> list[int]:
+    """Indices of frames that start a new camera shot."""
+    cuts = []
+    for i in range(1, len(lumas)):
+        d = lumas[i] - lumas[i - 1]
+        if float(np.abs(d).mean()) < CUT_MIN_MOTION:
+            continue
+        if min(float((d > CUT_STEP).mean()), float((d < -CUT_STEP).mean())) >= CUT_MIN_TWO_SIDED:
+            cuts.append(i)
+    return cuts
+
+
+def shot_ranges(n: int, cuts: list[int]) -> list[tuple[int, int]]:
+    bounds = [0, *cuts, n]
+    return [(a, b - 1) for a, b in zip(bounds, bounds[1:])]
+
+
 def measure(frames: list[Frame]) -> dict:
     stack = np.stack([f.rgb for f in frames])
     lumas = luma(stack)
+    cuts = find_cuts(lumas)
+    shots = shot_ranges(len(frames), cuts)
     # Spell effects are mostly additive light over a darker scene, so the
     # background is what each pixel looks like at its darkest. A low
-    # percentile instead of the minimum ignores single noisy frames.
-    background = np.percentile(lumas, 10, axis=0)
-    h, w = background.shape
+    # percentile instead of the minimum ignores single noisy frames. Each
+    # camera shot gets its own background, so cuts don't count as effect.
+    backgrounds = [np.percentile(lumas[a: b + 1], 10, axis=0) for a, b in shots]
+    shot_of = np.repeat(np.arange(len(shots)), [b - a + 1 for a, b in shots])
+    h, w = backgrounds[0].shape
     ys, xs = np.mgrid[0:h, 0:w]
-    union = np.zeros_like(background)
+    unions = [np.zeros_like(bg) for bg in backgrounds]
+    cut_set = set(cuts)
     prev = None
     for f, y in zip(frames, lumas):
+        k = int(shot_of[f.index])
+        background = backgrounds[k]
+        if f.index in cut_set:
+            prev = None  # change across a cut is the camera, not the effect
         gain = np.clip(y - background, 0, None)
         mask = gain > GLOW_THRESHOLD
         coverage = float(mask.mean())
-        energy = float(gain.mean())
+        # Only light above the threshold counts, so dithering and compression
+        # noise don't add up to a baseline glow over a busy background.
+        energy = float((gain * mask).mean())
         stats = {
             "mean_luma": round(float(y.mean()), 4),
             "peak_luma": round(float(np.percentile(y, 99.5)), 4),
             "energy_raw": energy,
             "coverage": round(coverage, 4),
             "motion": round(float(np.abs(y - prev).mean()) if prev is not None else 0.0, 4),
+            "shot": k,
         }
+        if f.index in cut_set:
+            stats["cut"] = True
         if mask.any():
             weight = gain * mask
             total = weight.sum()
@@ -243,16 +281,54 @@ def measure(frames: list[Frame]) -> dict:
                 round(cols[0] / w, 3), round(rows[0] / h, 3),
                 round((cols[-1] + 1) / w, 3), round((rows[-1] + 1) / h, 3),
             ]
-            union += gain
+            unions[k] += gain
         else:
             stats["centroid"] = None
             stats["bbox"] = None
         f.stats = stats
         prev = y
-    peak_energy = max((f.stats["energy_raw"] for f in frames), default=0.0) or 1.0
-    for f in frames:
-        f.stats["intensity"] = round(f.stats.pop("energy_raw") / peak_energy, 4)
-    return {"background_luma": round(float(background.mean()), 4), "union": union}
+    # Idle animation (characters breathing, grass swaying) leaves a floor of
+    # "effect" in every frame of a shot. Subtract each shot's quiet level.
+    energies = np.array([f.stats.pop("energy_raw") for f in frames])
+    for a, b in shots:
+        energies[a: b + 1] -= np.percentile(energies[a: b + 1], 10)
+    energies = np.clip(energies, 0, None)
+    peak_energy = float(energies.max()) or 1.0
+    for f, e in zip(frames, energies):
+        f.stats["intensity"] = round(float(e) / peak_energy, 4)
+    shot_info = []
+    for k, ((a, b), bg) in enumerate(zip(shots, backgrounds)):
+        covs = [frames[i].stats["coverage"] for i in range(a, b + 1)]
+        cov_floor = float(np.percentile(covs, 10))
+        for i in range(a, b + 1):
+            # Coverage beyond the shot's idle level: what the effect adds.
+            frames[i].stats["coverage_above_floor"] = round(max(0.0, frames[i].stats["coverage"] - cov_floor), 4)
+        peak = max(frames[i].stats["intensity"] for i in range(a, b + 1))
+        # Where the effect starts showing in this shot: a beam fired in the
+        # caster's shot before the camera cuts to the target, for example.
+        onset = next((i for i in range(a, b + 1) if frames[i].stats["intensity"] >= max(0.05, peak * 0.25)), None)
+        shot_info.append({
+            "shot": k, "start_frame": a, "end_frame": b,
+            "start_ms": frames[a].start_ms, "end_ms": frames[b].start_ms + frames[b].duration_ms,
+            "peak_intensity": peak,
+            "effect_onset_frame": onset,
+            "effect_onset_ms": frames[onset].start_ms if onset is not None else None,
+            "background_luma": round(float(bg.mean()), 4),
+        })
+    main = max(range(len(frames)), key=lambda i: frames[i].stats["intensity"])
+    main_shot = int(shot_of[main])
+    weights = [b - a + 1 for a, b in shots]
+    bg_luma = float(np.average([bg.mean() for bg in backgrounds], weights=weights))
+    return {
+        "background_luma": round(bg_luma, 4),
+        "bright_background": bg_luma > BRIGHT_BACKGROUND,
+        "cuts": cuts,
+        "shots": shot_info,
+        "main_shot": main_shot,
+        "union": unions[main_shot],
+        "backgrounds": backgrounds,
+        "shot_of": shot_of,
+    }
 
 
 # ---------------------------------------------------------------- phases
@@ -283,7 +359,8 @@ def phase_hints(frames: list[Frame]) -> dict:
     n = len(frames)
     end_ms = frames[-1].start_ms + frames[-1].duration_ms if frames else 0
     peaks = find_peaks(inten)
-    active = [i for i, f in enumerate(frames) if inten[i] >= 0.01 or f.stats["coverage"] > 0.001]
+    active = [i for i, f in enumerate(frames)
+              if inten[i] >= 0.05 or f.stats.get("coverage_above_floor", f.stats["coverage"]) > 0.002]
     if not active:
         for f in frames:
             f.stats["phase_hint"] = "none"
@@ -347,9 +424,15 @@ def phase_hints(frames: list[Frame]) -> dict:
 # ---------------------------------------------------------------- space
 
 
-def spatial_hints(frames: list[Frame], union: np.ndarray) -> dict:
-    pts = [(f.start_ms, f.stats["centroid"]) for f in frames if f.stats["centroid"]]
-    out: dict = {}
+def spatial_hints(frames: list[Frame], union: np.ndarray, shot: int | None = None) -> dict:
+    """Footprint and travel. With shot set, only that camera shot counts:
+    positions in different shots aren't comparable."""
+    # Only frames where the effect is clearly there: in near-empty frames the
+    # centroid follows noise or idle animation.
+    pts = [(f.start_ms, f.stats["centroid"]) for f in frames
+           if f.stats["centroid"] and f.stats.get("intensity", 1) >= 0.1
+           and (shot is None or f.stats.get("shot", 0) == shot)]
+    out: dict = {} if shot is None else {"shot": shot}
     if union.max() > 0:
         mask = union > union.max() * 0.15
         rows = np.where(mask.any(axis=1))[0]
@@ -413,10 +496,14 @@ def guess_view(s: dict) -> dict:
 # ---------------------------------------------------------------- palette
 
 
-def palette(frames: list[Frame], colors: int = 6) -> list[dict]:
+def palette(frames: list[Frame], colors: int = 6, backgrounds: list[np.ndarray] | None = None,
+            shot_of: np.ndarray | None = None) -> list[dict]:
     stack = np.stack([f.rgb for f in frames])
     lumas = luma(stack)
-    background = np.percentile(lumas, 10, axis=0)
+    if backgrounds is None or shot_of is None:
+        background = np.percentile(lumas, 10, axis=0)
+    else:
+        background = np.stack(backgrounds)[shot_of]
     gain = lumas - background
     pixels = stack[gain > GLOW_THRESHOLD]
     if len(pixels) == 0:
@@ -490,13 +577,13 @@ def _font(size: int) -> ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
-def contact_sheet(frames: list[Frame], peaks: set[int], path: Path) -> list[int]:
+def contact_sheet(frames: list[Frame], peaks: set[int], path: Path, cuts: set[int] = frozenset()) -> list[int]:
     n = len(frames)
     if n <= MAX_SHEET_FRAMES:
         chosen = list(range(n))
     else:
         step = n / MAX_SHEET_FRAMES
-        chosen = sorted({int(i * step) for i in range(MAX_SHEET_FRAMES)} | peaks)
+        chosen = sorted({int(i * step) for i in range(MAX_SHEET_FRAMES)} | peaks | set(cuts))
     w, h = frames[0].full.size
     thumb_w = 200
     thumb_h = max(1, round(h * thumb_w / w))
@@ -515,6 +602,9 @@ def contact_sheet(frames: list[Frame], peaks: set[int], path: Path) -> list[int]
         phase = f.stats.get("phase_hint", "none")
         color = PHASE_COLORS[phase]
         draw.rectangle([x - 2, y - 2, x + thumb_w + 1, y + thumb_h + 1], outline=color, width=2)
+        if i in cuts:
+            draw.rectangle([x, y, x + 34, y + 16], fill=(200, 40, 40))
+            draw.text((x + 4, y + 1), "CUT", fill=(255, 255, 255), font=font)
         star = " *" if i in peaks else ""
         draw.text((x + 2, y + thumb_h + 2), f"#{i}  {f.start_ms} ms{star}", fill=(230, 230, 230), font=font)
         draw.text((x + 2, y + thumb_h + 16), f"{phase}  i={f.stats['intensity']:.2f}", fill=color, font=font)
@@ -554,6 +644,11 @@ def curves_chart(frames: list[Frame], hints: dict, path: Path) -> None:
             pts += [(x_of(f.start_ms), y_of(fn(f))), (x_of(f.start_ms + f.duration_ms), y_of(fn(f)))]
         d.line(pts, fill=color, width=2)
         d.text((m + 6 + k * 110, H - m + 22), name, fill=color, font=font)
+    for f in frames:
+        if f.stats.get("cut"):
+            x = x_of(f.start_ms)
+            for y0 in range(m, m + plot_h, 8):
+                d.line([x, y0, x, min(y0 + 4, m + plot_h)], fill=(220, 60, 60), width=2)
     for p in hints.get("peaks", []):
         x = x_of(frames[p["frame"]].start_ms + frames[p["frame"]].duration_ms / 2)
         d.ellipse([x - 4, y_of(p["intensity"]) - 4, x + 4, y_of(p["intensity"]) + 4], outline=(255, 255, 255))
@@ -594,11 +689,12 @@ def breakdown(gif: Path, out: Path, **video_opts) -> dict:
         raise ValueError(f"{gif.name} has no frames")
     measured = measure(frames)
     hints = phase_hints(frames)
-    space = spatial_hints(frames, measured["union"])
-    colors = palette(frames)
+    multi = len(measured["shots"]) > 1
+    space = spatial_hints(frames, measured["union"], measured["main_shot"] if multi else None)
+    colors = palette(frames, backgrounds=measured["backgrounds"], shot_of=measured["shot_of"])
     out.mkdir(parents=True, exist_ok=True)
     peaks = {p["frame"] for p in hints.get("peaks", [])}
-    sheet_frames = contact_sheet(frames, peaks, out / "contact_sheet.png")
+    sheet_frames = contact_sheet(frames, peaks, out / "contact_sheet.png", set(measured["cuts"]))
     curves_chart(frames, hints, out / "curves.png")
     palette_chart(colors, out / "palette.png")
     heatmap(measured["union"], out / "heatmap.png", (frames[0].full.size[0] // 2 or 1, frames[0].full.size[1] // 2 or 1))
@@ -606,6 +702,9 @@ def breakdown(gif: Path, out: Path, **video_opts) -> dict:
         "schema": "spelldirector.breakdown/0.1.0",
         "gif": meta,
         "background_luma": measured["background_luma"],
+        "bright_background": measured["bright_background"],
+        "shots": measured["shots"],
+        "main_shot": measured["main_shot"],
         "timing": hints,
         "space": space,
         "palette": colors,
@@ -636,6 +735,13 @@ def summary(r: dict) -> str:
     if video:
         lines.append(f"  video: {video['fps']} fps source, sampled at <= {video['max_fps']} fps from {video['start_s']} s"
                      + (" (truncated: use --start/--end or --max-seconds)" if video["truncated"] else ""))
+    shots = r.get("shots", [])
+    if len(shots) > 1:
+        main = shots[r["main_shot"]]
+        lines.append(f"  {len(shots)} camera shots (cuts at frames {', '.join(str(x['start_frame']) for x in shots[1:])});"
+                     f" main shot {r['main_shot']}: frames {main['start_frame']}-{main['end_frame']}")
+    if r.get("bright_background"):
+        lines.append(f"  bright background (luma {r['background_luma']}): effects over it measure dimmer than they look")
     for p in t.get("phases", []):
         lines.append(f"  {p['phase']:<13} {p['start_ms']:>5}-{p['end_ms']:<5} ms  (frames {p['start_frame']}-{p['end_frame']})")
     if t.get("flicker"):
