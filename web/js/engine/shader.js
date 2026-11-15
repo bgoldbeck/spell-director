@@ -13,6 +13,7 @@ export const HOW_TO_USE = [
 export const DEFAULT_SHADER = {
   bolt: { technique: "ribbon", material: "ionized", noise: { type: "ridged", scale: 6, speed: 4, contrast: 0.8 }, flow: { direction: "along_path", speed: 6 }, emissive: { hdr: 5, falloff: "exponential", core_ratio: 0.3 }, lighting: "emits_light" },
   beam: { technique: "ribbon", material: "plasma", noise: { type: "fbm", scale: 3, speed: 3, contrast: 0.6 }, flow: { direction: "along_path", speed: 5 }, emissive: { hdr: 4, falloff: "gaussian", core_ratio: 0.35 }, lighting: "emits_light" },
+  vortex: { technique: "mesh", material: "airy", noise: { type: "streaks", scale: 3, speed: 2, contrast: 0.6 }, flow: { direction: "swirl", speed: 4 }, distortion: 0.4, fresnel: 0.5, dissolve: { pattern: "streaks", edge_width: 0.2 }, lighting: "lit" },
   crackle: { technique: "ribbon", material: "ionized", noise: { type: "ridged", scale: 10, speed: 8, contrast: 0.9 }, emissive: { hdr: 3, falloff: "hard", core_ratio: 0.4 }, lighting: "unlit" },
   glow: { technique: "procedural", material: "ethereal", noise: { type: "simplex", scale: 1.5, speed: 0.5, contrast: 0.2 }, emissive: { hdr: 2, falloff: "gaussian", core_ratio: 0.1 }, lighting: "unlit" },
   flash: { technique: "procedural", material: "ethereal", emissive: { hdr: 6, falloff: "gaussian", core_ratio: 0.2 }, lighting: "emits_light" },

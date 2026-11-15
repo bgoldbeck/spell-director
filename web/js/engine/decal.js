@@ -16,6 +16,7 @@ export const DECAL_SHAPES = {
   puddle: { blend: "alpha", about: "lumpy wet patch with a bright rim" },
   splash: { blend: "alpha", about: "wet patch with droplets splattered outward" },
   frost: { blend: "alpha", about: "icy crystals spiking outward" },
+  swirl: { blend: "alpha", about: "ground scoured into spiral grooves by a vortex" },
   rune_circle: { blend: "add", about: "magic circle: rings, glyph marks and a star" },
   warning_ring: { blend: "add", about: "area telegraph: faint fill, bright rim, ticks" },
 };
