@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpellDirector · Getting started</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="help.css">
+</head>
+<body>
+  <div id="app" class="help">
+    <header class="top">
+      <div>
+        <h1>Getting started <span id="app-version" class="app-version" title="App version" hidden></span></h1>
+        <p class="sub">SpellDirector turns a loose idea or a reference clip into a spell effect your game can use.</p>
+      </div>
+      <div class="top-actions">
+        <a class="btn" href="./" title="Back to the viewer">‹ Viewer</a>
+      </div>
+    </header>
+
+    <nav class="help-toc" aria-label="On this page">
+      <a href="#ai">1. Talk to the director</a>
+      <a href="#setup">2. Connect it</a>
+      <a href="#ask">3. What to ask</a>
+      <a href="#viewer">4. The viewer</a>
+      <a href="#export">5. Export for your engine</a>
+    </nav>
+
+    <section id="ai" class="panel help-lead">
+      <h2>Mostly, you talk to an AI</h2>
+      <p>SpellDirector is driven by an AI <strong>director</strong>. You describe a spell in plain words (“heavy boss lightning for a top-down game”) or hand it a GIF, and the director asks you a couple of simple choices, writes the spell as a template, checks it and saves it. This viewer is where you <em>look</em> at the result and export it.</p>
+      <ol class="flow">
+        <li><b>You</b> ask for a spell, or share a clip.</li>
+        <li><b>The director</b> asks 2 or 3 plain-word choices.</li>
+        <li><b>It saves</b> a template and gives you a viewer link.</li>
+        <li><b>You</b> review it here and export sprite sheets.</li>
+      </ol>
+      <p class="muted">You don't need to know any VFX terms. The director does.</p>
+    </section>
+
+    <section id="setup" class="panel">
+      <h2>2. Connect the director</h2>
+      <p>The director is an MCP server that any MCP client can use. Claude Code is the easiest.</p>
+      <h3>Claude Code</h3>
+      <ol>
+        <li>Get the source folder: <code>git clone https://github.com/bgoldbeck/spell-director</code></li>
+        <li>Install the packages once: <code>python -m pip install -r requirements-dev.txt</code></li>
+        <li>Open Claude Code <strong>in that folder</strong>. It finds the <code>spelldirector</code> server in <code>.mcp.json</code> and asks you to allow it. Say yes.</li>
+        <li>Check it with <code>/mcp</code>: <code>spelldirector</code> should show as connected.</li>
+      </ol>
+      <h3>Claude Desktop or another client</h3>
+      <p>Add a stdio server to the client's MCP settings (for Claude Desktop, <code>claude_desktop_config.json</code>):</p>
+      <div class="code-wrap">
+        <pre id="mcp-config">{
+  "mcpServers": {
+    "spelldirector": {
+      "command": "python",
+      "args": ["-m", "director.mcp_server"],
+      "env": { "PYTHONPATH": "C:\\path\\to\\spell-director" }
+    }
+  }
+}</pre>
+        <button class="btn copy" data-copy="mcp-config" type="button">Copy</button>
+      </div>
+      <p class="muted small">Change the <code>PYTHONPATH</code> path to where you cloned the folder, then restart the client.</p>
+      <p class="note"><b>Using the Windows app (.exe)?</b> The app is the viewer on its own. The director needs the source folder and Python, as above. Templates the director saves land in that folder, so open them with <code>run.bat</code> there, or with <b>Open JSON…</b> in the app.</p>
+    </section>
+
+    <section id="ask" class="panel">
+      <h2>3. What to ask</h2>
+      <p>Just say what you want in your own words. Or start one of the director's three ready-made prompts (in Claude Code, type <code>/</code> and look for <code>spelldirector</code>):</p>
+      <div class="prompts">
+        <div class="prompt-card">
+          <h3>Direct a spell</h3>
+          <p class="muted small"><code>/mcp__spelldirector__direct_spell</code></p>
+          <p class="say" id="p1">Direct a spell: a quick chain shock that jumps between three enemies, side-scroller.</p>
+          <button class="btn copy" data-copy="p1" type="button">Copy</button>
+        </div>
+        <div class="prompt-card">
+          <h3>Direct from a GIF or video</h3>
+          <p class="muted small"><code>/mcp__spelldirector__direct_from_gif</code></p>
+          <p class="say" id="p2">Direct a spell from this clip: C:\Clips\storm.gif. Keep the slow charge-up, but make it violet.</p>
+          <button class="btn copy" data-copy="p2" type="button">Copy</button>
+        </div>
+        <div class="prompt-card">
+          <h3>Grow the library</h3>
+          <p class="muted small"><code>/mcp__spelldirector__grow_library</code></p>
+          <p class="say" id="p3">Grow the library: write 3 new lightning spells that feel different from the ones we have.</p>
+          <button class="btn copy" data-copy="p3" type="button">Copy</button>
+        </div>
+      </div>
+      <h3>What the director asks you</h3>
+      <p>At most two or three questions, once, each as a short choice with its pick first. Typical ones:</p>
+      <ul>
+        <li><b>Camera:</b> top-down, angled (isometric), side-on, or behind the character?</li>
+        <li><b>Charge-up:</b> a long, heavy build-up or near-instant?</li>
+        <li><b>Shape, area or color:</b> one clean bolt or a wild tree of forks, one target or the whole area, classic white-blue or a colored variant?</li>
+      </ul>
+      <p>Not sure? Say <q>you pick</q>. The director decides the rest itself, explains why in the template's notes, and gives you a link that opens the new spell here.</p>
+      <p class="muted small">Tip: <b>Analyze GIF/MP4…</b> in the viewer breaks a clip down on this computer and can copy a ready prompt for the director.</p>
+    </section>
+
+    <section id="viewer" class="panel">
+      <h2>4. The viewer</h2>
+      <p>Every spell plays as a looping motion study. Here's what's on screen, top to bottom:</p>
+      <dl class="tour">
+        <dt>Version badge</dt><dd>The small <span class="app-version">v…</span> next to the title is the version you're running. Compare it with the <a href="https://github.com/bgoldbeck/spell-director/releases" target="_blank" rel="noopener">Releases page</a> to see if there's a newer one.</dd>
+        <dt>Type and Spell</dt><dd>Pick a kind of spell (for example Lightning), then a spell of that type. <b>‹ Prev</b> and <b>Next ›</b>, or the <kbd>[</kbd> and <kbd>]</kbd> keys, step through them.</dd>
+        <dt>Views</dt><dd>Front, Side, Top and 3/4 show the same moment from the four standard game cameras. <b>All four</b> shows them side by side. Drag to orbit, scroll to zoom.</dd>
+        <dt>Playback</dt><dd>Replay, Pause, Speed (try 0.25× to study timing), Loop, and the timeline scrubber. The colored buttons under it jump to each beat, and the caption explains what that beat is for.</dd>
+        <dt>Seed and New cast</dt><dd>The same spell, cast a little differently each time. Keep a seed you like, since exports use it.</dd>
+        <dt>Sound</dt><dd>Off by default. Click <b>Sound off</b> or press <kbd>M</kbd> to hear the cue sounds (placeholders for now). It remembers your choice.</dd>
+        <dt>Bloom</dt><dd>On by default: bright light glows past its edges. Untick <b>Bloom</b> or press <kbd>B</kbd> to see the bare shapes.</dd>
+        <dt>Open JSON…</dt><dd>Load a template file from anywhere on your computer.</dd>
+        <dt>Analyze GIF/MP4…</dt><dd>Drop a reference clip to see its camera shots, phase timeline, palette, footprint and best view. Nothing leaves your computer.</dd>
+        <dt>Focus view</dt><dd>Hides everything but the stage, for screen recording. <kbd>Esc</kbd> brings it back.</dd>
+      </dl>
+      <h3>Keys</h3>
+      <p class="keys"><span><kbd>Space</kbd> play / pause</span><span><kbd>1</kbd>–<kbd>4</kbd> views</span><span><kbd>5</kbd> all four</span><span><kbd>[</kbd> <kbd>]</kbd> prev / next spell</span><span><kbd>M</kbd> sound</span><span><kbd>B</kbd> bloom</span><span><kbd>F</kbd> focus</span><span><kbd>?</kbd> this page</span></p>
+    </section>
+
+    <section id="export" class="panel">
+      <h2>5. Export for your engine</h2>
+      <p><b>Export sprites…</b> saves the current spell and seed as a .zip you can bring into Unity, Godot or any engine. Pick the views, the cell size and the frame rate, then <b>Export .zip</b>. You get:</p>
+      <ul>
+        <li><b>One sprite sheet per layer</b> (bolt, glow, sparks, smoke and so on), so you can tint, blend or time each layer on its own, plus <code>all.png</code> with the whole spell.</li>
+        <li>A <b>JSON file</b> with each layer's timing and the grid layout.</li>
+        <li>A <b>guide</b> that walks you through rebuilding the spell in the engine.</li>
+      </ul>
+      <div class="sheet-demo" aria-label="Sprite sheet layout: columns are frames, rows are views">
+        <span class="corner"></span>
+        <span class="col">frame 1</span><span class="col">frame 2</span><span class="col">frame 3</span><span class="col">…</span>
+        <span class="row">Front</span><i></i><i></i><i></i><i class="more"></i>
+        <span class="row">Side</span><i></i><i></i><i></i><i class="more"></i>
+        <span class="row">Top</span><i></i><i></i><i></i><i class="more"></i>
+        <span class="row">3/4</span><i></i><i></i><i></i><i class="more"></i>
+      </div>
+      <p><b>Columns are frames, rows are views.</b> Read one row left to right to play the spell from that camera. Every cell is the same size and shares the same center point, and cells line up across all the layer sheets, so stacking the layers rebuilds the full spell. Very long spells wrap onto more rows so no sheet is wider than 4096 px.</p>
+      <p class="muted small">Your AI can export too: ask the director to “export sprites for sky strike”, and it can look at the sheets cell by cell to check them.</p>
+    </section>
+
+    <p class="help-foot muted small">Back to the <a href="./">viewer</a>. More detail lives in the project's <a href="https://github.com/bgoldbeck/spell-director#readme" target="_blank" rel="noopener">README</a>.</p>
+  </div>
+  <script type="module" src="js/help.js"></script>
+</body>
+</html>

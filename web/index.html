@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SpellDirector</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="help.css">
   <script type="importmap">
     { "imports": { "three": "./vendor/three.module.min.js" } }
   </script>
@@ -21,8 +22,14 @@
         <a class="btn" href="analyze.html" title="Break down a reference GIF or video: camera shots, phase timeline, palette, footprint and view hints">Analyze GIF/MP4…</a>
         <button id="export" class="btn" title="Export sprite sheets (one per layer, every view in each) with a JSON file and an assembly guide for game engines">Export sprites…</button>
         <button id="focus" class="btn" title="Hide everything but the stage (F)">Focus view</button>
+        <a class="btn" href="help.html" title="Getting started: how to use SpellDirector with an AI, and a tour of the viewer (?)">? Help</a>
       </div>
     </header>
+    <div id="help-hint" class="help-hint" role="note" hidden>
+      <p><b>New here?</b> SpellDirector is mostly driven by an AI director. The getting-started guide shows how to connect it and what to ask.</p>
+      <a class="btn active" href="help.html">Show me how</a>
+      <button class="btn" type="button" data-dismiss>Dismiss</button>
+    </div>
 
     <nav class="picker" aria-label="Spells">
       <label>Type
@@ -147,5 +154,6 @@
     </form>
   </dialog>
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/help-link.js"></script>
 </body>
 </html>
