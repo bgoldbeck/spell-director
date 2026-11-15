@@ -39,6 +39,29 @@ function decalTexture(seed, shape) {
   const c = document.createElement("canvas");
   c.width = c.height = 256;
   const g = c.getContext("2d");
+  if (shape === "puddle") {
+    // A lumpy wet patch: overlapping soft blobs with a faint brighter rim.
+    const r = rng(seedFor(seed, "decal"));
+    for (let i = 0; i < 9; i++) {
+      const a = r.range(0, Math.PI * 2);
+      const d = i === 0 ? 0 : r.range(20, 60);
+      const x = 128 + Math.cos(a) * d;
+      const y = 128 + Math.sin(a) * d;
+      const rad = i === 0 ? 70 : r.range(26, 48);
+      const blob = g.createRadialGradient(x, y, 0, x, y, rad);
+      blob.addColorStop(0, "rgba(255,255,255,0.3)");
+      blob.addColorStop(0.75, "rgba(255,255,255,0.25)");
+      blob.addColorStop(0.9, "rgba(255,255,255,0.5)");
+      blob.addColorStop(1, "rgba(255,255,255,0)");
+      g.fillStyle = blob;
+      g.beginPath();
+      g.arc(x, y, rad, 0, Math.PI * 2);
+      g.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }
   const grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
   grad.addColorStop(0, "rgba(255,255,255,0.95)");
   grad.addColorStop(0.5, "rgba(255,255,255,0.55)");
@@ -455,7 +478,8 @@ class SparksLayer extends Layer {
     const spreadDeg = this.p("spread_deg", 0, 180);
     const drag = Math.max(0.01, this.p("drag", 0, 0.1) * 6);
     const sz = this.p("size_px", 0, 3);
-    const span = Math.max(1, Math.min(w.end - w.start, 120));
+    // Sparks are born over emit_ms (default 120 ms: one burst); longer reads as a fountain.
+    const span = Math.max(1, Math.min(w.end - w.start, this.p("emit_ms", 0, 120)));
     let n = 0;
     for (let i = 0; i < count; i++) {
       const born = r.range(0, span);
@@ -682,8 +706,9 @@ class BeamLayer extends Layer {
       const j = r.range(-1, 1) * jag * 0.06 * env;
       pts.push(a.clone().addScaledVector(dir, len * u).addScaledVector(p1, s + j).addScaledVector(p2, r.range(-1, 1) * jag * 0.04 * env));
     }
-    // Snap out to full length during the first 60 ms of the beam.
-    const grow = Math.min(1, Math.max(0.05, this.local(t) / 60));
+    // Reach full length over grow_ms (default 60 ms: snaps out). A slower
+    // grow reads as a jet travelling to the target.
+    const grow = Math.min(1, Math.max(0.05, this.local(t) / Math.max(1, this.p("grow_ms", t, 60))));
     const shown = Math.max(2, Math.round(pts.length * grow));
     const segs = [];
     for (let i = 0; i < shown - 1; i++) segs.push({ a: pts[i], b: pts[i + 1], w: 1 });

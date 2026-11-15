@@ -93,12 +93,12 @@ Unknown params are allowed (the validator warns) so the director can experiment,
 | `bolt` | `segments`, `jaggedness` (0–1), `width_px`, `taper` (0–1), `branch_chance` (0–1), `branch_depth`, `branch_length_ratio`, `regen_ms` (0 = never redraw), `restrikes`, `restrike_gap_ms`, `leader_ms`, `afterimage_ms`, `glow_px` |
 | `glow` | `radius_px`, `softness` (0–1), `pulse_hz` |
 | `flash` | `scope` (`screen` / `local`), `radius_px`, `peak` (0–1) |
-| `sparks` | `count`, `speed`, `speed_spread`, `gravity`, `lifetime_ms`, `size_px`, `spread_deg`, `drag` |
+| `sparks` | `count`, `speed`, `speed_spread`, `gravity`, `lifetime_ms`, `size_px`, `spread_deg`, `drag`, `emit_ms` (how long new sparks keep spawning, default 120) |
 | `crackle` | `count`, `length_px`, `jaggedness`, `regen_ms`, `radius_px` |
 | `orb` | `radius_px`, `pulse_hz`, `wobble`, `crackle_count` |
-| `beam` | `width_px`, `wobble`, `wobble_hz`, `jaggedness`, `regen_ms` |
+| `beam` | `width_px`, `wobble`, `wobble_hz`, `jaggedness`, `regen_ms`, `grow_ms` (time to reach full length, default 60) |
 | `ring` | `start_radius_px`, `end_radius_px`, `thickness_px`, `softness` |
-| `decal` | `radius_px`, `shape` (`scorch` / `cracks` / `burn`), `fade_ms` |
+| `decal` | `radius_px`, `shape` (`scorch` / `cracks` / `burn` / `puddle`), `fade_ms` |
 | `smoke` | `count`, `rise_speed`, `size_px`, `lifetime_ms`, `opacity` |
 | `light` | `radius`, `energy` |
 | `camera_shake` | `amplitude_px`, `frequency_hz`, `decay` (0–1) |

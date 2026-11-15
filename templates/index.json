@@ -3,6 +3,7 @@
     "lightning/boss-storm-call.json",
     "lightning/chain-arc.json",
     "lightning/charge-discharge.json",
-    "lightning/sky-strike.json"
+    "lightning/sky-strike.json",
+    "water/pressure-jet.json"
   ]
 }

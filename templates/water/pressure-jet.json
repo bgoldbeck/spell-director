@@ -1,0 +1,521 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "water-pressure-jet",
+  "name": "Pressure Jet",
+  "description": "The caster gathers a wobbling ball of water, then fires it as a rippling blue jet that travels to the target and bursts into a splash fountain, leaving mist and a wet puddle behind.",
+  "element": "water",
+  "archetype": "beam",
+  "tags": [
+    "line",
+    "jet",
+    "splash",
+    "single-target",
+    "from-reference"
+  ],
+  "source": {
+    "kind": "director_gif",
+    "reference": "LoopSnip_2026-11-14_19-21-19 (water jet reference, improved rather than copied)"
+  },
+  "timing": {
+    "duration_ms": 1600,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "beam",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Jet points at the camera: the gathering water ball and the splash fountain carry it. The fountain rises above the target and droplets fall back down on all sides.",
+      "side": "Full length of the jet from hand to target. The leading end visibly travels for the first 180 ms, the stream ripples while it holds, then it thins from the hand outward.",
+      "top": "The jet is a straight blue line; the splash ripples and the lumpy puddle at the target show where it landed. Droplets land in a ring around the target.",
+      "three_quarter": "Hero view. The jet recedes toward the target, the fountain reads tall, and the ripple and puddle read as ellipses on the ground."
+    }
+  },
+  "palette": {
+    "core": "#F2FBFF",
+    "primary": "#4FB8FF",
+    "secondary": "#1A5FD6",
+    "accent": "#BFF0FF"
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 320,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.15,
+        "to": 0.8
+      },
+      "intent": "A ball of water swells and wobbles in front of the caster. It should look heavy and liquid, not like glowing energy."
+    },
+    {
+      "id": "burst",
+      "phase": "release",
+      "start_ms": 320,
+      "end_ms": 380,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.85
+      },
+      "intent": "The ball bursts forward with a small spray at the hand. A short pop, not a white-out."
+    },
+    {
+      "id": "jet",
+      "phase": "travel",
+      "start_ms": 340,
+      "end_ms": 1050,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.8,
+        "to": 0.95,
+        "flicker_hz": 7
+      },
+      "intent": "A blue jet with a thin bright center runs to the target in about 180 ms, then holds and ripples like a hose under pressure."
+    },
+    {
+      "id": "splash",
+      "phase": "impact",
+      "start_ms": 520,
+      "end_ms": 1050,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.75,
+        "to": 1.0,
+        "flicker_hz": 6
+      },
+      "intent": "Where the jet lands, water sprays up in a fountain and falls back in arcs. Ripples spread on the ground and the area gets wet."
+    },
+    {
+      "id": "drain",
+      "phase": "dissipation",
+      "start_ms": 1050,
+      "end_ms": 1600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The jet thins and breaks off. The last droplets fall, mist hangs for a moment and the puddle fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "puddle",
+      "type": "decal",
+      "beats": [
+        "splash",
+        "drain"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": {
+          "min": 44,
+          "max": 56
+        },
+        "fade_ms": 600
+      }
+    },
+    {
+      "id": "ripples",
+      "type": "ring",
+      "beats": [
+        "splash"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "start_radius_px": 14,
+        "end_radius_px": {
+          "min": 80,
+          "max": 95
+        },
+        "thickness_px": 3,
+        "softness": 0.6
+      }
+    },
+    {
+      "id": "late-ripple",
+      "type": "ring",
+      "beats": [
+        "drain"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 55,
+        "thickness_px": 2,
+        "softness": 0.7
+      }
+    },
+    {
+      "id": "mist",
+      "type": "smoke",
+      "beats": [
+        "splash",
+        "drain"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "count": 8,
+        "rise_speed": 18,
+        "size_px": {
+          "min": 26,
+          "max": 34
+        },
+        "lifetime_ms": 700,
+        "opacity": 0.22
+      }
+    },
+    {
+      "id": "water-ball",
+      "type": "orb",
+      "beats": [
+        "gather",
+        "burst"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "radius_px": 6,
+        "pulse_hz": 3,
+        "wobble": 0.35,
+        "crackle_count": 0
+      },
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 4
+        },
+        {
+          "t_ms": 320,
+          "param": "radius_px",
+          "value": 16,
+          "ease": "ease_in"
+        }
+      ]
+    },
+    {
+      "id": "ball-glow",
+      "type": "glow",
+      "beats": [
+        "gather",
+        "burst"
+      ],
+      "attach_to": "water-ball",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 22,
+        "softness": 0.9,
+        "pulse_hz": 3
+      }
+    },
+    {
+      "id": "jet-stream",
+      "type": "beam",
+      "beats": [
+        "jet",
+        "drain"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "gradient_primary_to_secondary",
+      "z": 11,
+      "params": {
+        "width_px": {
+          "min": 16,
+          "max": 20
+        },
+        "wobble": 0.35,
+        "wobble_hz": 6,
+        "jaggedness": 0.08,
+        "regen_ms": 70,
+        "grow_ms": 180
+      },
+      "keyframes": [
+        {
+          "t_ms": 1050,
+          "param": "width_px",
+          "value": 18
+        },
+        {
+          "t_ms": 1250,
+          "param": "width_px",
+          "value": 1,
+          "ease": "ease_in"
+        }
+      ]
+    },
+    {
+      "id": "jet-core",
+      "type": "beam",
+      "beats": [
+        "jet"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "width_px": 6,
+        "wobble": 0.5,
+        "wobble_hz": 9,
+        "jaggedness": 0.15,
+        "regen_ms": 45,
+        "grow_ms": 180
+      }
+    },
+    {
+      "id": "jet-glow",
+      "type": "glow",
+      "beats": [
+        "jet"
+      ],
+      "attach_to": "jet-stream",
+      "plane": "billboard",
+      "color": "secondary",
+      "z": 8,
+      "params": {
+        "radius_px": 18,
+        "softness": 0.85
+      }
+    },
+    {
+      "id": "muzzle-spray",
+      "type": "sparks",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "count": {
+          "min": 14,
+          "max": 20
+        },
+        "speed": 220,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 300,
+        "size_px": 3.5,
+        "spread_deg": 200,
+        "drag": 0.2
+      }
+    },
+    {
+      "id": "splash-fountain",
+      "type": "sparks",
+      "beats": [
+        "splash"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 150,
+          "max": 180
+        },
+        "speed": 420,
+        "speed_spread": 0.55,
+        "gravity": 1100,
+        "lifetime_ms": 700,
+        "size_px": 5,
+        "spread_deg": 110,
+        "drag": 0.08,
+        "emit_ms": 480
+      }
+    },
+    {
+      "id": "spray-sparkle",
+      "type": "sparks",
+      "beats": [
+        "splash"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 480,
+        "speed_spread": 0.4,
+        "gravity": 700,
+        "lifetime_ms": 380,
+        "size_px": 2.5,
+        "spread_deg": 170,
+        "drag": 0.25,
+        "emit_ms": 480
+      }
+    },
+    {
+      "id": "last-drips",
+      "type": "sparks",
+      "beats": [
+        "drain"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 26
+        },
+        "speed": 120,
+        "speed_spread": 0.6,
+        "gravity": 1000,
+        "lifetime_ms": 500,
+        "size_px": 4,
+        "spread_deg": 90,
+        "drag": 0.1,
+        "emit_ms": 200
+      }
+    },
+    {
+      "id": "hit-pop",
+      "type": "flash",
+      "beats": [
+        "splash"
+      ],
+      "anchor": "point",
+      "color": "accent",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 50,
+        "peak": 0.45
+      },
+      "keyframes": [
+        {
+          "t_ms": 520,
+          "param": "peak",
+          "value": 0.6
+        },
+        {
+          "t_ms": 640,
+          "param": "peak",
+          "value": 0.1,
+          "ease": "ease_out"
+        }
+      ]
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "splash"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 1,
+          "max": 2
+        },
+        "frequency_hz": 18,
+        "decay": 0.5
+      }
+    },
+    {
+      "id": "water-light",
+      "type": "light",
+      "beats": [
+        "jet",
+        "splash"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 4,
+        "energy": 1.2
+      }
+    },
+    {
+      "id": "fire-sound",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "whoosh"
+      }
+    },
+    {
+      "id": "stream-sound",
+      "type": "sound_cue",
+      "beats": [
+        "jet"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.5,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "splash"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.7
+      }
+    },
+    {
+      "id": "fizz-sound",
+      "type": "sound_cue",
+      "beats": [
+        "splash",
+        "drain"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.3,
+        "pitch": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Jet ripple, droplet paths, puddle shape and mist vary per cast. The 180 ms travel, the impact time and the fountain height stay fixed so the hit always lands at the same moment."
+  },
+  "director_notes": "Directed from a game-capture reference whose jet was a flat, blown-out white bar and whose splash read yellow-green over grass. Fixes: (1) the jet is mid-blue with only a thin white thread, so it reads as water on any background; (2) a 320 ms gather and a 180 ms visible travel replace the reference's instant on/off, so the hit has a cause; (3) the splash is a fountain that keeps spraying for the whole contact and falls back with gravity, plus mist, ripples and a puddle, so water has weight and leaves a mark. The reference's camera cuts are not copied: this is one continuous shot."
+}

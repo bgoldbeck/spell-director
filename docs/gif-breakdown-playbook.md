@@ -20,6 +20,12 @@ python tools/breakdown.py path/to/spell.mp4 --start 1.2 --end 3.5 --out breakdow
 
 Videos are sampled at up to 30 fps (`--max-fps`) and 20 s (`--max-seconds`); `gif.video.truncated` tells you if the limit cut it off. Through MCP, `breakdown_gif` takes `start_s` and `end_s`. A video recorded from a game often has UI, a moving camera and a non-black background, so trust the contact sheet over the numbers.
 
+Real game captures often cut between cameras (caster, then target). The tool finds the cuts and lists them in `shots`, each with its own `peak_intensity` and `effect_onset_ms`; frames that start a shot have `"cut": true` and show a red CUT tag on the contact sheet and a dashed red line on the curves. `main_shot` is the shot with the strongest effect, and `space` (footprint, travel, view guess) is measured in that shot only. A beam fired in the caster's shot and landing in the target's shot shows up as the onset of each shot: use those, not `timing.phases`, which runs across cuts. Write the template as one continuous shot; don't copy the cuts.
+
+`bright_background: true` means the clip is shot over a bright scene (sky, snow, daylight). Additive light measures dimmer there than it looks, and white-hot elements blow out, so read colors from the contact sheet as well as `palette`.
+
+A reference is a starting point, not a target. If part of it reads poorly (a blown-out beam, a splash that takes the ground's color), say so in `director_notes` and direct a better version.
+
 You get `breakdown.json` plus four images. Look at the images, not just the numbers:
 
 | File | Look at it for |
