@@ -45,8 +45,8 @@ def _pop_library(argv: list[str]) -> tuple[str | None, list[str]]:
 
 def run_mcp(argv: list[str]) -> int:
     """The director's MCP server. stdout is the MCP channel: nothing else may go there."""
-    ap = argparse.ArgumentParser(prog="SpellDirector --mcp", description="Run the SpellDirector MCP server on stdio.")
-    ap.add_argument("--mcp", action="store_true", required=True)
+    ap = argparse.ArgumentParser(prog="SpellDirector", description="Run the SpellDirector MCP server on stdio.")
+    ap.add_argument("--mcp", action="store_true", required=True, help="run the MCP server (this mode)")
     ap.add_argument("--library", help='folder for saved templates, exports and breakdowns '
                                       '(default: "SpellDirector Library" next to the exe)')
     ap.add_argument("--no-viewer", action="store_true",

@@ -195,7 +195,8 @@ def viewer_url() -> str:
     import serve  # tools/serve.py
 
     running = serve.InstanceLock().running_url()
-    if running and serve.is_viewer(running, timeout=0.5):
+    # Check it at 127.0.0.1: on Windows, "localhost" can take seconds while IPv6 is tried first.
+    if running and serve.is_viewer(running.replace("://localhost:", "://127.0.0.1:"), timeout=0.5):
         return running if running.endswith("/") else running + "/"
     port = os.environ.get("SPELLDIRECTOR_PORT") or serve.DEFAULT_PORT
     return f"http://localhost:{port}/"

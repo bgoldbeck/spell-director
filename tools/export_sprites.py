@@ -193,8 +193,11 @@ def _export_headless(port: int, opts: dict, timeout_s: float) -> dict:
     profile = tempfile.mkdtemp(prefix="spelldirector-export-")
     url = f"http://127.0.0.1:{port}/?sound=off&t=0&export_job={token}"
     args = [exe, "--headless=new", f"--user-data-dir={profile}", "--no-first-run", "--no-default-browser-check",
-            "--disable-extensions", "--mute-audio", "--enable-unsafe-swiftshader", "--use-angle=swiftshader",
-            "--window-size=1280,800", url]
+            "--disable-extensions", "--mute-audio", "--enable-unsafe-swiftshader", "--window-size=1280,800"]
+    if sys.platform != "win32":
+        # No GPU in most Linux containers; on Windows let Edge or Chrome use the GPU (much faster).
+        args.append("--use-angle=swiftshader")
+    args.append(url)
     if hasattr(os, "geteuid") and os.geteuid() == 0:
         args.insert(1, "--no-sandbox")
     flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
