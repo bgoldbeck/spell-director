@@ -46,7 +46,9 @@
         "shadow",
         "arcane",
         "nature",
-        "poison"
+        "poison",
+        "energy",
+        "psychic"
       ]
     },
     "archetype": {

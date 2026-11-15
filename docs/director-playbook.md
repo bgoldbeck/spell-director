@@ -34,7 +34,7 @@ Pull these out of what the user said, and note which are missing:
 
 | Decide | Words that tell you | If missing |
 |---|---|---|
-| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash"; "wind", "air", "tornado", "whirlwind", "gust", "gale" | ask (it's rarely missing) |
+| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "sun", "solar", "holy", "radiant" (light); "raw power", "hyper", "cannon", "annihilate" (energy); "psychic", "mind", "telekinetic" (psychic) | ask (it's rarely missing) |
 | `archetype` | strike (from above / one hit), projectile (thrown), chain (jumps), beam (continuous), aura (around the caster), nova (bursts outward) | infer, or ask as a choice |
 | weight | heavy, boss, big, ultimate → long anticipation, hold frames, shake. quick, light, basic → snappy | default to medium |
 | camera / hero view | top-down, isometric, side-scroller, fighting game, over-the-shoulder (see vocabulary §7) | **ask** |
@@ -128,6 +128,13 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
   - *Ground*: a `swirl` decal (alpha, dusty color, `grow_ms` 600–900, outlives the spell).
   - *Sound*: `wind` at low pitch (0.7) for the gather → `whoosh` as it forms → `wind` at 1.0–1.1 plus `rumble` while it travels and grinds → `wind` at 0.75, quiet, as it dies.
   - *Shader intent*: `airy` for the funnel and gusts (streak noise flowing `swirl`, `fresnel` into alpha, `distortion` 0.3–0.5), `dusty` for dust and the mark, `stone` for debris, `organic` for leaves. No emission unless the wind is magical.
+- **Big beams** (light, energy; vocabulary "Light and energy beam terms"). The charge is half the spell:
+  - *Gather*: `sparks` with `gather_px` 120-200, `spread_deg` 360 and long `emit_ms` pulled into an `orb` that grows by keyframe, plus a contracting `ring` and a `rune_circle` or glowing `cracks` underfoot. Solar spells brighten the whole frame with a soft `flash` `scope: screen`. Heavy shots add a short 18-22 Hz `overload` beat.
+  - *Beam*: `width_px` 35-80, `wobble` under 0.15, `grow_ms` 100-150, `spiral_count` 2-3 with `spiral_pitch_px` 150-200 so it reads as a 3D column from every view. Keyframe the width up on release and down to 0 at the end.
+  - *Recoil*: a `ring` with `plane: vertical` at the hand, a dust `ring` at the caster, a stretched `scorch` under them and a heavy `camera_shake`; then a recharge beat (hand `smoke`, weak `crackle`).
+  - *Impact*: a soft bloom for light (flash, ring, motes floating up, `burn`); a full explosion for raw energy (flash, `smoke` `blend: add` billows, shockwave, debris, `crater` over a `burn`, smoke column).
+  - *Sound*: `shimmer` or `charge` → `whoosh` or `crack` → `hum` (higher pitch for light, lower for raw energy) → `impact` or `boom` + `rumble` → a quiet `shimmer` or `sizzle`.
+- **Psychic** (vocabulary "Psychic terms"): show force by its effects. Billboard `ring` ripples from the hand, a thin wavering link `beam` to the target, a `bubble` `orb` (`height_px` about 50) around the target with a turning `rune_circle` under it and debris floating up, then a crush: keyframe the bubble's `radius_px` down in under 0.2 s with an inward billboard ring, then `flash`, `sparks`, a ground `ring`, `cracks` and a shake. Shader intent: `ethereal` or `arcane` with high `distortion` and `fresnel`; sound `shimmer` → `whoosh` → high `hum` → `crash` + `impact`.
 
 Know what the viewer draws today (see the known issues in [DESIGN.md](DESIGN.md#6-known-issues-and-limits)): several targets exist only for chains (`travel: chain` or `destination: targets`), so a "storm of strikes across an area" renders as strikes on one spot. Projectile travel is drawn for an `orb` anchored at `caster_hand` in a `travel: projectile` spell. Prefer designs the viewer can show, and say in `director_notes` when you go beyond it.
 
@@ -181,6 +188,8 @@ Set `views.hero` from the camera answer. Then write `views.reads` for **all four
 3. Give the user the preview URL from the result (`http://localhost:47811/?template=<id>&view=<hero>`, with the viewer running via `run.sh`, `run.bat` or `python tools/serve.py`; if the server picked another port because 47811 was busy, use that one) and a two-line summary: what you made and the choices you took.
 4. Offer one revision round in plain words ("heavier hit?", "fewer forks?"). Revise the same template id with `overwrite: true`.
 5. When the user wants the spell in their game, call `export_sprites` (or point them at **Export sprites…** in the viewer) and give them the guide path. It makes a sheet per layer with the four views as rows, a JSON file and a guide for Unity and Godot ([exporting.md](exporting.md)).
+
+More examples: [`templates/light/sunlance.json`](../templates/light/sunlance.json) (a long sunlight gather and a steady lance of light with two spirals), [`templates/energy/annihilator-beam.json`](../templates/energy/annihilator-beam.json) (an all-out beam with recoil, an explosion and a recharge) and [`templates/psychic/mind-crush.json`](../templates/psychic/mind-crush.json) (warping ripples, a held bubble, a crush).
 
 ## Library mode (no request)
 

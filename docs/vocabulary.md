@@ -202,6 +202,32 @@ Air is invisible: wind reads through what it carries (dust, leaves, debris, stre
 | scoured ground | `decal` `swirl` | Spiral grooves left where it ground. |
 | gust, howl, roar | `wind` cue (pitch for size: low for a gathering wind, 1.0–1.1 for a roaring funnel), `whoosh` for a snap | The sound of the air. Add `rumble` for a heavy grind. |
 
+### Light and energy beam terms
+
+Big beams are about the build-up and the weight: the gather is the dodge window, the beam is a solid column (not a crackling line), and the heaviest ones leave the caster spent.
+
+| Term | Field | Meaning |
+|---|---|---|
+| gather, draw in, soak up (light, power) | `sparks` with `gather_px` (and `swirl`), a contracting `ring`, a growing `orb` | Motes or streaks born all round the caster and pulled into the hand, arriving as they fade. Swirl makes them spiral in. |
+| solar, sunlight, radiant | palette white → gold, `flash` `scope: screen` (soft, `accent`) during the gather | The scene warms and brightens while the light gathers; the beam is steady (low wobble, 3-5 Hz flicker). |
+| lance, column, pillar of light | `beam` with a wide `width_px` (35-80) and low `wobble` | A thick, steady beam that reads as a solid shape from every view. |
+| spiral, corkscrew, twisting strands | `beam.spiral_count`, `spiral_pitch_px`, `spiral_speed` | Thin strands wound round a beam that rush toward the target. 2 for something graceful, 3 for raw power. |
+| recoil, kickback | `ring` `plane: vertical` at the hand, a dust `ring` and a stretched `scorch` (`rotation_deg` 0) at the caster | The shot shoves the caster back. In a game, add a short knock-back on the caster. |
+| recharge, spent, exhausted | a dissipation beat with `smoke` at the hand and a weak `crackle` round the caster | The caster can't act for a moment after an all-out shot: the punish window. |
+| overload, shudder | a short `flicker` beat (18-22 Hz) between the charge and the release | The last unstable instant before a big shot; the final dodge cue. |
+
+### Psychic terms
+
+Psychic force is mostly invisible, so tell it through what it does to space and to the target: warping, holding, lifting, crushing.
+
+| Term | Field | Meaning |
+|---|---|---|
+| warp, ripple, distortion | `ring` `plane: billboard` with high `softness`, shader `distortion` 0.8-1 | Rings of bent air facing the camera, pulsing out from the caster or closing in round the target. In an engine they are refraction; the color is only a hint. |
+| grip, hold, telekinetic field | `orb` with `bubble: true` and `height_px`, a turning `rune_circle` under the target | A clear bubble with a glowing rim around the target's body. |
+| lift, levitate | `sparks` from the target with negative `gravity` and low `drag` | Debris and motes floating up inside the field. The viewer can't move the target stand-in; say in the beat intent how high a game should lift it. |
+| crush, squeeze, clench | `orb` `radius_px` keyframed down hard, an inward billboard `ring`, then `flash` + `sparks` + ground `ring` + `cracks` | The field collapses onto the target, then bursts. |
+| mind link, focus | a thin `beam` with high `wobble` and fine `spiral_*`, a small pulsing `orb` + `glow` at the hand | The visible thread of the caster's will. |
+
 ## 9. How the director uses this
 
 1. Hear the request (text) or read a GIF breakdown.

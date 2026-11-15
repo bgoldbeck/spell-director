@@ -1,0 +1,1141 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "energy-annihilator-beam",
+  "name": "Annihilator Beam",
+  "description": "The caster pours everything into one shot: raw energy is dragged in from the ground around them into a shuddering white-hot core, then a massive beam wound with corkscrewing energy tears across the field with a recoil that cracks the ground under their feet and shoves them back. The target vanishes in a blast. Afterwards the caster is spent, vents smoke and sputters while they recharge.",
+  "element": "energy",
+  "archetype": "beam",
+  "tags": [
+    "beam",
+    "hyper",
+    "massive",
+    "recoil",
+    "recharge",
+    "explosion",
+    "ultimate",
+    "heavy"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A massive raw energy beam with recoil: a huge charge, a screen-filling beam, a big explosion, and the caster has to recover afterwards. Original, inspired by the all-out hyper-beam archetype common in creature-battle games."
+  },
+  "timing": {
+    "duration_ms": 3000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "beam",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 4.4,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Behind the caster: the core in the hand swells and shudders with arcs crawling round it, then the beam fills the middle of the frame, a corkscrewing tunnel of light rushing to an explosion at the far end. The recoil ring bursts past the camera.",
+      "side": "The full length of a very thick beam with three energy strands corkscrewing along it, a vertical shockwave ring at the caster's hand, the explosion and smoke column at the target, and the spent caster venting smoke afterwards.",
+      "top": "The ground tells the story: energy dragged in across the ground, a cracked recoil mark and a dust ring blasting out under the caster, a broad bright line to the target, a big shockwave and a crater there, and the caster sputtering at the end.",
+      "three_quarter": "Hero view. The beam reads as a thick 3D column receding to the target with its strands winding round it, the recoil ring stands across the line of fire, the explosion rises tall, and both ground marks (recoil cracks, target crater) read as ellipses."
+    }
+  },
+  "palette": {
+    "core": "#FFF7F2",
+    "primary": "#FF4E3A",
+    "secondary": "#A3146A",
+    "accent": "#FFB54A",
+    "shadow": "#1D1719"
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 850,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.85
+      },
+      "intent": "The caster braces and drags raw power in: streaks of energy are pulled in off the ground from all around, arcs crawl over the hand, the core there swells from red to white and the ground starts to crack and glow under their feet."
+    },
+    {
+      "id": "overload",
+      "phase": "anticipation",
+      "start_ms": 850,
+      "end_ms": 960,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.85,
+        "to": 1.0,
+        "flicker_hz": 20
+      },
+      "intent": "A held breath: the core shudders and flickers, the arcs go wild. The last moment to dodge."
+    },
+    {
+      "id": "fire",
+      "phase": "release",
+      "start_ms": 960,
+      "end_ms": 1040,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.9
+      },
+      "intent": "The beam tears loose with a blinding flash. The recoil hits the caster: a shockwave ring stands up around the hand, dust blasts out along the ground and the ground under their feet splits. Hold a frame here."
+    },
+    {
+      "id": "blast",
+      "phase": "travel",
+      "start_ms": 1000,
+      "end_ms": 1900,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.85,
+        "to": 1.0,
+        "flicker_hz": 10
+      },
+      "intent": "A massive beam, as wide as a body, pours across the field: a white-hot core in a red sheath with three strands of energy corkscrewing along it, shuddering with power."
+    },
+    {
+      "id": "explode",
+      "phase": "impact",
+      "start_ms": 1060,
+      "end_ms": 1960,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.7,
+        "to": 1.0,
+        "flicker_hz": 12
+      },
+      "intent": "The target disappears in a blast: a big flash, a fireball of energy billowing up, a shockwave across the ground, debris and sparks thrown out, a crater punched into the ground and a long, heavy shake."
+    },
+    {
+      "id": "recharge",
+      "phase": "dissipation",
+      "start_ms": 1880,
+      "end_ms": 3000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "The beam has collapsed to nothing. The caster is spent: smoke vents from the hand, a few weak sparks sputter around them while they recharge, and a smoke column rises over the crater."
+    }
+  ],
+  "layers": [
+    {
+      "id": "crater",
+      "type": "decal",
+      "beats": [
+        "explode",
+        "recharge"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 85,
+          "max": 100
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 60,
+        "grow_ms": 250,
+        "start_scale": 0.5,
+        "lifetime_ms": 4500,
+        "fade_ms": 1800,
+        "detail": 0.75
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A blasted crater: a dark scorched dent with a dusty rim and broken debris around it.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crater-burn",
+      "type": "decal",
+      "beats": [
+        "explode",
+        "recharge"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 70,
+          "max": 80
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 0,
+        "lifetime_ms": 900,
+        "fade_ms": 700,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The floor of the crater glowing red-hot, cooling from the rim inward.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.3,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "recoil-cracks",
+      "type": "decal",
+      "beats": [
+        "charge",
+        "overload",
+        "fire",
+        "blast",
+        "recharge"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 55,
+          "max": 62
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 500,
+        "grow_ms": 900,
+        "start_scale": 0.3,
+        "lifetime_ms": 2000,
+        "fade_ms": 800,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The ground under the caster splitting with the strain, cracks glowing red as the power builds and fading after the shot.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "recoil-skid",
+      "type": "decal",
+      "beats": [
+        "fire",
+        "blast",
+        "recharge"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 42,
+          "max": 48
+        },
+        "opacity": 0.6,
+        "fade_in_ms": 80,
+        "grow_ms": 200,
+        "start_scale": 0.5,
+        "rotation_deg": 0,
+        "stretch": 2.0,
+        "lifetime_ms": 3500,
+        "fade_ms": 1500,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A scuffed, scorched skid mark under the caster, stretched back along the line of fire where the recoil shoved them.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.5
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.25
+        },
+        "lighting": "lit",
+        "notes": "In a game, pair it with a short knock-back on the caster (root motion of about a quarter of a body length, away from the target)."
+      }
+    },
+    {
+      "id": "inflow-ring",
+      "type": "ring",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 150,
+        "end_radius_px": 20,
+        "thickness_px": 6,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A ring of disturbed energy on the ground closing in on the caster.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "inward",
+          "speed": 2
+        },
+        "distortion": 0.4,
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "inflow",
+      "type": "sparks",
+      "beats": [
+        "charge",
+        "overload"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 60,
+          "max": 70
+        },
+        "speed": 0,
+        "lifetime_ms": 420,
+        "size_px": 3,
+        "spread_deg": 360,
+        "emit_ms": 900,
+        "streak_ms": 45,
+        "gather_px": 160,
+        "swirl": 0.15
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "Streaks of raw energy torn off the ground and the air around the caster and dragged into the hand.",
+        "technique": "particles",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hand-arcs",
+      "type": "crackle",
+      "beats": [
+        "charge",
+        "overload"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 13,
+      "params": {
+        "count": {
+          "min": 3,
+          "max": 5
+        },
+        "length_px": 26,
+        "jaggedness": 0.8,
+        "regen_ms": 50,
+        "radius_px": 55
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "Arcs of energy crawling in over the caster's arm toward the core.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 5,
+          "speed": 4,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "inward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "core",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "overload",
+        "fire"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 4
+        },
+        {
+          "t_ms": 850,
+          "param": "radius_px",
+          "value": 16,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 960,
+          "param": "radius_px",
+          "value": 19
+        }
+      ],
+      "params": {
+        "radius_px": 5,
+        "pulse_hz": 6,
+        "wobble": 0.25,
+        "crackle_count": 3
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A shuddering ball of raw power: a white-hot heart in a red shell, throbbing faster and faster.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 2.5
+        },
+        "fresnel": 0.5,
+        "emissive": {
+          "hdr": 6,
+          "falloff": "soft",
+          "core_ratio": 0.45
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "charge",
+        "overload",
+        "fire"
+      ],
+      "attach_to": "core",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 46,
+        "softness": 0.85,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Red light swelling around the hand.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fire-flash",
+      "type": "flash",
+      "beats": [
+        "fire"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 18,
+      "params": {
+        "scope": "local",
+        "radius_px": 170,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A blinding white flash at the hand as the beam tears loose.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 9,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "fire"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 19,
+      "params": {
+        "scope": "screen",
+        "peak": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The whole screen blinks white for a frame.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 8,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "notes": "A one-frame exposure spike in post, not a sprite."
+      }
+    },
+    {
+      "id": "recoil-ring",
+      "type": "ring",
+      "beats": [
+        "fire"
+      ],
+      "anchor": "caster_hand",
+      "plane": "vertical",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 150,
+        "thickness_px": 10,
+        "softness": 0.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A shockwave ring standing up around the hand as the beam fires, kicked back by the recoil.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "distortion": 0.6,
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "unlit",
+        "notes": "Best as a refraction ring (screen-space distortion) with a thin bright edge."
+      }
+    },
+    {
+      "id": "recoil-dust",
+      "type": "ring",
+      "beats": [
+        "fire",
+        "blast"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 170,
+        "thickness_px": 14,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Dust and grit blasting out along the ground from the caster's feet.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "beam",
+      "type": "beam",
+      "beats": [
+        "fire",
+        "blast"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "keyframes": [
+        {
+          "t_ms": 960,
+          "param": "width_px",
+          "value": 30
+        },
+        {
+          "t_ms": 1040,
+          "param": "width_px",
+          "value": 80,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 1700,
+          "param": "width_px",
+          "value": 72
+        },
+        {
+          "t_ms": 1900,
+          "param": "width_px",
+          "value": 0,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "width_px": {
+          "min": 70,
+          "max": 76
+        },
+        "wobble": 0.12,
+        "wobble_hz": 10,
+        "jaggedness": 0.08,
+        "regen_ms": 40,
+        "grow_ms": 110,
+        "spiral_count": 3,
+        "spiral_pitch_px": 190,
+        "spiral_speed": 4.5,
+        "spiral_radius": 0.5,
+        "spiral_width_px": 2.5
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A massive column of raw energy: a white-hot core in a red sheath that shudders and surges, with three strands corkscrewing along it toward the target.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 8,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 10
+        },
+        "distortion": 0.5,
+        "fresnel": 0.3,
+        "emissive": {
+          "hdr": 8,
+          "falloff": "gaussian",
+          "core_ratio": 0.4
+        },
+        "lighting": "emits_light",
+        "notes": "A cylinder with scrolling fBm and a hot core, plus three thin trails orbiting its axis. Distort the scene around it."
+      }
+    },
+    {
+      "id": "beam-glow",
+      "type": "glow",
+      "beats": [
+        "blast"
+      ],
+      "attach_to": "beam",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "radius_px": 46,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Red light hanging around the beam.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "explosion-flash",
+      "type": "flash",
+      "beats": [
+        "explode"
+      ],
+      "anchor": "point",
+      "color": "core",
+      "z": 16,
+      "keyframes": [
+        {
+          "t_ms": 1060,
+          "param": "peak",
+          "value": 1.0
+        },
+        {
+          "t_ms": 1300,
+          "param": "peak",
+          "value": 0.5,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "scope": "local",
+        "radius_px": 150,
+        "peak": 0.6
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A white-hot blast swallowing the target.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 8,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fireball",
+      "type": "smoke",
+      "beats": [
+        "explode"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 13,
+      "params": {
+        "count": 14,
+        "rise_speed": 70,
+        "size_px": {
+          "min": 42,
+          "max": 50
+        },
+        "lifetime_ms": 600,
+        "opacity": 0.6
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "Billowing balls of energy erupting up and out of the blast, cooling from white through red to crimson.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2.5,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 2
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "explode"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 5,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 230,
+        "thickness_px": 14,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A broad shockwave racing out across the ground from the blast.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "distortion": 0.6,
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "debris",
+      "type": "sparks",
+      "beats": [
+        "explode"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 15,
+      "params": {
+        "count": {
+          "min": 45,
+          "max": 55
+        },
+        "speed": 420,
+        "speed_spread": 0.6,
+        "gravity": 700,
+        "lifetime_ms": 650,
+        "size_px": 3.5,
+        "spread_deg": 160,
+        "drag": 0.25,
+        "emit_ms": 250
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "Hot sparks and chunks flung out of the blast and arcing back down.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "smoke-column",
+      "type": "smoke",
+      "beats": [
+        "explode",
+        "recharge"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 4,
+      "params": {
+        "count": 14,
+        "rise_speed": 50,
+        "size_px": {
+          "min": 46,
+          "max": 56
+        },
+        "lifetime_ms": 1100,
+        "opacity": 0.55
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A thick dark column of smoke rising over the crater and spreading.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "vent-smoke",
+      "type": "smoke",
+      "beats": [
+        "recharge"
+      ],
+      "anchor": "caster_hand",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 5,
+      "params": {
+        "count": 8,
+        "rise_speed": 30,
+        "size_px": {
+          "min": 14,
+          "max": 18
+        },
+        "lifetime_ms": 650,
+        "opacity": 0.4
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Smoke venting from the caster's spent hand.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 3,
+          "speed": 0.6,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "spent-sputter",
+      "type": "crackle",
+      "beats": [
+        "recharge"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 9,
+      "params": {
+        "count": {
+          "min": 1,
+          "max": 3
+        },
+        "length_px": 14,
+        "jaggedness": 0.85,
+        "regen_ms": 110,
+        "radius_px": 40
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A few weak sparks sputtering round the exhausted caster while they recharge.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 5,
+          "speed": 3,
+          "contrast": 0.6
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "fire",
+        "blast",
+        "explode"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 9,
+          "max": 12
+        },
+        "frequency_hz": 20,
+        "decay": 0.5
+      }
+    },
+    {
+      "id": "blast-light",
+      "type": "light",
+      "beats": [
+        "fire",
+        "blast",
+        "explode",
+        "recharge"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 8,
+        "energy": 3
+      },
+      "shader": {
+        "look": "Harsh red-white light washing over the field, dying to a red glow over the crater.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.75,
+        "pitch": 0.75
+      }
+    },
+    {
+      "id": "overload-sound",
+      "type": "sound_cue",
+      "beats": [
+        "overload"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "fire-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fire"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.75,
+          "max": 0.85
+        }
+      }
+    },
+    {
+      "id": "beam-sound",
+      "type": "sound_cue",
+      "beats": [
+        "blast"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.85,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "boom-sound",
+      "type": "sound_cue",
+      "beats": [
+        "explode"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.85,
+          "max": 1.0
+        }
+      }
+    },
+    {
+      "id": "rumble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "explode"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "recharge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "recharge"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.3,
+        "pitch": 0.8
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The inflow streaks, arcs, beam shudder, blast billows, debris, crater texture and shake vary per cast. The 0.85 s charge, the 0.1 s overload, the fire frame, the beam length and the 1.1 s recharge stay fixed: the charge is the dodge window and the recharge is the punish window, so both must be the same every time."
+  },
+  "director_notes": "An original all-out energy beam: the archetype trades a long charge and a helpless recharge for one huge hit, so both ends of the timeline are part of the design. Choices: (1) a 0.85 s charge where energy is dragged IN (sparks gather_px off the ground, a closing ring, arcs over the hand, cracks spreading under the feet) plus a 0.1 s overload flicker as the last dodge cue; (2) the release sells recoil on the caster's side: a white flash and one screen blink, a shockwave ring standing up across the line of fire (ring plane vertical), dust blasting out along the ground, and a skid scorch stretched back behind the caster; in a game the caster should also be knocked back a little; (3) the beam is huge (70-80 px, wider than a body) with three strands corkscrewing along it (spiral_count 3) so it reads as a 3D column from every view, and a red-crimson palette with a white core keeps it apart from fire (no flame texture) and from lightning (no jagged forks); (4) a full explosion at the target (flash, energy billows, shockwave, debris, crater over a red-hot burn, smoke column) and a 1.1 s recharge where the caster vents smoke and sputters. Sound: charge, crackle on the overload, crack, a low hum for the beam, boom plus rumble, a quiet sizzle while recharging."
+}
