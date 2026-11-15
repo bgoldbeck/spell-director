@@ -100,8 +100,8 @@ def breakdown_gif(path: str, name: str | None = None, start_s: float | None = No
                   include_images: bool = True) -> list[Any]:
     """Break a reference spell GIF or video (MP4, WebM, MOV) down into timing,
     phase hints, palette, footprint and a camera-view guess, following the GIF
-    breakdown playbook. `path` is a file on this machine. For a video, start_s
-    and end_s (seconds) trim it to the spell; videos are sampled at up to 30 fps
+    breakdown playbook. `path` is a file on this machine. start_s and end_s
+    (seconds) trim a GIF or video to the spell; videos are sampled at up to 30 fps
     and 20 s. Output goes to breakdowns/<name>/. With include_images, also
     returns the contact sheet and curves chart to look at."""
     result = _call(library.breakdown_reference, path, name, start_s, end_s)

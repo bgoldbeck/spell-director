@@ -15,6 +15,13 @@ second server. --new-instance skips that check (used by tests and tools).
 
 GET /version.json returns {"app": "SpellDirector", "version": "<VERSION>"}.
 
+POST /api/analyze?name=<file name>&start=<s>&end=<s> takes a GIF or video as
+the raw request body, runs tools/breakdown.py on it (start/end optional) and
+answers {"id", "base", "breakdown"}. The breakdown's images and per-frame
+JPEGs are served under /analysis/<id>/ from a temp folder; only the newest
+few analyses are kept. This needs numpy, Pillow and PyAV (bundled in the exe);
+without them the endpoint answers 503 and the rest of the viewer still works.
+
 Serves web/ at / and the repo's templates/ at /templates/. The template
 index is rebuilt on every request, so new template files show up on reload.
 """
@@ -25,12 +32,16 @@ import argparse
 import errno
 import json
 import os
+import re
+import shutil
 import socket
 import sys
 import tempfile
 import threading
 import time
+import urllib.parse
 import urllib.request
+import uuid
 import webbrowser
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -55,12 +66,108 @@ def read_version() -> str:
 
 VERSION = read_version()
 
+ANALYZE_SUFFIXES = {".gif", ".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi"}
+ANALYZE_MAX_BYTES = 1024 * 1024 * 1024  # 1 GB
+ANALYSES_KEPT = 6
+_ANALYSIS_ID = re.compile(r"^[0-9a-f]{32}$")
+_analyze_lock = threading.Lock()  # one breakdown at a time: they are CPU and memory heavy
+
+
+def analysis_root() -> Path:
+    return instance_dir() / "analysis"
+
+
+class RequestError(Exception):
+    def __init__(self, status: int, message: str):
+        super().__init__(message)
+        self.status = status
+
+
+def _seconds(query: dict, key: str) -> float | None:
+    raw = (query.get(key) or [""])[0].strip()
+    if not raw:
+        return None
+    try:
+        value = float(raw)
+    except ValueError:
+        raise RequestError(400, f"{key} must be a number of seconds") from None
+    if value < 0 or value != value or value == float("inf"):
+        raise RequestError(400, f"{key} must be zero or more seconds")
+    return value
+
+
+def _prune(root: Path, keep: int) -> None:
+    runs = sorted((p for p in root.iterdir() if p.is_dir()), key=lambda p: p.stat().st_mtime, reverse=True)
+    for old in runs[keep:]:
+        shutil.rmtree(old, ignore_errors=True)
+
+
+def analyze_upload(name: str, body, length: int, start_s: float | None, end_s: float | None,
+                   root: Path | None = None) -> dict:
+    """Save an uploaded clip to a fresh temp folder and break it down there."""
+    suffix = Path(name).suffix.lower()
+    if suffix not in ANALYZE_SUFFIXES:
+        raise RequestError(400, "pick a GIF or a video (MP4, WebM, MOV, MKV, AVI)")
+    if length <= 0:
+        raise RequestError(400, "the file is empty")
+    if length > ANALYZE_MAX_BYTES:
+        raise RequestError(413, "the file is over 1 GB; trim it first")
+    if start_s is not None and end_s is not None and end_s <= start_s:
+        raise RequestError(400, "end must be after start")
+    try:
+        import breakdown as bd  # numpy, Pillow (and PyAV for video): only needed here
+    except ImportError as exc:
+        raise RequestError(503, f"analysis needs numpy, Pillow and PyAV ({exc.name} is missing): "
+                                "python -m pip install -r requirements-dev.txt") from None
+    root = root or analysis_root()
+    root.mkdir(parents=True, exist_ok=True)
+    run_id = uuid.uuid4().hex
+    folder = root / run_id
+    folder.mkdir()
+    stem = re.sub(r"[^A-Za-z0-9._ -]+", "_", Path(name).stem).strip(" .") or "clip"
+    src = folder / (stem[:80] + suffix)
+    remaining = length
+    with open(src, "wb") as fh:
+        while remaining > 0:
+            chunk = body.read(min(remaining, 1 << 20))
+            if not chunk:
+                break
+            fh.write(chunk)
+            remaining -= len(chunk)
+    if remaining:
+        shutil.rmtree(folder, ignore_errors=True)
+        raise RequestError(400, "the upload was cut off")
+    with _analyze_lock:
+        try:
+            result = bd.breakdown(src, folder / "out", with_player_frames=True, start_s=start_s or 0.0, end_s=end_s)
+        except (OSError, ValueError) as exc:
+            shutil.rmtree(folder, ignore_errors=True)
+            detail = str(exc).replace(f": '{src}'", "").replace(str(src), src.name)
+            raise RequestError(422, f"could not analyze {Path(name).name}: {detail}") from None
+        finally:
+            try:
+                src.unlink()
+            except OSError:
+                pass
+    text = bd.summary(result)
+    (folder / "out" / "summary.txt").write_text(text + "\n", encoding="utf-8")
+    _prune(root, ANALYSES_KEPT)
+    return {"id": run_id, "base": f"analysis/{run_id}/", "summary": text, "breakdown": result}
+
 
 class Handler(SimpleHTTPRequestHandler):
     extensions_map = {**SimpleHTTPRequestHandler.extensions_map, ".js": "text/javascript", ".json": "application/json"}
 
     def translate_path(self, path: str) -> str:
         clean = path.split("?", 1)[0].split("#", 1)[0]
+        if clean.startswith("/analysis/"):
+            parts = clean[len("/analysis/"):].split("/", 1)
+            if len(parts) == 2 and _ANALYSIS_ID.match(parts[0]):
+                base = (analysis_root() / parts[0] / "out").resolve()
+                target = (base / urllib.parse.unquote(parts[1])).resolve()
+                if base in target.parents:
+                    return str(target)
+            return str(ROOT / "web" / "404")
         if clean.startswith("/templates/"):
             rel = clean[len("/templates/"):]
             target = (ROOT / "templates" / rel).resolve()
@@ -69,9 +176,9 @@ class Handler(SimpleHTTPRequestHandler):
             return str(ROOT / "web" / "404")
         return super().translate_path(path)
 
-    def send_json(self, data) -> None:
+    def send_json(self, data, status: int = 200) -> None:
         body = json.dumps(data).encode()
-        self.send_response(200)
+        self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -91,6 +198,26 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.write(body)
             return
         super().do_GET()
+
+    def do_POST(self):  # noqa: N802
+        url = urllib.parse.urlsplit(self.path)
+        if url.path != "/api/analyze":
+            self.send_json({"error": "not found"}, 404)
+            return
+        query = urllib.parse.parse_qs(url.query)
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            result = analyze_upload((query.get("name") or ["clip"])[0], self.rfile, length,
+                                    _seconds(query, "start"), _seconds(query, "end"))
+        except RequestError as exc:
+            self.close_connection = True  # the body may be unread
+            self.send_json({"error": str(exc)}, exc.status)
+            return
+        except ValueError:
+            self.close_connection = True
+            self.send_json({"error": "bad Content-Length"}, 400)
+            return
+        self.send_json(result)
 
     def end_headers(self):
         self.send_header("Cache-Control", "no-store")

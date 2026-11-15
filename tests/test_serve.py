@@ -2,6 +2,7 @@ import json
 import socket
 import sys
 import threading
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -92,3 +93,92 @@ def test_new_instance_flag_skips_the_lock(tmp_path, monkeypatch):
         assert ran == [None]
     finally:
         held.release()
+
+
+# ---------------------------------------------------------------- analyze
+
+
+def _post(base, path, data):
+    req = urllib.request.Request(base + path, data=data, method="POST",
+                                 headers={"Content-Type": "application/octet-stream"})
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.status, json.loads(resp.read())
+    except urllib.error.HTTPError as err:
+        return err.code, json.loads(err.read())
+
+
+def _serve(tmp_path, monkeypatch):
+    monkeypatch.setenv("SPELLDIRECTOR_INSTANCE_DIR", str(tmp_path))
+    server = serve.bind("127.0.0.1", 0)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server, f"http://127.0.0.1:{server.server_address[1]}"
+
+
+def test_analyze_endpoint_breaks_down_an_upload_and_serves_its_files(tmp_path, monkeypatch):
+    import urllib.parse
+    server, base = _serve(tmp_path, monkeypatch)
+    try:
+        gif = (ROOT / "samples" / "synthetic-sky-strike.gif").read_bytes()
+        status, run = _post(base, "/api/analyze?" + urllib.parse.urlencode({"name": "My Spell.gif", "start": "0.1", "end": "1"}), gif)
+        assert status == 200, run
+        b = run["breakdown"]
+        assert b["gif"]["source"] == "My Spell.gif" and b["gif"]["trim"]["start_s"] >= 0.1
+        assert run["base"] == f"analysis/{run['id']}/" and "anticipation" in run["summary"]
+        frames = b["images"]["player_frames"]
+        assert len(frames) == b["gif"]["frame_count"]
+        assert urllib.request.urlopen(f"{base}/{run['base']}{frames[0]}").read()[:2] == b"\xff\xd8"  # JPEG
+        saved = json.loads(urllib.request.urlopen(f"{base}/{run['base']}breakdown.json").read())
+        assert saved["timing"] == b["timing"]
+        assert urllib.request.urlopen(f"{base}/{run['base']}summary.txt").read().decode().strip() == run["summary"]
+        # The uploaded clip itself is not kept.
+        assert not list((tmp_path / "analysis" / run["id"]).glob("*.gif"))
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def test_analyze_endpoint_refuses_bad_input(tmp_path, monkeypatch):
+    server, base = _serve(tmp_path, monkeypatch)
+    try:
+        assert _post(base, "/api/analyze?name=notes.txt", b"hello")[0] == 400
+        assert _post(base, "/api/analyze?name=a.gif&start=2&end=1", b"GIF89a")[0] == 400
+        assert _post(base, "/api/analyze?name=a.gif&start=abc", b"GIF89a")[0] == 400
+        status, err = _post(base, "/api/analyze?name=broken.gif", b"not really a gif")
+        assert status == 422 and "broken.gif" in err["error"] and str(tmp_path) not in err["error"]
+        assert _post(base, "/api/other", b"x")[0] == 404
+        assert not [p for p in (tmp_path / "analysis").iterdir()]  # failed runs are cleaned up
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def test_analysis_files_cannot_escape_their_folder(tmp_path, monkeypatch):
+    server, base = _serve(tmp_path, monkeypatch)
+    secret = tmp_path / "secret.txt"
+    secret.write_text("no")
+    run = tmp_path / "analysis" / ("a" * 32) / "out"
+    run.mkdir(parents=True)
+    (run / "breakdown.json").write_text("{}")
+    try:
+        assert urllib.request.urlopen(f"{base}/analysis/{'a' * 32}/breakdown.json").read() == b"{}"
+        for bad in (f"/analysis/{'a' * 32}/..%2F..%2Fsecret.txt", "/analysis/../secret.txt", "/analysis/xyz/breakdown.json"):
+            try:
+                urllib.request.urlopen(base + bad)
+                raise AssertionError(f"served {bad}")
+            except urllib.error.HTTPError as err:
+                assert err.code == 404
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def test_only_the_newest_analyses_are_kept(tmp_path):
+    import os
+    for i in range(serve.ANALYSES_KEPT + 3):
+        d = tmp_path / f"{i:032x}"
+        d.mkdir()
+        os.utime(d, (1000 + i, 1000 + i))
+    serve._prune(tmp_path, serve.ANALYSES_KEPT)
+    kept = sorted(p.name for p in tmp_path.iterdir())
+    assert kept == [f"{i:032x}" for i in range(3, serve.ANALYSES_KEPT + 3)]

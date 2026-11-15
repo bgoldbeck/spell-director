@@ -4,7 +4,8 @@
     python tools/build_exe.py            # -> dist/SpellDirector-v<version>-<os>.exe
 
 The exe serves the bundled viewer, templates and schemas on localhost and
-opens the browser, like run.bat, with no Python install needed. PyInstaller
+opens the browser, like run.bat, with no Python install needed. It also
+bundles the GIF/video breakdown (numpy, Pillow, PyAV) for the Analyze page. PyInstaller
 builds for the OS it runs on, so build the Windows exe on Windows.
 """
 
@@ -36,6 +37,9 @@ def pyinstaller_args(version: str) -> list[str]:
     args = [sys.executable, "-m", "PyInstaller", "--onefile", "--console", "--noconfirm", "--clean",
             "--name", exe_name(version),
             "--paths", str(ROOT / "tools"),
+            # The Analyze page imports the breakdown (numpy, Pillow, PyAV) lazily; bundle it all.
+            "--hidden-import", "breakdown",
+            "--collect-submodules", "av",
             "--distpath", str(ROOT / "dist"),
             "--workpath", str(ROOT / "build" / "pyinstaller"),
             "--specpath", str(ROOT / "build" / "pyinstaller")]

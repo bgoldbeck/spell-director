@@ -77,6 +77,34 @@ def test_find_peaks_merges_close_bumps():
     assert bd.find_peaks([0, 0.6, 0.55, 0.62, 0, 0.9, 0]) == [3, 5]
 
 
+def test_gif_trim_keeps_frames_inside_the_window(tmp_path):
+    gif = sample_gif.write(tmp_path / "strike.gif")
+    full = bd.breakdown(gif, tmp_path / "full")["frames"]
+    r = bd.breakdown(gif, tmp_path / "out", start_s=0.2, end_s=0.8)
+    kept = [f for f in full if 200 <= f["start_ms"] < 800]
+    assert r["gif"]["frame_count"] == len(kept) > 10
+    assert r["frames"][0]["start_ms"] == 0
+    first, last = kept[0], kept[-1]
+    assert r["gif"]["duration_ms"] == last["start_ms"] + last["duration_ms"] - first["start_ms"]
+    assert r["gif"]["trim"]["start_s"] == first["start_ms"] / 1000
+    assert r["gif"]["trim"]["source_duration_ms"] == 28 * 40
+    assert f"trimmed to {r['gif']['trim']['start_s']}-" in bd.summary(r)
+    with pytest.raises(ValueError, match="no GIF frames"):
+        bd.breakdown(gif, tmp_path / "late", start_s=9.0)
+    with pytest.raises(ValueError, match="end must be after start"):
+        bd.breakdown(gif, tmp_path / "bad", start_s=0.5, end_s=0.5)
+
+
+def test_untrimmed_gif_has_no_trim_and_player_frames_are_optional(result, tmp_path):
+    r, out = result
+    assert "trim" not in r["gif"] and "player_frames" not in r["images"]
+    gif = sample_gif.write(tmp_path / "strike.gif")
+    r2 = bd.breakdown(gif, tmp_path / "out", with_player_frames=True)
+    names = r2["images"]["player_frames"]
+    assert len(names) == r2["gif"]["frame_count"] and names[0] == "frames/0000.jpg"
+    assert all((tmp_path / "out" / n).is_file() for n in names)
+
+
 def test_rejects_non_gif(tmp_path):
     bad = tmp_path / "x.gif"
     bad.write_text("not a gif")
