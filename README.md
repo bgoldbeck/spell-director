@@ -58,6 +58,8 @@ A Three.js motion-study viewer: pick a template, replay it, jump to a beat, scru
 
 **Windows:** double-click `run.bat`. **macOS / Linux:** `./run.sh`. Either one starts the viewer and opens it in your browser at http://localhost:47811 (only Python 3 is needed). Close the window or press Ctrl+C to stop.
 
+To get the latest version, double-click `update.bat` (Windows) or run `./update.sh`. It switches to `main`, fetches, and fast-forwards to what's on GitHub. It never throws away work: if you have uncommitted changes, or local commits on `main`, it stops and says so. It also lists local branches that were deleted on GitHub (it doesn't delete them) and reinstalls the Python packages when `requirements-dev.txt` changed.
+
 Use another port with `run.bat 50123` / `./run.sh 50123`, or set `SPELLDIRECTOR_PORT`. If the port is busy, the next free one is used. Without the scripts: `python tools/serve.py --open`.
 
 Sound cues play in time with the beats (placeholder sounds for now); **Sound on/off** or M toggles them. Browsers start audio after your first click or key press.
