@@ -97,3 +97,8 @@ def test_release_refuses_existing_release_before_building(monkeypatch):
     monkeypatch.setattr(release, "find_token", lambda: "t")
     monkeypatch.setattr(build_exe, "build", lambda version=None: (_ for _ in ()).throw(AssertionError("built")))
     assert release.main([]) == 1
+
+
+def test_exe_name_has_version():
+    import build_exe
+    assert build_exe.exe_name("0.2.0").startswith("SpellDirector-v0.2.0-")

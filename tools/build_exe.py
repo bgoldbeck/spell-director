@@ -1,7 +1,7 @@
 """Build the SpellDirector viewer as one double-click executable with PyInstaller.
 
     python -m pip install -r requirements-build.txt
-    python tools/build_exe.py            # -> dist/SpellDirector-<version>-<os>.exe
+    python tools/build_exe.py            # -> dist/SpellDirector-v<version>-<os>.exe
 
 The exe serves the bundled viewer, templates and schemas on localhost and
 opens the browser, like run.bat, with no Python install needed. PyInstaller
@@ -24,7 +24,7 @@ def platform_tag() -> str:
 
 
 def exe_name(version: str) -> str:
-    return f"SpellDirector-{version}-{platform_tag()}"
+    return f"SpellDirector-v{version}-{platform_tag()}"
 
 
 def exe_path(version: str) -> Path:
