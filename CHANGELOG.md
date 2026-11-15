@@ -6,6 +6,8 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-15
+
 ### Changed
 
 - Viewer: sound is off by default. Turn it on with the Sound button or M; the viewer remembers your choice.
