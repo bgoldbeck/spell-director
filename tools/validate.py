@@ -48,7 +48,7 @@ KNOWN_PARAMS = {
         "radius_px", "shape", "opacity", "fade_in_ms", "lifetime_ms", "fade_ms", "grow_ms", "start_scale",
         "rotation_deg", "spin_deg_per_s", "stretch", "pulse_hz", "detail",
     },
-    "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity", "spread_speed"},
+    "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity", "spread_speed", "spread_px"},
     "light": {"radius", "energy"},
     "camera_shake": {"amplitude_px", "frequency_hz", "decay"},
     "sound_cue": {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms"},

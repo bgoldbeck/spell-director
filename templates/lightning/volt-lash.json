@@ -1,0 +1,658 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-volt-lash",
+  "name": "Volt Lash",
+  "description": "Static builds over the caster's whole body until it snaps across them, then a thick jagged bolt lashes from their hand straight into the target, restrikes twice, wraps it in crackling arcs and throws sparks.",
+  "element": "lightning",
+  "archetype": "strike",
+  "tags": [
+    "bolt",
+    "thrown",
+    "single-target",
+    "body-charge",
+    "medium",
+    "yellow"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A classic thrown lightning bolt: the caster charges up with static over their whole body and lashes a big jagged bolt from the hand at one target."
+  },
+  "timing": {
+    "duration_ms": 1100,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 3.4,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "side",
+    "reads": {
+      "front": "Static crackles over the caster on the near side; the bolt shoots away from the camera, foreshortened to a jagged flash with forks, and the target lights up with sparks and a flash at the far end.",
+      "side": "Hero view. Static snapping over the caster's body, then one thick jagged bolt from hand to the target's chest with a fork or two, re-striking twice, sparks bursting off the target and a ring on the ground under it.",
+      "top": "A jagged line from the caster to the target that flickers twice; the ground story carries it: static around the caster's feet during the charge, then a ring, sparks fanning out and a scorch with glowing cracks under the target.",
+      "three_quarter": "The bolt reads as a jagged line slanting from hand to target with its forks in depth; the body static, the burst at the target and the scorch all read."
+    }
+  },
+  "palette": {
+    "core": "#FFFDEB",
+    "primary": "#FFE34D",
+    "secondary": "#F29A00",
+    "accent": "#CFEFFF",
+    "shadow": "#1E1B12"
+  },
+  "beats": [
+    {
+      "id": "static",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 380,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.15,
+        "to": 0.9
+      },
+      "intent": "Static builds over the caster's whole body: little arcs snap across them and the ground at their feet, and the air hums louder and louder."
+    },
+    {
+      "id": "lash",
+      "phase": "release",
+      "start_ms": 380,
+      "end_ms": 440,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.9
+      },
+      "intent": "A thick jagged bolt lashes from the hand into the target's chest, held bright for two frames."
+    },
+    {
+      "id": "jolt",
+      "phase": "impact",
+      "start_ms": 430,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.6,
+        "to": 1.0,
+        "flicker_hz": 14
+      },
+      "intent": "The bolt re-strikes twice, the target is wrapped in crackling arcs and sparks burst off it."
+    },
+    {
+      "id": "discharge",
+      "phase": "dissipation",
+      "start_ms": 660,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "The last arcs crawl over the ground and fizzle out, leaving a small scorch and a thread of smoke."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "jolt",
+        "discharge"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 40,
+          "max": 48
+        },
+        "opacity": 0.85,
+        "fade_in_ms": 30,
+        "grow_ms": 80,
+        "start_scale": 0.7,
+        "lifetime_ms": 1800,
+        "fade_ms": 800,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A small black burn under the target with thin soot rays.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hot-cracks",
+      "type": "decal",
+      "beats": [
+        "jolt",
+        "discharge"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 40,
+          "max": 46
+        },
+        "opacity": 1,
+        "fade_in_ms": 0,
+        "lifetime_ms": 180,
+        "fade_ms": 400,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Branching cracks in the ground glowing hot yellow for an instant.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "feet-static",
+      "type": "crackle",
+      "beats": [
+        "static"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": {
+          "min": 3,
+          "max": 5
+        },
+        "length_px": {
+          "min": 10,
+          "max": 18
+        },
+        "jaggedness": 0.85,
+        "regen_ms": 45,
+        "radius_px": 28
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Little arcs skittering over the ground around the caster's feet.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "body-static",
+      "type": "crackle",
+      "beats": [
+        "static",
+        "lash"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 5,
+          "max": 7
+        },
+        "length_px": {
+          "min": 12,
+          "max": 20
+        },
+        "jaggedness": 0.9,
+        "regen_ms": 40,
+        "radius_px": 38
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Bright arcs snapping across the caster's body, more and brighter as the charge builds.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "hard",
+          "core_ratio": 0.5
+        },
+        "lighting": "emits_light",
+        "notes": "In a game, spawn these on random points of the character mesh (or a skinned-mesh particle emitter) rather than around one point."
+      }
+    },
+    {
+      "id": "body-glow",
+      "type": "glow",
+      "beats": [
+        "static",
+        "lash"
+      ],
+      "anchor": "caster_hand",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "radius_px": 46,
+        "softness": 0.9,
+        "pulse_hz": 9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A yellow aura of charge around the caster, throbbing faster as it builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "main-bolt",
+      "type": "bolt",
+      "beats": [
+        "lash",
+        "jolt"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "params": {
+        "segments": {
+          "min": 16,
+          "max": 20
+        },
+        "jaggedness": {
+          "min": 0.65,
+          "max": 0.8
+        },
+        "width_px": {
+          "min": 7,
+          "max": 9
+        },
+        "taper": 0.3,
+        "branch_chance": {
+          "min": 0.3,
+          "max": 0.4
+        },
+        "branch_depth": 1,
+        "branch_length_ratio": 0.3,
+        "regen_ms": 0,
+        "restrikes": 2,
+        "restrike_gap_ms": 80,
+        "afterimage_ms": 140,
+        "glow_px": 16
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "One thick zig-zag bolt, white-hot at its core with a yellow sheath and a couple of short forks.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 10,
+          "contrast": 0.9
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 10
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "hard",
+          "core_ratio": 0.5
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bolt-glow",
+      "type": "glow",
+      "beats": [
+        "lash",
+        "jolt"
+      ],
+      "attach_to": "main-bolt",
+      "color": "secondary",
+      "z": 8,
+      "params": {
+        "radius_px": 24,
+        "softness": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Amber haze around the bolt.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "lash"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 90,
+        "peak": 0.75
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A blinding white-yellow flash on the target.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "jolt"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 22,
+          "max": 30
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 700,
+        "lifetime_ms": {
+          "min": 250,
+          "max": 400
+        },
+        "size_px": 3,
+        "spread_deg": 180,
+        "drag": 0.15
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Hot white sparks bursting off the target and falling.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-ring",
+      "type": "ring",
+      "beats": [
+        "jolt"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 85,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A thin ring of light spreading across the ground from the hit.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "target-arcs",
+      "type": "crackle",
+      "beats": [
+        "jolt",
+        "discharge"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 4,
+          "max": 6
+        },
+        "length_px": {
+          "min": 12,
+          "max": 20
+        },
+        "jaggedness": 0.9,
+        "regen_ms": 50,
+        "radius_px": 34
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Arcs crawling over the target and the ground around it, thinning out.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "smoke",
+      "type": "smoke",
+      "beats": [
+        "discharge"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 4,
+      "params": {
+        "count": 5,
+        "rise_speed": 40,
+        "size_px": 22,
+        "lifetime_ms": 450,
+        "opacity": 0.3
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A thin thread of smoke off the scorched spot.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 3,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "lash",
+        "jolt"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 4,
+          "max": 6
+        },
+        "frequency_hz": 26,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "bolt-light",
+      "type": "light",
+      "beats": [
+        "lash",
+        "jolt"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 2.6
+      },
+      "shader": {
+        "technique": "light",
+        "look": "A hard yellow-white flash on the target with each strike.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "static-sound",
+      "type": "sound_cue",
+      "beats": [
+        "static"
+      ],
+      "params": {
+        "cue": "buzz",
+        "gain": 0.5
+      }
+    },
+    {
+      "id": "lash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lash"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.95,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.1
+        }
+      }
+    },
+    {
+      "id": "jolt-sound",
+      "type": "sound_cue",
+      "beats": [
+        "jolt"
+      ],
+      "params": {
+        "cue": "zap",
+        "gain": 0.6,
+        "repeat_ms": 80,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.15
+        }
+      }
+    },
+    {
+      "id": "discharge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "discharge"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.35
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The bolt's path and forks, the static arcs, the sparks and the scorch vary per cast. The 0.38 s charge and the strike at 380 ms stay fixed so the hit always lands on the same frame."
+  },
+  "director_notes": "A thrown lightning bolt at one target, built to sit next to the existing lightning without repeating it: Chain Arc hops between several enemies with thin snappy arcs, Ball Lightning flies an orb, Charge-Discharge is a sustained beam, Sky Strike and Boss Storm Call come from above. Choices: (1) the charge is on the caster's whole body (crackles around the body and the feet, a throbbing aura) instead of in a hand orb, 0.38 s, so the wind-up reads at a glance; (2) one thick bolt from hand to the target's chest (7-9 px, one level of forks) with two re-strikes 80 ms apart, the classic thrown-thunderbolt shape; (3) a warm yellow palette with pale blue sparks, so it reads apart from the white-blue and violet bolts in the library. Medium weight, side view hero. Sound: buzz while charging, crack on the lash, rapid zaps on the re-strikes, a quiet crackle tail."
+}

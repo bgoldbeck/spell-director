@@ -1,0 +1,781 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-thunderhead",
+  "name": "Thunderhead",
+  "description": "A dark storm cloud boils up over the target and flickers with lightning inside it, then a massive bolt drops out of it with a delayed thunderclap, a cloudburst of rain spatters down and the cloud drifts apart.",
+  "element": "lightning",
+  "archetype": "strike",
+  "tags": [
+    "storm",
+    "cloud",
+    "thunder",
+    "from-above",
+    "rain",
+    "heavy"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Summon a thunderstorm over the enemy: a storm cloud gathers, then a huge lightning bolt and a thunderclap. Side-on fighting game."
+  },
+  "timing": {
+    "duration_ms": 2000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 4.5,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.4,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "side",
+    "reads": {
+      "front": "Over the caster's shoulder the cloud sits high over the target, mostly above the frame, its flicker lighting the scene; the hit reads as a tall bolt rising out of frame, a white screen flash, a shockwave and sparks at the target, and rain spattering down.",
+      "side": "Hero view. A slate cloud boils up and sags over the target, lit from inside by violet flickers; then a tall forked bolt from cloud to ground, a white screen flash, rain bursting out of the cloud and a shockwave along the ground.",
+      "top": "The cloud is a dark blot over the target that flickers; the bolt collapses to a point, so the ground story carries the hit: a shockwave ring, sparks fanning out, glowing cracks over a crater-like scorch, and raindrops landing around it.",
+      "three_quarter": "The cloud reads as a dark mass above, the bolt as a tall jagged column dropping out of it, rain falling around it, and the scorch and ring read on the ground."
+    }
+  },
+  "palette": {
+    "core": "#F8F5FF",
+    "primary": "#C4B5FF",
+    "secondary": "#6A52E0",
+    "accent": "#7D8299",
+    "shadow": "#1F1F2A"
+  },
+  "beats": [
+    {
+      "id": "brew",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 820,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.9
+      },
+      "intent": "A dark storm cloud boils up over the target and the light dims. It is the warning: everything under it should move."
+    },
+    {
+      "id": "sheet",
+      "phase": "anticipation",
+      "start_ms": 300,
+      "end_ms": 820,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.2,
+        "to": 0.9,
+        "flicker_hz": 6
+      },
+      "intent": "The cloud lights up from inside with flickers of sheet lightning, faster and brighter as the strike nears."
+    },
+    {
+      "id": "strike",
+      "phase": "release",
+      "start_ms": 820,
+      "end_ms": 890,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.9
+      },
+      "intent": "A massive bolt drops out of the cloud onto the target and the screen whitens for a frame."
+    },
+    {
+      "id": "thunder",
+      "phase": "impact",
+      "start_ms": 880,
+      "end_ms": 1280,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.6,
+        "to": 1.0,
+        "flicker_hz": 11
+      },
+      "intent": "The bolt flickers twice, the ground blasts outward, and a beat later the thunderclap booms. Rain bursts out of the cloud."
+    },
+    {
+      "id": "clearing",
+      "phase": "dissipation",
+      "start_ms": 1230,
+      "end_ms": 2000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "Thunder rolls away, the rain thins and the cloud drifts apart, leaving a scorched spot."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "thunder",
+        "clearing"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 80,
+          "max": 92
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "grow_ms": 120,
+        "start_scale": 0.6,
+        "lifetime_ms": 2600,
+        "fade_ms": 1200,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A blasted, blackened dent with a dusty rim where the bolt hit.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hot-cracks",
+      "type": "decal",
+      "beats": [
+        "thunder",
+        "clearing"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 1,
+        "fade_in_ms": 0,
+        "grow_ms": 120,
+        "start_scale": 0.4,
+        "lifetime_ms": 300,
+        "fade_ms": 600,
+        "detail": 0.8
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Cracks racing out through the ground from the hit, glowing violet-white for an instant.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "puddles",
+      "type": "decal",
+      "beats": [
+        "clearing"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "shape": "splash",
+        "radius_px": {
+          "min": 110,
+          "max": 130
+        },
+        "opacity": 0.35,
+        "fade_in_ms": 300,
+        "grow_ms": 500,
+        "start_scale": 0.5,
+        "lifetime_ms": 2500,
+        "fade_ms": 1500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "wet",
+        "look": "Wet, darkened ground with scattered drops where the cloudburst landed.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0,
+          "contrast": 0.5
+        },
+        "fresnel": 0.3,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "sky-dim",
+      "type": "flash",
+      "beats": [
+        "brew"
+      ],
+      "anchor": "screen",
+      "color": "shadow",
+      "z": 19,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "The whole scene darkens as the storm gathers.",
+        "technique": "procedural",
+        "lighting": "unlit",
+        "notes": "A screen-space darken or a drop in the scene's ambient/sun light; not an additive flash."
+      }
+    },
+    {
+      "id": "storm-cloud",
+      "type": "smoke",
+      "beats": [
+        "brew",
+        "strike",
+        "thunder",
+        "clearing"
+      ],
+      "anchor": "sky",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "count": 16,
+        "rise_speed": -20,
+        "size_px": {
+          "min": 46,
+          "max": 56
+        },
+        "lifetime_ms": 1700,
+        "opacity": 0.75,
+        "spread_px": 120
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A heavy slate-grey storm cloud boiling, rolling over itself and sagging low over the target, its underside lit violet by the lightning inside.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.4,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.3
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit",
+        "notes": "Big soft cloud sprites (or a volumetric) clustered above the target; light them from inside with the cloud-flicker glow and the strike."
+      }
+    },
+    {
+      "id": "cloud-flicker",
+      "type": "glow",
+      "beats": [
+        "sheet",
+        "strike"
+      ],
+      "anchor": "sky",
+      "color": "secondary",
+      "z": 4,
+      "params": {
+        "radius_px": 110,
+        "softness": 0.95
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Sheet lightning lighting the cloud from inside in soft violet pulses.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "cloud-arcs",
+      "type": "crackle",
+      "beats": [
+        "sheet"
+      ],
+      "anchor": "sky",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": {
+          "min": 2,
+          "max": 4
+        },
+        "length_px": {
+          "min": 26,
+          "max": 40
+        },
+        "jaggedness": 0.85,
+        "regen_ms": 90,
+        "radius_px": 70
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Short arcs jumping between the cloud's billows.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "main-bolt",
+      "type": "bolt",
+      "beats": [
+        "strike",
+        "thunder"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "params": {
+        "segments": {
+          "min": 26,
+          "max": 32
+        },
+        "jaggedness": {
+          "min": 0.6,
+          "max": 0.75
+        },
+        "width_px": {
+          "min": 11,
+          "max": 13
+        },
+        "taper": 0.4,
+        "branch_chance": {
+          "min": 0.4,
+          "max": 0.5
+        },
+        "branch_depth": 2,
+        "branch_length_ratio": 0.4,
+        "regen_ms": 0,
+        "restrikes": 2,
+        "restrike_gap_ms": 110,
+        "afterimage_ms": 300,
+        "glow_px": 26
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A massive jagged bolt from cloud to ground, white-hot core in a violet sheath, forking near the top.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 10,
+          "contrast": 0.9
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 10
+        },
+        "emissive": {
+          "hdr": 8,
+          "falloff": "hard",
+          "core_ratio": 0.5
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bolt-glow",
+      "type": "glow",
+      "beats": [
+        "strike",
+        "thunder"
+      ],
+      "attach_to": "main-bolt",
+      "color": "secondary",
+      "z": 8,
+      "params": {
+        "radius_px": 52,
+        "softness": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Violet haze around the bolt.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "strike-flash",
+      "type": "flash",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 20,
+      "params": {
+        "scope": "screen",
+        "peak": {
+          "min": 0.7,
+          "max": 0.8
+        }
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The whole screen goes white for a frame.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 9,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "thunder"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 170,
+        "thickness_px": 12,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A shockwave of light and dust rolling out across the ground.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "distortion": 0.4,
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "impact-sparks",
+      "type": "sparks",
+      "beats": [
+        "thunder"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 30,
+          "max": 40
+        },
+        "speed": 500,
+        "speed_spread": 0.6,
+        "gravity": 800,
+        "lifetime_ms": {
+          "min": 300,
+          "max": 550
+        },
+        "size_px": 3.5,
+        "spread_deg": 180,
+        "drag": 0.12
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "White-violet sparks blasting out of the hit and falling.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "cloudburst",
+      "type": "sparks",
+      "beats": [
+        "thunder",
+        "clearing"
+      ],
+      "anchor": "sky",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "count": {
+          "min": 160,
+          "max": 180
+        },
+        "speed": 220,
+        "speed_spread": 0.7,
+        "gravity": 900,
+        "lifetime_ms": 900,
+        "size_px": 3.2,
+        "spread_deg": 360,
+        "drag": 0.3,
+        "emit_ms": 900,
+        "streak_ms": 80
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A short, heavy burst of rain falling out of the cloud as the thunder hits, the drops catching the lightning as thin bright streaks.",
+        "technique": "particles",
+        "flow": {
+          "direction": "downward",
+          "speed": 4
+        },
+        "lighting": "lit",
+        "notes": "In a game, a rain particle system under the cloud (stretched drops plus splash sub-emitters on the ground)."
+      }
+    },
+    {
+      "id": "linger-crackle",
+      "type": "crackle",
+      "beats": [
+        "clearing"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 3,
+          "max": 5
+        },
+        "length_px": 18,
+        "jaggedness": 0.85,
+        "regen_ms": 70,
+        "radius_px": 60
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A few arcs still crawling over the wet ground before they die.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "smoke",
+      "type": "smoke",
+      "beats": [
+        "clearing"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 5,
+      "params": {
+        "count": 8,
+        "rise_speed": 35,
+        "size_px": 34,
+        "lifetime_ms": 650,
+        "opacity": 0.35
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Steam and smoke rising off the scorched, wet spot.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "strike",
+        "thunder"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 9,
+          "max": 12
+        },
+        "frequency_hz": 22,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "storm-light",
+      "type": "light",
+      "beats": [
+        "sheet",
+        "strike",
+        "thunder"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 8,
+        "energy": 3.5
+      },
+      "shader": {
+        "technique": "light",
+        "look": "Violet flickers from the cloud, then a hard white-violet flash over the whole area on the strike.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "wind-sound",
+      "type": "sound_cue",
+      "beats": [
+        "brew"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.5,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "brew-rumble",
+      "type": "sound_cue",
+      "beats": [
+        "sheet"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.35,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "crack-sound",
+      "type": "sound_cue",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "thunderclap",
+      "type": "sound_cue",
+      "beats": [
+        "thunder"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "offset_ms": 220,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "rolling-thunder",
+      "type": "sound_cue",
+      "beats": [
+        "clearing"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.55
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The cloud's billows, the flicker pattern, the bolt's path and forks, the rain and the marks vary per cast. The 0.82 s brew and the strike at 820 ms stay fixed: the cloud is the telegraph and the dodge window must be fair."
+  },
+  "director_notes": "A summoned thunderstorm, built to differ from the two existing sky strikes: Sky Strike is a quick single bolt with a leader, and Boss Storm Call telegraphs with a warning ring on the ground. Here the telegraph is the storm itself: (1) a dark cloud boils up over the target for 0.82 s and flickers from inside (a flickering glow and short arcs in the cloud), with the scene dimming and wind rising; (2) a massive forked bolt drops out of it with no leader, re-strikes twice, and the thunderclap (boom) comes 220 ms after the crack, like real thunder; (3) a cloudburst of rain (thin falling streaks out of the cloud) and wet ground marks follow, which no other lightning template has. Side is the hero for a side-on fighting game, where the cloud above and the tall bolt read best; the cloud sinks a little as it brews (negative rise) so it hangs in frame, and its puffs are scattered wide (spread_px, a new smoke param) so it reads as a cloud bank rather than a puff of smoke. The viewer's smoke is soft sprites, so the cloud is a cluster of dark puffs; the shader notes ask for a proper cloud."
+}

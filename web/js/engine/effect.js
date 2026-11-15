@@ -751,7 +751,9 @@ class BoltLayer extends Layer {
           });
           return hops;
         }
-        return [[st.hand, st.anchor(tp.space.destination === "point" ? "point" : "target")]];
+        // A bolt thrown at a single target lands on its chest, not its feet.
+        if (tp.space.destination === "point") return [[st.hand, st.anchor("point")]];
+        return [[st.hand, st.chest(0)]];
       default:
         return [[this.anchorPos().setY(1.5), this.anchorPos()]];
     }
@@ -1431,12 +1433,13 @@ class SmokeLayer extends Layer {
     const ro = this.rng("spread");
     const attached = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
     const vx = attached instanceof VortexLayer && attached.shape ? attached : null;
+    const scatter = this.p("spread_px", 0, 15) * PX;
     this.sprites.forEach((s, i) => {
       const ang = ((i + ro.range(-0.35, 0.35)) / Math.max(1, count)) * Math.PI * 2;
       const kOut = ro.range(0.75, 1.2);
       const born = r.range(0, Math.max(1, (w.end - w.start) * 0.5));
-      const dx = r.range(-0.15, 0.15);
-      const dz = r.range(-0.15, 0.15);
+      const dx = r.range(-scatter, scatter);
+      const dz = r.range(-scatter, scatter);
       const spin0 = r.range(0, Math.PI * 2);
       const spin = r.range(-1.2, 1.2);
       const age = (local - born) / life;
