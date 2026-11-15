@@ -18,6 +18,7 @@
       </div>
       <div class="top-actions">
         <label class="btn file-btn" title="Open a template JSON file">Open JSON…<input id="file" type="file" accept=".json,application/json" hidden></label>
+        <button id="export" class="btn" title="Export sprite sheets (one per layer, every view in each) with a JSON file and an assembly guide for game engines">Export sprites…</button>
         <button id="focus" class="btn" title="Hide everything but the stage (F)">Focus view</button>
       </div>
     </header>
@@ -102,6 +103,46 @@
       </div>
     </section>
   </div>
+  <dialog id="export-dialog" class="export-dialog">
+    <form method="dialog" id="export-form">
+      <h2>Export sprite sheets</h2>
+      <p class="muted">One sheet per layer, plus one for the whole spell. Columns are frames and rows are the views, so each column shows one moment from every view. You get a .zip with the sheets, a JSON file and a guide for rebuilding the spell in Unity or Godot. Uses the current seed.</p>
+      <fieldset>
+        <legend>Views</legend>
+        <label class="check"><input type="checkbox" name="view" value="front" checked> Front</label>
+        <label class="check"><input type="checkbox" name="view" value="side" checked> Side</label>
+        <label class="check"><input type="checkbox" name="view" value="top" checked> Top</label>
+        <label class="check"><input type="checkbox" name="view" value="three_quarter" checked> 3/4</label>
+      </fieldset>
+      <div class="export-row">
+        <label>Cell size
+          <select name="frame">
+            <option value="128">128 px</option>
+            <option value="192" selected>192 px</option>
+            <option value="256">256 px</option>
+            <option value="384">384 px</option>
+            <option value="512">512 px</option>
+          </select>
+        </label>
+        <label>Frame rate
+          <select name="fps">
+            <option value="">Template's (default)</option>
+            <option value="12">12 fps</option>
+            <option value="15">15 fps</option>
+            <option value="24">24 fps</option>
+            <option value="30">30 fps</option>
+            <option value="60">60 fps</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" name="layers" checked> A sheet per layer</label>
+      </div>
+      <p id="export-status" class="muted" aria-live="polite"></p>
+      <div class="export-actions">
+        <button value="cancel" class="btn" formnovalidate>Close</button>
+        <button id="export-go" class="btn active" type="button">Export .zip</button>
+      </div>
+    </form>
+  </dialog>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

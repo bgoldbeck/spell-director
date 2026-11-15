@@ -12,6 +12,7 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ### Added
 
+- Sprite sheet export for game engines: **Export sprites…** in the viewer (or `tools/export_sprites.py`, or the director's `export_sprites` tool) makes one sheet per layer plus one for the whole spell, with frames as columns and the four views as rows, all lined up cell for cell. It comes with a JSON file and an assembly guide (.md) listing every layer's timing, blend mode and colors, the beats, sound cues, screen flashes and camera shake, and steps for Unity and Godot. See `docs/exporting.md`.
 - Update scripts (`update.bat`, `update.sh`): one double-click brings your checkout up to date with `main`, stopping safely if you have uncommitted changes, and refreshes Python packages when they changed.
 - Water: the first water template, **Pressure Jet**. A wobbling water ball fires a rippling blue jet that travels to the target, bursts into a splash fountain with mist and ripples, and leaves a puddle. Directed from a real reference GIF and improved on it, not copied.
 - Templates: beams take `grow_ms` (how long the jet takes to reach the target), sparks take `emit_ms` (keep spraying instead of one burst), and decals have a `puddle` shape.

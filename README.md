@@ -28,6 +28,7 @@ The current version is in [`VERSION`](VERSION); what changed is in [`CHANGELOG.m
 | [`web/`](web/) | The viewer (Three.js r169 vendored in `web/vendor`, no build step). |
 | [`web/sounds/`](web/sounds/) | Sound cue library (`cues.json`) and where real samples go. |
 | [`tools/serve.py`](tools/serve.py) | Local server for the viewer. |
+| [`tools/export_sprites.py`](tools/export_sprites.py), [`docs/exporting.md`](docs/exporting.md) | Sprite sheet export for game engines, with a JSON file and an assembly guide. |
 | [`tools/validate.py`](tools/validate.py) | Validates templates (schema + timing/reference rules). |
 | [`tools/breakdown.py`](tools/breakdown.py) | Breaks a GIF or video down into timing, phases, palette, footprint and view hints, plus images for the AI. |
 | [`docs/director-playbook.md`](docs/director-playbook.md) | How the director turns a request into a template: questions to ask, timing, layers, views, saving. |
@@ -48,7 +49,7 @@ Claude Code picks it up from [`.mcp.json`](.mcp.json) when opened in this repo. 
 
 | Tools | Resources | Prompts |
 |---|---|---|
-| `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif` | `spelldirector://docs/{vocabulary, template-format, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
+| `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif`, `export_sprites` | `spelldirector://docs/{vocabulary, template-format, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
 
 `save_template` validates, writes `templates/<element>/<name>.json`, rebuilds the index, and won't replace an existing template unless asked to. Run `python tools/serve.py` to open the links it returns. The director follows [docs/director-playbook.md](docs/director-playbook.md).
 
@@ -63,6 +64,8 @@ To get the latest version, double-click `update.bat` (Windows) or run `./update.
 Use another port with `run.bat 50123` / `./run.sh 50123`, or set `SPELLDIRECTOR_PORT`. If the port is busy, the next free one is used. Without the scripts: `python tools/serve.py --open`.
 
 Sound cues play in time with the beats (placeholder sounds for now). Sound starts **off**: click **Sound off** or press M to turn it on, and the viewer remembers your choice.
+
+**Export sprites…** saves the current spell and seed as sprite sheets for a game engine: one per layer plus one for the whole spell, with the frames across and the four views down, a JSON file, and a guide for rebuilding it in Unity or Godot. See [docs/exporting.md](docs/exporting.md).
 
 Keys: Space play/pause, 1-4 views, 5 all four, M sound, F focus view (Esc to leave). Drag to orbit, scroll to zoom.
 
