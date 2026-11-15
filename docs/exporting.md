@@ -14,6 +14,10 @@ Options: views (default all four), cell size in px (default 192), frame rate (de
 
 The sheets show timing, layering, composition and palette. They are not the effect to ship, and an AI model should not copy them pixel for pixel. Each layer's **shader intent** (from the template, see [vocabulary §11](vocabulary.md#11-shader-intent-the-magic)) says how to build the look with shaders and particles; the guide turns it into short Unity and Godot recipes, and the JSON carries it as `layers[].shader` and `layers[].engine_hints`, with the same notice in `how_to_use`. Use the frames to check the rebuild, or directly only for prototypes, flipbook-style games and texture sources.
 
+### Build one layer at a time
+
+Every guide has a build order (also `build_order` in the JSON): core hero layer first (highest z), then secondary layers (glow, crackle, ring, local flash), particles (sparks, smoke), decals, and a finish step for lights, screen flashes, camera shake, sound and a timing pass. After each step, compare that layer with its cells (`tools/sheet_cells.py contact <export> --sheet <layer>`) before adding the next.
+
 ## What you get
 
 | File | What it is |

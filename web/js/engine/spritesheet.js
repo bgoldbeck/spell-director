@@ -224,6 +224,52 @@ export function buildTracks(template, seed, plan, cueLibrary = { cues: {} }) {
 // sheets: [{id, first, count, layout}] (the whole-spell sheet first).
 // visible: {layerId: {first, last} | null} over all exported views.
 // views: {view: {pivots, px_per_unit, camera}} in row order.
+// The order to rebuild a spell in an engine, one layer at a time: the hero
+// layer first, then its support, then particles, then decals, then the
+// finishing tracks (lights, screen flashes, shake, sound) and the timing pass.
+export const BUILD_STAGES = [
+  { stage: "core", types: ["bolt", "beam", "orb"], about: "the hero shape that reads as the spell on its own" },
+  { stage: "secondary", types: ["glow", "crackle", "ring", "flash"], about: "glows, rings and crackle that support the core" },
+  { stage: "particles", types: ["sparks", "smoke"], about: "sparks, spray and smoke" },
+  { stage: "decals", types: ["decal"], about: "marks on the ground" },
+];
+
+export function buildOrder(template, layers) {
+  const byId = Object.fromEntries(layers.map((l) => [l.id, l]));
+  const steps = [];
+  const finish = [];
+  for (const st of BUILD_STAGES) {
+    const picked = (template.layers || [])
+      .filter((l) => st.types.includes(l.type) && layerKind(l) === "sprite")
+      .map((l) => byId[l.id] || { id: l.id, type: l.type, z: l.z ?? 0, start_ms: layerWindow(template, l)?.start ?? 0 })
+      .sort((a, b) => (st.stage === "core" ? (b.z ?? 0) - (a.z ?? 0) : 0) || (a.start_ms ?? 0) - (b.start_ms ?? 0) || (a.z ?? 0) - (b.z ?? 0));
+    for (const l of picked) {
+      steps.push({
+        step: steps.length + 1,
+        stage: st.stage,
+        layer: l.id,
+        type: l.type,
+        sheet: l.image ?? null,
+        plays_ms: l.start_ms == null ? null : [l.start_ms, l.end_ms],
+        verify: l.image
+          ? `Render ${l.id} alone and compare it with its cells (sheet ${l.image}, every view): same timing, footprint, motion and colors. Match the feel, not the pixels.`
+          : `Not drawn in the exported views; check it against the beat table and its shader intent.`,
+      });
+    }
+  }
+  for (const l of template.layers || []) {
+    if (layerKind(l) !== "sprite" && layerKind(l) !== undefined) finish.push(l.id);
+  }
+  steps.push({
+    step: steps.length + 1,
+    stage: "finish",
+    layers: finish,
+    about: "lights, screen flashes, camera shake and sound cues, then a timing pass over the whole spell",
+    verify: "Play the whole spell next to all.png at the same frame rate, frame by frame through each beat, in every view your game uses.",
+  });
+  return steps;
+}
+
 function shaderInfo(l, blend) {
   const sh = shaderFor(l);
   if (!sh) return { shader: null, engine_hints: null };
@@ -281,6 +327,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
   return {
     format: FORMAT,
     how_to_use: HOW_TO_USE.join(" "),
+    build_order: buildOrder(template, layers),
     generator: `SpellDirector ${version}`.trim(),
     template: { id: template.id, name: template.name, element: template.element, archetype: template.archetype, description: template.description || "" },
     seed,
@@ -356,6 +403,28 @@ export function guideMarkdown(m, { files } = {}) {
 
   add("## How to use this export (read this first)", "");
   add(...HOW_TO_USE.map((x) => `> ${x}`).flatMap((x) => [x, ">"]).slice(0, -1), "");
+  add("## Build it one layer at a time", "");
+  add(
+    "Don't build the whole spell in one go. Build one layer, check it, then add the next. This works far better for a person and for an AI (Claude, GPT, ...), because each step is small enough to get right and to compare against the reference.",
+    "",
+    "After each step, crop that layer's cells and compare them with your render at the same moments and views: `python tools/sheet_cells.py contact <export folder> --sheet <layer>` (or the director's `look_at_sprite_sheet` tool). Fix it before moving on. Compare timing, footprint, motion and color, not exact pixels.",
+    "",
+  );
+  add(table(
+    ["Step", "Stage", "Layer", "Sheet", "Plays"],
+    m.build_order.map((st) => st.stage === "finish"
+      ? [st.step, "finish", st.layers.length ? st.layers.join(", ") : "(none)", "`all.png`", "whole spell"]
+      : [st.step, st.stage, `${st.layer} (${st.type})`, st.sheet ? `\`${st.sheet}\`` : "not drawn", st.plays_ms ? `${st.plays_ms[0]}–${st.plays_ms[1]} ms` : ""]),
+  ), "");
+  add(
+    "- **core**: the hero shape that reads as the spell on its own. Get this right first.",
+    "- **secondary**: glows, rings and crackle that support the core.",
+    "- **particles**: sparks, spray and smoke.",
+    "- **decals**: marks on the ground.",
+    "- **finish**: lights, screen flashes, camera shake and sound cues, then a timing pass: play the whole spell next to `all.png` frame by frame through each beat.",
+    "",
+  );
+
   add("Each layer below has a **Shader intent** line and short Unity and Godot recipes built from it. The words come from the SpellDirector vocabulary (docs/vocabulary.md, section 11), so a person or an AI can turn them into a Shader Graph, VFX Graph or Godot shader.", "");
 
   const nViews = viewList.length;

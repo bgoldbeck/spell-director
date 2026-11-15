@@ -99,7 +99,7 @@ test("guide documents layers, timings, views, sounds and engine steps", () => {
   const m = fakeManifest(boss);
   const md = guideMarkdown(m, { files: [{ name: "x.json", about: "data" }] });
   for (const s of ["## How the sheets are laid out", "## Timeline (beats)", "## Layers", "### Sound cues",
-    "### Camera shake", "## Rebuild it in Unity", "## How to use this export", "Shader intent", "- Unity: ", "- Godot 4: ", "## Reading the sheets as an AI model", "tools/sheet_cells.py", "## Rebuild it in Godot 4", "all.png", "layer-main-bolt.png", "x.json"]) {
+    "### Camera shake", "## Rebuild it in Unity", "## How to use this export", "## Build it one layer at a time", "Shader intent", "- Unity: ", "- Godot 4: ", "## Reading the sheets as an AI model", "tools/sheet_cells.py", "## Rebuild it in Godot 4", "all.png", "layer-main-bolt.png", "x.json"]) {
     assert.ok(md.includes(s), `guide mentions ${s}`);
   }
   for (const b of boss.beats) assert.ok(md.includes(`| ${b.id} |`), `beat ${b.id} in the table`);
@@ -136,4 +136,20 @@ test("shader intent: template values win, defaults fill in, and every drawn laye
     assert.ok(l.shader, `${l.id} has shader intent`);
     assert.ok(l.engine_hints.unity.length && l.engine_hints.godot.length);
   }
+});
+
+test("build order: hero layer first, one layer per step, finishing tracks last", () => {
+  const m = fakeManifest(boss);
+  const order = m.build_order;
+  assert.equal(order[0].stage, "core");
+  assert.equal(order[0].layer, "main-bolt", "the highest-z core layer leads");
+  const stages = order.map((s) => s.stage);
+  const rank = { core: 0, secondary: 1, particles: 2, decals: 3, finish: 4 };
+  assert.deepEqual(stages, [...stages].sort((a, b) => rank[a] - rank[b]));
+  const last = order.at(-1);
+  assert.equal(last.stage, "finish");
+  for (const id of ["strike-flash", "impact-light"]) assert.ok(last.layers.includes(id));
+  assert.ok(boss.layers.filter((l) => l.type === "sound_cue").every((l) => last.layers.includes(l.id)));
+  const built = order.filter((s) => s.layer).map((s) => s.layer);
+  assert.equal(new Set(built).size, built.length, "each layer once");
 });
