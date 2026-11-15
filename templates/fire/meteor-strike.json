@@ -1,0 +1,951 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-meteor-strike",
+  "name": "Meteor Strike",
+  "description": "A warning circle opens on the ground and the light turns orange as a burning rock tears down out of the sky trailing fire and smoke, slams into the target in a blinding flash, and blows out a fireball, a shockwave, flying rock and a rolling dust wave, leaving a smoking crater with glowing cracks.",
+  "element": "fire",
+  "archetype": "strike",
+  "tags": [
+    "meteor",
+    "sky",
+    "telegraph",
+    "area",
+    "impact",
+    "crater",
+    "debris",
+    "heavy"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "meteor"
+  },
+  "timing": {
+    "duration_ms": 2600,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "target",
+    "travel": "projectile",
+    "scale": {
+      "min": 4.4,
+      "max": 5.0
+    },
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.1,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: the warning circle lies ahead on the ground, the meteor drops in from high on the far side, growing as it nears with its fire trail streaming up behind it, and the impact fills the frame with a fireball, flying rock and a dust wave rolling toward the camera.",
+      "side": "The best read of the fall: a diagonal streak from the top of the frame down to the target, white-hot at the rock and cooling to red flame and then grey smoke along the trail; the fireball and the smoke column rise tall over a flat shockwave.",
+      "top": "The ground story carries it: the warning circle grows and pulses, the meteor shows as a short streak sliding in onto the centre, then a ring of flash, the shockwave and the dust wave expand evenly in every direction, debris scatters outward and the crater with glowing cracks is left.",
+      "three_quarter": "Hero view. The circle reads as an ellipse on the ground, the meteor comes down at an angle with the trail hanging in the air behind it, the fireball and smoke column have height, and the debris lands all around the crater."
+    }
+  },
+  "palette": {
+    "core": "#FFF4D6",
+    "primary": "#FF7A1A",
+    "secondary": "#C42A12",
+    "accent": "#FFC045",
+    "shadow": "#5E5046"
+  },
+  "beats": [
+    {
+      "id": "telegraph",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.25,
+        "to": 0.9
+      },
+      "intent": "A warning circle opens where it will land and pulses faster; the ground starts to glow orange as something burning approaches. The circle is the dodge window: a bit over a second."
+    },
+    {
+      "id": "fall",
+      "phase": "travel",
+      "start_ms": 450,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.75,
+        "to": 1.0
+      },
+      "intent": "A burning rock tears down out of the sky at an angle, accelerating, its leading face white-hot, dragging a trail of flame that cools to red and leaves grey smoke hanging in the air."
+    },
+    {
+      "id": "impact",
+      "phase": "impact",
+      "start_ms": 1150,
+      "end_ms": 1330,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "It hits: a blinding white flash, a deep boom and a hard camera kick."
+    },
+    {
+      "id": "blast",
+      "phase": "impact",
+      "start_ms": 1150,
+      "end_ms": 1750,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "A fireball erupts and rolls upward, a shockwave races out along the ground, rocks are thrown high and wide and come down around the crater, and a wall of dust rolls outward."
+    },
+    {
+      "id": "aftermath",
+      "phase": "dissipation",
+      "start_ms": 1550,
+      "end_ms": 2600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The fire dies back into a smoking crater: glowing cracks cool, embers drift up, a dark smoke column rises and thins, and the scorched crater stays."
+    }
+  ],
+  "layers": [
+    {
+      "id": "crater",
+      "type": "decal",
+      "beats": [
+        "impact",
+        "blast",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 88,
+          "max": 98
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 40,
+        "grow_ms": 160,
+        "start_scale": 0.5,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A blasted-out dent in the ground: a dark scorched bowl, a lighter dusty rim pushed up around it, rubble scattered over the edge.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.25
+        },
+        "lighting": "lit",
+        "notes": "Use a normal map for the rim and bowl so it catches the scene light; fade it with a dissolve, not alpha, so it crumbles away."
+      }
+    },
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "impact",
+        "blast",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 130,
+          "max": 145
+        },
+        "opacity": 0.7,
+        "fade_in_ms": 80,
+        "grow_ms": 300,
+        "start_scale": 0.4,
+        "lifetime_ms": 5000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A wide sooty blast mark with rays thrown outward around the crater.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "molten-cracks",
+      "type": "decal",
+      "beats": [
+        "impact",
+        "blast",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 95,
+          "max": 110
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 40,
+        "grow_ms": 200,
+        "start_scale": 0.3,
+        "lifetime_ms": 800,
+        "fade_ms": 650,
+        "detail": 0.75
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Cracks split out from the crater glowing yellow-orange, cooling to deep red from the tips inward.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.25,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "burn",
+      "type": "decal",
+      "beats": [
+        "impact",
+        "blast"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 70,
+          "max": 80
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 450,
+        "fade_ms": 600,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The crater floor glowing hot for a moment, embers flickering in it before it goes dark.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.4,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "warning-circle",
+      "type": "decal",
+      "beats": [
+        "telegraph"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 4,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "pulse_hz",
+          "value": 2
+        },
+        {
+          "t_ms": 1100,
+          "param": "pulse_hz",
+          "value": 7,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "shape": "warning_ring",
+        "radius_px": 120,
+        "opacity": 0.85,
+        "fade_in_ms": 150,
+        "grow_ms": 350,
+        "start_scale": 0.3,
+        "rotation_deg": 0,
+        "fade_ms": 60,
+        "pulse_hz": 3,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A red warning circle on the ground marking where it will land: faint fill, bright rim with ticks, throbbing faster as the meteor nears.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard"
+        },
+        "lighting": "unlit",
+        "notes": "Gameplay telegraph: keep it readable on any ground and size it to the real hit radius."
+      }
+    },
+    {
+      "id": "closing-ring",
+      "type": "ring",
+      "beats": [
+        "telegraph"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "start_radius_px": 135,
+        "end_radius_px": 12,
+        "thickness_px": 7,
+        "softness": 0.5
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A thin ring sliding in from the edge of the circle to the centre, a countdown to the hit.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "inward",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "meteor",
+      "type": "orb",
+      "beats": [
+        "fall"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "look": "meteor",
+        "radius_px": {
+          "min": 25,
+          "max": 29
+        },
+        "approach_deg": {
+          "min": 30,
+          "max": 36
+        },
+        "approach_yaw_deg": {
+          "min": 20,
+          "max": 35
+        },
+        "travel_ease": "ease_in",
+        "trail_ms": 300,
+        "smoke_trail_ms": 1300,
+        "smoke_opacity": 0.4,
+        "pulse_hz": 0,
+        "wobble": 0,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A lumpy dark rock with molten seams, its leading face white-hot from the air, wrapped in a shell of heat and dragging a fire trail that cools from white-yellow to orange to red, then into a long grey smoke trail.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "distortion": 0.4,
+        "fresnel": 0.5,
+        "emissive": {
+          "hdr": 6,
+          "falloff": "exponential",
+          "core_ratio": 0.35
+        },
+        "lighting": "emits_light",
+        "notes": "Rock mesh with an emissive map for the seams plus a fresnel heat shell; trail = a flame particle stream (alpha-over-life ramp hot to red) and a slower smoke ribbon or particle trail that outlives the rock. Heat haze behind it is distortion only; the viewer doesn't draw it."
+      }
+    },
+    {
+      "id": "meteor-glow",
+      "type": "glow",
+      "beats": [
+        "fall"
+      ],
+      "attach_to": "meteor",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "radius_px": 42,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Orange light blazing around the falling rock.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "impact-flash",
+      "type": "flash",
+      "beats": [
+        "impact"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 30,
+      "params": {
+        "scope": "screen",
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A blinding white-yellow flash that fills the screen for a moment.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 8,
+          "falloff": "exponential"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "impact-flare",
+      "type": "flash",
+      "beats": [
+        "impact"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 20,
+      "params": {
+        "scope": "local",
+        "radius_px": 170,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A ball of white light at the point of impact.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 8,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fireball",
+      "type": "smoke",
+      "beats": [
+        "blast"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 15,
+      "params": {
+        "count": 20,
+        "rise_speed": 80,
+        "size_px": {
+          "min": 66,
+          "max": 76
+        },
+        "lifetime_ms": 650,
+        "opacity": 0.75,
+        "spread_speed": 110
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A fireball boiling up out of the crater, orange billows rolling over each other and cooling to red at the edges as they rise.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1.5
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "blast"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 6,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 300,
+        "thickness_px": 18,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A bright pressure ring racing out across the ground, its leading edge bending the air.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "distortion": 0.6,
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "dust-wave",
+      "type": "smoke",
+      "beats": [
+        "blast"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 7,
+      "params": {
+        "count": 28,
+        "rise_speed": 10,
+        "size_px": {
+          "min": 34,
+          "max": 42
+        },
+        "lifetime_ms": 1100,
+        "opacity": 0.7,
+        "spread_speed": 460
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A low wall of dust and grit rolling out from the crater along the ground in every direction and settling.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "debris",
+      "type": "sparks",
+      "beats": [
+        "impact"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": {
+          "min": 34,
+          "max": 42
+        },
+        "speed": 420,
+        "speed_spread": 0.55,
+        "gravity": 900,
+        "lifetime_ms": 1250,
+        "size_px": {
+          "min": 9,
+          "max": 12
+        },
+        "spread_deg": 110,
+        "drag": 0.12,
+        "glow": 0.85,
+        "streak_ms": 45
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of rock and burning fragments thrown high out of the crater, glowing at first, tumbling and cooling as they fall and land around it.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "hard"
+        },
+        "lighting": "lit",
+        "notes": "Mesh particles (a few rock variants) with physics or a fake ballistic arc and a ground bounce; an emissive ramp that cools over the first half of their life plus a short flame trail on the hot ones."
+      }
+    },
+    {
+      "id": "impact-sparks",
+      "type": "sparks",
+      "beats": [
+        "impact"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 16,
+      "params": {
+        "count": {
+          "min": 60,
+          "max": 70
+        },
+        "speed": 650,
+        "speed_spread": 0.5,
+        "gravity": 700,
+        "lifetime_ms": 450,
+        "size_px": 3,
+        "spread_deg": 150,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A burst of white-hot sparks sprayed out of the impact.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "embers",
+      "type": "sparks",
+      "beats": [
+        "blast",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "look": "ember",
+        "count": {
+          "min": 55,
+          "max": 65
+        },
+        "speed": 110,
+        "speed_spread": 0.6,
+        "gravity": -90,
+        "lifetime_ms": 1100,
+        "size_px": 2.6,
+        "spread_deg": 200,
+        "drag": 0.6,
+        "emit_ms": 1200,
+        "streak_ms": 25
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers swirling up out of the crater on the heat, flickering as they rise and wink out.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1.2
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.7
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "smoke-column",
+      "type": "smoke",
+      "beats": [
+        "blast",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 8,
+      "params": {
+        "count": 18,
+        "rise_speed": 75,
+        "size_px": {
+          "min": 52,
+          "max": 62
+        },
+        "lifetime_ms": 1300,
+        "opacity": 0.7
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A thick dark column of smoke climbing out of the crater and thinning as it goes.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "heat-light",
+      "type": "light",
+      "beats": [
+        "fall",
+        "impact",
+        "blast",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 2.6
+      },
+      "shader": {
+        "technique": "light",
+        "look": "Orange light swelling on the ground as the meteor nears, a hard flash on impact, then a dying red glow from the crater.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fall-shake",
+      "type": "camera_shake",
+      "beats": [
+        "fall"
+      ],
+      "params": {
+        "amplitude_px": 1.5,
+        "frequency_hz": 18,
+        "decay": 0.2
+      }
+    },
+    {
+      "id": "impact-shake",
+      "type": "camera_shake",
+      "beats": [
+        "impact",
+        "blast"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 11,
+          "max": 14
+        },
+        "frequency_hz": 22,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "rumble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "telegraph"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.4,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "fall-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fall"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.6,
+        "pitch": {
+          "min": 1.3,
+          "max": 1.5
+        },
+        "duration_ms": 700
+      }
+    },
+    {
+      "id": "burn-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fall"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.55,
+        "pitch": 1.2,
+        "offset_ms": 200
+      }
+    },
+    {
+      "id": "whoosh-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fall"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.7,
+        "pitch": 0.6,
+        "offset_ms": 330
+      }
+    },
+    {
+      "id": "boom-sound",
+      "type": "sound_cue",
+      "beats": [
+        "impact"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "crash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "impact"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.8,
+        "offset_ms": 60
+      }
+    },
+    {
+      "id": "aftermath-sound",
+      "type": "sound_cue",
+      "beats": [
+        "aftermath"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.3,
+        "pitch": 0.75
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The rock's shape and seams, its approach angle and heading, the trail puffs, the debris throw, the smoke and the crater texture change per cast. The warning circle's size, the 1.15 s telegraph and the impact time stay fixed so the dodge window is always fair."
+  },
+  "director_notes": "Built from the one-word request \"meteor\", as a generic falling-star strike, not any particular game's version. Choices: (1) a long, readable telegraph: a red warning circle sized to the hit plus a ring closing in on the centre, pulsing faster as the hit nears, with the ground light turning orange as the meteor approaches, because a huge hit needs a fair dodge window; (2) the meteor is an orb with look meteor, anchored in the sky with travel projectile, so it falls from above the target at a tilt (approach_deg) from a seeded heading, accelerating (ease_in) over 0.7 s; the rock is a lumpy mesh with molten seams and a white-hot leading face, shedding flame puffs that cool hot to red and a slower smoke trail that hangs in the air after it lands (it reads well from the side and 3/4 views, and as a short streak from the top); (3) the impact stacks a screen flash, a local flare, a fireball (additive smoke), a fast shockwave ring, a dust wave rolling out along the ground (smoke with spread_speed), glowing debris chunks that land and stay (sparks look debris), a spark burst, rising embers and a smoke column; heavy shake on the hit and a faint tremor during the fall; (4) the ground keeps the story: crater (alpha, outlives the spell) under a wide scorch, glowing cracks and a hot burn that cool fast. Sound: a low rumble under the telegraph, a high rushing wind, fire and a late whoosh as it falls, then a deep boom with a crash of debris, and a quiet fire tail. Fire element because the reader's first idea of a meteor is a fireball from the sky; an earth-flavoured variant would swap the palette toward stone and drop the fire trail."
+}

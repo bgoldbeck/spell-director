@@ -203,7 +203,7 @@
         "drag": 0.05,
         "emit_ms": 520,
         "emit_radius_px": 90,
-        "look": "rock"
+        "look": "debris"
       },
       "shader": {
         "material": "stone",
@@ -240,7 +240,7 @@
         "drag": 0.02,
         "emit_ms": 400,
         "emit_radius_px": 110,
-        "look": "rock"
+        "look": "debris"
       },
       "shader": {
         "material": "stone",
@@ -270,7 +270,7 @@
         "spread_deg": 20,
         "drag": 0.5,
         "emit_ms": 1,
-        "look": "rock"
+        "look": "debris"
       },
       "shader": {
         "material": "stone",
@@ -300,7 +300,7 @@
         "spread_deg": 10,
         "drag": 0.02,
         "emit_ms": 1,
-        "look": "rock"
+        "look": "debris"
       },
       "shader": {
         "material": "stone",
@@ -372,7 +372,7 @@
         "drag": 0.12,
         "emit_ms": 480,
         "emit_radius_px": 100,
-        "look": "rock"
+        "look": "debris"
       },
       "shader": {
         "material": "stone",

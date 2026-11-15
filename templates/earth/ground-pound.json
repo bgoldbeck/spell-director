@@ -387,7 +387,7 @@
         "spread_deg": 170,
         "drag": 0.3,
         "emit_ms": 460,
-        "look": "rock"
+        "look": "debris"
       },
       "shader": {
         "material": "stone",
@@ -517,7 +517,7 @@
         "spread_deg": 120,
         "drag": 0.15,
         "emit_ms": 60,
-        "look": "rock"
+        "look": "debris"
       },
       "shader": {
         "material": "stone",
@@ -592,7 +592,7 @@
         "spread_deg": 90,
         "drag": 0.12,
         "emit_ms": 140,
-        "look": "rock"
+        "look": "debris"
       },
       "shader": {
         "material": "stone",

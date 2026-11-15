@@ -317,7 +317,7 @@
         "drag": 0.1,
         "emit_ms": 420,
         "emit_radius_px": 70,
-        "look": "rock"
+        "look": "debris"
       },
       "shader": {
         "material": "stone",
@@ -420,7 +420,7 @@
         "drag": 0.1,
         "emit_ms": 950,
         "emit_radius_px": 340,
-        "look": "rock"
+        "look": "debris"
       },
       "shader": {
         "material": "stone",
