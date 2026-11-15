@@ -62,7 +62,7 @@ To get the latest version, double-click `update.bat` (Windows) or run `./update.
 
 Use another port with `run.bat 50123` / `./run.sh 50123`, or set `SPELLDIRECTOR_PORT`. If the port is busy, the next free one is used. Without the scripts: `python tools/serve.py --open`.
 
-Sound cues play in time with the beats (placeholder sounds for now); **Sound on/off** or M toggles them. Browsers start audio after your first click or key press.
+Sound cues play in time with the beats (placeholder sounds for now). Sound starts **off**: click **Sound off** or press M to turn it on, and the viewer remembers your choice.
 
 Keys: Space play/pause, 1-4 views, 5 all four, M sound, F focus view (Esc to leave). Drag to orbit, scroll to zoom.
 

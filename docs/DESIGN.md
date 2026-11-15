@@ -85,7 +85,7 @@ The director is an AI agent following [director-playbook.md](director-playbook.m
 
 `run.bat` (Windows) or `./run.sh` → http://localhost:47811 (default port; `--port` or `SPELLDIRECTOR_PORT` to change, next free port if busy). Laid out like the motion study:
 
-- **Type** and **Spell** dropdowns: templates are grouped by their `element` (new types show up on their own), with "All types" listing every spell under its type; **‹ Prev / Next ›** (or `[` / `]`) step through the chosen type. Beat buttons (jump to a beat) with a **Clear** button; beat-intent captions on the stage; sound cues play in sync and show as captions, with a **Sound on/off** toggle (M, remembered per browser, `?sound=off` in the URL).
+- **Type** and **Spell** dropdowns: templates are grouped by their `element` (new types show up on their own), with "All types" listing every spell under its type; **‹ Prev / Next ›** (or `[` / `]`) step through the chosen type. Beat buttons (jump to a beat) with a **Clear** button; beat-intent captions on the stage; sound cues play in sync and show as captions, with a **Sound on/off** toggle (off by default; M; remembered per browser; `?sound=on` or `?sound=off` in the URL).
 - Scrubber with colored phase bands; Replay, Pause/Play, speed 0.1×–2×, Loop, Seed + **New cast**, **Focus view** (F) for recording.
 - **Front / Side / Top / 3/4 / All four** camera presets; hero view starred and opened by default; each view shows that template's `views.reads`. OrbitControls for free orbit. Top is orthographic.
 - Layer toggles, palette swatches, description and director's notes. **Open JSON…** loads any template file.
