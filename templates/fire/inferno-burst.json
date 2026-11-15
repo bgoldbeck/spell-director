@@ -1,0 +1,836 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-inferno-burst",
+  "name": "Inferno Burst",
+  "description": "The caster gathers a growing fireball over a burning rune circle, hurls it in an arc, and it detonates on the target in a star of flame: spokes of fire shoot out in every direction, a shockwave rolls across the ground, a fireball billows up, and a wide rayed scorch is left behind.",
+  "element": "fire",
+  "archetype": "projectile",
+  "tags": [
+    "fireball",
+    "explosion",
+    "starburst",
+    "heavy",
+    "area",
+    "aoe",
+    "lob"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A big fire blast: a heavy fireball that explodes on the target in a star-shaped burst of flame. Top-down game."
+  },
+  "timing": {
+    "duration_ms": 2100,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.8,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "top",
+    "reads": {
+      "front": "The fireball swells at the caster and arcs away from the camera; at the far end a tall fireball blooms and spokes of flame shoot out and up in every direction before a dark plume rises.",
+      "side": "The fireball lobs across in a clear arc trailing flame and lands on the target; the burst is a dome of flame spokes and a rising fireball, with the shockwave flat along the ground.",
+      "top": "Hero view. A burning rune circle under the caster marks the wind-up; the fireball streaks to the target; the burst reads as a star: spokes of flame radiating out, a fast shockwave ring, and a wide scorch with soot rays and glowing cracks that stays on the ground.",
+      "three_quarter": "The arc of the throw reads clearly, the burst shows both its rising fireball and its star of spokes, and the rayed scorch reads as a wide ellipse."
+    }
+  },
+  "palette": {
+    "core": "#FFF4CC",
+    "primary": "#FF6A14",
+    "secondary": "#B8200A",
+    "accent": "#FFC23D",
+    "shadow": "#231A16"
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 600,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.9
+      },
+      "intent": "Fire gathers at the caster's hand into a growing, churning ball while a rune circle burns into the ground under their feet and dark smoke curls off the flames."
+    },
+    {
+      "id": "hurl",
+      "phase": "release",
+      "start_ms": 600,
+      "end_ms": 680,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.9
+      },
+      "intent": "The caster hurls the fireball with a flare and a whoosh."
+    },
+    {
+      "id": "flight",
+      "phase": "travel",
+      "start_ms": 640,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "linear",
+        "from": 0.9,
+        "to": 1.0
+      },
+      "intent": "The fireball arcs to the target trailing a streak of flame."
+    },
+    {
+      "id": "detonate",
+      "phase": "impact",
+      "start_ms": 1000,
+      "end_ms": 1400,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.75,
+        "to": 1.0,
+        "flicker_hz": 6
+      },
+      "intent": "It detonates in a star of flame: spokes of fire shoot out in every direction, a shockwave rolls across the ground, a fireball billows up and the screen shakes."
+    },
+    {
+      "id": "burnout",
+      "phase": "dissipation",
+      "start_ms": 1350,
+      "end_ms": 2100,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The fireball rolls up into a dark plume, embers rain and drift, and a wide rayed scorch is left smoking on the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "detonate",
+        "burnout"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 110,
+          "max": 125
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.5,
+        "lifetime_ms": 4500,
+        "fade_ms": 2000,
+        "detail": 0.9
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A wide black blast mark with long soot rays thrown out like the points of a star.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burn",
+      "type": "decal",
+      "beats": [
+        "detonate",
+        "burnout"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 80,
+          "max": 90
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 0,
+        "grow_ms": 140,
+        "start_scale": 0.4,
+        "lifetime_ms": 450,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The blast ground glowing orange-white for a moment, cooling to red from the rim inward.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.3,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hot-cracks",
+      "type": "decal",
+      "beats": [
+        "detonate",
+        "burnout"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 60,
+          "max": 70
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 0,
+        "lifetime_ms": 900,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Cracks glowing gold-orange at the heart of the blast, breathing like coals.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rune-circle",
+      "type": "decal",
+      "beats": [
+        "gather",
+        "hurl"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "add",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 48,
+        "opacity": 0.85,
+        "fade_in_ms": 120,
+        "grow_ms": 450,
+        "start_scale": 0.3,
+        "spin_deg_per_s": 50,
+        "fade_ms": 250,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A circle of glyphs burning into the ground under the caster, turning slowly as the fire gathers.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "gather-smoke",
+      "type": "smoke",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster_hand",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 4,
+      "params": {
+        "count": 6,
+        "rise_speed": 25,
+        "size_px": {
+          "min": 12,
+          "max": 16
+        },
+        "lifetime_ms": 500,
+        "opacity": 0.3
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Dark wisps curling off the gathering fire.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 3,
+          "speed": 0.6,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "fireball",
+      "type": "orb",
+      "beats": [
+        "gather",
+        "hurl",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 3
+        },
+        {
+          "t_ms": 600,
+          "param": "radius_px",
+          "value": 16,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "radius_px": 6,
+        "pulse_hz": 5,
+        "wobble": 0.3,
+        "crackle_count": 0,
+        "trail_ms": 220,
+        "arc_height_px": 70
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A churning ball of fire: a white-yellow heart in a rolling orange shell, flames licking off it, a long streak of fire behind it in flight.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2.5,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 1.5
+        },
+        "fresnel": 0.3,
+        "emissive": {
+          "hdr": 5,
+          "falloff": "soft",
+          "core_ratio": 0.35
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fireball-glow",
+      "type": "glow",
+      "beats": [
+        "gather",
+        "hurl",
+        "flight"
+      ],
+      "attach_to": "fireball",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 40,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Orange light swelling around the fireball and travelling with it.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather-embers",
+      "type": "sparks",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 16,
+          "max": 20
+        },
+        "speed": 50,
+        "speed_spread": 0.5,
+        "gravity": -130,
+        "lifetime_ms": 450,
+        "size_px": 2.2,
+        "spread_deg": 160,
+        "drag": 0.4,
+        "emit_ms": 550,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers spitting off the gathering fireball and drifting up.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hurl-flash",
+      "type": "flash",
+      "beats": [
+        "hurl"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 70,
+        "peak": 0.5
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A flare at the hand as the fireball leaves it.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "blast-flash",
+      "type": "flash",
+      "beats": [
+        "detonate"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 20,
+      "params": {
+        "scope": "screen",
+        "peak": {
+          "min": 0.45,
+          "max": 0.55
+        }
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "The whole screen washes warm white for a frame as the fireball bursts.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 8,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "star-spokes",
+      "type": "sparks",
+      "beats": [
+        "detonate"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 15,
+      "params": {
+        "count": {
+          "min": 14,
+          "max": 16
+        },
+        "speed": 900,
+        "speed_spread": 0.15,
+        "gravity": 0,
+        "lifetime_ms": 400,
+        "size_px": 11,
+        "spread_deg": 200,
+        "drag": 0.3,
+        "emit_ms": 40,
+        "streak_ms": 130
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Long spokes of flame shooting out of the blast in every direction like the points of a star, white at the root and orange at the tips.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 4,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 6,
+          "falloff": "soft",
+          "core_ratio": 0.4
+        },
+        "lighting": "emits_light",
+        "notes": "Stretched flame sprites or short ribbons fired radially from the blast centre, a dozen or so, all launched in the same instant."
+      }
+    },
+    {
+      "id": "fireball-billows",
+      "type": "smoke",
+      "beats": [
+        "detonate"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 13,
+      "params": {
+        "count": 16,
+        "rise_speed": 70,
+        "size_px": {
+          "min": 42,
+          "max": 50
+        },
+        "lifetime_ms": 650,
+        "opacity": 0.6
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A fireball rolling up out of the blast in glowing billows that darken from orange to red.",
+        "technique": "particles",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1.8
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "detonate"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 190,
+        "thickness_px": 14,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A fast ring of heat and dust rolling out across the ground from the blast.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "distortion": 0.5,
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ember-shower",
+      "type": "sparks",
+      "beats": [
+        "detonate",
+        "burnout"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 60,
+          "max": 75
+        },
+        "speed": 260,
+        "speed_spread": 0.6,
+        "gravity": -60,
+        "lifetime_ms": 1100,
+        "size_px": 2.6,
+        "spread_deg": 180,
+        "drag": 0.6,
+        "emit_ms": 500,
+        "streak_ms": 25,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers flung out of the blast that slow, flutter and drift up on the heat.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1.2
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.7
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "plume",
+      "type": "smoke",
+      "beats": [
+        "detonate",
+        "burnout"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 5,
+      "params": {
+        "count": 14,
+        "rise_speed": 60,
+        "size_px": {
+          "min": 48,
+          "max": 56
+        },
+        "lifetime_ms": 1000,
+        "opacity": 0.55
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A thick dark plume rising out of the fireball and spreading as it climbs.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.7
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "blast-light",
+      "type": "light",
+      "beats": [
+        "detonate",
+        "burnout"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 8,
+        "energy": 3.5
+      },
+      "shader": {
+        "technique": "light",
+        "look": "A big orange flash of light across the area that dies to a red glow.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "detonate"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 9,
+          "max": 12
+        },
+        "frequency_hz": 18,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.5,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "hurl-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hurl"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.8,
+        "pitch": {
+          "min": 0.85,
+          "max": 1.0
+        }
+      }
+    },
+    {
+      "id": "blast-sound",
+      "type": "sound_cue",
+      "beats": [
+        "detonate"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.05
+        }
+      }
+    },
+    {
+      "id": "blast-rumble",
+      "type": "sound_cue",
+      "beats": [
+        "detonate"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "burnout-sound",
+      "type": "sound_cue",
+      "beats": [
+        "burnout"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.35,
+        "pitch": 0.8
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The spoke directions, billow paths, ember drift and the scorch's rays and angle vary per cast. The 0.6 s gather, the throw at 600 ms, the 0.36 s flight and the blast at 1000 ms stay fixed so the hit lands at the same moment and the rune circle is a fair warning."
+  },
+  "director_notes": "A heavy fire blast for a top-down game. Choices: (1) a 0.6 s gather with a burning rune circle under the caster and a fireball swelling at the hand, so it reads as a big committed cast; (2) the fireball is lobbed (arc_height 70 px) so side and 3/4 views see a clear throw; (3) the payoff is a star: a dozen fast, long-streaked flame spokes (sparks at 900 px/s with streak_ms 130, no gravity) fired at once from the blast, over a screen flash, a fast shockwave, additive fireball billows, a dark plume and a wide scorch at detail 0.9 so its soot rays echo the star. The star is radial spokes, not a fixed glyph or letter shape, so every cast is different. Top is the hero view: the rune circle, the spokes, the ring and the rayed scorch carry it from above. Sound: fire while gathering, whoosh on the throw, boom plus rumble on the blast, quiet fire for the burnout."
+}

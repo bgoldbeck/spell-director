@@ -1,12 +1,17 @@
 {
   "templates": [
     "fire/dragon-breath.json",
+    "fire/ember-volley.json",
+    "fire/flame-jet.json",
+    "fire/inferno-burst.json",
     "fire/meteor-strike.json",
     "lightning/ball-lightning.json",
     "lightning/boss-storm-call.json",
     "lightning/chain-arc.json",
     "lightning/charge-discharge.json",
     "lightning/sky-strike.json",
+    "lightning/thunderhead.json",
+    "lightning/volt-lash.json",
     "water/pressure-jet.json",
     "wind/tornado.json"
   ]

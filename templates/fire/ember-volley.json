@@ -1,0 +1,807 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-ember-volley",
+  "name": "Ember Volley",
+  "description": "A quick flick of the wrist sends three small embers spitting at a target one after another, each on its own arc; each bursts in a pop of sparks, leaving a few singe marks and a wisp of smoke.",
+  "element": "fire",
+  "archetype": "projectile",
+  "tags": [
+    "embers",
+    "volley",
+    "multi-hit",
+    "light",
+    "quick",
+    "basic-attack"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A small, quick fire attack: a volley of little embers flicked at the target. A basic attack, light and snappy."
+  },
+  "timing": {
+    "duration_ms": 1000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Three bright points leave the hand one after another and fly away from the camera, each a little higher or lower than the last, popping into sparks at the target.",
+      "side": "Three small fireballs on three different arcs, a low skim, a high lob and a medium one, landing a tenth of a second apart with three pops of sparks.",
+      "top": "Three short streaks fly along the cast line one after another; the ground story is three pops of sparks and burn patches stacking up under the target into a small singed spot.",
+      "three_quarter": "Hero view. The three arcs separate clearly, the pops land in a quick rhythm, and the singe marks read on the ground under the target."
+    }
+  },
+  "palette": {
+    "core": "#FFF2B8",
+    "primary": "#FF8C1A",
+    "secondary": "#D2370E",
+    "accent": "#FFCF4A",
+    "shadow": "#2B221C"
+  },
+  "beats": [
+    {
+      "id": "kindle",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 90,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 0.9
+      },
+      "intent": "A spark of fire catches in the caster's fingers."
+    },
+    {
+      "id": "flick",
+      "phase": "release",
+      "start_ms": 90,
+      "end_ms": 130,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "A quick flick of the wrist and a small flare: the first ember is away."
+    },
+    {
+      "id": "toss-1",
+      "phase": "travel",
+      "start_ms": 100,
+      "end_ms": 330,
+      "intensity": {
+        "shape": "linear",
+        "from": 0.9,
+        "to": 1.0
+      },
+      "intent": "First ember: a low, fast skim."
+    },
+    {
+      "id": "toss-2",
+      "phase": "travel",
+      "start_ms": 190,
+      "end_ms": 440,
+      "intensity": {
+        "shape": "linear",
+        "from": 0.9,
+        "to": 1.0
+      },
+      "intent": "Second ember: a higher lob."
+    },
+    {
+      "id": "toss-3",
+      "phase": "travel",
+      "start_ms": 280,
+      "end_ms": 520,
+      "intensity": {
+        "shape": "linear",
+        "from": 0.9,
+        "to": 1.0
+      },
+      "intent": "Third ember: in between."
+    },
+    {
+      "id": "pop-1",
+      "phase": "impact",
+      "start_ms": 330,
+      "end_ms": 450,
+      "intensity": {
+        "shape": "flicker",
+        "from": 1.0,
+        "to": 0.7,
+        "flicker_hz": 9
+      },
+      "intent": "Pop: the first ember bursts in sparks."
+    },
+    {
+      "id": "pop-2",
+      "phase": "impact",
+      "start_ms": 440,
+      "end_ms": 560,
+      "intensity": {
+        "shape": "flicker",
+        "from": 1.0,
+        "to": 0.7,
+        "flicker_hz": 9
+      },
+      "intent": "Pop: the second ember bursts."
+    },
+    {
+      "id": "pop-3",
+      "phase": "impact",
+      "start_ms": 520,
+      "end_ms": 660,
+      "intensity": {
+        "shape": "flicker",
+        "from": 1.0,
+        "to": 0.7,
+        "flicker_hz": 9
+      },
+      "intent": "Pop: the third ember bursts, the biggest of the three."
+    },
+    {
+      "id": "fizzle",
+      "phase": "dissipation",
+      "start_ms": 620,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "A wisp of smoke and a few drifting sparks; small singe marks are left on the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "singe",
+      "type": "decal",
+      "beats": [
+        "pop-1",
+        "pop-2",
+        "pop-3",
+        "fizzle"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 26,
+          "max": 32
+        },
+        "opacity": 0.75,
+        "fade_in_ms": 100,
+        "grow_ms": 300,
+        "start_scale": 0.5,
+        "lifetime_ms": 2200,
+        "fade_ms": 1000,
+        "detail": 0.4
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A small singed spot, black at the middle with a brown edge.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.25
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burn-dots",
+      "type": "decal",
+      "beats": [
+        "pop-1",
+        "pop-2",
+        "pop-3"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 20,
+          "max": 24
+        },
+        "opacity": 0.85,
+        "fade_in_ms": 0,
+        "lifetime_ms": 250,
+        "fade_ms": 300,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Small glowing patches where each ember bursts, going out quickly.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.3,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "finger-fire",
+      "type": "glow",
+      "beats": [
+        "kindle",
+        "flick",
+        "toss-1",
+        "toss-2"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 14,
+        "softness": 0.85,
+        "pulse_hz": 10
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A small flicker of firelight in the caster's fingers between throws.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "flick-flash",
+      "type": "flash",
+      "beats": [
+        "flick"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 30,
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A small flare at the fingers on the flick.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ember-1",
+      "type": "orb",
+      "beats": [
+        "toss-1"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "radius_px": {
+          "min": 4,
+          "max": 5
+        },
+        "pulse_hz": 9,
+        "wobble": 0.35,
+        "crackle_count": 0,
+        "trail_ms": 90,
+        "arc_height_px": 12
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A small spitting ball of fire, bright yellow inside an orange flicker, trailing a short streak of flame.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "soft",
+          "core_ratio": 0.4
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ember-2",
+      "type": "orb",
+      "beats": [
+        "toss-2"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "radius_px": {
+          "min": 4,
+          "max": 5
+        },
+        "pulse_hz": 9,
+        "wobble": 0.35,
+        "crackle_count": 0,
+        "trail_ms": 90,
+        "arc_height_px": 55
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A small spitting ball of fire, bright yellow inside an orange flicker, trailing a short streak of flame.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "soft",
+          "core_ratio": 0.4
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ember-3",
+      "type": "orb",
+      "beats": [
+        "toss-3"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "radius_px": {
+          "min": 5,
+          "max": 6
+        },
+        "pulse_hz": 9,
+        "wobble": 0.35,
+        "crackle_count": 0,
+        "trail_ms": 90,
+        "arc_height_px": 30
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A small spitting ball of fire, bright yellow inside an orange flicker, trailing a short streak of flame.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "soft",
+          "core_ratio": 0.4
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ember-1-glow",
+      "type": "glow",
+      "beats": [
+        "toss-1"
+      ],
+      "attach_to": "ember-1",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 12,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A little halo of orange light riding each ember.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ember-2-glow",
+      "type": "glow",
+      "beats": [
+        "toss-2"
+      ],
+      "attach_to": "ember-2",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 12,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A little halo of orange light riding each ember.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ember-3-glow",
+      "type": "glow",
+      "beats": [
+        "toss-3"
+      ],
+      "attach_to": "ember-3",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 12,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A little halo of orange light riding each ember.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pop-1-sparks",
+      "type": "sparks",
+      "beats": [
+        "pop-1"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 10,
+          "max": 14
+        },
+        "speed": 170,
+        "speed_spread": 0.5,
+        "gravity": -100,
+        "lifetime_ms": 320,
+        "size_px": 2.2,
+        "spread_deg": 200,
+        "drag": 0.45,
+        "emit_ms": 50,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A little pop of sparks as an ember bursts on the target.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pop-2-sparks",
+      "type": "sparks",
+      "beats": [
+        "pop-2"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 10,
+          "max": 14
+        },
+        "speed": 170,
+        "speed_spread": 0.5,
+        "gravity": -100,
+        "lifetime_ms": 320,
+        "size_px": 2.2,
+        "spread_deg": 200,
+        "drag": 0.45,
+        "emit_ms": 50,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A little pop of sparks as an ember bursts on the target.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pop-3-sparks",
+      "type": "sparks",
+      "beats": [
+        "pop-3"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 10,
+          "max": 14
+        },
+        "speed": 170,
+        "speed_spread": 0.5,
+        "gravity": -100,
+        "lifetime_ms": 320,
+        "size_px": 2.2,
+        "spread_deg": 200,
+        "drag": 0.45,
+        "emit_ms": 50,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A little pop of sparks as an ember bursts on the target.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pop-flare",
+      "type": "flash",
+      "beats": [
+        "pop-1",
+        "pop-2",
+        "pop-3"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 34,
+        "peak": 0.45
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A small flare on the target with each pop.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "wisp",
+      "type": "smoke",
+      "beats": [
+        "pop-3",
+        "fizzle"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 5,
+      "params": {
+        "count": 5,
+        "rise_speed": 35,
+        "size_px": {
+          "min": 14,
+          "max": 18
+        },
+        "lifetime_ms": 500,
+        "opacity": 0.35
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A thin wisp of grey smoke rising off the singed spot.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 3,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.5
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "drift-sparks",
+      "type": "sparks",
+      "beats": [
+        "fizzle"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 15,
+      "params": {
+        "count": {
+          "min": 6,
+          "max": 9
+        },
+        "speed": 50,
+        "speed_spread": 0.5,
+        "gravity": -90,
+        "lifetime_ms": 500,
+        "size_px": 1.8,
+        "spread_deg": 160,
+        "drag": 0.5,
+        "emit_ms": 250,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A few sparks drifting up and winking out.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pop-light",
+      "type": "light",
+      "beats": [
+        "pop-1",
+        "pop-2",
+        "pop-3"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 2.5,
+        "energy": 1.2
+      },
+      "shader": {
+        "technique": "light",
+        "look": "Small orange blinks of light on the target with each pop.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "flick-sound",
+      "type": "sound_cue",
+      "beats": [
+        "toss-1",
+        "toss-2",
+        "toss-3"
+      ],
+      "params": {
+        "cue": "ignite",
+        "gain": 0.5,
+        "pitch": {
+          "min": 1.2,
+          "max": 1.45
+        }
+      }
+    },
+    {
+      "id": "pop-sound",
+      "type": "sound_cue",
+      "beats": [
+        "pop-1",
+        "pop-2",
+        "pop-3"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.45,
+        "pitch": {
+          "min": 1.25,
+          "max": 1.5
+        }
+      }
+    },
+    {
+      "id": "fizzle-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fizzle"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.3
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Ember sizes, spark sprays and the singe marks vary per cast. The three toss times (0.09 s apart), arcs and pop times stay fixed so the hit rhythm is the same every cast: three hits about 0.1 s apart."
+  },
+  "director_notes": "A light basic attack, the small cousin of Inferno Burst. Choices: (1) nearly no wind-up (90 ms kindle, 40 ms flick) so it fires the moment it's pressed; (2) three small embers, each its own orb flying in its own travel beat, launched about 0.09 s apart on three different arcs (a 12 px skim, a 55 px lob, a 30 px middle) so the volley reads as three shots from the side and 3/4 instead of one blob; (3) three small pops (separate impact beats with their own sparks), a stacking burn and a small singe that outlives the spell. Hero view is 3/4, where the arcs separate. Sound: a high-pitched ignite per ember, a light impact per pop, a quiet sizzle tail. A game can treat each pop as its own hit for damage numbers."
+}
