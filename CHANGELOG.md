@@ -6,6 +6,14 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Changed
+
+- Only one SpellDirector runs at a time. Launching it again (run.bat, run.sh, `tools/serve.py` or the exe) opens your browser on the copy that's already running instead of starting a second server. `--new-instance` overrides this.
+
+### Added
+
+- The viewer shows the app version next to the SpellDirector title (also in the browser tab), read from `VERSION`. The server reports it at `/version.json`.
+
 ## [0.3.0] - 2026-11-15
 
 ### Changed

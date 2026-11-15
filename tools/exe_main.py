@@ -8,9 +8,7 @@ import serve
 
 
 def main() -> int:
-    version_file = serve.ROOT / "VERSION"
-    version = version_file.read_text(encoding="utf-8").strip() if version_file.exists() else "?"
-    print(f"SpellDirector {version}", flush=True)
+    print(f"SpellDirector {serve.VERSION}", flush=True)
     print("Close this window to stop the viewer.\n", flush=True)
     return serve.main(["--open", *sys.argv[1:]])
 

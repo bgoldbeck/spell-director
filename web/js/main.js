@@ -663,7 +663,24 @@ async function loadCueLibrary() {
   }
 }
 
+// The server answers /version.json from the VERSION file (bundled in the exe too).
+async function showVersion() {
+  try {
+    const res = await fetch("version.json");
+    if (!res.ok) return;
+    const { version } = await res.json();
+    if (!version) return;
+    const el = document.getElementById("app-version");
+    el.textContent = `v${version}`;
+    el.hidden = false;
+    document.title = `SpellDirector v${version}`;
+  } catch {
+    // Opened without the server (e.g. a static host): no version to show.
+  }
+}
+
 async function boot() {
+  showVersion();
   setMuted(soundPref(), false);
   sound.library = await loadCueLibrary();
   sound.player.setLibrary(sound.library);
