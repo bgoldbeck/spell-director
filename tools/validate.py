@@ -39,7 +39,7 @@ KNOWN_PARAMS = {
         "width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms", "style", "flow_speed", "turbulence",
         "foam", "churn", "shed_count", "shed_speed", "shed_size_px", "shed_life_ms", "spread", "sweep_px", "sweep_ms",
         "puff_count", "puff_size_px", "spiral_count", "spiral_pitch_px", "spiral_speed", "spiral_radius",
-        "spiral_width_px",
+        "spiral_width_px", "line_count", "line_length",
     },
     "vortex": {
         "height_px", "base_radius_px", "top_radius_px", "flare", "spin_hz", "strands", "twist", "turbulence",

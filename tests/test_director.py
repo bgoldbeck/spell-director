@@ -42,7 +42,7 @@ def test_list_and_filter():
     fire = library.list_templates(element="fire")
     assert {"fire-dragon-breath", "fire-meteor-strike"} <= {t["id"] for t in fire}
     assert all(t["element"] == "fire" for t in fire)
-    assert [t["id"] for t in library.list_templates(element="wind")] == ["wind-tornado"]
+    assert {"wind-gale-shove", "wind-tornado"} <= {t["id"] for t in library.list_templates(element="wind")}
     assert [t["id"] for t in library.list_templates(element="psychic")] == ["psychic-mind-crush"]
     assert library.list_templates(element="no-such-element") == []
 
