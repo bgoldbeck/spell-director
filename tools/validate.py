@@ -28,6 +28,7 @@ KNOWN_PARAMS = {
     "flash": {"scope", "radius_px", "peak"},
     "sparks": {
         "count", "speed", "speed_spread", "gravity", "lifetime_ms", "size_px", "spread_deg", "drag", "emit_ms", "streak_ms", "look",
+        "emit_radius_px",
     },
     "crackle": {"count", "length_px", "jaggedness", "regen_ms", "radius_px"},
     "orb": {"radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease"},
@@ -36,10 +37,15 @@ KNOWN_PARAMS = {
         "foam", "churn", "shed_count", "shed_speed", "shed_size_px", "shed_life_ms", "spread", "sweep_px", "sweep_ms",
         "puff_count", "puff_size_px",
     },
-    "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness"},
+    "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness", "arc_deg", "ease"},
+    "eruption": {
+        "shape", "arc_deg", "rows", "start_radius_px", "end_radius_px", "row_delay_ms", "delay_growth", "growth",
+        "height_px", "width_px", "spacing_px", "tilt_deg", "jitter", "rise_ms", "hold_ms", "sink_ms", "debris_count",
+        "debris_speed", "debris_size_px", "gravity", "dust", "dust_size_px", "dust_life_ms",
+    },
     "decal": {
         "radius_px", "shape", "opacity", "fade_in_ms", "lifetime_ms", "fade_ms", "grow_ms", "start_scale",
-        "rotation_deg", "spin_deg_per_s", "stretch", "pulse_hz", "detail",
+        "rotation_deg", "spin_deg_per_s", "stretch", "pulse_hz", "detail", "arc_deg", "reveal_ms",
     },
     "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity"},
     "light": {"radius", "energy"},

@@ -125,6 +125,55 @@ const SHAPES = {
     crackLines(g, c, s, R, 5 + Math.round(detail * 6), s * 0.33, s * 0.014, "rgba(255,255,255,1)");
   },
 
+  // Long fissures where the ground split: jagged dark cracks that fan out
+  // from the centre (only across the arc, when given), with a soft shadow
+  // along each one and crumbs of rubble beside them.
+  fissures(g, s, R, detail, arc = TAU) {
+    const c = s / 2;
+    const count = Math.max(3, Math.round((5 + detail * 8) * Math.min(1, arc / TAU + 0.35)));
+    const full = arc >= TAU - 1e-3;
+    g.lineCap = "round";
+    g.lineJoin = "round";
+    const crack = (a, len, w, depth, x, y) => {
+      const pts = [[x, y]];
+      const steps = 9;
+      for (let k = 0; k < steps; k++) {
+        a += R.range(-0.4, 0.4);
+        const l = (len / steps) * R.range(0.7, 1.3);
+        x += Math.cos(a) * l;
+        y += Math.sin(a) * l;
+        pts.push([x, y]);
+      }
+      // Shadow first, then the dark gap that narrows toward its tip.
+      for (const [width, color] of [[w * 3.2, "rgba(40,40,40,0.28)"], [w, "rgba(10,10,10,0.95)"]]) {
+        for (let k = 0; k < pts.length - 1; k++) {
+          g.strokeStyle = color;
+          g.lineWidth = Math.max(1, width * (1 - (0.85 * k) / pts.length));
+          g.beginPath();
+          g.moveTo(pts[k][0], pts[k][1]);
+          g.lineTo(pts[k + 1][0], pts[k + 1][1]);
+          g.stroke();
+        }
+      }
+      for (let k = 2; k < pts.length - 1; k++) {
+        if (depth > 0 && R() < 0.3) crack(a + R.sign() * R.range(0.35, 0.9), len * 0.4, w * 0.55, depth - 1, pts[k][0], pts[k][1]);
+        if (R() < 0.5 + detail * 0.4) {
+          g.fillStyle = "rgba(30,30,30,0.6)";
+          g.beginPath();
+          g.arc(pts[k][0] + R.range(-1, 1) * w * 3, pts[k][1] + R.range(-1, 1) * w * 3, R.range(0.5, 1.4) * w, 0, TAU);
+          g.fill();
+        }
+      }
+    };
+    radial(g, c, c, s * 0.12, [[0, "rgba(20,20,20,0.55)"], [1, "rgba(20,20,20,0)"]]);
+    for (let i = 0; i < count; i++) {
+      const u = full ? i / count : count > 1 ? i / (count - 1) - 0.5 : 0;
+      const a = (full ? u * TAU : u * arc * 0.9) + R.range(-0.12, 0.12);
+      const start = R.range(0, s * 0.04);
+      crack(a, s * 0.42 * R.range(0.75, 1.05), s * 0.012 * R.range(0.8, 1.3), 2, c + Math.cos(a) * start, c + Math.sin(a) * start);
+    }
+  },
+
   crater(g, s, R, detail) {
     const c = s / 2;
     // Rim: a lighter lumpy band (tinted, it reads as dust thrown up).
@@ -285,12 +334,31 @@ const SHAPES = {
 
 export const TEXTURE_SIZE = 512;
 
+// Keep only a sector of the mark, centred on canvas +x (which lies along the
+// cast direction on the ground), with soft ends.
+function maskArc(g, s, arc) {
+  const img = g.getImageData(0, 0, s, s);
+  const half = arc / 2;
+  const c = s / 2;
+  for (let y = 0; y < s; y++) {
+    for (let x = 0; x < s; x++) {
+      const off = Math.abs(Math.atan2(y - c, x - c));
+      const k = off <= half * 0.75 ? 1 : off >= half ? 0 : 1 - (off - half * 0.75) / (half * 0.25);
+      if (k < 1) img.data[(y * s + x) * 4 + 3] *= k * k * (3 - 2 * k);
+    }
+  }
+  g.putImageData(img, 0, 0);
+}
+
 /** Draw a decal into a new canvas of `size` px (white + alpha). */
-export function drawDecal(shape, seed, { detail = 0.5, size = TEXTURE_SIZE } = {}) {
+// arc_deg < 360 keeps only the sector facing the cast direction (canvas +x).
+export function drawDecal(shape, seed, { detail = 0.5, size = TEXTURE_SIZE, arc_deg = 360 } = {}) {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
-  const g = canvas.getContext("2d");
-  (SHAPES[shape] || SHAPES.scorch)(g, size, rng(seed), detail);
+  const g = canvas.getContext("2d", { willReadFrequently: arc_deg < 360 });
+  const arc = (Math.max(1, Math.min(360, arc_deg)) * Math.PI) / 180;
+  (SHAPES[shape] || SHAPES.scorch)(g, size, rng(seed), detail, arc);
+  if (arc_deg < 360) maskArc(g, size, arc);
   return canvas;
 }
 

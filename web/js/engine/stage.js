@@ -36,9 +36,15 @@ export function buildStage(template, seed) {
   const sky = primaryTarget.clone().setY(Math.max(3, scale));
   const hop = space.targets?.hop_delay_ms;
 
-  const far = targets.reduce((m, p) => Math.max(m, p.length()), point.x);
+  // Spells centred on the caster (a quake around them) frame the caster.
+  const aroundCaster = space.destination === "caster";
+  const far = aroundCaster ? 0 : targets.reduce((m, p) => Math.max(m, p.length()), point.x);
   const center = new THREE.Vector3(far / 2, 0.6, 0);
-  const radius = Math.max(2.2, far / 2 + 1.2, space.origin === "sky" ? sky.y / 1.6 : 0);
+  // An arc footprint (a frontal wave) spreads sideways too: frame its width.
+  const arcAngle = fp.shape === "arc" ? Math.min(180, resolveValue(fp.angle_deg, seed, "footprint.angle") ?? 90) : 0;
+  const arcHalfWidth = arcAngle ? length * Math.sin(THREE.MathUtils.degToRad(arcAngle / 2)) + 0.7 : 0;
+  const aroundRadius = aroundCaster ? (resolveValue(fp.radius ?? fp.length, seed, "footprint.radius") ?? 3) + 0.8 : 0;
+  const radius = Math.max(2.2, far / 2 + 1.2, space.origin === "sky" ? sky.y / 1.6 : 0, arcHalfWidth, aroundRadius);
 
   return {
     caster,

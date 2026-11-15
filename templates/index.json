@@ -1,5 +1,9 @@
 {
   "templates": [
+    "earth/ground-pound.json",
+    "earth/rending-quake.json",
+    "earth/rockfall.json",
+    "earth/stone-spires.json",
     "fire/dragon-breath.json",
     "lightning/ball-lightning.json",
     "lightning/boss-storm-call.json",
