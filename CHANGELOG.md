@@ -11,6 +11,7 @@ To release, see [docs/releasing.md](docs/releasing.md).
 - Spells look much better in the viewer: bloom makes bright light glow, bolts, beams and crackle are drawn as soft ribbons instead of stacked tubes, sparks fly as streaks, and shockwave rings are soft with a bright leading edge. A **Bloom** checkbox (B) turns the glow off.
 - Arcs that ride on a beam (Charge and Discharge) now hug the beam instead of flailing across the screen.
 - The viewer's ground is a little lighter so dark marks like scorch show up.
+- Pressure Jet looks like water now, not a blue laser: a turbulent, foamy jet that churns and sheds drops, round water droplets instead of sparks, a crown splash with foam, and wet marks on the ground. Smoke and mist use soft, rolling clouds. New template params: beam `style: water` (with `flow_speed`, `turbulence`, `foam`, `churn`, `shed_*`) and sparks `look: droplet`.
 - Sprite exports bake in the same bloom glow (untick **Bake bloom** or use `--no-bloom` if your engine adds its own).
 
 ### Added

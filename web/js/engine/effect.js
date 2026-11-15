@@ -37,6 +37,50 @@ function soft() {
   return softTexture;
 }
 
+// Soft cloudy puffs for smoke and mist: a few seeded fractal-noise blobs,
+// shared by every smoke layer.
+const cloudTextures = [];
+function cloud(k) {
+  if (cloudTextures[k]) return cloudTextures[k];
+  const N = 128;
+  const c = document.createElement("canvas");
+  c.width = c.height = N;
+  const g = c.getContext("2d");
+  const img = g.createImageData(N, N);
+  const r = rng(seedFor(7, "cloud", k));
+  const G = 8;
+  const grid = Array.from({ length: (G + 1) * (G + 1) * 3 }, () => r());
+  const val = (x, y, o) => {
+    const xi = Math.floor(x) % G;
+    const yi = Math.floor(y) % G;
+    const fx = x - Math.floor(x);
+    const fy = y - Math.floor(y);
+    const sx = fx * fx * (3 - 2 * fx);
+    const sy = fy * fy * (3 - 2 * fy);
+    const at = (i, j) => grid[((j % G) * (G + 1) + (i % G)) * 3 + o];
+    return (at(xi, yi) * (1 - sx) + at(xi + 1, yi) * sx) * (1 - sy) + (at(xi, yi + 1) * (1 - sx) + at(xi + 1, yi + 1) * sx) * sy;
+  };
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      const u = (x / N) * G;
+      const v = (y / N) * G;
+      const n = 0.5 * val(u * 0.5, v * 0.5, 0) + 0.3 * val(u, v, 1) + 0.2 * val(u * 2, v * 2, 2);
+      const d = Math.hypot(x - N / 2, y - N / 2) / (N / 2);
+      const fall = Math.max(0, 1 - d * d);
+      const a = Math.max(0, Math.min(1, fall * (0.35 + 1.1 * n) - 0.25 * d));
+      const i = (y * N + x) * 4;
+      const lum = 200 + 55 * n;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = lum;
+      img.data[i + 3] = Math.round(255 * a * fall);
+    }
+  }
+  g.putImageData(img, 0, 0);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  cloudTextures[k] = tex;
+  return tex;
+}
+
 // ------------------------------------------------------------ colors
 
 function colorsFor(template, slot) {
@@ -107,6 +151,91 @@ export function boltSegments(a, b, opts, r) {
   return out;
 }
 
+// Round liquid drops: point sprites with a soft body, a darker rim and a
+// bright glint, alpha-blended so they read as water rather than light.
+let dropTexture = null;
+function dropTex() {
+  if (dropTexture) return dropTexture;
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const g = c.getContext("2d");
+  const body = g.createRadialGradient(32, 32, 0, 32, 32, 30);
+  body.addColorStop(0, "rgba(235,245,255,0.75)");
+  body.addColorStop(0.65, "rgba(200,225,255,0.85)");
+  body.addColorStop(0.85, "rgba(120,160,220,0.9)");
+  body.addColorStop(1, "rgba(120,160,220,0)");
+  g.fillStyle = body;
+  g.beginPath();
+  g.arc(32, 32, 30, 0, Math.PI * 2);
+  g.fill();
+  const glint = g.createRadialGradient(24, 22, 0, 24, 22, 9);
+  glint.addColorStop(0, "rgba(255,255,255,1)");
+  glint.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = glint;
+  g.fillRect(0, 0, 64, 64);
+  dropTexture = new THREE.CanvasTexture(c);
+  dropTexture.colorSpace = THREE.SRGBColorSpace;
+  return dropTexture;
+}
+
+const DROP_VERTEX = /* glsl */ `
+attribute float size;
+uniform float scale;
+void main() {
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  gl_Position = projectionMatrix * mv;
+  gl_PointSize = isOrthographic ? size * scale * projectionMatrix[1][1] : size * scale * projectionMatrix[1][1] / -mv.z;
+}`;
+
+const DROP_FRAGMENT = /* glsl */ `
+uniform vec3 color;
+uniform sampler2D map;
+void main() {
+  vec4 t = texture2D(map, gl_PointCoord);
+  gl_FragColor = vec4(color * t.rgb, t.a);
+  #include <colorspace_fragment>
+}`;
+
+class DropletPoints {
+  constructor(capacity, color) {
+    this.capacity = capacity;
+    const geo = new THREE.BufferGeometry();
+    this.pos = new THREE.BufferAttribute(new Float32Array(capacity * 3), 3);
+    this.size = new THREE.BufferAttribute(new Float32Array(capacity), 1);
+    geo.setAttribute("position", this.pos);
+    geo.setAttribute("size", this.size);
+    this.material = new THREE.ShaderMaterial({
+      vertexShader: DROP_VERTEX,
+      fragmentShader: DROP_FRAGMENT,
+      uniforms: { color: { value: new THREE.Color(color) }, map: { value: dropTex() }, scale: { value: 1 } },
+      transparent: true,
+      depthWrite: false,
+    });
+    this.points = new THREE.Points(geo, this.material);
+    this.points.frustumCulled = false;
+    this.points.onBeforeRender = (renderer) => {
+      // Point sizes are in pixels: scale world size by the viewport height.
+      const vp = new THREE.Vector4();
+      renderer.getCurrentViewport(vp);
+      this.material.uniforms.scale.value = vp.w / 2;
+    };
+    geo.setDrawRange(0, 0);
+  }
+
+  // drops: [{p: Vector3, s: world diameter}]
+  set(drops) {
+    const n = Math.min(this.capacity, drops.length);
+    for (let i = 0; i < n; i++) {
+      this.pos.array[i * 3] = drops[i].p.x;
+      this.pos.array[i * 3 + 1] = drops[i].p.y;
+      this.pos.array[i * 3 + 2] = drops[i].p.z;
+      this.size.array[i] = drops[i].s;
+    }
+    this.pos.needsUpdate = this.size.needsUpdate = true;
+    this.points.geometry.setDrawRange(0, n);
+  }
+}
+
 // Join segments that share endpoints into polylines. boltSegments and the
 // beam reuse the same point objects at joints, so a branch starts a new path.
 export function segmentsToPaths(segs) {
@@ -131,7 +260,9 @@ attribute vec3 prev;
 attribute vec3 next;
 attribute float side;
 attribute float width;
+attribute float along;
 varying float vSide;
+varying float vAlong;
 vec3 safeNorm(vec3 v, vec3 fb) { float l = length(v); return l > 1e-6 ? v / l : fb; }
 void main() {
   vec4 c = modelViewMatrix * vec4(position, 1.0);
@@ -147,6 +278,7 @@ void main() {
   float miter = clamp(1.0 / max(0.35, abs(dot(perp, n1))), 1.0, 2.0);
   gl_Position = projectionMatrix * vec4(c.xyz + perp * side * width * miter, 1.0);
   vSide = side;
+  vAlong = along;
 }`;
 
 const RIBBON_FRAGMENT = /* glsl */ `
@@ -154,11 +286,49 @@ uniform vec3 color;
 uniform float opacity;
 uniform float hardness;
 varying float vSide;
+varying float vAlong;
+#ifdef FLUID
+uniform float time;      // seconds, layer time
+uniform float flow;      // texture scroll speed along the ribbon, units/s
+uniform float noiseAmt;  // 0..1, how much noise eats the edges
+uniform float noiseScale;
+uniform float rim;       // bright edge highlight
+uniform float foam;      // white streaks
+uniform float seed;
+uniform vec3 foamColor;
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7)) + seed) * 43758.5453); }
+float vnoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+float fbm(vec2 p) {
+  float v = 0.0, a = 0.5;
+  for (int k = 0; k < 4; k++) { v += a * vnoise(p); p = p * 2.03 + 17.1; a *= 0.5; }
+  return v;
+}
+#endif
 void main() {
   float x = abs(vSide);
+#ifdef FLUID
+  // Noise scrolls along the ribbon (flow), eats into the edges (a ragged,
+  // churning silhouette), streaks foam and adds a bright rim like light
+  // catching the surface of a water column.
+  vec2 q = vec2(vAlong * noiseScale - time * flow, vSide * 1.3);
+  float n = fbm(q);
+  float edge = max(0.15, 1.0 - noiseAmt * (0.25 + 0.9 * n));
+  float xe = x / edge;
+  float a = xe >= 1.0 ? 0.0 : pow(1.0 - xe * xe, hardness);
+  float streak = fbm(vec2(vAlong * noiseScale * 2.6 - time * flow * 1.35, vSide * 4.0 + 3.7));
+  float f = smoothstep(0.5, 0.78, streak) * foam;
+  float r = smoothstep(0.45, 0.85, xe) * (1.0 - smoothstep(0.9, 1.0, xe)) * rim * (0.6 + 0.8 * n);
+  vec3 c = mix(color, foamColor, clamp(f + r, 0.0, 1.0));
+  gl_FragColor = vec4(c, clamp(a * (1.0 + f * 0.6), 0.0, 1.0) * opacity);
+#else
   // Soft across the width: bright in the middle, fading to nothing at the edge.
   float a = pow(max(0.0, 1.0 - x * x), hardness);
   gl_FragColor = vec4(color, a * opacity);
+#endif
   #include <colorspace_fragment>
 }`;
 
@@ -166,7 +336,9 @@ void main() {
 // The ribbon turns to face whichever camera draws it (in the vertex shader),
 // so all four views stay correct in "All four" mode.
 class RibbonMesh {
-  constructor(capacity, color, opacity = 1, hardness = 1) {
+  // opts.blending (default additive); opts.fluid: {flow, noise, scale, rim, foam, foamColor, seed}
+  // turns on the scrolling-noise water/energy look.
+  constructor(capacity, color, opacity = 1, hardness = 1, opts = {}) {
     this.capacity = capacity * 2 + 64; // points
     const n = this.capacity;
     const geo = new THREE.BufferGeometry();
@@ -181,6 +353,7 @@ class RibbonMesh {
     this.next = attr("next", 3);
     this.side = attr("side", 1);
     this.width = attr("width", 1);
+    this.along = attr("along", 1);
     this.index = new THREE.BufferAttribute(new Uint32Array(n * 6), 1);
     this.index.setUsage(THREE.DynamicDrawUsage);
     geo.setIndex(this.index);
@@ -195,10 +368,21 @@ class RibbonMesh {
         color: { value: new THREE.Color(color) },
         opacity: { value: opacity },
         hardness: { value: hardness },
+        ...(opts.fluid ? {
+          time: { value: 0 },
+          flow: { value: opts.fluid.flow ?? 4 },
+          noiseAmt: { value: opts.fluid.noise ?? 0.5 },
+          noiseScale: { value: opts.fluid.scale ?? 3 },
+          rim: { value: opts.fluid.rim ?? 0.5 },
+          foam: { value: opts.fluid.foam ?? 0.5 },
+          seed: { value: opts.fluid.seed ?? 0 },
+          foamColor: { value: new THREE.Color(opts.fluid.foamColor ?? "#ffffff") },
+        } : {}),
       },
+      defines: opts.fluid ? { FLUID: 1 } : {},
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: opts.blending ?? THREE.AdditiveBlending,
       side: THREE.DoubleSide,
     });
     this.mesh = new THREE.Mesh(geo, this.material);
@@ -208,6 +392,12 @@ class RibbonMesh {
 
   get opacity() {
     return this.material.uniforms.opacity.value;
+  }
+
+  // Layer time in ms, for fluid ribbons (scrolling noise). Pure: the look
+  // depends only on this value.
+  setTime(ms) {
+    if (this.material.uniforms.time) this.material.uniforms.time.value = ms / 1000;
   }
 
   set opacity(v) {
@@ -225,6 +415,7 @@ class RibbonMesh {
     const V = this.prev.array;
     const N = this.next.array;
     const W = this.width.array;
+    const L = this.along.array;
     const I = this.index.array;
     let v = 0; // point index
     let ii = 0;
@@ -237,9 +428,12 @@ class RibbonMesh {
     for (const path of paths) {
       const m = path.pts.length;
       if (m < 2 || v + m > this.capacity) continue;
+      let dist = path.start ?? 0;
       for (let i = 0; i < m; i++) {
         const k = v + i;
         const p = path.pts[i];
+        if (i > 0) dist += p.distanceTo(path.pts[i - 1]);
+        L[k * 2] = L[k * 2 + 1] = dist;
         put(P, k, p);
         put(V, k, i > 0 ? path.pts[i - 1] : tmp.copy(p).multiplyScalar(2).sub(path.pts[1]));
         put(N, k, i < m - 1 ? path.pts[i + 1] : tmp.copy(p).multiplyScalar(2).sub(path.pts[m - 2]));
@@ -252,7 +446,7 @@ class RibbonMesh {
       }
       v += m;
     }
-    for (const a of [this.pos, this.prev, this.next, this.width, this.index]) a.needsUpdate = true;
+    for (const a of [this.pos, this.prev, this.next, this.width, this.along, this.index]) a.needsUpdate = true;
     this.mesh.geometry.setDrawRange(0, ii);
   }
 }
@@ -558,8 +752,18 @@ class SparksLayer extends Layer {
     super(effect, def, instance);
     this.max = 200;
     const [core, outer] = this.colors;
-    this.streaks = new RibbonMesh(this.max * 4, outer, 1, 1.2);
-    this.hot = new RibbonMesh(this.max * 4, core.clone().lerp(outer, 0.35), 1, 0.6);
+    // look "droplet": liquid drops (alpha-blended body with a bright glint)
+    // instead of glowing sparks.
+    this.droplet = this.base.look === "droplet";
+    if (this.droplet) {
+      this.streaks = new RibbonMesh(this.max * 4, outer.clone().lerp(core, 0.25), 1, 1.2, { blending: THREE.NormalBlending });
+      this.hot = new RibbonMesh(this.max * 4, core, 1, 0.5);
+      this.heads = new DropletPoints(this.max, outer.clone().lerp(core, 0.35));
+      this.group.add(this.heads.points);
+    } else {
+      this.streaks = new RibbonMesh(this.max * 4, outer, 1, 1.2);
+      this.hot = new RibbonMesh(this.max * 4, core.clone().lerp(outer, 0.35), 1, 0.6);
+    }
     this.group.add(this.streaks.mesh, this.hot.mesh);
   }
 
@@ -585,7 +789,7 @@ class SparksLayer extends Layer {
     const sz = this.p("size_px", 0, 3) * PX;
     // Sparks are born over emit_ms (default 120 ms: one burst); longer reads as a fountain.
     const span = Math.max(1, Math.min(w.end - w.start, this.p("emit_ms", 0, 120)));
-    const streakS = this.p("streak_ms", 0, 60) / 1000;
+    const streakS = this.p("streak_ms", 0, this.droplet ? 30 : 60) / 1000;
     const paths = [];
     for (let i = 0; i < count; i++) {
       const born = r.range(0, span);
@@ -612,12 +816,23 @@ class SparksLayer extends Layer {
       const tail = at(Math.max(0, age - streakS));
       if (head.distanceTo(tail) < sz * 0.5) tail.copy(head).addScaledVector(UP, -sz * 0.5);
       const mid = head.clone().lerp(tail, 0.5);
-      paths.push({ pts: [head, mid, tail], w: [fade, fade * 0.8, 0.15 * fade] });
+      // Drop size varies per spark (by index, so the burst stays seeded).
+      const k = 0.45 + 0.9 * ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
+      paths.push({ pts: [head, mid, tail], w: [fade, fade * 0.8, 0.15 * fade], k });
     }
-    this.streaks.setPaths(paths, sz * 0.75);
-    this.hot.setPaths(paths, sz * 0.3);
-    this.streaks.opacity = 0.9;
-    this.hot.opacity = 1;
+    if (this.droplet) {
+      // A round drop at the head with a thin wet trail behind it.
+      this.heads.set(paths.map((q) => ({ p: q.pts[0], s: sz * 1.5 * q.k * (0.5 + 0.5 * q.w[0]) })));
+      this.streaks.setPaths(paths, sz * 0.45);
+      this.hot.setPaths(paths, sz * 0.15);
+      this.streaks.opacity = 0.6;
+      this.hot.opacity = 0.5;
+    } else {
+      this.streaks.setPaths(paths, sz * 0.75);
+      this.hot.setPaths(paths, sz * 0.3);
+      this.streaks.opacity = 0.9;
+      this.hot.opacity = 1;
+    }
   }
 }
 
@@ -739,7 +954,7 @@ class SmokeLayer extends Layer {
     super(effect, def, instance);
     this.sprites = [];
     for (let i = 0; i < 16; i++) {
-      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: soft(), color: this.colors[0], transparent: true, depthWrite: false }));
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloud(i % 4), color: this.colors[0], transparent: true, depthWrite: false }));
       this.sprites.push(s);
       this.group.add(s);
     }
@@ -761,11 +976,14 @@ class SmokeLayer extends Layer {
       const born = r.range(0, Math.max(1, (w.end - w.start) * 0.5));
       const dx = r.range(-0.15, 0.15);
       const dz = r.range(-0.15, 0.15);
+      const spin0 = r.range(0, Math.PI * 2);
+      const spin = r.range(-1.2, 1.2);
       const age = (local - born) / life;
       s.visible = i < count && age >= 0 && age <= 1;
       if (!s.visible) return;
       s.position.set(origin.x + dx * (1 + age), origin.y + 0.1 + rise * age * (life / 1000) * 3, origin.z + dz * (1 + age));
       s.scale.setScalar(size * (0.6 + age));
+      s.material.rotation = spin0 + spin * age;
       s.material.opacity = opacity * Math.sin(Math.PI * age);
     });
   }
@@ -867,13 +1085,38 @@ class OrbLayer extends Layer {
   }
 }
 
+// A continuous stream from the hand. style "energy" (default): a hot core in
+// a soft colored sheath. style "water": a churning liquid column: a noisy,
+// alpha-blended body whose edges are eaten by scrolling noise, foam streaks
+// and bright rims flowing toward the target, a thin bright core, a soft halo,
+// width that swells and pinches (churn) and droplets that peel off it (shed).
 class BeamLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
-    this.core = new RibbonMesh(120, this.colors[0], 1, 0.45);
-    this.outer = new RibbonMesh(120, this.colors[1], 0.8, 1.2);
-    this.halo = new RibbonMesh(120, this.colors[1], 0.2, 3);
-    this.group.add(this.halo.mesh, this.outer.mesh, this.core.mesh);
+    this.water = this.base.style === "water";
+    const [core, outer] = this.colors;
+    const secondary = new THREE.Color(effect.template.palette.secondary || effect.template.palette.primary);
+    const seed = (seedFor(effect.seed, def.id, instance, "noise") % 1000) / 10;
+    if (this.water) {
+      const flow = this.base.flow_speed ?? 6;
+      const fluid = (o) => ({ flow, seed, foamColor: core, ...o });
+      this.halo = new RibbonMesh(120, outer, 0.18, 2.5);
+      this.outer = new RibbonMesh(120, secondary.clone().lerp(outer, 0.45), 0.85, 0.6, {
+        blending: THREE.NormalBlending,
+        fluid: fluid({ noise: this.base.turbulence ?? 0.6, scale: 2.2, rim: 0.9, foam: this.base.foam ?? 0.6 }),
+      });
+      this.core = new RibbonMesh(120, outer.clone().lerp(core, 0.6), 0.9, 0.8, {
+        fluid: fluid({ flow: flow * 1.3, noise: 0.7, scale: 3.5, rim: 0, foam: 0.8 }),
+      });
+      this.drops = new RibbonMesh(160, outer.clone().lerp(core, 0.3), 0.6, 1.2, { blending: THREE.NormalBlending });
+      this.dropHeads = new DropletPoints(160, outer.clone().lerp(core, 0.35));
+      this.group.add(this.halo.mesh, this.outer.mesh, this.core.mesh, this.drops.mesh, this.dropHeads.points);
+    } else {
+      this.core = new RibbonMesh(120, core, 1, 0.45);
+      this.outer = new RibbonMesh(120, outer, 0.8, 1.2);
+      this.halo = new RibbonMesh(120, outer, 0.2, 3);
+      this.group.add(this.halo.mesh, this.outer.mesh, this.core.mesh);
+    }
     this.segs = [];
     this.path = [];
     this.halfWidth = 0;
@@ -896,7 +1139,7 @@ class BeamLayer extends Layer {
     const regen = this.p("regen_ms", t, 50);
     const tick = Math.floor(Math.max(0, this.local(t)) / Math.max(10, regen));
     const r = this.rng("beam", tick);
-    const n = 24;
+    const n = this.water ? 48 : 24;
     const dir = new THREE.Vector3().subVectors(b, a);
     const len = dir.length();
     dir.normalize();
@@ -904,13 +1147,15 @@ class BeamLayer extends Layer {
     const wob = this.p("wobble", t, 0.2);
     const hz = this.p("wobble_hz", t, 8);
     const jag = this.p("jaggedness", t, 0.2);
+    const sec = t / 1000;
     const pts = [];
     for (let i = 0; i <= n; i++) {
       const u = i / n;
       const env = Math.sin(Math.PI * u) * 0.8 + 0.2;
-      const s = Math.sin(u * 9 + (t / 1000) * hz * Math.PI * 2) * wob * 0.12 * env;
+      const s = Math.sin(u * 9 + sec * hz * Math.PI * 2) * wob * 0.12 * env;
+      const s2 = this.water ? Math.sin(u * 5.3 - sec * hz * 4.1 + 1.7) * wob * 0.06 * env : 0;
       const j = r.range(-1, 1) * jag * 0.06 * env;
-      pts.push(a.clone().addScaledVector(dir, len * u).addScaledVector(p1, s + j).addScaledVector(p2, r.range(-1, 1) * jag * 0.04 * env));
+      pts.push(a.clone().addScaledVector(dir, len * u).addScaledVector(p1, s + j).addScaledVector(p2, s2 + r.range(-1, 1) * jag * 0.04 * env));
     }
     // Reach full length over grow_ms (default 60 ms: snaps out). A slower
     // grow reads as a jet travelling to the target.
@@ -922,12 +1167,78 @@ class BeamLayer extends Layer {
     this.path = pts.slice(0, shown);
     const width = this.p("width_px", t, 14) * PX;
     this.halfWidth = width * 0.5;
-    this.core.set(segs, width * 0.18);
-    this.outer.set(segs, width * 0.55);
-    this.halo.set(segs, width * 1.5);
-    this.core.opacity = Math.min(1, I);
-    this.outer.opacity = 0.5 * I;
+    if (!this.water) {
+      this.core.set(segs, width * 0.18);
+      this.outer.set(segs, width * 0.55);
+      this.halo.set(segs, width * 1.5);
+      this.core.opacity = Math.min(1, I);
+      this.outer.opacity = 0.5 * I;
+      this.halo.opacity = 0.12 * I;
+      return;
+    }
+    // Water: the column swells and pinches as surges travel down it, and
+    // flares a little where it leaves the hand and where it hits.
+    const churn = this.p("churn", t, 0.35);
+    const flow = this.p("flow_speed", t, 6);
+    const w = this.path.map((_, i) => {
+      const u = i / n;
+      const d = u * len - sec * flow;
+      const surge = 0.55 * Math.sin(d * 3.1) + 0.3 * Math.sin(d * 7.3 + 1.3) + 0.15 * Math.sin(d * 13.7 + 4.1);
+      const flare = 1 + 0.35 * Math.exp(-u * 12) + 0.45 * Math.exp(-(1 - u) * 10);
+      return Math.max(0.35, (1 + churn * surge) * flare);
+    });
+    const path = [{ pts: this.path, w }];
+    for (const m of [this.halo, this.outer, this.core]) m.setTime(this.local(t));
+    // The halo fades in from the hand and out at the target, so its ends are soft.
+    const hw = w.map((x, i) => x * Math.min(1, (i / n) * 6, (1 - i / n) * 10 + 0.3));
+    this.halo.setPaths([{ pts: this.path, w: hw }], width * 1.4);
+    this.outer.setPaths(path, width * 0.62);
+    this.core.setPaths(path, width * 0.22);
     this.halo.opacity = 0.12 * I;
+    this.outer.opacity = Math.min(1, 0.95 * I);
+    this.core.opacity = 0.85 * I;
+    this.updateShed(t, width, I);
+  }
+
+  // Droplets that break off the column and fall. Each one is born at a seeded
+  // time and place along the beam, flies off sideways and drops under gravity;
+  // all of it is a function of t, so scrubbing works.
+  updateShed(t, width, I) {
+    const count = Math.round(this.p("shed_count", t, 0));
+    const local = this.local(t);
+    const span = Math.max(1, (this.window?.end ?? 0) - (this.window?.start ?? 0));
+    const life = this.p("shed_life_ms", t, 420);
+    const speed = this.p("shed_speed", t, 160) * PX;
+    const size = this.p("shed_size_px", t, 3) * PX;
+    const g = 9;
+    const r = this.rng("shed");
+    const paths = [];
+    const path = this.path;
+    for (let i = 0; i < count; i++) {
+      const born = r.range(0, span);
+      const u = r.range(0.08, 0.95);
+      const side = new THREE.Vector3(r.range(-1, 1), r.range(-0.2, 1), r.range(-1, 1)).normalize();
+      const v = speed * r.range(0.5, 1.3);
+      const lifeI = life * r.range(0.6, 1.2);
+      const sz = size * r.range(0.6, 1.4);
+      const age = (local - born) / 1000;
+      if (age < 0 || age * 1000 > lifeI || path.length < 2) continue;
+      const k = Math.min(path.length - 1, Math.floor(u * (path.length - 1)));
+      const from = path[k];
+      const along = new THREE.Vector3().subVectors(path[Math.min(path.length - 1, k + 1)], path[Math.max(0, k - 1)]).normalize();
+      const at = (s) => from.clone()
+        .addScaledVector(side, v * s + width * 0.3)
+        .addScaledVector(along, v * 0.8 * s)
+        .add(new THREE.Vector3(0, -0.5 * g * s * s, 0));
+      const head = at(age);
+      if (head.y < 0.01) continue;
+      const tail = at(Math.max(0, age - 0.03));
+      const fade = 1 - (age * 1000) / lifeI;
+      paths.push({ pts: [head, head.clone().lerp(tail, 0.5), tail], w: [fade, 0.9 * fade, 0.3 * fade], sz });
+    }
+    const s = paths.length ? paths.reduce((m, p) => m + p.sz, 0) / paths.length : size;
+    this.drops.setPaths(paths, s * 0.4);
+    this.dropHeads.set(paths.map((q) => ({ p: q.pts[0], s: q.sz * 1.6 * (0.5 + 0.5 * q.w[0]) })));
   }
 
   points() {

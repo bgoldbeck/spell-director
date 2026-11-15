@@ -27,11 +27,14 @@ KNOWN_PARAMS = {
     "glow": {"radius_px", "softness", "pulse_hz"},
     "flash": {"scope", "radius_px", "peak"},
     "sparks": {
-        "count", "speed", "speed_spread", "gravity", "lifetime_ms", "size_px", "spread_deg", "drag", "emit_ms", "streak_ms",
+        "count", "speed", "speed_spread", "gravity", "lifetime_ms", "size_px", "spread_deg", "drag", "emit_ms", "streak_ms", "look",
     },
     "crackle": {"count", "length_px", "jaggedness", "regen_ms", "radius_px"},
     "orb": {"radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease"},
-    "beam": {"width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms"},
+    "beam": {
+        "width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms", "style", "flow_speed", "turbulence",
+        "foam", "churn", "shed_count", "shed_speed", "shed_size_px", "shed_life_ms",
+    },
     "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness"},
     "decal": {
         "radius_px", "shape", "opacity", "fade_in_ms", "lifetime_ms", "fade_ms", "grow_ms", "start_scale",
