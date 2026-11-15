@@ -71,7 +71,7 @@ Background is estimated as the 10th-percentile brightness per pixel (spell effec
 
 ## 5. Viewer
 
-`python tools/serve.py` → http://localhost:8000. Laid out like the motion study:
+`run.bat` (Windows) or `./run.sh` → http://localhost:47811 (default port; `--port` or `SPELLDIRECTOR_PORT` to change, next free port if busy). Laid out like the motion study:
 
 - Template tabs; beat buttons (jump to a beat) with a **Clear** button; beat-intent captions on the stage; sound cues shown as captions.
 - Scrubber with colored phase bands; Replay, Pause/Play, speed 0.1×–2×, Loop, Seed + **New cast**, **Focus view** (F) for recording.

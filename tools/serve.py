@@ -1,7 +1,12 @@
 """Serve the SpellDirector viewer locally.
 
-    python tools/serve.py            # http://localhost:8000
-    python tools/serve.py --port 9000 --host 0.0.0.0
+    python tools/serve.py                  # http://127.0.0.1:47811
+    python tools/serve.py --open           # also open the browser
+    python tools/serve.py --port 50123 --host 0.0.0.0
+
+The port can also be set with the SPELLDIRECTOR_PORT environment variable.
+If the port is busy, the next free one is used.
+Only the Python standard library is needed.
 
 Serves web/ at / and the repo's templates/ at /templates/. The template
 index is rebuilt on every request, so new template files show up on reload.
@@ -10,8 +15,12 @@ index is rebuilt on every request, so new template files show up on reload.
 from __future__ import annotations
 
 import argparse
+import errno
 import json
+import os
 import sys
+import threading
+import webbrowser
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -20,6 +29,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 
 from build_index import build  # noqa: E402
+
+DEFAULT_PORT = 47811
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -51,17 +62,38 @@ class Handler(SimpleHTTPRequestHandler):
         super().end_headers()
 
 
+def bind(host: str, port: int, tries: int = 20) -> ThreadingHTTPServer:
+    handler = partial(Handler, directory=str(ROOT / "web"))
+    for p in range(port, port + tries):
+        try:
+            return ThreadingHTTPServer((host, p), handler)
+        except OSError as exc:
+            if exc.errno not in (errno.EADDRINUSE, getattr(errno, "WSAEADDRINUSE", -1), 10048):
+                raise
+            print(f"port {p} is busy, trying {p + 1}", flush=True)
+    raise SystemExit(f"no free port between {port} and {port + tries - 1}")
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", default="127.0.0.1")
-    ap.add_argument("--port", type=int, default=8000)
+    ap.add_argument("--port", type=int, default=int(os.environ.get("SPELLDIRECTOR_PORT", DEFAULT_PORT)))
+    ap.add_argument("--open", action="store_true", help="open the viewer in the default browser")
     args = ap.parse_args(argv)
-    server = ThreadingHTTPServer((args.host, args.port), partial(Handler, directory=str(ROOT / "web")))
-    print(f"SpellDirector viewer: http://{args.host}:{args.port}/")
+    server = bind(args.host, args.port)
+    port = server.server_address[1]
+    shown = "localhost" if args.host in ("127.0.0.1", "0.0.0.0") else args.host
+    url = f"http://{shown}:{port}/"
+    print(f"SpellDirector viewer: {url}", flush=True)
+    print("Press Ctrl+C to stop.", flush=True)
+    if args.open:
+        threading.Timer(0.5, lambda: webbrowser.open(url)).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
+    finally:
+        server.server_close()
     return 0
 
 
