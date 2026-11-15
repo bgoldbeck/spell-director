@@ -128,6 +128,23 @@
         "jaggedness": 0.9,
         "regen_ms": 33,
         "radius_px": 16
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Electricity crawling over the caster's hand before it jumps.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.4
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -145,6 +162,23 @@
         "radius_px": 22,
         "softness": 0.9,
         "pulse_hz": 12
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A violet glow in the caster's palm.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 1.5,
+          "speed": 0.6,
+          "contrast": 0.2
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian",
+          "core_ratio": 0.1
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -169,6 +203,23 @@
         "lifetime_ms": 1100,
         "fade_ms": 500,
         "detail": 0.4
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "Small charred spots under each target hit by the chain.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.15,
+          "edge_color": "secondary"
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -193,6 +244,27 @@
         "lifetime_ms": 120,
         "fade_ms": 260,
         "detail": 0.5
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Glowing cracks under each target that cool almost at once.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -241,7 +313,28 @@
           "value": 2,
           "ease": "linear"
         }
-      ]
+      ],
+      "shader": {
+        "material": "ionized",
+        "look": "A wiry, jittering arc that leaps from target to target, each hop a little thinner.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 12
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
     },
     {
       "id": "arc-glow",
@@ -256,6 +349,23 @@
       "params": {
         "radius_px": 16,
         "softness": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A violet haze along each arc.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 1.5,
+          "speed": 0.6,
+          "contrast": 0.2
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian",
+          "core_ratio": 0.1
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -271,6 +381,17 @@
         "scope": "local",
         "radius_px": 40,
         "peak": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A small bright pop on each target as the arc lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "gaussian",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
       }
     },
     {
@@ -295,6 +416,21 @@
         "size_px": 2,
         "spread_deg": 360,
         "drag": 0.2
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A short burst of sparks off each target.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -314,6 +450,23 @@
         "jaggedness": 0.9,
         "regen_ms": 45,
         "radius_px": 20
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Static clinging to each target after it's hit.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.4
+        },
+        "lighting": "unlit"
       }
     },
     {

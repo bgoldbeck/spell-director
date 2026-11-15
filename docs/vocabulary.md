@@ -199,3 +199,67 @@ Sound is described as **timed cues**, not audio: "crackle during the charge, cra
 | `shimmer` | sustained | twinkling high chimes | sparkle, magic, heal |
 
 The viewer plays a procedural placeholder for every cue today; real recordings can replace any cue later without changing templates (see [`web/sounds/README.md`](../web/sounds/README.md)).
+
+## 11. Shader intent (the magic)
+
+Rendered frames show *when* and *where* things happen. They don't carry the magic: in a game, that comes from shaders and particles. So each drawn layer can carry a `shader` object that says what the layer is made of and how its surface behaves, in words an engine artist (or an AI writing a Shader Graph or Godot shader) can act on. The export guide turns these into Unity and Godot steps. Layers without one get a default per layer type, flagged as a guess.
+
+### Material (what it's made of)
+
+| Material | Feels like | Typical noise, flow and finish |
+|---|---|---|
+| `ionized` | raw electricity, air torn open | ridged noise, fast flow along the path, hard white core, high HDR |
+| `plasma` | contained energy, a ball or beam of it | fBm swirl, soft core, fresnel rim |
+| `wet` | water on a surface, glossy and dark | low-contrast noise, lit, specular, little emission |
+| `liquid` | moving water, a jet or wave | streak noise flowing along the path, distortion behind it, fresnel |
+| `foamy` | spray, froth, splash | Voronoi or cellular noise, alpha dissolve, lit |
+| `glassy` | clear, refractive, sharp | strong distortion, fresnel, almost no emission |
+| `crystalline` | facets, ice, gems | Voronoi, hard edges, fresnel, sparkle |
+| `icy` | cold mist and frost | soft fBm, slow flow, pale emission, dissolve edges |
+| `molten` | glowing liquid rock or metal | slow fBm, dark crust with bright cracks, emissive edges |
+| `fiery` | flames | fBm or ridged flowing upward, dissolve, orange-to-white emission |
+| `smoky` | smoke | curl noise, slow upward flow, lit, soft dissolve |
+| `ashen` | burnt, charred, embers | fBm, dark, a thin glowing dissolve edge |
+| `dusty` | dirt, debris, sand | Voronoi or fBm, lit, alpha |
+| `ethereal` | light, aura, glow with no body | soft gaussian falloff, little noise, unlit |
+| `arcane` | runes, magic circles, mana | clean shapes, scrolling patterns, fresnel, pulsing emission |
+| `shadowy` | darkness, void | multiply or alpha, curl noise, inward flow |
+| `organic` | roots, vines, living matter | lit, Voronoi, growth along a path |
+| `stone` | rock, earth | lit, Voronoi cracks, no emission |
+| `metallic` | blades, metal | lit, fresnel, sharp highlights |
+
+### Surface behaviour
+
+| Field | Values | What it means |
+|---|---|---|
+| `technique` | `procedural`, `flipbook`, `particles`, `ribbon`, `mesh`, `decal`, `light`, `post_process` | How to build it. Ribbons for bolts and beams, particles for sparks and smoke, decals for ground marks. `flipbook` means using the exported frames as a texture, which only suits simple or stylized looks. |
+| `noise.type` | `none`, `perlin`, `simplex`, `fbm`, `ridged`, `voronoi`, `curl`, `streaks` | The pattern that breaks the surface up. Ridged gives bright creases (electricity), fBm gives soft clouds (plasma, fire), Voronoi gives cells (foam, ice, cracks), curl swirls (smoke), streaks stretch along the flow (water jets). |
+| `noise.scale` | cells per character height | 1–2 broad blobs, 4–8 detailed, 10+ fine grain. |
+| `noise.speed` | world units per second | How fast the pattern moves or evolves. |
+| `noise.contrast` | 0–1 | How hard the pattern cuts into the shape. |
+| `flow.direction` | `none`, `along_path`, `outward`, `inward`, `upward`, `downward`, `swirl`, `toward_target` | Which way the UVs scroll. |
+| `flow.speed` | world units per second | How fast it scrolls. |
+| `distortion` | 0–1 | Refraction or heat haze behind the layer. Water and heat get some; pure light gets none. |
+| `fresnel` | 0–1 | Rim glow at grazing angles. Makes orbs, water and shields read as 3D. |
+| `dissolve` | `pattern`, `edge_width` 0–1, `edge_color` (palette slot) | The layer erodes away through a noise pattern as it fades, with a glowing edge, instead of a flat fade. |
+| `emissive.hdr` | 1 = no bloom, 2–4 glowing, 5–10 blinding | How hard it drives bloom. |
+| `emissive.falloff` | `hard`, `soft`, `exponential`, `gaussian` | How brightness drops from the center line or center point. |
+| `emissive.core_ratio` | 0–1 | How much of the width is white-hot core. |
+| `lighting` | `unlit`, `lit`, `emits_light` | Whether scene lights affect it, and whether it lights the scene. |
+| `look` | one sentence | What it should feel like, in plain words ("a wet, glassy jet that refracts what's behind it"). |
+| `notes` | text | Anything else an engine artist should know. |
+
+### Engine terms (what the guide maps them to)
+
+| Intent | Unity (URP/HDRP) | Godot 4 |
+|---|---|---|
+| ribbon | Line Renderer or VFX Graph strip | MeshInstance3D strip, Line2D, or GPUParticles3D trail |
+| particles | VFX Graph or Particle System | GPUParticles3D/2D |
+| procedural | Quad with a Shader Graph material | Billboard QuadMesh with a ShaderMaterial |
+| decal | Decal Projector with a Shader Graph decal | Decal node |
+| noise | Gradient Noise, Simple Noise, Voronoi nodes | NoiseTexture2D (FastNoiseLite) |
+| flow | Tiling And Offset with Time | `UV += dir * TIME * speed` |
+| distortion | Scene Color with offset UVs (Opaque Texture) | `hint_screen_texture` at offset SCREEN_UV |
+| fresnel | Fresnel Effect node | `pow(1.0 - dot(NORMAL, VIEW), p)` |
+| dissolve | Alpha Clip with Step/Smoothstep | `smoothstep` into ALPHA |
+| emissive HDR | HDR color × intensity, with Bloom | EMISSION × intensity, with Glow |

@@ -136,3 +136,4 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 | 2026-11-15 | Sound is timed cues mapped to a small generic cue library, not generated audio. Procedural Web Audio placeholders now; real CC0 samples or text-to-SFX output replace them per cue later. |
 | 2026-11-15 | Decals are a first-class layer: ground marks with fade-in/out, lifetime past the spell, grow, rotation, spin and seeded variation, exported as a top-down texture plus timing curves for Unity/Godot decal projectors. |
 | 2026-11-15 | Engine handoff is sprite sheets + an instruction .md (and JSON): one sheet per layer, frames as columns and the four views as rows, layer timings documented. |
+| 2026-11-15 | Exports are a timing and composition reference, not literal instructions; the magic is described per layer as shader intent (material, noise, flow, distortion, fresnel, dissolve, emissive) in the vocabulary and templates, for engines to build with shaders. |

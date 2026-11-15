@@ -132,6 +132,28 @@
           "min": 30,
           "max": 50
         }
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A crackling ball of plasma with a bright rim and a churning core, trailing light as it flies.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 1.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 1.2
+        },
+        "fresnel": 0.7,
+        "emissive": {
+          "hdr": 5,
+          "falloff": "soft",
+          "core_ratio": 0.35
+        },
+        "lighting": "emits_light"
       }
     },
     {
@@ -149,6 +171,23 @@
         "radius_px": 26,
         "softness": 0.85,
         "pulse_hz": 8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A violet bloom traveling with the ball.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 1.5,
+          "speed": 0.6,
+          "contrast": 0.2
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian",
+          "core_ratio": 0.1
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -166,6 +205,23 @@
         "jaggedness": 0.85,
         "regen_ms": 40,
         "radius_px": 50
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Static on the hand as the ball forms.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.4
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -181,6 +237,17 @@
         "scope": "local",
         "radius_px": 70,
         "peak": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A bright pop where the ball bursts.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
       }
     },
     {
@@ -207,6 +274,21 @@
         "size_px": 3,
         "spread_deg": 200,
         "drag": 0.15
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Sparks scattering out of the burst.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -223,6 +305,28 @@
         "end_radius_px": 85,
         "thickness_px": 8,
         "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A ring of energy rolling out from the burst.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "distortion": 0.3,
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft",
+          "core_ratio": 0.2
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -249,6 +353,23 @@
         "lifetime_ms": 1400,
         "fade_ms": 700,
         "detail": 0.5
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A charred mark where the ball burst.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.15,
+          "edge_color": "secondary"
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -269,6 +390,27 @@
         "fade_in_ms": 0,
         "lifetime_ms": 120,
         "fade_ms": 450
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A glowing burn in the scorch that cools down.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -289,6 +431,23 @@
         "jaggedness": 0.85,
         "regen_ms": 60,
         "radius_px": 28
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Static fizzing on the ground after the burst.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard",
+          "core_ratio": 0.4
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -314,6 +473,11 @@
       "params": {
         "radius": 5,
         "energy": 2.5
+      },
+      "shader": {
+        "technique": "light",
+        "look": "A blue-white light popping at the burst.",
+        "lighting": "emits_light"
       }
     },
     {

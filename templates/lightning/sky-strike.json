@@ -122,6 +122,23 @@
         "jaggedness": 0.8,
         "regen_ms": 50,
         "radius_px": 40
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Thin static creeping over the ground: tiny ridged threads that flicker in and out.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.4
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -137,6 +154,12 @@
       "params": {
         "scope": "screen",
         "peak": 0.25
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "The world darkens a touch before the hit, like a cloud passing; a multiply tint over the screen.",
+        "technique": "post_process",
+        "lighting": "unlit"
       }
     },
     {
@@ -184,7 +207,28 @@
           "value": 2,
           "ease": "ease_out"
         }
-      ]
+      ],
+      "shader": {
+        "material": "ionized",
+        "look": "Torn-open air: a white-hot core with crackling blue creases racing down the bolt.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 6,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
     },
     {
       "id": "bolt-glow",
@@ -200,6 +244,23 @@
       "params": {
         "radius_px": 34,
         "softness": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cold blue haze hugging the bolt that blooms when it fires.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 1.5,
+          "speed": 0.6,
+          "contrast": 0.2
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian",
+          "core_ratio": 0.1
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -216,6 +277,16 @@
         "peak": {
           "min": 0.55,
           "max": 0.7
+        }
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A blinding white pop over the whole screen for a frame or two.",
+        "technique": "post_process",
+        "lighting": "unlit",
+        "emissive": {
+          "hdr": 8,
+          "falloff": "soft"
         }
       }
     },
@@ -244,6 +315,21 @@
         "size_px": 3,
         "spread_deg": 160,
         "drag": 0.15
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Hot yellow-white streaks spraying out of the hit and dying fast.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -261,6 +347,28 @@
         "end_radius_px": 90,
         "thickness_px": 6,
         "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A pale shockwave rolling out along the ground, bending the air as it passes.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "distortion": 0.3,
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft",
+          "core_ratio": 0.2
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -287,6 +395,23 @@
         "lifetime_ms": 1600,
         "fade_ms": 900,
         "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A charred, cracked black mark that stays after the spell.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.15,
+          "edge_color": "secondary"
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -312,6 +437,27 @@
         "lifetime_ms": 200,
         "fade_ms": 450,
         "detail": 0.7
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Glowing hot cracks in the scorch that cool from blue-white to nothing.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -333,6 +479,23 @@
         "jaggedness": 0.85,
         "regen_ms": 70,
         "radius_px": 30
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Leftover sparks of static skittering over the scorch.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard",
+          "core_ratio": 0.4
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -352,6 +515,26 @@
         "size_px": 26,
         "lifetime_ms": 500,
         "opacity": 0.35
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Thin grey smoke curling up off the scorch, lit by the scene.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -382,6 +565,11 @@
       "params": {
         "radius": 6,
         "energy": 3.0
+      },
+      "shader": {
+        "technique": "light",
+        "look": "A hard blue-white light that pops on the ground at the hit and flickers out.",
+        "lighting": "emits_light"
       }
     },
     {

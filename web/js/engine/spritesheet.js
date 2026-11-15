@@ -12,6 +12,7 @@
 import { layerIntensity, layerWindow, paramAtFrom, resolveParams } from "./timeline.js";
 import { soundEvents } from "./sound.js";
 import { decalBlend, decalPlan, decalState } from "./decal.js";
+import { HOW_TO_USE, describeShader, engineRecipe, shaderFor } from "./shader.js";
 
 export const FORMAT = "spelldirector.spritesheet/1";
 export const SHEET_VIEWS = ["front", "side", "top", "three_quarter"];
@@ -223,6 +224,13 @@ export function buildTracks(template, seed, plan, cueLibrary = { cues: {} }) {
 // sheets: [{id, first, count, layout}] (the whole-spell sheet first).
 // visible: {layerId: {first, last} | null} over all exported views.
 // views: {view: {pivots, px_per_unit, camera}} in row order.
+function shaderInfo(l, blend) {
+  const sh = shaderFor(l);
+  if (!sh) return { shader: null, engine_hints: null };
+  const { from_template: fromTemplate, ...shader } = sh;
+  return { shader, shader_source: fromTemplate ? "template" : "default for this layer type", engine_hints: engineRecipe(l, shader, blend) };
+}
+
 export function buildManifest({ template, seed, plan, sheets, visible, views, tracks, version = "", frame, bloom = true }) {
   const loop = !!template.timing?.loop;
   const ms = (f) => r1(f * plan.frameMs);
@@ -265,12 +273,14 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       params: resolveParams(l.params, seed, `${l.id}#0`),
       keyframes: l.keyframes || [],
       empty: !visible[l.id],
+      ...shaderInfo(l, l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" ? "alpha" : "add")),
     };
   });
   const tracksOut = tracks || { screen_flashes: [], camera_shake: [], lights: [], sounds: [] };
   const decals = buildDecals(template, seed, plan);
   return {
     format: FORMAT,
+    how_to_use: HOW_TO_USE.join(" "),
     generator: `SpellDirector ${version}`.trim(),
     template: { id: template.id, name: template.name, element: template.element, archetype: template.archetype, description: template.description || "" },
     seed,
@@ -343,6 +353,10 @@ export function guideMarkdown(m, { files } = {}) {
     `Exported from SpellDirector template \`${m.template.id}\` (${m.template.element} ${m.template.archetype}) with seed **${m.seed}**. The same template and seed always give the same frames; another seed gives a new variation of the same spell.`,
     "",
   );
+
+  add("## How to use this export (read this first)", "");
+  add(...HOW_TO_USE.map((x) => `> ${x}`).flatMap((x) => [x, ">"]).slice(0, -1), "");
+  add("Each layer below has a **Shader intent** line and short Unity and Godot recipes built from it. The words come from the SpellDirector vocabulary (docs/vocabulary.md, section 11), so a person or an AI can turn them into a Shader Graph, VFX Graph or Godot shader.", "");
 
   const nViews = viewList.length;
   const all = m.sheets.find((x) => x.id === ALL_ID);
@@ -420,6 +434,15 @@ export function guideMarkdown(m, { files } = {}) {
     const params = Object.entries(l.params || {});
     if (params.length) add(`- Settings for this seed: ${params.map(([k, v]) => `${k} ${typeof v === "number" ? r3(v) : v}`).join(", ")}.`);
     if (l.keyframes?.length) add(`- Keyframes (already baked into the frames): ${l.keyframes.map((k) => `${k.param} → ${k.value} at ${k.t_ms} ms`).join("; ")}.`);
+    if (l.shader) {
+      add(`- **Shader intent**${l.shader_source === "template" ? "" : " (a default for this layer type; the template didn't say)"}: ${describeShader(l.shader)}.`);
+      if (l.shader.look) add(`- Look: ${l.shader.look}`);
+      if (l.shader.notes) add(`- Notes: ${l.shader.notes}`);
+      if (l.engine_hints) {
+        add(`- Unity: ${l.engine_hints.unity.join(" ")}`);
+        add(`- Godot 4: ${l.engine_hints.godot.join(" ")}`);
+      }
+    }
     add("");
   }
 
@@ -546,6 +569,8 @@ export function guideMarkdown(m, { files } = {}) {
   const exCol = exK % exSheet.columns;
   const exRow = Math.floor(exK / exSheet.columns) * nViews + exV;
   add(
+    "First, the rule from the top of this guide: the sheets are a timing and composition reference, not literal instructions. Look at cells to understand when and where each layer happens and how it reads; build the actual look from each layer's shader intent.",
+    "",
     "The sheets have no numbers or gridlines drawn on them, so the engine gets clean pixels. The JSON file is the map. Don't try to read a whole sheet as one image: it gets scaled down, the cells blur together and you can't tell which column is which frame. Instead, use the map to cut out the cells you need and look at those.",
     "",
     "**The grid, for every sheet in this export:**",

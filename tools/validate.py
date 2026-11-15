@@ -46,6 +46,9 @@ KNOWN_PARAMS = {
     "sound_cue": {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms"},
 }
 
+# Layer types that draw nothing, so they take no shader intent.
+NO_SHADER = {"sound_cue", "camera_shake"}
+
 CUE_LIBRARY = ROOT / "web" / "sounds" / "cues.json"
 
 
@@ -121,6 +124,12 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
                     f"layer {lid!r} (sound_cue): unknown cue {cue!r}; the viewer captions it but plays nothing. "
                     f"Known cues: {', '.join(sorted(cues))}"
                 )
+        if layer["type"] in NO_SHADER:
+            if "shader" in layer:
+                warnings.append(f"layer {lid!r} ({layer['type']}): has a shader, but this layer type draws nothing")
+        elif "shader" not in layer:
+            warnings.append(f"layer {lid!r} ({layer['type']}): no shader intent, so an engine rebuild has to guess "
+                            "its material and look (see docs/vocabulary.md section 11)")
         known = KNOWN_PARAMS.get(layer["type"], set())
         for key in layer.get("params", {}):
             if key not in known:
