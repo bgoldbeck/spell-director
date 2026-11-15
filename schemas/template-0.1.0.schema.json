@@ -436,6 +436,9 @@
                 }
               }
             }
+          },
+          "shader": {
+            "$ref": "#/$defs/shader"
           }
         },
         "allOf": [
@@ -756,6 +759,189 @@
         "top",
         "three_quarter"
       ]
+    },
+    "shader": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Shader intent: how an engine should build this layer's look with shaders and particles. A description, not pixels. See docs/vocabulary.md section 11.",
+      "properties": {
+        "material": {
+          "enum": [
+            "ionized",
+            "plasma",
+            "wet",
+            "liquid",
+            "foamy",
+            "glassy",
+            "crystalline",
+            "icy",
+            "molten",
+            "fiery",
+            "smoky",
+            "ashen",
+            "dusty",
+            "ethereal",
+            "arcane",
+            "shadowy",
+            "organic",
+            "stone",
+            "metallic"
+          ],
+          "description": "What the layer is made of; sets the overall feel."
+        },
+        "look": {
+          "type": "string",
+          "description": "One sentence on what the shader should feel like."
+        },
+        "technique": {
+          "enum": [
+            "procedural",
+            "flipbook",
+            "particles",
+            "ribbon",
+            "mesh",
+            "decal",
+            "light",
+            "post_process"
+          ],
+          "description": "How to build it in an engine."
+        },
+        "noise": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "enum": [
+                "none",
+                "perlin",
+                "simplex",
+                "fbm",
+                "ridged",
+                "voronoi",
+                "curl",
+                "streaks"
+              ]
+            },
+            "scale": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Noise cells per character height (1 world unit). Small = broad blobs, large = fine grain."
+            },
+            "speed": {
+              "type": "number",
+              "minimum": 0,
+              "description": "How fast the noise moves or evolves, in world units per second."
+            },
+            "contrast": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "flow": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "direction": {
+              "enum": [
+                "none",
+                "along_path",
+                "outward",
+                "inward",
+                "upward",
+                "downward",
+                "swirl",
+                "toward_target"
+              ]
+            },
+            "speed": {
+              "type": "number",
+              "minimum": 0,
+              "description": "UV scroll / flow speed in world units per second."
+            }
+          }
+        },
+        "distortion": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Refraction or heat-haze strength behind the layer (0 none, 1 strong)."
+        },
+        "fresnel": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Rim brightness at grazing angles (0 none, 1 strong edge glow)."
+        },
+        "dissolve": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pattern": {
+              "enum": [
+                "perlin",
+                "simplex",
+                "fbm",
+                "ridged",
+                "voronoi",
+                "streaks"
+              ]
+            },
+            "edge_width": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "edge_color": {
+              "enum": [
+                "core",
+                "primary",
+                "secondary",
+                "accent",
+                "shadow"
+              ],
+              "description": "Palette slot for the burning edge."
+            }
+          },
+          "description": "How the layer erodes away as it fades, instead of a plain fade."
+        },
+        "emissive": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hdr": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Brightness multiplier into bloom: 1 = no bloom, 2-4 glowing, 5-10 blinding."
+            },
+            "falloff": {
+              "enum": [
+                "hard",
+                "soft",
+                "exponential",
+                "gaussian"
+              ]
+            },
+            "core_ratio": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "How much of the width is the white-hot core."
+            }
+          }
+        },
+        "lighting": {
+          "enum": [
+            "unlit",
+            "lit",
+            "emits_light"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
     }
   }
 }

@@ -115,6 +115,12 @@
       "params": {
         "scope": "screen",
         "peak": 0.4
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "The sky goes dark and heavy while the storm gathers; a deep multiply tint.",
+        "technique": "post_process",
+        "lighting": "unlit"
       }
     },
     {
@@ -137,6 +143,26 @@
         "fade_ms": 60,
         "pulse_hz": 4,
         "detail": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A pulsing warning circle on the ground that tightens: the danger zone.",
+        "technique": "decal",
+        "noise": {
+          "type": "simplex",
+          "scale": 3,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "inward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -163,6 +189,23 @@
         "lifetime_ms": 2600,
         "fade_ms": 1200,
         "detail": 0.8
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A wide blasted crater, black and broken, that lingers long after.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.15,
+          "edge_color": "secondary"
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -190,6 +233,27 @@
         "lifetime_ms": 420,
         "fade_ms": 700,
         "detail": 0.9
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Molten-bright cracks radiating from the crater that cool over a second.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -209,6 +273,27 @@
         "fade_in_ms": 0,
         "lifetime_ms": 200,
         "fade_ms": 800
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A yellow-hot burn at the center of the crater, fading to ash.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -233,6 +318,23 @@
         "jaggedness": 0.85,
         "regen_ms": 45,
         "radius_px": 150
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Angry static gathering inside the warning circle, getting denser.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.4
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -250,6 +352,28 @@
         "end_radius_px": 150,
         "thickness_px": 5,
         "softness": 0.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A crackling ring of energy marking the edge of the danger zone.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "distortion": 0.1,
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft",
+          "core_ratio": 0.2
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -267,6 +391,28 @@
         "end_radius_px": 210,
         "thickness_px": 12,
         "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A huge pressure wave that slams outward and warps the air.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "distortion": 0.5,
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft",
+          "core_ratio": 0.2
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -286,6 +432,26 @@
         "size_px": 40,
         "lifetime_ms": 700,
         "opacity": 0.4
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Heavy dark smoke rolling up out of the crater.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -307,6 +473,23 @@
         "jaggedness": 0.85,
         "regen_ms": 70,
         "radius_px": 90
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Static still crawling over the crater after the strike.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard",
+          "core_ratio": 0.4
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -323,6 +506,23 @@
       "params": {
         "radius_px": 60,
         "softness": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A violent purple-blue bloom around the column of lightning.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 1.5,
+          "speed": 0.6,
+          "contrast": 0.2
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian",
+          "core_ratio": 0.1
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -356,6 +556,27 @@
         "regen_ms": 60,
         "afterimage_ms": 120,
         "glow_px": 12
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A thinner secondary bolt forking beside the main one.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
       }
     },
     {
@@ -403,7 +624,28 @@
           "value": 3,
           "ease": "ease_out"
         }
-      ]
+      ],
+      "shader": {
+        "material": "ionized",
+        "look": "A massive white-hot pillar of lightning with thick blue creases boiling along it.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 5,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 10
+        },
+        "emissive": {
+          "hdr": 9,
+          "falloff": "exponential",
+          "core_ratio": 0.35
+        },
+        "lighting": "emits_light"
+      }
     },
     {
       "id": "impact-sparks",
@@ -430,6 +672,21 @@
         "size_px": 4,
         "spread_deg": 180,
         "drag": 0.12
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A fountain of white-hot sparks bursting out of the crater.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -446,6 +703,16 @@
         "peak": {
           "min": 0.7,
           "max": 0.85
+        }
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The whole screen whites out for a beat.",
+        "technique": "post_process",
+        "lighting": "unlit",
+        "emissive": {
+          "hdr": 10,
+          "falloff": "soft"
         }
       }
     },
@@ -477,6 +744,11 @@
       "params": {
         "radius": 9,
         "energy": 4.0
+      },
+      "shader": {
+        "technique": "light",
+        "look": "A huge blue-white light flooding the arena on impact.",
+        "lighting": "emits_light"
       }
     },
     {

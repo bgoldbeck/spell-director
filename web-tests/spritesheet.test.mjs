@@ -99,7 +99,7 @@ test("guide documents layers, timings, views, sounds and engine steps", () => {
   const m = fakeManifest(boss);
   const md = guideMarkdown(m, { files: [{ name: "x.json", about: "data" }] });
   for (const s of ["## How the sheets are laid out", "## Timeline (beats)", "## Layers", "### Sound cues",
-    "### Camera shake", "## Rebuild it in Unity", "## Reading the sheets as an AI model", "tools/sheet_cells.py", "## Rebuild it in Godot 4", "all.png", "layer-main-bolt.png", "x.json"]) {
+    "### Camera shake", "## Rebuild it in Unity", "## How to use this export", "Shader intent", "- Unity: ", "- Godot 4: ", "## Reading the sheets as an AI model", "tools/sheet_cells.py", "## Rebuild it in Godot 4", "all.png", "layer-main-bolt.png", "x.json"]) {
     assert.ok(md.includes(s), `guide mentions ${s}`);
   }
   for (const b of boss.beats) assert.ok(md.includes(`| ${b.id} |`), `beat ${b.id} in the table`);
@@ -114,4 +114,26 @@ test("zip: stored entries with correct CRCs", () => {
   assert.equal(dv.getUint32(end, true), 0x06054b50);
   assert.equal(dv.getUint16(end + 10, true), 2);
   assert.equal(new TextDecoder().decode(zip.subarray(30 + 7, 30 + 7 + 5)), "hello");
+});
+
+test("shader intent: template values win, defaults fill in, and every drawn layer gets engine hints", async () => {
+  const { shaderFor, engineRecipe, describeShader, DEFAULT_SHADER } = await import("../web/js/engine/shader.js");
+  const bolt = sky.layers.find((l) => l.id === "main-bolt");
+  const sh = shaderFor(bolt);
+  assert.equal(sh.from_template, true);
+  assert.equal(sh.material, "ionized");
+  assert.equal(shaderFor({ type: "sound_cue" }), null);
+  const guessed = shaderFor({ id: "x", type: "smoke" });
+  assert.equal(guessed.from_template, false);
+  assert.equal(guessed.material, DEFAULT_SHADER.smoke.material);
+  const r = engineRecipe(bolt, sh, "add");
+  assert.ok(r.unity.some((x) => x.includes("Additive")));
+  assert.ok(r.godot.some((x) => x.includes("blend_add")));
+  assert.ok(describeShader(sh).includes("ridged"));
+  const m = fakeManifest(sky);
+  assert.ok(m.how_to_use.includes("not the effect itself"));
+  for (const l of m.layers) {
+    assert.ok(l.shader, `${l.id} has shader intent`);
+    assert.ok(l.engine_hints.unity.length && l.engine_hints.godot.length);
+  }
 });

@@ -135,6 +135,23 @@
         "lifetime_ms": 2200,
         "fade_ms": 1200,
         "detail": 0.5
+      },
+      "shader": {
+        "material": "wet",
+        "look": "A dark, glossy wet patch soaking into the ground, drying from the edges in.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.25
+        },
+        "lighting": "lit",
+        "distortion": 0.05
       }
     },
     {
@@ -162,6 +179,24 @@
         "lifetime_ms": 1800,
         "fade_ms": 900,
         "detail": 0.5
+      },
+      "shader": {
+        "material": "wet",
+        "look": "A shallow puddle that reflects the sky and ripples, with a soft drying edge.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.25
+        },
+        "lighting": "lit",
+        "distortion": 0.15,
+        "fresnel": 0.5
       }
     },
     {
@@ -187,6 +222,22 @@
         "lifetime_ms": 700,
         "fade_ms": 600,
         "detail": 0.7
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "Splatter marks fanned out around the hit, glistening then soaking away.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -207,6 +258,28 @@
         },
         "thickness_px": 3,
         "softness": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Rings of rippling water spreading over the puddle, refracting the ground.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 1.5
+        },
+        "distortion": 0.4,
+        "fresnel": 0.4,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -224,6 +297,18 @@
         "end_radius_px": 55,
         "thickness_px": 2,
         "softness": 0.7
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "One slow last ripple settling the water.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 0.8
+        },
+        "distortion": 0.3,
+        "fresnel": 0.3,
+        "lighting": "lit"
       }
     },
     {
@@ -247,6 +332,26 @@
         },
         "lifetime_ms": 700,
         "opacity": 0.22
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Fine cool mist hanging in the air after the splash, catching the light.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.4,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.2
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -278,7 +383,30 @@
           "value": 16,
           "ease": "ease_in"
         }
-      ]
+      ],
+      "shader": {
+        "material": "liquid",
+        "look": "A wobbling, glassy ball of water: clear in the middle, a bright rim, the world bent behind it.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 2,
+          "speed": 1.2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.8
+        },
+        "distortion": 0.6,
+        "fresnel": 0.8,
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft",
+          "core_ratio": 0.1
+        },
+        "lighting": "lit"
+      }
     },
     {
       "id": "ball-glow",
@@ -295,6 +423,16 @@
         "radius_px": 22,
         "softness": 0.9,
         "pulse_hz": 3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A faint blue glow around the water ball, more caustic light than fire.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -331,7 +469,30 @@
           "value": 1,
           "ease": "ease_in"
         }
-      ]
+      ],
+      "shader": {
+        "material": "liquid",
+        "look": "A rushing jet of water: streaky, fast, see-through at the edges, bending the light behind it.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "streaks",
+          "scale": 5,
+          "speed": 12,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 14
+        },
+        "distortion": 0.5,
+        "fresnel": 0.5,
+        "emissive": {
+          "hdr": 1.3,
+          "falloff": "soft",
+          "core_ratio": 0.2
+        },
+        "lighting": "lit"
+      }
     },
     {
       "id": "jet-core",
@@ -350,6 +511,27 @@
         "jaggedness": 0.15,
         "regen_ms": 45,
         "grow_ms": 180
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The bright, dense core of the jet with white highlights racing along it.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "streaks",
+          "scale": 8,
+          "speed": 16,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 18
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian",
+          "core_ratio": 0.5
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -365,6 +547,16 @@
       "params": {
         "radius_px": 18,
         "softness": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft blue haze around the jet.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -389,6 +581,17 @@
         "size_px": 3.5,
         "spread_deg": 200,
         "drag": 0.2
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "Droplets spitting off the hand as the jet fires.",
+        "technique": "particles",
+        "flow": {
+          "direction": "toward_target",
+          "speed": 5
+        },
+        "fresnel": 0.4,
+        "lighting": "lit"
       }
     },
     {
@@ -414,6 +617,27 @@
         "spread_deg": 110,
         "drag": 0.08,
         "emit_ms": 480
+      },
+      "shader": {
+        "material": "foamy",
+        "look": "A fountain of droplets and froth bursting up and falling back under gravity.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 8,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 4
+        },
+        "fresnel": 0.4,
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
       }
     },
     {
@@ -439,6 +663,17 @@
         "spread_deg": 170,
         "drag": 0.25,
         "emit_ms": 480
+      },
+      "shader": {
+        "material": "glassy",
+        "look": "Tiny glints where the light catches the spray.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.7
+        },
+        "lighting": "unlit"
       }
     },
     {
@@ -464,6 +699,17 @@
         "spread_deg": 90,
         "drag": 0.1,
         "emit_ms": 200
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A few last drops falling back into the puddle.",
+        "technique": "particles",
+        "flow": {
+          "direction": "downward",
+          "speed": 3
+        },
+        "fresnel": 0.4,
+        "lighting": "lit"
       }
     },
     {
@@ -492,7 +738,27 @@
           "value": 0.1,
           "ease": "ease_out"
         }
-      ]
+      ],
+      "shader": {
+        "material": "foamy",
+        "look": "A quick white burst of spray at the moment of impact.",
+        "technique": "procedural",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.5
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.3
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
     },
     {
       "id": "shake",
@@ -521,6 +787,11 @@
       "params": {
         "radius": 4,
         "energy": 1.2
+      },
+      "shader": {
+        "technique": "light",
+        "look": "Cool blue bounce light with a hint of caustics on the ground.",
+        "lighting": "emits_light"
       }
     },
     {
