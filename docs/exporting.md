@@ -41,9 +41,24 @@ These are exported as tracks with one value per frame, because an engine does th
 - **Lights**: anchor, color, range and an energy curve.
 - **Sound cues**: start time and frame, cue, length, volume, pitch, one-shot or sustained, and the cue's text-to-SFX prompt.
 
+## Letting an AI model check the sheets
+
+The sheets carry no numbers or gridlines (the engine wants clean pixels), so the JSON is the map. Every guide has a section for AI readers with the grid math, a worked example for that export and a crop snippet. A model shouldn't read a whole sheet at once: it gets scaled down and the cells blur. Crop instead:
+
+```bash
+python tools/sheet_cells.py contact exports/lightning-sky-strike-seed1 --sheet main-bolt   # labeled grid of one sheet
+python tools/sheet_cells.py frame   exports/lightning-sky-strike-seed1 --frame 15 --layers # one moment, every view and layer
+python tools/sheet_cells.py cell    exports/lightning-sky-strike-seed1 --sheet main-bolt --view top --frame 14
+python tools/sheet_cells.py labeled exports/lightning-sky-strike-seed1                     # *_labeled.png debug copies
+python tools/sheet_cells.py map     exports/lightning-sky-strike-seed1                     # every cell's rectangle as text
+```
+
+Output goes to an `ai/` folder inside the export. The director's MCP server has the same thing as `look_at_sprite_sheet`, which returns the image to the model. Only Pillow is needed, and it works on a .zip from the viewer once unpacked.
+
 ## Code
 
 - `web/js/engine/spritesheet.js`: pure and Node-tested. Frame plan, sheet layout, tracks, the manifest and the guide.
 - `web/js/exporter.js`: renders the frames with Three.js (the same `Effect` as the viewer, so frames are a pure function of template, seed and time) and builds the PNGs.
 - `web/js/zip.js`: a small stored-ZIP writer for the viewer's download.
+- `tools/sheet_cells.py`: crops and labels cells from an export using its JSON, for review.
 - `tools/export_sprites.py`: starts the viewer server, opens it in headless Chromium and calls `window.spellDirectorExport`.

@@ -127,6 +127,21 @@ def export_sprites(template_id: str, seed: int = 1, frame: int = 192, fps: int |
     return _call(library.export_sprites, template_id, seed, frame, fps, views, layers)
 
 
+@mcp.tool(annotations=ToolAnnotations(destructiveHint=False, idempotentHint=True, openWorldHint=False),
+          structured_output=False)
+def look_at_sprite_sheet(export_dir: str, mode: str = "frame", sheet: str = "all", view: str | None = None,
+                         frame: int | None = None, ms: float | None = None, layers: bool = False) -> list[Any]:
+    """Look at an exported sprite sheet cell by cell. The sheets have no numbers
+    on them, so don't read a whole sheet: this crops cells using the export's
+    .spritesheet.json map and labels them. `export_dir` is the export folder
+    (from export_sprites). mode "cell": one cell (sheet = layer id or "all",
+    view, frame); "frame": one moment in every view (layers=True: also a row per
+    layer); "contact": a whole sheet as a labeled grid. `frame` is the spell
+    frame (0 = 0 ms), or give `ms`. Returns the image and where it was saved."""
+    result = _call(library.look_at_sprite_sheet, export_dir, mode, sheet, view, frame, ms, layers)
+    return [json.dumps(result, indent=2), Image(path=result["path"])]
+
+
 # ---------------------------------------------------------------- resources
 
 

@@ -99,7 +99,7 @@ test("guide documents layers, timings, views, sounds and engine steps", () => {
   const m = fakeManifest(boss);
   const md = guideMarkdown(m, { files: [{ name: "x.json", about: "data" }] });
   for (const s of ["## How the sheets are laid out", "## Timeline (beats)", "## Layers", "### Sound cues",
-    "### Camera shake", "## Rebuild it in Unity", "## Rebuild it in Godot 4", "all.png", "layer-main-bolt.png", "x.json"]) {
+    "### Camera shake", "## Rebuild it in Unity", "## Reading the sheets as an AI model", "tools/sheet_cells.py", "## Rebuild it in Godot 4", "all.png", "layer-main-bolt.png", "x.json"]) {
     assert.ok(md.includes(s), `guide mentions ${s}`);
   }
   for (const b of boss.beats) assert.ok(md.includes(`| ${b.id} |`), `beat ${b.id} in the table`);

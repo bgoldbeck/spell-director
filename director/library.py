@@ -26,6 +26,7 @@ if str(ROOT / "tools") not in sys.path:
 import breakdown as _breakdown  # noqa: E402
 import build_index as _build_index  # noqa: E402
 import export_sprites as _export_sprites  # noqa: E402
+import sheet_cells as _sheet_cells  # noqa: E402
 import validate as _validate  # noqa: E402
 
 DOC_FILES = {
@@ -271,4 +272,25 @@ def export_sprites(template_id: str, seed: int = 1, frame: int = 192, fps: int |
         "fps": m["fps"],
         "view_rows": m["view_rows"],
         "sheets": [{k: sh[k] for k in ("image", "first_frame", "frame_count", "start_ms", "end_ms")} for sh in m["sheets"]],
+    }
+
+
+def look_at_sprite_sheet(export_dir: str, mode: str = "frame", sheet: str = "all", view: str | None = None,
+                         frame: int | None = None, ms: float | None = None, layers: bool = False) -> dict:
+    """Crop an exported sprite sheet into something a model can look at, using
+    its .spritesheet.json map: mode "cell" (one cell, enlarged), "frame" (one
+    moment in every view; layers=True adds a row per layer sheet) or "contact"
+    (a whole sheet as a grid, each cell labeled with frame, ms and view).
+    Writes the PNG to <export_dir>/ai/ and returns its path."""
+    try:
+        res = _sheet_cells.look(export_dir, mode, sheet, view, frame, ms, layers)
+        m, _ = _sheet_cells.load(export_dir)
+    except _sheet_cells.SheetError as exc:
+        raise LibraryError(str(exc)) from exc
+    return {
+        **res,
+        "frame_count": m["frame_count"],
+        "frame_ms": m["frame_ms"],
+        "view_rows": m["view_rows"],
+        "sheets": [{k: s[k] for k in ("id", "first_frame", "frame_count", "start_ms", "end_ms")} for s in m["sheets"]],
     }
