@@ -303,6 +303,34 @@ const SHAPES = {
     }
   },
 
+  // Dust swept by a gust: streaks fanning out along +x (the cast direction
+  // at rotation 0), thick and dense near the start, thinning as they reach.
+  swept(g, s, R, detail) {
+    const c = s / 2;
+    radial(g, c * 0.8, c, s * 0.4, [[0, "rgba(255,255,255,0.18)"], [1, "rgba(255,255,255,0)"]]);
+    g.lineCap = "round";
+    const n = 18 + Math.round(detail * 30);
+    for (let i = 0; i < n; i++) {
+      const y0 = c + R.range(-0.16, 0.16) * s;
+      const x0 = R.range(0.06, 0.4) * s;
+      const len = R.range(0.25, 0.55) * s;
+      const fan = (y0 - c) / s * R.range(0.4, 1.1);
+      g.strokeStyle = `rgba(255,255,255,${R.range(0.25, 0.75)})`;
+      g.lineWidth = s * R.range(0.004, 0.014);
+      g.beginPath();
+      g.moveTo(x0, y0);
+      const x1 = Math.min(s * 0.97, x0 + len);
+      g.quadraticCurveTo((x0 + x1) / 2, y0 + fan * len * 0.3, x1, y0 + fan * len);
+      g.stroke();
+    }
+    g.fillStyle = "rgba(255,255,255,0.55)";
+    for (let i = 0; i < 20 + detail * 40; i++) {
+      g.beginPath();
+      g.arc(R.range(0.5, 0.97) * s, c + R.range(-0.3, 0.3) * s, R.range(1, 3) * (s / 512), 0, TAU);
+      g.fill();
+    }
+  },
+
   rune_circle(g, s, R, detail) {
     const c = s / 2;
     g.strokeStyle = "rgba(255,255,255,1)";

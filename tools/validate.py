@@ -28,17 +28,18 @@ KNOWN_PARAMS = {
     "flash": {"scope", "radius_px", "peak"},
     "sparks": {
         "count", "speed", "speed_spread", "gravity", "lifetime_ms", "size_px", "spread_deg", "drag", "emit_ms", "streak_ms", "look", "glow",
-        "emit_radius_px",
+        "gather_px", "swirl", "emit_radius_px",
     },
     "crackle": {"count", "length_px", "jaggedness", "regen_ms", "radius_px"},
     "orb": {
-        "radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease", "look",
+        "radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease", "look", "height_px", "bubble",
         "approach_deg", "approach_yaw_deg", "smoke_trail_ms", "smoke_opacity",
     },
     "beam": {
         "width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms", "style", "flow_speed", "turbulence",
         "foam", "churn", "shed_count", "shed_speed", "shed_size_px", "shed_life_ms", "spread", "sweep_px", "sweep_ms",
-        "puff_count", "puff_size_px",
+        "puff_count", "puff_size_px", "spiral_count", "spiral_pitch_px", "spiral_speed", "spiral_radius",
+        "spiral_width_px", "line_count", "line_length",
     },
     "vortex": {
         "height_px", "base_radius_px", "top_radius_px", "flare", "spin_hz", "strands", "twist", "turbulence",

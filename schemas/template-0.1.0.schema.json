@@ -46,7 +46,9 @@
         "shadow",
         "arcane",
         "nature",
-        "poison"
+        "poison",
+        "energy",
+        "psychic"
       ]
     },
     "archetype": {
@@ -469,6 +471,7 @@
                         "splash",
                         "frost",
                         "swirl",
+                        "swept",
                         "rune_circle",
                         "warning_ring",
                         "fissures"

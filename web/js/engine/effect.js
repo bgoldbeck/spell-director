@@ -1189,6 +1189,11 @@ class SparksLayer extends Layer {
       this.updateDebris({ local, count, life, origin, startAt, speed, spread, gravity, spreadDeg, drag, sz, span, streakS });
       return;
     }
+    // gather_px: sparks are born on a shell this far out and are drawn in to
+    // the anchor, arriving as they die (light or energy gathering for a charge).
+    // swirl: turns around the vertical axis over a gathering spark's flight.
+    const gather = this.p("gather_px", 0, 0) * PX;
+    const swirl = this.p("swirl", 0, 0) * Math.PI * 2;
     const paths = [];
     for (let i = 0; i < count; i++) {
       const born = r.range(0, span);
@@ -1205,7 +1210,20 @@ class SparksLayer extends Layer {
       const age = (local - born) / 1000;
       if (age < 0 || age * 1000 > lifeI) continue;
       const ph = i * 2.399; // not from r: sparks skipped above would shift the sequence
-      const at = (a) => {
+      const reach = gather * (0.7 + 0.6 * (((Math.sin(i * 78.233) * 43758.5453) % 1 + 1) % 1));
+      const inward = (a) => {
+        const f = Math.min(1, Math.max(0, (a * 1000) / lifeI));
+        const d = reach * (1 - f * f);
+        const ang = swirl * f;
+        const c = Math.cos(ang);
+        const sn = Math.sin(ang);
+        return new THREE.Vector3(
+          origin.x + (dx * c - dz * sn) * d,
+          Math.max(0.01, origin.y + dy * d),
+          origin.z + (dx * sn + dz * c) * d,
+        );
+      };
+      const at = gather > 0 ? inward : (a) => {
         const travel = (v * (1 - Math.exp(-drag * a))) / drag;
         const flutter = this.ember ? Math.sin(a * 7 + ph) * 0.18 * a : 0;
         return new THREE.Vector3(
@@ -1215,6 +1233,7 @@ class SparksLayer extends Layer {
         );
       };
       let fade = 1 - (age * 1000) / lifeI;
+      if (gather > 0) fade = Math.min(1, (1 - fade) * 4, fade * 10);
       if (this.ember) fade *= 0.55 + 0.45 * Math.abs(Math.sin(age * 23 + ph * 3));
       const head = at(age);
       const tail = at(Math.max(0, age - streakS));
@@ -1458,11 +1477,27 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }`;
 
+// A plane that always faces the camera that draws it (done in the vertex
+// shader, so all four views stay correct in "All four" mode).
+const BILLBOARD_VERTEX = /* glsl */ `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  vec4 mv = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+  mv.xy += position.xy * length(modelMatrix[0].xyz);
+  gl_Position = projectionMatrix * mv;
+}`;
+
+// Rings lie on the ground by default. plane "vertical": stands upright across
+// the cast direction (a muzzle shockwave around a beam); "billboard": faces
+// the camera (a ripple of warped space around a target). Off the ground they
+// sit at the anchor's height, or chest height for ground anchors.
 class RingLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
+    this.plane = ["vertical", "billboard"].includes(def.plane) ? def.plane : "ground";
     this.material = new THREE.ShaderMaterial({
-      vertexShader: PLANE_VERTEX,
+      vertexShader: this.plane === "billboard" ? BILLBOARD_VERTEX : PLANE_VERTEX,
       fragmentShader: RING_FRAGMENT,
       uniforms: {
         color: { value: this.colors[1].clone() },
@@ -1481,7 +1516,9 @@ class RingLayer extends Layer {
       polygonOffsetUnits: -2,
     });
     this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.material);
-    this.mesh.rotation.x = -Math.PI / 2;
+    if (this.plane === "ground") this.mesh.rotation.x = -Math.PI / 2;
+    else if (this.plane === "vertical") this.mesh.rotation.y = Math.PI / 2;
+    this.mesh.frustumCulled = this.plane !== "billboard";
     this.group.add(this.mesh);
   }
 
@@ -1502,7 +1539,9 @@ class RingLayer extends Layer {
     const thick = (this.p("thickness_px", t, 5) * PX) * (1 + this.material.uniforms.softness.value);
     const outer = radius + thick / 2;
     const at = this.anchorPos();
-    this.mesh.position.set(at.x, 0.02, at.z);
+    if (this.plane === "ground") at.y = 0.02;
+    else if (at.y < 0.05) at.y = 0.55;
+    this.mesh.position.copy(at);
     this.mesh.scale.setScalar(outer);
     this.material.uniforms.inner.value = Math.max(0, (radius - thick / 2) / outer);
     this.material.uniforms.opacity.value = Math.min(1, I * (1 - u * 0.7) * 1.3);
@@ -1631,11 +1670,47 @@ class SmokeLayer extends Layer {
   }
 }
 
+// A hollow sphere that glows at its rim and is nearly clear in the middle
+// (fresnel), so whatever is inside shows through: a force field or shield.
+const BUBBLE_VERTEX = /* glsl */ `
+varying vec3 vNormal;
+varying vec3 vView;
+void main() {
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  vNormal = normalize(normalMatrix * normal);
+  vView = normalize(-mv.xyz);
+  gl_Position = projectionMatrix * mv;
+}`;
+
+const BUBBLE_FRAGMENT = /* glsl */ `
+uniform vec3 inner;
+uniform vec3 rimColor;
+uniform float opacity;
+varying vec3 vNormal;
+varying vec3 vView;
+void main() {
+  float rim = pow(1.0 - abs(dot(normalize(vNormal), normalize(vView))), 2.2);
+  gl_FragColor = vec4(mix(inner, rimColor, rim), (0.06 + 0.94 * rim) * opacity);
+  #include <colorspace_fragment>
+}`;
+
 class OrbLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
+    // bubble: a hollow fresnel shell (force field, shield) instead of a
+    // glowing ball; the core is not drawn.
+    this.bubble = !!this.base.bubble;
     this.coreMat = new THREE.MeshBasicMaterial({ color: this.colors[0], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-    this.shellMat = new THREE.MeshBasicMaterial({ color: this.colors[1], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    this.shellMat = this.bubble
+      ? new THREE.ShaderMaterial({
+        vertexShader: BUBBLE_VERTEX,
+        fragmentShader: BUBBLE_FRAGMENT,
+        uniforms: { inner: { value: this.colors[0].clone() }, rimColor: { value: this.colors[1].clone() }, opacity: { value: 0 } },
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
+      : new THREE.MeshBasicMaterial({ color: this.colors[1], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
     this.core = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), this.coreMat);
     this.shell = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), this.shellMat);
     this.arcs = new RibbonMesh(200, this.colors[1].clone().lerp(new THREE.Color("#fff"), 0.4), 1, 0.6);
@@ -1675,7 +1750,8 @@ class OrbLayer extends Layer {
   // Where the orb is at time t: in the hand, on its way, or at the target.
   posAt(t) {
     const f = this.flight;
-    if (!f) return this.anchorPos();
+    // height_px lifts a resting orb off its anchor (a field around a target's body).
+    if (!f) return this.anchorPos().add(new THREE.Vector3(0, this.p("height_px", t, 0) * PX, 0));
     const st = this.effect.stage;
     const from = this.fromSky ? this.skyStart(t) : st.hand.clone();
     const to = this.fromSky ? st.anchor("target") : st.chest(0);
@@ -1707,8 +1783,10 @@ class OrbLayer extends Layer {
     this.shell.position.copy(at);
     this.core.scale.set(r * 0.6 * (1 + wob * n.range(-0.3, 0.3)), r * 0.6 * (1 + wob * n.range(-0.3, 0.3)), r * 0.6);
     this.shell.scale.set(r * (1 + wob * n.range(-0.5, 0.5)), r * (1 + wob * n.range(-0.5, 0.5)), r * (1 + wob * n.range(-0.5, 0.5)));
+    this.core.visible = !this.bubble;
     this.coreMat.opacity = Math.min(1, I * 1.2);
-    this.shellMat.opacity = 0.45 * I;
+    if (this.bubble) this.shellMat.uniforms.opacity.value = Math.min(1, I);
+    else this.shellMat.opacity = 0.45 * I;
     const count = Math.round(this.p("crackle_count", t, 3));
     let segs = [];
     for (let i = 0; i < count; i++) {
@@ -1795,7 +1873,8 @@ class BeamLayer extends Layer {
     super(effect, def, instance);
     this.water = this.base.style === "water";
     this.fire = this.base.style === "fire";
-    this.fluid = this.water || this.fire;
+    this.wind = this.base.style === "wind";
+    this.fluid = this.water || this.fire || this.wind;
     const [core, outer] = this.colors;
     const secondary = new THREE.Color(effect.template.palette.secondary || effect.template.palette.primary);
     const seed = (seedFor(effect.seed, def.id, instance, "noise") % 1000) / 10;
@@ -1813,6 +1892,18 @@ class BeamLayer extends Layer {
       this.drops = new RibbonMesh(160, outer.clone().lerp(core, 0.3), 0.6, 1.2, { blending: THREE.NormalBlending });
       this.dropHeads = new DropletPoints(160, outer.clone().lerp(core, 0.35));
       this.group.add(this.halo.mesh, this.outer.mesh, this.core.mesh, this.drops.mesh, this.dropHeads.points);
+    } else if (this.wind) {
+      // A gust: a faint, streaky cone of moving air (alpha) with pale gust
+      // lines rushing through it and dust or leaves shed off its edges.
+      const flow = this.base.flow_speed ?? 7;
+      this.halo = new RibbonMesh(120, outer, 0.08, 2.5, { blending: THREE.NormalBlending });
+      this.outer = new RibbonMesh(120, outer, 0.35, 0.5, {
+        blending: THREE.NormalBlending,
+        fluid: { flow, seed, noise: this.base.turbulence ?? 0.6, scale: 1.4, rim: 0.15, foam: 0.45, foamColor: core },
+      });
+      this.lines = new RibbonMesh(40 * 14, core, 0.8, 1.0, { blending: THREE.NormalBlending });
+      this.drops = new RibbonMesh(160, secondary, 0.9, 0.3, { blending: THREE.NormalBlending });
+      this.group.add(this.halo.mesh, this.outer.mesh, this.lines.mesh, this.drops.mesh);
     } else if (this.fire) {
       const flow = this.base.flow_speed ?? 5;
       const flame = (o) => ({ flow, seed, hot: core, mid: outer, cool: secondary, ...o });
@@ -1845,13 +1936,64 @@ class BeamLayer extends Layer {
       this.halo = new RibbonMesh(120, outer, 0.2, 3);
       this.group.add(this.halo.mesh, this.outer.mesh, this.core.mesh);
     }
+    // Any beam can wind helical energy ribbons around itself (spiral_count).
+    if ((this.base.spiral_count ?? 0) > 0) {
+      this.spiral = new RibbonMesh(700, outer.clone().lerp(core, 0.55), 1, 0.7);
+      this.group.add(this.spiral.mesh);
+    }
     this.segs = [];
     this.path = [];
     this.halfWidth = 0;
   }
 
+  // Helical ribbons wound around the beam that corkscrew toward the target:
+  // spiral_count strands, one twist every spiral_pitch_px, spiral_speed twists
+  // per second, spiral_radius (times the beam's width), spiral_width_px thick.
+  updateSpirals(t, width, I) {
+    const count = Math.min(6, Math.round(this.p("spiral_count", t, 0)));
+    const path = this.path;
+    if (!this.spiral || count < 1 || path.length < 2) {
+      this.spiral?.setPaths([], 0);
+      return;
+    }
+    const pitch = Math.max(5, this.p("spiral_pitch_px", t, 80)) * PX;
+    const speed = this.p("spiral_speed", t, 3);
+    const radius = width * this.p("spiral_radius", t, 0.7);
+    const thick = this.p("spiral_width_px", t, 3) * PX;
+    const cum = [0];
+    for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + path[i].distanceTo(path[i - 1]));
+    const total = cum[cum.length - 1];
+    const dir = new THREE.Vector3().subVectors(path[path.length - 1], path[0]).normalize();
+    const [p1, p2] = perpendiculars(dir);
+    const step = pitch / 14;
+    const n = Math.min(160, Math.ceil(total / step));
+    const sec = t / 1000;
+    const paths = [];
+    for (let k = 0; k < count; k++) {
+      const pts = [];
+      const w = [];
+      let j = 0;
+      for (let i = 0; i <= n; i++) {
+        const d = (total * i) / n;
+        while (j < cum.length - 2 && cum[j + 1] < d) j++;
+        const f = (d - cum[j]) / Math.max(1e-6, cum[j + 1] - cum[j]);
+        const at = path[j].clone().lerp(path[j + 1], Math.min(1, f));
+        const ang = (Math.PI * 2 * d) / pitch - Math.PI * 2 * speed * sec + (Math.PI * 2 * k) / count;
+        at.addScaledVector(p1, Math.cos(ang) * radius).addScaledVector(p2, Math.sin(ang) * radius);
+        pts.push(at);
+        w.push(Math.min(1, d / (pitch * 0.5) + 0.1, (total - d) / (pitch * 0.5) + 0.1));
+      }
+      paths.push({ pts, w });
+    }
+    this.spiral.setPaths(paths, thick);
+    this.spiral.opacity = Math.min(1, I);
+  }
+
   endpoints() {
     const st = this.effect.stage;
+    // A beam in a spell that isn't a beam spell (a link that holds a target)
+    // ends on the target's chest rather than at its feet.
+    if (this.effect.template.space?.travel !== "beam" && st.targets.length) return [[st.hand, st.chest(0)]];
     return [[st.hand, st.anchor("point")]];
   }
 
@@ -1905,8 +2047,13 @@ class BeamLayer extends Layer {
     this.fullPath = pts;
     const width = this.p("width_px", t, 14) * PX;
     this.halfWidth = width * 0.5;
+    this.updateSpirals(t, width, I);
     if (this.fire) {
       this.updateFire(t, width, I, n, len, sec, grow);
+      return;
+    }
+    if (this.wind) {
+      this.updateWind(t, width, I, n, len, sec, grow);
       return;
     }
     if (!this.water) {
@@ -1972,6 +2119,66 @@ class BeamLayer extends Layer {
     this.updateShed(t, width, I);
   }
 
+  // Wind: a widening cone (spread) of faint streaky air, with gust lines:
+  // short pale streaks that rush from the hand to the target at flow_speed,
+  // spread through the cone and rippling sideways as they go.
+  updateWind(t, width, I, n, len, sec, grow) {
+    const flow = this.p("flow_speed", t, 7);
+    const spread = this.p("spread", t, 2.5);
+    const profile = (u) => 0.35 + (spread - 0.35) * Math.pow(u, 0.8);
+    const w = this.path.map((_, i) => {
+      const u = i / n;
+      const d = u * len - sec * flow;
+      const surge = 0.6 * Math.sin(d * 2.1) + 0.4 * Math.sin(d * 5.3 + 1.7);
+      const end = Math.min(1, (1 - u) * 6 + 0.25);
+      return Math.max(0.05, profile(u) * (1 + 0.2 * surge) * end);
+    });
+    for (const m of [this.halo, this.outer]) m.setTime(this.local(t));
+    this.halo.setPaths([{ pts: this.path, w }], width * 1.1);
+    this.outer.setPaths([{ pts: this.path, w }], width * 0.6);
+    this.halo.opacity = 0.1 * I;
+    this.outer.opacity = Math.min(1, 0.2 * I);
+    // Gust lines.
+    const count = Math.min(40, Math.round(this.p("line_count", t, 18)));
+    const lineLen = Math.max(0.05, Math.min(0.8, this.p("line_length", t, 0.25)));
+    const path = this.fullPath;
+    const m = path.length - 1;
+    const r = this.rng("gust-lines");
+    const local = Math.max(0, this.local(t)) / 1000;
+    const lines = [];
+    const dirAt = (j) => new THREE.Vector3().subVectors(path[Math.min(m, j + 1)], path[Math.max(0, j - 1)]).normalize();
+    for (let i = 0; i < count; i++) {
+      const offA = r.range(-1, 1);
+      const offB = r.range(-0.8, 0.8);
+      const ph = r();
+      const speed = (flow / Math.max(0.1, len)) * r.range(0.8, 1.3);
+      const ripple = r.range(0.4, 1);
+      const L = lineLen * r.range(0.7, 1.3);
+      // Each line loops: it rushes through the cone, then a new one starts at the hand.
+      const head = ((ph + local * speed) % (1 + L));
+      const pts = [];
+      const ws = [];
+      const N = 12;
+      for (let q = 0; q <= N; q++) {
+        const u = head - (L * q) / N;
+        if (u < 0 || u > Math.min(1, grow)) continue;
+        const f = u * m;
+        const j = Math.min(m - 1, Math.floor(f));
+        const at = path[j].clone().lerp(path[j + 1], f - j);
+        const [p1, p2] = perpendiculars(dirAt(j));
+        const lat = width * 0.5 * profile(u);
+        const wig = Math.sin(u * 14 * ripple + local * 9 + i) * 0.12;
+        at.addScaledVector(p1, (offA + wig) * lat).addScaledVector(p2, (offB + wig * 0.5) * lat * 0.7);
+        pts.push(at);
+        ws.push(Math.sin((Math.PI * q) / N) * (1 - 0.5 * u));
+      }
+      if (pts.length > 1) lines.push({ pts, w: ws });
+    }
+    this.lines.setPaths(lines, width * 0.05);
+    this.lines.opacity = Math.min(1, 0.85 * I);
+    this.updateShed(t, width, I);
+  }
+
   // Billowing flame puffs that ride the stream from the mouth to the target,
   // swelling and cooling from white-yellow to orange to red, then rolling up
   // where the stream breaks on the target. Seeded per puff, a function of t.
@@ -2030,7 +2237,8 @@ class BeamLayer extends Layer {
     const speed = this.p("shed_speed", t, 160) * PX;
     const size = this.p("shed_size_px", t, 3) * PX;
     // Water drops fall; fire embers are carried up by the heat.
-    const g = this.fire ? -2.2 : 9;
+    // (Dust and leaves off a gust drift down slowly.)
+    const g = this.fire ? -2.2 : this.wind ? 2.5 : 9;
     const r = this.rng("shed");
     const paths = [];
     const path = this.path;
@@ -2057,7 +2265,7 @@ class BeamLayer extends Layer {
       paths.push({ pts: [head, head.clone().lerp(tail, 0.5), tail], w: [fade, 0.9 * fade, 0.3 * fade], sz });
     }
     const s = paths.length ? paths.reduce((m, p) => m + p.sz, 0) / paths.length : size;
-    if (this.fire) {
+    if (this.fire || this.wind) {
       this.drops.setPaths(paths, s * 0.5);
       this.drops.opacity = I;
       return;
@@ -2570,7 +2778,8 @@ export class Effect {
         const layer = new Ctor(this, def, k);
         // Ground marks draw first (decals, then rings), in z order, so
         // everything standing on the ground draws over them.
-        const ground = def.type === "decal" ? -1000 : def.type === "ring" ? -500 : 0;
+        const flat = !def.plane || def.plane === "ground";
+        const ground = def.type === "decal" ? -1000 : def.type === "ring" && flat ? -500 : 0;
         layer.group.renderOrder = ground + (def.z ?? 0);
         this.layers.push(layer);
         this.group.add(layer.group);

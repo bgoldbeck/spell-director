@@ -1,0 +1,989 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "psychic-mind-crush",
+  "name": "Mind Crush",
+  "description": "The caster focuses and ripples of warped space pulse from their hand; a shimmering link reaches out and seizes the target in a pink bubble of force that lifts debris around it while the air ripples and warps. Then the caster clenches: the bubble collapses inward and crushes the target with a burst of light and a cracking of the ground.",
+  "element": "psychic",
+  "archetype": "aura",
+  "tags": [
+    "telekinesis",
+    "psychic",
+    "lift",
+    "crush",
+    "distortion",
+    "single-target",
+    "control"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A psychic telekinetic attack: warping distortion, lifting the target and crushing it. Original, inspired by the psychic-move archetype common in creature-battle games."
+  },
+  "timing": {
+    "duration_ms": 2500,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.2,
+      "length": 4.0,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: ripples of warped space pulse out of the hand toward the camera, a wavering pink link reaches the target, and the target hangs in a glowing bubble ringed by ripples that tighten and then burst.",
+      "side": "The cleanest read of lift and crush: debris and motes float up round the target inside the bubble, ripples ring it at chest height, the bubble shrinks fast onto the target and bursts with a flash and thrown sparks.",
+      "top": "A glyph circle turns under the target while the bubble reads as a disc and the ripples as concentric rings that close in; the crush is a ring bursting out across the ground and glowing cracks left behind. A smaller glyph under the caster shows where the force comes from.",
+      "three_quarter": "Hero view. The bubble reads as a sphere around the target with the ripples facing the camera, debris floats up through it, the glyph reads as an ellipse, and the collapse and burst are clear."
+    }
+  },
+  "palette": {
+    "core": "#FFF0FB",
+    "primary": "#FF5FD2",
+    "secondary": "#8A4BFF",
+    "accent": "#8FF3FF",
+    "shadow": "#1E1529"
+  },
+  "beats": [
+    {
+      "id": "focus",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 600,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.15,
+        "to": 0.85
+      },
+      "intent": "The caster focuses: a pink light kindles at the hand, ripples of warped space pulse out from it and a glyph opens under their feet."
+    },
+    {
+      "id": "seize",
+      "phase": "release",
+      "start_ms": 600,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.85
+      },
+      "intent": "The mind reaches out: a wavering pink link snaps to the target and a bubble of force closes around it with a soft flash."
+    },
+    {
+      "id": "lift",
+      "phase": "travel",
+      "start_ms": 680,
+      "end_ms": 1400,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.8,
+        "to": 1.0,
+        "flicker_hz": 5
+      },
+      "intent": "The target is held in a shimmering bubble. A glyph turns under it, debris and motes float up off the ground, and ripples of warped air pulse around it and tighten. In a game the target is lifted off its feet here."
+    },
+    {
+      "id": "crush",
+      "phase": "impact",
+      "start_ms": 1400,
+      "end_ms": 1500,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.9
+      },
+      "intent": "The caster clenches: the bubble collapses onto the target in a flash, a ring of force bursts out across the ground and the ground cracks under it. Hold a frame on the squeeze."
+    },
+    {
+      "id": "aftershock",
+      "phase": "impact",
+      "start_ms": 1460,
+      "end_ms": 1900,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.7,
+        "to": 0.9,
+        "flicker_hz": 8
+      },
+      "intent": "Sparks of psychic light are flung out, the space around the target wobbles back into shape and the camera shakes."
+    },
+    {
+      "id": "release",
+      "phase": "dissipation",
+      "start_ms": 1850,
+      "end_ms": 2500,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The force lets go. The last motes drift and fade, the glyph dissolves and the glowing cracks fade to dark."
+    }
+  ],
+  "layers": [
+    {
+      "id": "crush-cracks",
+      "type": "decal",
+      "beats": [
+        "crush",
+        "aftershock",
+        "release"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 55,
+          "max": 65
+        },
+        "opacity": 0.8,
+        "fade_in_ms": 0,
+        "grow_ms": 120,
+        "start_scale": 0.5,
+        "lifetime_ms": 3000,
+        "fade_ms": 1200,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Ground split in a star of cracks under where the target was crushed.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crush-glow-cracks",
+      "type": "decal",
+      "beats": [
+        "crush",
+        "aftershock",
+        "release"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 55,
+          "max": 65
+        },
+        "opacity": 0.85,
+        "fade_in_ms": 0,
+        "grow_ms": 120,
+        "start_scale": 0.5,
+        "lifetime_ms": 500,
+        "fade_ms": 600,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "The same cracks glowing pink with leftover force, fading out.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.8
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2,
+          "edge_color": "secondary"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "target-glyph",
+      "type": "decal",
+      "beats": [
+        "seize",
+        "lift",
+        "crush",
+        "aftershock"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 80,
+        "opacity": 0.75,
+        "fade_in_ms": 120,
+        "grow_ms": 300,
+        "start_scale": 0.5,
+        "spin_deg_per_s": -70,
+        "fade_ms": 500,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A glyph circle of thin violet rings turning under the held target.",
+        "technique": "decal",
+        "flow": {
+          "direction": "swirl",
+          "speed": 1.2
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "caster-glyph",
+      "type": "decal",
+      "beats": [
+        "focus",
+        "seize",
+        "lift",
+        "crush"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 45,
+        "opacity": 0.65,
+        "fade_in_ms": 200,
+        "grow_ms": 500,
+        "start_scale": 0.3,
+        "spin_deg_per_s": 50,
+        "fade_ms": 400,
+        "detail": 0.4
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A small turning glyph under the caster while they concentrate.",
+        "technique": "decal",
+        "flow": {
+          "direction": "swirl",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "mind-light",
+      "type": "orb",
+      "beats": [
+        "focus",
+        "seize",
+        "lift",
+        "crush"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 2
+        },
+        {
+          "t_ms": 600,
+          "param": "radius_px",
+          "value": 7,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "radius_px": 5,
+        "pulse_hz": 2.5,
+        "wobble": 0.1,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft pink light kindling at the caster's hand (or brow), throbbing slowly with concentration.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 2,
+          "speed": 1,
+          "contrast": 0.3
+        },
+        "fresnel": 0.6,
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "soft",
+          "core_ratio": 0.4
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "mind-glow",
+      "type": "glow",
+      "beats": [
+        "focus",
+        "seize",
+        "lift",
+        "crush"
+      ],
+      "attach_to": "mind-light",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 2.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Pink light around the caster's hand.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "focus-ripple-1",
+      "type": "ring",
+      "beats": [
+        "focus"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 12,
+      "params": {
+        "start_radius_px": 6,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A ripple of warped space pulsing out from the caster's hand.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 2
+        },
+        "distortion": 0.8,
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        },
+        "lighting": "unlit",
+        "notes": "A refraction ring: bend the scene behind it, with only a faint pink edge."
+      }
+    },
+    {
+      "id": "focus-ripple-2",
+      "type": "ring",
+      "beats": [
+        "seize",
+        "lift"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "color": "secondary",
+      "z": 12,
+      "params": {
+        "start_radius_px": 6,
+        "end_radius_px": 60,
+        "thickness_px": 5,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A second, slower ripple from the hand as the grip takes hold.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 1.5
+        },
+        "distortion": 0.8,
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "mind-link",
+      "type": "beam",
+      "beats": [
+        "seize",
+        "lift",
+        "crush"
+      ],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "params": {
+        "width_px": 6,
+        "wobble": 0.9,
+        "wobble_hz": 2.5,
+        "jaggedness": 0.05,
+        "regen_ms": 80,
+        "grow_ms": 90,
+        "spiral_count": 2,
+        "spiral_pitch_px": 70,
+        "spiral_speed": 1.5,
+        "spiral_radius": 1.6,
+        "spiral_width_px": 1.2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A thin, wavering thread of pink force from the hand to the target, with two fine strands twisting round it, more a shimmer in the air than a beam.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "simplex",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 3
+        },
+        "distortion": 0.5,
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian",
+          "core_ratio": 0.3
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "seize-flash",
+      "type": "flash",
+      "beats": [
+        "seize"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 80,
+        "peak": 0.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft pink flash as the bubble closes around the target.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "force-bubble",
+      "type": "orb",
+      "beats": [
+        "seize",
+        "lift",
+        "crush"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 9,
+      "keyframes": [
+        {
+          "t_ms": 600,
+          "param": "radius_px",
+          "value": 30
+        },
+        {
+          "t_ms": 720,
+          "param": "radius_px",
+          "value": 64,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 1250,
+          "param": "radius_px",
+          "value": 58
+        },
+        {
+          "t_ms": 1430,
+          "param": "radius_px",
+          "value": 10,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "radius_px": 62,
+        "pulse_hz": 3,
+        "wobble": 0.08,
+        "crackle_count": 0,
+        "height_px": 50,
+        "bubble": true
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A bubble of force around the target: nearly clear in the middle with a glowing pink-violet rim, its surface rippling and warping what is behind it.",
+        "technique": "procedural",
+        "noise": {
+          "type": "simplex",
+          "scale": 3,
+          "speed": 1.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 1
+        },
+        "distortion": 0.9,
+        "fresnel": 0.9,
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft",
+          "core_ratio": 0.1
+        },
+        "lighting": "unlit",
+        "notes": "A sphere with a strong fresnel rim and screen-space refraction; the inside stays clear so the target shows through. Scale it down hard on the crush."
+      }
+    },
+    {
+      "id": "warp-ripple-1",
+      "type": "ring",
+      "beats": [
+        "lift"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "secondary",
+      "z": 13,
+      "params": {
+        "start_radius_px": 130,
+        "end_radius_px": 70,
+        "thickness_px": 8,
+        "softness": 0.95
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Ripples of warped air closing in around the held target.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "inward",
+          "speed": 1.5
+        },
+        "distortion": 1.0,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "unlit",
+        "notes": "Refraction rings around the bubble: the warp is the effect, the pink edge is only a hint."
+      }
+    },
+    {
+      "id": "warp-ripple-2",
+      "type": "ring",
+      "beats": [
+        "crush"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 13,
+      "params": {
+        "start_radius_px": 120,
+        "end_radius_px": 8,
+        "thickness_px": 10,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "One last ripple sucked hard into the target as the bubble collapses.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "inward",
+          "speed": 6
+        },
+        "distortion": 1.0,
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "lifted-debris",
+      "type": "sparks",
+      "beats": [
+        "lift"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 55,
+          "max": 65
+        },
+        "speed": 110,
+        "speed_spread": 0.5,
+        "gravity": -260,
+        "lifetime_ms": 800,
+        "size_px": 3.4,
+        "spread_deg": 200,
+        "drag": 0.12,
+        "emit_ms": 650,
+        "streak_ms": 90
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Grit, pebbles and motes floating up off the ground inside the field, glowing faintly pink as they rise.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.6,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.6
+        },
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft",
+          "core_ratio": 0.4
+        },
+        "lighting": "lit",
+        "notes": "In a game, real pebble meshes lifted by the same field read better than glowing points."
+      }
+    },
+    {
+      "id": "crush-flash",
+      "type": "flash",
+      "beats": [
+        "crush"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 17,
+      "params": {
+        "scope": "local",
+        "radius_px": 120,
+        "peak": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A bright pink-white flash as the bubble crushes in.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "crush-burst",
+      "type": "sparks",
+      "beats": [
+        "aftershock"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 15,
+      "params": {
+        "count": {
+          "min": 40,
+          "max": 50
+        },
+        "speed": 330,
+        "speed_spread": 0.5,
+        "gravity": 300,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 360,
+        "drag": 0.35,
+        "emit_ms": 120
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Shards of psychic light flung out in every direction from the crushed target.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "crush-ring",
+      "type": "ring",
+      "beats": [
+        "aftershock"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 150,
+        "thickness_px": 9,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A ring of force bursting out across the ground from the target.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "distortion": 0.6,
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "unwarp",
+      "type": "ring",
+      "beats": [
+        "aftershock"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 110,
+        "thickness_px": 8,
+        "softness": 0.95
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The warped space springing back out into shape around the target.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "distortion": 0.8,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fading-motes",
+      "type": "sparks",
+      "beats": [
+        "release"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 15,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 40,
+        "speed_spread": 0.6,
+        "gravity": -60,
+        "lifetime_ms": 700,
+        "size_px": 2.2,
+        "spread_deg": 180,
+        "drag": 0.7,
+        "emit_ms": 400,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A few last pink motes drifting up and winking out.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 0.5
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "crush",
+        "aftershock"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 5,
+          "max": 7
+        },
+        "frequency_hz": 18,
+        "decay": 0.6
+      }
+    },
+    {
+      "id": "psychic-light",
+      "type": "light",
+      "beats": [
+        "seize",
+        "lift",
+        "crush",
+        "aftershock"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 1.8
+      },
+      "shader": {
+        "look": "Pink-violet light on the target and the ground under it, flaring on the crush.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "focus-sound",
+      "type": "sound_cue",
+      "beats": [
+        "focus"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.55,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "seize-sound",
+      "type": "sound_cue",
+      "beats": [
+        "seize"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.5,
+        "pitch": {
+          "min": 1.2,
+          "max": 1.35
+        }
+      }
+    },
+    {
+      "id": "hold-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lift"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.55,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "crush-sound",
+      "type": "sound_cue",
+      "beats": [
+        "crush"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.05
+        }
+      }
+    },
+    {
+      "id": "thud-sound",
+      "type": "sound_cue",
+      "beats": [
+        "crush"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.8,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "tail-sound",
+      "type": "sound_cue",
+      "beats": [
+        "release"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.3,
+        "pitch": 1.3
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The link's waver, debris paths, burst sparks, glyph angle and crack pattern vary per cast. The focus length, the seize moment and the crush moment stay fixed: the crush is the hit frame and the lift is the window to break free."
+  },
+  "director_notes": "An original telekinetic attack. Psychic force is mostly invisible, so the spell is told through what it does to space and to the target rather than through a projectile. Choices: (1) warped space is the main language: refraction ripples drawn as soft camera-facing rings (ring plane billboard) pulse out from the hand, close in around the target and spring back out after the crush; in an engine they should be screen-space distortion with only a faint pink edge; (2) the target is held in a bubble of force (orb with height_px so it surrounds the body, strong fresnel rim) with a glyph turning under it and debris floating up, then crushed by keyframing the bubble from 64 px to 10 px in 0.18 s while a ripple is sucked in; (3) a thin wavering link with two twisting strands joins caster and target, so it reads as one caster's grip from every view. Pink with a violet secondary and a cyan accent keeps it apart from arcane purple. The viewer cannot lift the target stand-in; the lift is in the beat intents and the debris, and a game should raise the target about half a body height during lift and drop it on the crush. Sound: shimmer while focusing, a light whoosh on the seize, a high hum while held, crash plus a low impact on the crush, a quiet shimmer tail."
+}

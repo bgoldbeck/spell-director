@@ -1,0 +1,315 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "wind-gale-shove",
+  "name": "Gale Shove",
+  "element": "wind",
+  "archetype": "beam",
+  "description": "The caster draws the air in with a quick swirl at the palm, then thrusts it out as a wide, rushing cone of wind: gust lines tear through it, dust and leaves are kicked up and blown back off the target, and the ground is swept into streaks.",
+  "tags": ["cone", "gust", "push", "knockback", "quick", "area"],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A basic wind gust spell that pushes the target back (original, game-agnostic)."
+  },
+  "timing": { "duration_ms": 1500, "fps_hint": 30 },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "beam",
+    "scale": 1.0,
+    "footprint": { "shape": "cone", "length": 3.4, "angle_deg": 40, "distribution": "center_weighted" }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The gust pours away from the camera: gust lines rush off the palm and spread out toward the target, where dust and leaves blow up and away.",
+      "side": "The full cone from palm to target, narrow at the hand and widening, its lines streaking left to right; dust rolls along the ground and leaves lift off the target.",
+      "top": "A wedge of streaks opening from the caster; the swept-dust mark fans out under it and the dust wave rolls out around the target.",
+      "three_quarter": "The cone's width and length together, gust lines rushing through it, leaves and dust kicked up at the far end over a fan of swept streaks."
+    }
+  },
+  "palette": {
+    "core": "#F4F8F6",
+    "primary": "#B9CBC6",
+    "secondary": "#9A8466",
+    "accent": "#86A84E",
+    "shadow": "#45403A"
+  },
+  "beats": [
+    {
+      "id": "draw-in",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 320,
+      "intensity": { "shape": "ease_in", "from": 0.1, "to": 0.7 },
+      "intent": "The caster pulls the air in: a ring of disturbed air closes on them, a small swirl spins at the palm and a few leaves are tugged toward it."
+    },
+    {
+      "id": "thrust",
+      "phase": "release",
+      "start_ms": 320,
+      "end_ms": 400,
+      "intensity": { "shape": "spike", "from": 1.0, "to": 0.9 },
+      "intent": "A sharp whoosh: the air is thrown forward and a puff of dust bursts off the caster's feet."
+    },
+    {
+      "id": "gust",
+      "phase": "travel",
+      "start_ms": 340,
+      "end_ms": 1050,
+      "intensity": { "shape": "flicker", "from": 0.85, "to": 1.0, "flicker_hz": 5 },
+      "intent": "A wide cone of rushing wind reaches the target in about 0.15 s and keeps pushing; gust lines tear through it."
+    },
+    {
+      "id": "buffet",
+      "phase": "impact",
+      "start_ms": 470,
+      "end_ms": 1100,
+      "intensity": { "shape": "flicker", "from": 0.75, "to": 1.0, "flicker_hz": 5 },
+      "intent": "The wind slams into the target: dust rolls out in a wave, leaves and grit are blown up and back, the ground is swept into streaks."
+    },
+    {
+      "id": "settle",
+      "phase": "dissipation",
+      "start_ms": 1050,
+      "end_ms": 1500,
+      "intensity": { "shape": "ease_out", "from": 0.6, "to": 0.0 },
+      "intent": "The gust dies off from the hand outward; dust hangs and drifts down, and the last leaves flutter to the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "swept-dust",
+      "type": "decal",
+      "beats": ["buffet", "settle"],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "swept",
+        "radius_px": { "min": 80, "max": 90 },
+        "opacity": 0.6,
+        "fade_in_ms": 200,
+        "grow_ms": 450,
+        "start_scale": 0.5,
+        "rotation_deg": 0,
+        "stretch": 1.4,
+        "lifetime_ms": 2500,
+        "fade_ms": 1500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Dust swept into thin streaks fanning away from the caster, heavier near where the wind hit.",
+        "technique": "decal",
+        "noise": { "type": "streaks", "scale": 6, "speed": 0, "contrast": 0.5 },
+        "dissolve": { "pattern": "fbm", "edge_width": 0.2 },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "draw-ring",
+      "type": "ring",
+      "beats": ["draw-in"],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "primary",
+      "z": 2,
+      "params": { "start_radius_px": 90, "end_radius_px": 16, "thickness_px": 5, "softness": 1 },
+      "shader": {
+        "material": "airy",
+        "look": "A faint ring of disturbed air and dust closing in on the caster as the wind is drawn in.",
+        "technique": "procedural",
+        "flow": { "direction": "inward", "speed": 2 },
+        "distortion": 0.3,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "palm-swirl",
+      "type": "smoke",
+      "beats": ["draw-in"],
+      "anchor": "caster_hand",
+      "blend": "alpha",
+      "color": "core",
+      "z": 6,
+      "params": { "count": 8, "rise_speed": 6, "size_px": { "min": 9, "max": 12 }, "lifetime_ms": 300, "opacity": 0.35 },
+      "shader": {
+        "material": "airy",
+        "look": "Wisps of pale air curling into the palm.",
+        "technique": "particles",
+        "noise": { "type": "curl", "scale": 3, "speed": 2, "contrast": 0.5 },
+        "flow": { "direction": "inward", "speed": 2 },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "foot-puff",
+      "type": "smoke",
+      "beats": ["thrust"],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 4,
+      "params": { "count": 10, "rise_speed": 10, "size_px": { "min": 16, "max": 20 }, "lifetime_ms": 450, "opacity": 0.35, "spread_speed": 220 },
+      "shader": {
+        "material": "dusty",
+        "look": "A low puff of dust blown out from the caster's feet by the thrust.",
+        "technique": "particles",
+        "noise": { "type": "curl", "scale": 2, "speed": 1, "contrast": 0.4 },
+        "flow": { "direction": "outward", "speed": 2 },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gale",
+      "type": "beam",
+      "beats": ["gust", "settle"],
+      "anchor": "caster_hand",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "keyframes": [
+        { "t_ms": 1050, "param": "width_px", "value": 30 },
+        { "t_ms": 1350, "param": "width_px", "value": 4, "ease": "ease_in" }
+      ],
+      "params": {
+        "style": "wind",
+        "width_px": { "min": 30, "max": 34 },
+        "spread": 3.4,
+        "wobble": 0.2,
+        "wobble_hz": 2.5,
+        "jaggedness": 0.03,
+        "regen_ms": 80,
+        "grow_ms": 150,
+        "flow_speed": 9,
+        "turbulence": 0.7,
+        "line_count": 26,
+        "line_length": 0.28,
+        "shed_count": 24,
+        "shed_speed": 70,
+        "shed_size_px": 2.5,
+        "shed_life_ms": 600
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Rushing air you mostly see through: faint streaky noise racing toward the target, with sharper pale gust lines tearing through it.",
+        "technique": "ribbon",
+        "noise": { "type": "streaks", "scale": 2, "speed": 9, "contrast": 0.6 },
+        "flow": { "direction": "toward_target", "speed": 9 },
+        "distortion": 0.45,
+        "fresnel": 0.3,
+        "dissolve": { "pattern": "streaks", "edge_width": 0.25 },
+        "lighting": "unlit",
+        "notes": "Build the cone as a stretched mesh or a few crossed ribbons with streak noise and screen distortion; the gust lines are a separate stretched-billboard particle system flowing toward the target."
+      }
+    },
+    {
+      "id": "dust-wave",
+      "type": "smoke",
+      "beats": ["buffet"],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 5,
+      "params": { "count": 18, "rise_speed": 14, "size_px": { "min": 26, "max": 32 }, "lifetime_ms": 650, "opacity": 0.42, "spread_speed": 260 },
+      "shader": {
+        "material": "dusty",
+        "look": "Dust kicked up off the ground and rolled outward by the wind.",
+        "technique": "particles",
+        "noise": { "type": "curl", "scale": 1.5, "speed": 1.2, "contrast": 0.5 },
+        "flow": { "direction": "outward", "speed": 2.6 },
+        "dissolve": { "pattern": "fbm", "edge_width": 0.3 },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "blown-leaves",
+      "type": "sparks",
+      "beats": ["buffet"],
+      "anchor": "target",
+      "color": "accent",
+      "z": 12,
+      "params": {
+        "look": "leaf",
+        "count": { "min": 22, "max": 28 },
+        "speed": 220,
+        "speed_spread": 0.5,
+        "gravity": 200,
+        "lifetime_ms": 900,
+        "size_px": 5,
+        "spread_deg": 140,
+        "drag": 0.7,
+        "emit_ms": 500,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Leaves torn up and tumbling away on the wind.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "grit",
+      "type": "sparks",
+      "beats": ["buffet"],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 11,
+      "params": {
+        "look": "debris",
+        "count": { "min": 16, "max": 20 },
+        "speed": 200,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 700,
+        "size_px": 2.5,
+        "spread_deg": 120,
+        "drag": 0.3,
+        "emit_ms": 250
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Small grit and pebbles skittering away from the target.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": ["buffet"],
+      "params": { "amplitude_px": 1.5, "frequency_hz": 10, "decay": 0.6 }
+    },
+    {
+      "id": "draw-sound",
+      "type": "sound_cue",
+      "beats": ["draw-in"],
+      "params": { "cue": "wind", "gain": 0.35, "pitch": 1.3 }
+    },
+    {
+      "id": "thrust-whoosh",
+      "type": "sound_cue",
+      "beats": ["thrust"],
+      "params": { "cue": "whoosh", "gain": 0.85, "pitch": { "min": 0.9, "max": 1.05 } }
+    },
+    {
+      "id": "gust-sound",
+      "type": "sound_cue",
+      "beats": ["gust"],
+      "params": { "cue": "wind", "gain": 0.8, "pitch": 1.25 }
+    },
+    {
+      "id": "settle-sound",
+      "type": "sound_cue",
+      "beats": ["settle"],
+      "params": { "cue": "wind", "gain": 0.25, "pitch": 0.9 }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The gust lines, the cone's ripple, where the dust and leaves fly and the swept mark's streaks vary per cast. The 0.32 s draw-in and the arrival at about 0.47 s stay fixed so the push lands on the same frame."
+  },
+  "director_notes": "A basic wind gust that pushes, a staple of air magic; the look is original. Choices: (1) a short 0.32 s draw-in (closing ring, wisps into the palm) so even a quick spell telegraphs; (2) the gust is a beam with style wind: a widening, mostly see-through cone of streaky air with pale gust lines rushing through it, because air is only visible through motion lines and what it carries; (3) the push is sold at the target by a rolling dust wave, leaves blown up and away and grit skittering, plus a light shake; (4) a swept decal fans along the cast direction (rotation 0) so the top view shows which way the wind went; (5) sound: a high quick wind for the draw-in, a whoosh, a bright wind for the gust, a soft wind as it settles. Nothing is additive: wind doesn't glow."
+}
