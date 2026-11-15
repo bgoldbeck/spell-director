@@ -141,3 +141,76 @@ def test_cli_accepts_video_options(tmp_path, capsys):
     mp4 = sample_gif.write_video(tmp_path / "cli.mp4")
     assert bd.main([str(mp4), "--out", str(tmp_path / "out"), "--max-fps", "20", "--end", "0.8"]) == 0
     assert "video: 25.0 fps source" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------- real-footage problems
+
+
+def _write_cut_gif(path):
+    """Two camera shots over a bright, textured background. Shot A is idle;
+    shot B (a different scene) has a glow that swells and fades. Shot A also
+    has a full-frame flash, which must not count as a cut."""
+    from PIL import Image
+
+    rng = np.random.default_rng(1)
+    h, w = 90, 160
+    scene_a = np.clip(0.45 + 0.15 * rng.standard_normal((h, w, 1)), 0, 1).repeat(3, axis=2)
+    scene_b = np.zeros((h, w, 3))
+    scene_b[: h // 2] = [0.55, 0.7, 0.9]  # sky
+    scene_b[h // 2:] = [0.3, 0.45, 0.2]  # grass
+    ys, xs = np.mgrid[0:h, 0:w]
+    blob = np.exp(-(((xs - 120) / 20.0) ** 2 + ((ys - 50) / 20.0) ** 2))[..., None]
+    frames = []
+    for i in range(10):
+        frames.append(scene_a + (0.05 if i == 5 else 0.0))  # one-frame flash
+    glow = [0, 0, 0, 0.2, 0.5, 0.9, 1.0, 0.7, 0.4, 0.15, 0, 0, 0, 0]
+    for g in glow:
+        frames.append(scene_b + 0.8 * g * blob)
+    for i, f in enumerate(frames):
+        f[0, 0, 0] = 0.5 + (i % 3) / 255  # keep neighbours distinct so the GIF writer doesn't merge them
+    pics = [Image.fromarray((np.clip(f, 0, 1) * 255).astype(np.uint8), "RGB") for f in frames]
+    pics[0].save(path, save_all=True, append_images=pics[1:], duration=50, loop=0)
+    return path
+
+
+import numpy as np  # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def cut_result(tmp_path_factory):
+    tmp = tmp_path_factory.mktemp("cut")
+    return bd.breakdown(_write_cut_gif(tmp / "cut.gif"), tmp / "out")
+
+
+def test_camera_cut_is_found_and_flash_is_not(cut_result):
+    shots = cut_result["shots"]
+    assert [(s["start_frame"], s["end_frame"]) for s in shots] == [(0, 9), (10, 23)]
+    assert cut_result["frames"][10].get("cut") is True
+    assert cut_result["frames"][10]["motion"] == 0
+    assert cut_result["main_shot"] == 1
+
+
+def test_bright_background_and_quiet_frames_read_near_zero(cut_result):
+    assert cut_result["bright_background"] is True
+    frames = cut_result["frames"]
+    assert frames[16]["intensity"] == 1.0
+    # Idle frames of the effect's shot carry no baseline.
+    assert max(f["intensity"] for f in frames[10:13]) < 0.05
+    assert max(f["intensity"] for f in frames[21:]) < 0.05
+
+
+def test_effect_onset_and_space_come_from_the_main_shot(cut_result):
+    main = cut_result["shots"][1]
+    assert main["effect_onset_frame"] in (13, 14)
+    space = cut_result["space"]
+    assert space["shot"] == 1
+    assert space["travel_direction"] == "stationary"
+    # The glow sits right of centre in shot B.
+    x0, _, x1, _ = space["footprint_bbox"]
+    assert x0 > 0.5 and x1 > 0.6
+
+
+def test_summary_mentions_shots(cut_result):
+    text = bd.summary(cut_result)
+    assert "2 camera shots" in text
+    assert "bright background" in text

@@ -20,12 +20,12 @@ Prioritized. Each numbered item is roughly one branch and PR. Read [DESIGN.md](D
 
 ### 2. Run the breakdown on real GIFs and MP4s
 
-MP4 and other video input is done (`tools/breakdown.py`, `--start`/`--end`).
+MP4 and other video input is done (`tools/breakdown.py`, `--start`/`--end`). First real reference done (a game capture of a water jet, GIF and MP4): camera cuts, bright backgrounds, idle animation and UI overlays are handled, and it produced the `water-pressure-jet` template.
 
 - Get 3–5 real spell GIFs/MP4s from the owner (front, side, top, 3/4 if possible).
-- Fix what breaks: camera movement, non-black backgrounds, UI overlays, dithering, very long GIFs.
+- Fix what breaks: camera movement within a shot (pans, shake), very long GIFs. Cuts, bright backgrounds, idle animation and dithering are done.
 - Improve the view guess (e.g. detect ground-plane ellipses, horizon line).
-- Write one template from a real GIF end to end with the playbook, and note playbook gaps.
+- Write one template from a real GIF end to end with the playbook, and note playbook gaps. Done once (Pressure Jet); gaps found and added to the playbook: multi-shot clips, bright backgrounds, improving on a weak reference.
 
 ### 3. Viewer: side-by-side reference
 
