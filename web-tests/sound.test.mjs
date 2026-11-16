@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { cuesAt, eventsBetween, soundEvents } from "../web/js/engine/sound.js";
+import { cuePrompt, cuesAt, eventsBetween, soundEvents, soundFileName, soundSheet, SOUND_SHEET_FORMAT } from "../web/js/engine/sound.js";
 
 const library = JSON.parse(readFileSync(new URL("../web/sounds/cues.json", import.meta.url), "utf8"));
 
@@ -65,5 +65,51 @@ test("every bundled sound cue uses a cue from the library", () => {
   for (const p of index.templates) {
     const tpl = JSON.parse(readFileSync(new URL(`../templates/${p}`, import.meta.url), "utf8"));
     for (const e of soundEvents(tpl, 1, library)) assert.ok(e.known, `${tpl.id}: ${e.cue}`);
+  }
+});
+
+test("sound sheet: events carry beat, role, file and volume; cues carry prompts and recipes", () => {
+  const tpl = { id: "t", name: "T", element: "water", timing: { duration_ms: 1200 }, ...template };
+  tpl.beats = template.beats.map((b, i) => ({ ...b, phase: ["anticipation", "release", "impact", "dissipation"][i] }));
+  const sheet = soundSheet(tpl, 1, library, { frameOf: (ms) => Math.floor(ms / 33.3) });
+  assert.equal(sheet.format, SOUND_SHEET_FORMAT);
+  assert.equal(sheet.events.length, soundEvents(tpl, 1, library).length);
+  const snap = sheet.events.filter((e) => e.layer === "snap");
+  assert.deepEqual(snap.map((e) => [e.beat, e.role]), [["strike", "launch"], ["hit", "hit"]]);
+  assert.equal(snap[0].file, soundFileName("crack"));
+  assert.equal(snap[0].frame, Math.floor(400 / 33.3));
+  const tail = sheet.events.find((e) => e.layer === "tail");
+  assert.equal(tail.volume_db, -8);
+  assert.equal(tail.end_ms, 1200);
+  assert.equal(sheet.events.find((e) => e.cue === "kazoo").file, null);
+  const crack = sheet.cues.find((c) => c.cue === "crack");
+  assert.equal(crack.plays, 2);
+  assert.ok(crack.prompt.includes(library.cues.crack.sfx_prompt) && crack.prompt.includes(`Water spell: ${library.flavors.water.words}`));
+  assert.ok(crack.synth && crack.search.length && crack.character.envelope);
+  assert.equal(crack.generate.loop, false);
+  const rumble = sheet.cues.find((c) => c.cue === "rumble");
+  assert.equal(rumble.generate.loop, false, "short sustained cues are made at full length");
+  const long = soundSheet({ ...tpl, layers: [{ id: "w", type: "sound_cue", beats: ["charge", "fade"], params: { cue: "wind", pitch: 1.5 } }] }, 1, library);
+  assert.equal(long.cues[0].source_ms, 1800, "pitch 1.5 needs 1.5x the source");
+  assert.deepEqual([long.cues[0].generate.loop, long.cues[0].generate.duration_s], [false, 1.8]);
+  const longer = soundSheet({ ...tpl, layers: [{ id: "w", type: "sound_cue", beats: ["charge", "fade"], params: { cue: "wind", duration_ms: 6000 } }] }, 1, library);
+  assert.deepEqual([longer.cues[0].generate.loop, longer.cues[0].generate.duration_s], [true, 4]);
+  assert.equal(sheet.cues.find((c) => c.cue === "kazoo").known, false);
+  assert.ok(sheet.story.some((x) => x.includes("strike") && x.includes("crack")));
+  assert.deepEqual(soundSheet(tpl, 1, library), soundSheet(tpl, 1, library), "pure");
+});
+
+test("prompts add the element's flavor and keep out what it should avoid", () => {
+  const p = cuePrompt(library.cues.drain, library.flavors.dark, "dark");
+  assert.ok(p.startsWith(library.cues.drain.sfx_prompt));
+  assert.ok(p.includes("Dark spell: hollow") && p.includes("No screams"));
+  assert.equal(cuePrompt(library.cues.zap, null), library.cues.zap.sfx_prompt);
+  assert.ok(cuePrompt(library.cues.drain, library.flavors.dark, "dark").startsWith(library.cues.drain.sfx_prompt + ". Dark spell:"));
+});
+
+test("every cue has the sound-design fields", () => {
+  for (const [id, c] of Object.entries(library.cues)) {
+    for (const k of ["texture", "pitch", "envelope", "layers", "tail", "space"]) assert.ok(c.character?.[k], `${id}.character.${k}`);
+    assert.ok(c.synth && c.search?.length, id);
   }
 });

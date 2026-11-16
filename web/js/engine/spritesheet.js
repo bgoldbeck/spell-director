@@ -10,7 +10,7 @@
 // further blocks of view rows.
 
 import { layerIntensity, layerWindow, paramAtFrom, resolveParams } from "./timeline.js";
-import { soundEvents } from "./sound.js";
+import { soundSheet } from "./sound.js";
 import { decalBlend, decalPlan, decalState } from "./decal.js";
 import { HOW_TO_USE, describeShader, engineRecipe, shaderFor } from "./shader.js";
 
@@ -209,21 +209,18 @@ export function buildTracks(template, seed, plan, cueLibrary = { cues: {} }) {
       });
     }
   }
+  // Sound: the cue sheet (engine/sound.js), also written as <id>.sounds.json.
   const cues = cueLibrary.cues || {};
-  const sounds = soundEvents(template, seed, cueLibrary).map((e) => ({
-    layer: e.layer,
-    cue: e.cue,
-    kind: e.kind,
-    at_ms: r1(e.at),
-    frame: frameAt(plan, e.at),
-    duration_ms: r1(e.dur),
-    gain: r3(e.gain),
-    pitch: r3(e.rate),
-    loop: e.kind === "sustained",
+  const sheet = soundSheet(template, seed, cueLibrary, { frameOf: (ms) => frameAt(plan, ms) });
+  const prompts = Object.fromEntries(sheet.cues.map((c) => [c.cue, c.prompt || ""]));
+  const sounds = sheet.events.map((e) => ({
+    ...e,
     samples: cues[e.cue]?.samples || [],
-    sfx_prompt: cues[e.cue]?.sfx_prompt || "",
+    sfx_prompt: prompts[e.cue] || "",
   }));
-  return { screen_flashes: screenFlashes, camera_shake: shakes, lights, sounds };
+  const soundCues = sheet.cues;
+  const soundStory = sheet.story;
+  return { screen_flashes: screenFlashes, camera_shake: shakes, lights, sounds, sound_cues: soundCues, sound_story: soundStory };
 }
 
 // sheets: [{id, first, count, layout}] (the whole-spell sheet first).
@@ -327,7 +324,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       ...shaderInfo(l, l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" || l.type === "eruption" ? "alpha" : "add")),
     };
   });
-  const tracksOut = tracks || { screen_flashes: [], camera_shake: [], lights: [], sounds: [] };
+  const tracksOut = tracks || { screen_flashes: [], camera_shake: [], lights: [], sounds: [], sound_cues: [], sound_story: [] };
   const decals = buildDecals(template, seed, plan);
   return {
     format: FORMAT,
@@ -581,19 +578,10 @@ export function guideMarkdown(m, { files } = {}) {
     add(table(["Layer", "At", "Color", "Range", "When"], m.lights.map((l) => [l.layer, l.anchor, l.color, `${l.radius_units} units`, curveSummary(l.energy, plan)])), "");
     add("Add a point light at that spot (about 0.8 units up) and set its intensity from the `energy` curve to light up the scene around the spell.", "");
   }
-  if (m.sounds.length) {
-    add("### Sound cues", "");
-    add(table(
-      ["At", "Frame", "Cue", "Kind", "Length", "Volume", "Pitch", "Layer"],
-      m.sounds.map((s) => [`${s.at_ms} ms`, s.frame, s.cue, s.loop ? "sustained (loop it until it ends)" : "one-shot", `${s.duration_ms} ms`, s.gain, s.pitch, s.layer]),
-    ), "");
-    const prompts = [...new Map(m.sounds.filter((s) => s.sfx_prompt).map((s) => [s.cue, s.sfx_prompt])).entries()];
-    if (prompts.length) {
-      add("The viewer's sounds are placeholders. To make real ones, these prompts work with a text-to-sound-effects tool:", "");
-      add(...prompts.map(([c, p]) => `- **${c}**: ${p}`), "");
-    }
-  }
+  if (m.sounds.length) add("Sound has its own section below: [Sound](#sound).", "");
   if (!m.screen_flashes.length && !m.camera_shake.length && !m.lights.length && !m.sounds.length) add("None for this spell.", "");
+
+  if (m.sounds.length) add(...soundGuide(m), "");
 
   add("## Placing it in the scene", "");
   add(
@@ -704,4 +692,90 @@ export function guideMarkdown(m, { files } = {}) {
     "",
   );
   return lines.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
+// ------------------------------------------------------------ sound guide
+
+export const soundSheetName = (id) => `${id}.sounds.json`;
+export const soundPreviewName = (id) => `${id}.preview.wav`;
+
+const db = (x) => (x <= -96 ? "silent" : `${x > 0 ? "+" : ""}${x} dB`);
+
+// The guide's Sound section: what plays when, what each sound should be, and
+// how to make the real ones. Wording rules are in docs/sound-design.md.
+export function soundGuide(m) {
+  const id = m.template.id;
+  const out = [];
+  const add = (...xs) => out.push(...xs);
+  const cues = m.sound_cues || [];
+  add("## Sound", "");
+  const rendered = (m.sound_files || []).length > 0;
+  if (!rendered) {
+    add("This export has no sound files (they were turned off, or this browser can't render audio offline). Everything needed to make them is below.", "");
+  } else add(
+    `This export has sound files too: \`${soundPreviewName(id)}\` is the whole spell's mix (it starts at 0 ms, frame 0: play it under \`all.png\` to check timing), and there is one \`sound-<cue>.wav\` per cue below, each peak-normalized to -1 dBFS. **They are SpellDirector's procedural placeholders**: the timing and rough character are right, the quality is not final. Replace each one with a real sound under the same file name; the engine wiring stays the same.`,
+    "",
+  );
+  add(
+    `\`${soundSheetName(id)}\` has all of this in machine-readable form (format \`spelldirector-sounds-1\`): the cue list with prompts and recipes, and every event with its time, frame, file, volume and pitch.`,
+    "",
+  );
+  if (m.sound_story?.length) {
+    add("**The sound of this spell, beat by beat:**", "", ...m.sound_story.map((x) => `- ${x}`), "");
+  }
+  add(table(
+    ["At", "Frame", "Sound file", "Role", "Kind", "Length", "Volume", "Pitch", "Layer"],
+    m.sounds.map((s) => [
+      `${s.at_ms} ms`, s.frame ?? "", s.file ? `\`${s.file}\`` : `${s.cue} (no file)`, [s.role, s.beat].filter(Boolean).join(", "),
+      s.loop ? "sustained: loop until it ends" : "one-shot", `${s.duration_ms} ms`, db(s.volume_db), s.pitch, s.layer,
+    ]),
+  ), "");
+  add("Volume is relative to each file's own peak (0 dB = as is). Pitch is a playback-rate multiplier; where it differs between events, vary it per cast.", "");
+
+  add("### What each sound should be", "");
+  for (const c of cues) {
+    if (!c.known) {
+      add(`#### ${c.cue} (not in the cue library)`, "", c.note, "");
+      continue;
+    }
+    add(`#### \`${c.file}\`: ${c.label} (${c.loop ? "sustained" : "one-shot"}, up to ${c.longest_ms} ms)`, "", c.describes, "");
+    const ch = c.character || {};
+    const rows = [["Texture", ch.texture], ["Pitch", ch.pitch], ["Envelope", ch.envelope], ["Tail", ch.tail], ["Space", ch.space]].filter((r) => r[1]);
+    if (rows.length) add(...rows.map(([k, v]) => `- **${k}**: ${v}`));
+    if (ch.layers?.length) add(`- **Built from**: ${ch.layers.join("; ")}`);
+    add("");
+    add("Text-to-SFX prompt:", "", "```text", c.prompt, "```", "");
+    const g = c.generate || {};
+    add(`Generator settings: **${g.duration_s} s**, loop **${g.loop ? "on" : "off"}**, make **${g.takes}** takes and keep the best${c.plays > 1 ? " (or keep several and pick one per play for variety)" : ""}.`, "");
+    if (c.synth) add(`Procedural recipe: ${c.synth}`, "");
+    if (c.search?.length) add(`Library search terms: ${c.search.map((x) => `"${x}"`).join(", ")}.`, "");
+  }
+
+  add("### Making the real sounds", "");
+  add(
+    "Pick one route per sound; they mix fine.",
+    "",
+    "1. **Text-to-SFX generator** (for example ElevenLabs Sound Effects, or any other text-to-audio tool). Paste the prompt above, set the duration and loop as listed, generate the takes and keep the best. Trim silence at the start so the sound begins on its first sample, then save it under the file name above.",
+    "2. **Have an AI write a synthesizer.** Give Claude or GPT this guide and the sounds JSON and ask it to write a Python script (numpy + the standard `wave` module) that renders every file from its procedural recipe. Good for zaps, hums, risers and magic; weaker for real-world sounds like splashes and rocks.",
+    "3. **Sound library.** Search the terms above on a library with a clear license (CC0 on Freesound, Kenney, Sonniss GDC bundles). Layer two or three recordings if one doesn't cover the whole description.",
+    "",
+    "Then for every file: start on the first sample (no silence before the transient), peak at -1 dBFS, fade the last 10-20 ms to silence, and for sustained sounds make the loop seamless (crossfade the end into the start).",
+    "",
+    "**Copy-paste prompt for Claude or GPT** (attach this guide and the sounds JSON):",
+    "",
+    "```text",
+    `I'm making the sound effects for a game spell, "${m.template.name}". Attached are its SpellDirector guide and ${soundSheetName(id)}. ` +
+      "For each cue in the sounds JSON: (1) read its description, character, roles and timing; (2) give me a refined text-to-SFX prompt, duration and loop setting; " +
+      "(3) write one Python script (numpy and the standard wave module only) that synthesizes every cue as a 44.1 kHz 16-bit WAV with the exact file names in the JSON, " +
+      "following each cue's procedural recipe and character, peak-normalized to -1 dBFS, with seamless loops for sustained cues; (4) tell me which cues would sound better recorded or generated than synthesized. " +
+      "Keep the timing: the transient of each one-shot is on its first sample, because the engine starts it at the listed time.",
+    "```",
+    "",
+    "### Playing them in the engine",
+    "",
+    "- **Unity**: import the WAVs (one-shots: **Load Type: Decompress On Load**; long loops: **Compressed In Memory**). One-shots: `AudioSource.PlayOneShot(clip, volume)` at `at_ms` with `pitch` set on the source. Sustained: a looping AudioSource started at `at_ms` and faded out over about 100 ms at `end_ms`. Volume = `10^(volume_db / 20)`.",
+    "- **Godot 4**: an **AudioStreamPlayer** (2D/3D for positional sound) per cue. Set `volume_db` and `pitch_scale` from the event, call `play()` at `at_ms`; for sustained cues enable loop on the imported WAV (Import dock → **Loop Mode: Forward**) and `stop()` (or tween `volume_db` down) at `end_ms`.",
+    "- Positional sound: put travel and impact sounds at the target (or on the projectile), build-ups at the caster.",
+  );
+  return out;
 }

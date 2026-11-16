@@ -319,8 +319,18 @@ Sound is described as **timed cues**, not audio: "crackle during the charge, cra
 | `whoosh` | one-shot | air rushing past | swoosh, swing, fly by |
 | `wind` | sustained | breathy gust rising and falling | gust, breeze, vortex |
 | `shimmer` | sustained | twinkling high chimes | sparkle, magic, heal |
+| `splash` | one-shot | wet slap, spray, droplets | splash, splat, water impact |
+| `stream` | sustained | rushing, gurgling torrent | torrent, gush, jet, flood |
+| `freeze` | sustained | crisp ice crackles and creaks | freeze, frost, crystallize |
+| `squelch` | one-shot | thick wet visceral squelch | gore, splatter, blood, slime |
+| `heartbeat` | sustained | low muffled lub-dub pulse | pulse, throb, dread |
+| `whisper` | sustained | breathy wordless whispers | voices, murmur, curse, hex |
+| `drain` | sustained | reversed sucking inhale that cuts off | siphon, life steal, leech |
+| `drone` | sustained | ominous dissonant low drone | doom, curse, void, shadow |
 
 The viewer plays a procedural placeholder for every cue today; real recordings can replace any cue later without changing templates (see [`web/sounds/README.md`](../web/sounds/README.md)).
+
+The words for describing a sound (texture, pitch, envelope, space, size), how a spell's sound is layered across its phases, element flavors, timing and level rules, and how to make the real sounds with a text-to-SFX generator, an AI-written synthesizer or a library are in [sound-design.md](sound-design.md). Each cue in `cues.json` carries its `character` in those words, a `sfx_prompt`, a `synth` recipe and `search` terms.
 
 ## 11. Shader intent (the magic)
 

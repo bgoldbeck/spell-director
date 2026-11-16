@@ -78,6 +78,11 @@ def known_cues() -> dict:
     return json.loads(CUE_LIBRARY.read_text(encoding="utf-8"))["cues"]
 
 
+def cue_flavors() -> dict:
+    """Per-element sound flavor words from the cue library: element -> {words, avoid}."""
+    return json.loads(CUE_LIBRARY.read_text(encoding="utf-8")).get("flavors", {})
+
+
 def _ranges(node, path="$"):
     """Yield (path, range) for every {min, max} object in the document."""
     if isinstance(node, dict):

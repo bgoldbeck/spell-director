@@ -24,10 +24,14 @@ Only add sounds that can ship in this repo:
 - **CC-BY**: allowed only with the attribution in `CREDITS.md`.
 - Not allowed: CC-BY-NC, CC-BY-SA, "free for personal use", ripped game audio, or anything without a clear license.
 
+### What each cue should sound like
+
+Each cue carries a sound brief in the words of [docs/sound-design.md](../../docs/sound-design.md): `character` (texture, pitch, envelope, the layers it's built from, tail, space), a `synth` recipe (how to make it procedurally) and `search` terms for sound libraries. `flavors` adds element words (water, blood, dark, ...) to the prompts. Exports turn all of this into a per-spell cue sheet (`<id>.sounds.json`) and render the placeholders to WAV files.
+
 ### Text-to-SFX
 
 Each cue has an `sfx_prompt`, a ready prompt for a text-to-SFX service. Generate a few takes, keep the best, and add them as samples like any other file (record the service and its license terms in `CREDITS.md`).
 
 ## Adding a new cue
 
-Add an entry to `cues.json` (`label`, `category`, `kind` = `one_shot` or `sustained`, `duration_ms`, `describes`, `words`, `phases`, `sfx_prompt`, `samples`), add a placeholder recipe with the same name to `RECIPES` in `web/js/audio.js` (a test checks every cue has one), and add it to the cue table in `docs/vocabulary.md` §10 and `docs/template-format.md`.
+Add an entry to `cues.json` (`label`, `category`, `kind` = `one_shot` or `sustained`, `duration_ms`, `describes`, `words`, `phases`, `character`, `sfx_prompt`, `synth`, `search`, `samples`), add a placeholder recipe with the same name to `RECIPES` in `web/js/audio.js` (a test checks every cue has one), and add it to the cue table in `docs/vocabulary.md` §10 and `docs/template-format.md`.

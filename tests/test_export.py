@@ -65,3 +65,14 @@ def test_export_writes_layer_sheets_json_and_guide(tmp_path):
     assert m["sheets"][0]["frame_count"] == m["frame_count"]
     guide = (tmp_path / "lightning-sky-strike.guide.md").read_text(encoding="utf-8")
     assert "layer-main-bolt.png" in guide and "Rebuild it in Godot" in guide
+    # Sound: the cue sheet plus placeholder WAVs (whole mix and one per cue).
+    sheet = json.loads((tmp_path / "lightning-sky-strike.sounds.json").read_text(encoding="utf-8"))
+    assert sheet["format"] == "spelldirector-sounds-1"
+    assert m["sound_files"] and "lightning-sky-strike.preview.wav" in m["sound_files"]
+    for c in sheet["cues"]:
+        assert c["file"] in names and c["prompt"]
+    import wave
+    with wave.open(str(tmp_path / "lightning-sky-strike.preview.wav")) as w:
+        assert w.getnchannels() == 2 and w.getframerate() == 44100
+        assert w.getnframes() / 44100 >= 1.1
+    assert "## Sound" in guide and "sound-crack.wav" in guide

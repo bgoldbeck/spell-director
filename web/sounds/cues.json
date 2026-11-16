@@ -1,6 +1,64 @@
 {
-  "version": 1,
-  "about": "SpellDirector sound cue library. A template's sound_cue layer names one of these cues; the viewer plays it in sync with the layer's beats. Every cue has a procedural Web Audio placeholder (web/js/audio.js, recipe = the cue id). To use real recordings, list files under 'samples' (paths relative to web/sounds/) and credit each one in web/sounds/CREDITS.md. 'sfx_prompt' is a ready text prompt for a text-to-SFX service. See web/sounds/README.md.",
+  "version": 2,
+  "about": "SpellDirector sound cue library. A template's sound_cue layer names one of these cues; the viewer plays it in sync with the layer's beats. Every cue has a procedural Web Audio placeholder (web/js/audio.js, recipe = the cue id). To use real recordings, list files under 'samples' (paths relative to web/sounds/) and credit each one in web/sounds/CREDITS.md. 'character' describes the sound (texture, pitch, envelope, the layers it is built from, tail, space); 'sfx_prompt' is a ready prompt for a text-to-sound-effects generator; 'synth' is a procedural recipe; 'search' are sound-library search terms; 'flavors' adds per-element words to the prompts. See docs/sound-design.md and web/sounds/README.md.",
+  "flavors": {
+    "lightning": {
+      "words": "electric, crackling, ozone-sharp",
+      "avoid": "rain"
+    },
+    "fire": {
+      "words": "fiery, roaring, crackling embers",
+      "avoid": "gunshots"
+    },
+    "earth": {
+      "words": "rocky, gritty, heavy stone",
+      "avoid": "metal"
+    },
+    "water": {
+      "words": "wet, splashing, gurgling",
+      "avoid": "rain, ocean ambience"
+    },
+    "ice": {
+      "words": "icy, crisp, glassy, cold",
+      "avoid": "wind chimes"
+    },
+    "wind": {
+      "words": "airy, howling, gusting",
+      "avoid": "rain"
+    },
+    "light": {
+      "words": "radiant, bright, choral shimmer",
+      "avoid": "electric buzz"
+    },
+    "energy": {
+      "words": "sci-fi energy, pure tone, humming",
+      "avoid": "guns"
+    },
+    "psychic": {
+      "words": "warped, pulsing, otherworldly, pressure in the ears",
+      "avoid": "voices saying words"
+    },
+    "blood": {
+      "words": "wet, visceral, thick, pulsing",
+      "avoid": "screams, voices"
+    },
+    "dark": {
+      "words": "hollow, ominous, whispering, reversed",
+      "avoid": "screams, horror stingers, words"
+    },
+    "nature": {
+      "words": "organic, woody, rustling leaves",
+      "avoid": "birdsong"
+    },
+    "poison": {
+      "words": "bubbling, acidic hiss, gloopy",
+      "avoid": "voices"
+    },
+    "arcane": {
+      "words": "magical, shimmering, resonant",
+      "avoid": "music"
+    }
+  },
   "cues": {
     "charge": {
       "label": "Energy charge",
@@ -8,9 +66,37 @@
       "kind": "sustained",
       "duration_ms": 800,
       "describes": "A rising swell of energy that builds in pitch and volume, then cuts off.",
-      "words": ["charge up", "power up", "build up", "wind up", "swell", "gathering energy"],
-      "phases": ["anticipation"],
-      "sfx_prompt": "magical energy charging up, rising pitch swell, building tension, cuts off cleanly",
+      "words": [
+        "charge up",
+        "power up",
+        "build up",
+        "wind up",
+        "swell",
+        "gathering energy"
+      ],
+      "phases": [
+        "anticipation"
+      ],
+      "character": {
+        "texture": "smooth tone with a rising airy hiss on top",
+        "pitch": "low to high: about two octaves up over the length",
+        "envelope": "swells from silence, loudest just before the end, then a hard cut (no fade)",
+        "layers": [
+          "tone: a filtered saw or synth pad gliding upward",
+          "air: noise through a band-pass that opens and rises with the tone",
+          "sweetener: a faint tremolo that speeds up toward the end"
+        ],
+        "tail": "none: it cuts off the instant the release starts",
+        "space": "close and fairly dry; the game adds its own reverb"
+      },
+      "sfx_prompt": "magical energy charging up, smooth rising pitch swell with an airy hiss, tension building, ends with an abrupt cutoff, no impact, no music",
+      "synth": "Saw oscillator gliding exponentially 110 to 440 Hz through a low-pass sweeping 300 to 3000 Hz, plus white noise through a band-pass rising 800 to 5000 Hz. Exponential gain swell to the last 5%, then cut to zero in 10 ms.",
+      "search": [
+        "energy charge up",
+        "power up riser",
+        "magic charge",
+        "sci-fi riser"
+      ],
       "samples": []
     },
     "hum": {
@@ -19,9 +105,38 @@
       "kind": "sustained",
       "duration_ms": 800,
       "describes": "A steady, low, smooth hum, like a powered beam or a held aura.",
-      "words": ["hum", "drone", "thrum", "power hum", "beam hum", "aura"],
-      "phases": ["travel", "impact"],
-      "sfx_prompt": "steady low energy hum, smooth sci-fi drone, seamless loop",
+      "words": [
+        "hum",
+        "drone",
+        "thrum",
+        "power hum",
+        "beam hum",
+        "aura"
+      ],
+      "phases": [
+        "travel",
+        "impact"
+      ],
+      "character": {
+        "texture": "smooth, warm, slightly beating",
+        "pitch": "low (50-120 Hz fundamental) and steady",
+        "envelope": "fades in over about 80 ms, holds, fades out over about 150 ms",
+        "layers": [
+          "body: two detuned low saws a few cents apart (slow beating)",
+          "warmth: a sine an octave up",
+          "motion: slow 4-6 Hz tremolo"
+        ],
+        "tail": "short fade",
+        "space": "close; loop it seamlessly"
+      },
+      "sfx_prompt": "steady low energy hum, warm smooth drone with slow beating, constant pitch, seamless loop, no music",
+      "synth": "Two saws at 55 and 55.6 Hz plus a 110 Hz sine, low-passed at about 400 Hz, with a 6 Hz tremolo of 25% depth.",
+      "search": [
+        "energy hum loop",
+        "force field hum",
+        "drone loop",
+        "power hum"
+      ],
       "samples": []
     },
     "buzz": {
@@ -30,9 +145,39 @@
       "kind": "sustained",
       "duration_ms": 700,
       "describes": "A harsh, gritty electrical buzz, like a live wire or a transformer.",
-      "words": ["electric buzz", "electrical buzz", "live wire", "transformer", "static buzz", "electric hum"],
-      "phases": ["anticipation", "travel", "impact"],
-      "sfx_prompt": "harsh electrical buzz, live wire arcing, gritty transformer hum, loop",
+      "words": [
+        "electric buzz",
+        "electrical buzz",
+        "live wire",
+        "transformer",
+        "static buzz",
+        "electric hum"
+      ],
+      "phases": [
+        "anticipation",
+        "travel",
+        "impact"
+      ],
+      "character": {
+        "texture": "gritty, harsh, electrical, with irregular flutter",
+        "pitch": "mid (100-2000 Hz), mains-like 50/60 Hz harmonics",
+        "envelope": "fast in (20 ms), holds, quick out",
+        "layers": [
+          "body: harmonically rich tone at a mains frequency, band-passed around 1-2 kHz",
+          "grit: slight distortion",
+          "flutter: irregular amplitude jitter (arcing)"
+        ],
+        "tail": "short",
+        "space": "close; loopable"
+      },
+      "sfx_prompt": "harsh electrical buzz, live high-voltage wire arcing, gritty transformer hum with irregular flutter, loop, no music",
+      "synth": "Square at 100 Hz and saw at 150 Hz through a band-pass at 1.3 kHz (Q 1.2), soft-clipped, amplitude jittered by a random 20-40 Hz flutter.",
+      "search": [
+        "electric buzz loop",
+        "high voltage arc",
+        "transformer hum",
+        "taser buzz"
+      ],
       "samples": []
     },
     "crackle": {
@@ -41,9 +186,37 @@
       "kind": "sustained",
       "duration_ms": 600,
       "describes": "Random small electric pops and snaps, like static discharge.",
-      "words": ["crackle", "static", "electric crackle", "pops", "snaps", "arcing"],
-      "phases": ["anticipation", "dissipation"],
-      "sfx_prompt": "random electric static crackle, small sharp snaps and pops, sparse",
+      "words": [
+        "crackle",
+        "static",
+        "electric crackle",
+        "pops",
+        "snaps",
+        "arcing"
+      ],
+      "phases": [
+        "anticipation",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "dry, sparse, sharp clicks and pops",
+        "pitch": "high (2-10 kHz), each pop slightly different",
+        "envelope": "a random scatter of 1-10 ms clicks, about 20-40 per second",
+        "layers": [
+          "pops: very short bursts of high-passed noise at random times",
+          "variety: random loudness and length per pop"
+        ],
+        "tail": "none; it just stops",
+        "space": "close"
+      },
+      "sfx_prompt": "random electric static crackle, small sharp snaps and pops, sparse and dry, irregular rhythm, no hum, no music",
+      "synth": "High-passed white noise (2 kHz) gated by random clicks: about 38 per second, each a 3-12 ms exponential decay at random loudness.",
+      "search": [
+        "static crackle",
+        "electric crackle",
+        "spark crackle",
+        "static discharge"
+      ],
       "samples": []
     },
     "sizzle": {
@@ -52,9 +225,38 @@
       "kind": "sustained",
       "duration_ms": 500,
       "describes": "A bright fluttering hiss, like current running through the air or meat on a grill.",
-      "words": ["sizzle", "hiss", "fizz", "fizzle", "electric hiss"],
-      "phases": ["travel", "impact", "dissipation"],
-      "sfx_prompt": "bright electric sizzle, fluttering high hiss, crackling energy",
+      "words": [
+        "sizzle",
+        "hiss",
+        "fizz",
+        "fizzle",
+        "electric hiss"
+      ],
+      "phases": [
+        "travel",
+        "impact",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "bright airy hiss with a fast flutter",
+        "pitch": "very high (4-12 kHz)",
+        "envelope": "fades in over 30 ms, holds, fades out over about 120 ms",
+        "layers": [
+          "hiss: high-passed noise",
+          "flutter: 12-20 Hz amplitude wobble",
+          "sweetener: a few tiny pops"
+        ],
+        "tail": "short",
+        "space": "close"
+      },
+      "sfx_prompt": "bright sizzling hiss, fluttering high-frequency fizz like water on a hot pan or current through air, no music",
+      "synth": "White noise high-passed at 4.5 kHz with a 17 Hz amplitude flutter (40% depth) and a handful of random clicks.",
+      "search": [
+        "sizzle",
+        "hiss fizz",
+        "electric sizzle",
+        "steam hiss"
+      ],
       "samples": []
     },
     "zap": {
@@ -63,9 +265,38 @@
       "kind": "one_shot",
       "duration_ms": 180,
       "describes": "A short electric zap that sweeps down in pitch.",
-      "words": ["zap", "zip", "shock", "jolt", "spark", "hop"],
-      "phases": ["release", "travel", "impact"],
-      "sfx_prompt": "short electric zap, quick downward pitch sweep, sharp spark",
+      "words": [
+        "zap",
+        "zip",
+        "shock",
+        "jolt",
+        "spark",
+        "hop"
+      ],
+      "phases": [
+        "release",
+        "travel",
+        "impact"
+      ],
+      "character": {
+        "texture": "sharp, buzzy, laser-like",
+        "pitch": "starts high (about 2 kHz) and drops fast",
+        "envelope": "instant attack, about 100-200 ms decay",
+        "layers": [
+          "tone: a saw sweeping steeply down",
+          "click: a 10 ms noise burst on the attack"
+        ],
+        "tail": "very short",
+        "space": "close"
+      },
+      "sfx_prompt": "short electric zap, sharp spark with a quick downward pitch sweep, buzzy, under a quarter second, no music",
+      "synth": "Saw sweeping exponentially 1800 to 140 Hz over the length, low-passed at 5 kHz, gain decaying fast; plus a 10 ms high-passed noise click on the attack.",
+      "search": [
+        "electric zap",
+        "spark zap",
+        "shock",
+        "laser zap"
+      ],
       "samples": []
     },
     "crack": {
@@ -74,9 +305,38 @@
       "kind": "one_shot",
       "duration_ms": 450,
       "describes": "A sharp, bright snap with a short ring-out, like a thunder crack or a whip.",
-      "words": ["crack", "snap", "thunder crack", "thunderclap", "whip crack", "lightning strike"],
-      "phases": ["release"],
-      "sfx_prompt": "sharp lightning thunder crack, bright snap, short ring-out, close",
+      "words": [
+        "crack",
+        "snap",
+        "thunder crack",
+        "thunderclap",
+        "whip crack",
+        "lightning strike"
+      ],
+      "phases": [
+        "release"
+      ],
+      "character": {
+        "texture": "explosive, ripping, bright then crunchy",
+        "pitch": "full range: a bright snap on top of a low thump",
+        "envelope": "instant attack, a 20-40 ms crackling rip, then a ring-out of about 300 ms",
+        "layers": [
+          "transient: a very short full-band noise snap",
+          "rip: a rapid burst of 5-15 crackles over 30 ms (the tearing air)",
+          "body: low thump dropping 140 to 60 Hz",
+          "ring: band-passed noise around 2-3 kHz decaying"
+        ],
+        "tail": "short ring-out; pair with rumble for the long thunder tail",
+        "space": "close"
+      },
+      "sfx_prompt": "sharp close thunder crack, explosive bright snap with a ripping crackle and a short ring-out, very fast attack, no rolling thunder, no music",
+      "synth": "Full-band noise hit decaying in 40 ms, a fast burst of 10 random clicks across the first 30 ms, a sine thump 140 to 60 Hz, and band-passed noise at 2.4 kHz decaying over a quarter of the length. Light saturation.",
+      "search": [
+        "thunder crack close",
+        "lightning strike",
+        "whip crack",
+        "thunderclap"
+      ],
       "samples": []
     },
     "boom": {
@@ -85,9 +345,38 @@
       "kind": "one_shot",
       "duration_ms": 1200,
       "describes": "A deep, heavy boom that drops in pitch, like an explosion or a big hit.",
-      "words": ["boom", "explosion", "blast", "detonation", "bang", "thunder boom"],
-      "phases": ["impact"],
-      "sfx_prompt": "deep cinematic boom, heavy low-end explosion impact, short tail",
+      "words": [
+        "boom",
+        "explosion",
+        "blast",
+        "detonation",
+        "bang",
+        "thunder boom"
+      ],
+      "phases": [
+        "impact"
+      ],
+      "character": {
+        "texture": "heavy, deep, thick, slightly distorted",
+        "pitch": "sub and low (30-120 Hz), pitch falling",
+        "envelope": "instant attack, long decay of 0.5-1.5 s",
+        "layers": [
+          "transient: a short noise punch",
+          "sub: a sine dropping from about 110 to 30 Hz",
+          "body: low-passed noise that darkens as it decays",
+          "weight: gentle saturation so it reads on small speakers"
+        ],
+        "tail": "long, dark; let the reverb carry it",
+        "space": "medium; a little room"
+      },
+      "sfx_prompt": "deep cinematic boom, heavy low-end explosion impact with a sub drop and a dark decaying tail, no debris, no music",
+      "synth": "Sine sweeping 110 to 32 Hz over 60% of the length, plus low-passed noise (500 down to 90 Hz) with a fast hit envelope; soft-clip the sum.",
+      "search": [
+        "cinematic boom",
+        "sub drop impact",
+        "explosion boom",
+        "deep impact"
+      ],
       "samples": []
     },
     "rumble": {
@@ -96,9 +385,38 @@
       "kind": "sustained",
       "duration_ms": 1200,
       "describes": "A low rolling rumble that wobbles, like distant thunder or a quake.",
-      "words": ["rumble", "rolling thunder", "quake", "tremor", "earthquake", "aftershock"],
-      "phases": ["impact", "dissipation"],
-      "sfx_prompt": "low rolling thunder rumble, distant, slowly fading",
+      "words": [
+        "rumble",
+        "rolling thunder",
+        "quake",
+        "tremor",
+        "earthquake",
+        "aftershock"
+      ],
+      "phases": [
+        "impact",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "rolling, wobbling, dark, noisy",
+        "pitch": "sub and low (25-150 Hz)",
+        "envelope": "fades in over about 200 ms, holds with slow random swells, long fade out",
+        "layers": [
+          "body: brown noise low-passed around 130 Hz",
+          "motion: slow random loudness wobble (rolling)",
+          "sub: a quiet 35-40 Hz sine"
+        ],
+        "tail": "long fade",
+        "space": "distant; big outdoor space"
+      },
+      "sfx_prompt": "low rolling rumble, distant thunder or quake, slow wobbling swells, dark and heavy, long fade, no crack, no music",
+      "synth": "Brown noise low-passed at 130 Hz with a slow random gain wander (0.35-1, every 120 ms), plus a quiet 38 Hz sine.",
+      "search": [
+        "rolling thunder",
+        "earthquake rumble",
+        "low rumble loop",
+        "distant thunder"
+      ],
       "samples": []
     },
     "impact": {
@@ -107,9 +425,36 @@
       "kind": "one_shot",
       "duration_ms": 350,
       "describes": "A short, punchy body hit or thud with a click on top.",
-      "words": ["impact", "hit", "thud", "punch", "thump", "slam"],
-      "phases": ["impact"],
-      "sfx_prompt": "short punchy impact thud, solid hit, tight",
+      "words": [
+        "impact",
+        "hit",
+        "thud",
+        "punch",
+        "thump",
+        "slam"
+      ],
+      "phases": [
+        "impact"
+      ],
+      "character": {
+        "texture": "tight, punchy, solid",
+        "pitch": "low-mid (60-250 Hz) with a click on top",
+        "envelope": "instant attack, 100-300 ms decay",
+        "layers": [
+          "click: a short low-passed noise tick",
+          "body: a sine thump dropping 170 to 50 Hz"
+        ],
+        "tail": "short",
+        "space": "close"
+      },
+      "sfx_prompt": "short punchy impact thud, solid body hit with a tight click, quick decay, no reverb tail, no music",
+      "synth": "Sine thump sweeping 170 to 50 Hz over 120 ms with a fast exponential decay, plus a 10 ms low-passed noise click.",
+      "search": [
+        "punch impact",
+        "body hit",
+        "thud",
+        "heavy hit"
+      ],
       "samples": []
     },
     "crash": {
@@ -118,9 +463,37 @@
       "kind": "one_shot",
       "duration_ms": 900,
       "describes": "A noisy crash with debris scattering after it, like rocks or a wall breaking.",
-      "words": ["crash", "smash", "debris", "rubble", "rocks", "breaking"],
-      "phases": ["impact"],
-      "sfx_prompt": "heavy crash with scattering debris and rubble, rocks breaking",
+      "words": [
+        "crash",
+        "smash",
+        "debris",
+        "rubble",
+        "rocks",
+        "breaking"
+      ],
+      "phases": [
+        "impact"
+      ],
+      "character": {
+        "texture": "noisy, crunchy, with scattering bits",
+        "pitch": "broadband with a low thump",
+        "envelope": "instant attack, a noisy burst, then debris that thins out over 0.5-1 s",
+        "layers": [
+          "transient: band-passed noise burst",
+          "body: low thump",
+          "debris: random small hits that get quieter and sparser"
+        ],
+        "tail": "debris settling",
+        "space": "medium"
+      },
+      "sfx_prompt": "heavy crash with scattering debris, rocks and rubble breaking and tumbling, settles after a second, no music",
+      "synth": "Band-passed noise hit (1.4 kHz, Q 0.6), a sine thump 120 to 45 Hz, and band-passed noise gated by about 30 random pops per second that fade out.",
+      "search": [
+        "rock crash debris",
+        "rubble impact",
+        "wall break",
+        "stone smash"
+      ],
       "samples": []
     },
     "shatter": {
@@ -129,9 +502,37 @@
       "kind": "one_shot",
       "duration_ms": 800,
       "describes": "Bright glassy pings and tinkles, like glass or ice breaking.",
-      "words": ["shatter", "glass", "ice break", "crystal", "tinkle", "frost"],
-      "phases": ["impact", "dissipation"],
-      "sfx_prompt": "glass or ice shattering, bright tinkling shards falling",
+      "words": [
+        "shatter",
+        "glass",
+        "ice break",
+        "crystal",
+        "tinkle",
+        "frost"
+      ],
+      "phases": [
+        "impact",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "glassy, bright, tinkly",
+        "pitch": "high (2-7 kHz), many pitches",
+        "envelope": "an instant crunch, then pings that thin out over 0.5-1 s",
+        "layers": [
+          "crunch: high-passed noise burst",
+          "shards: 15-25 short sine pings at random high pitches, clustered early"
+        ],
+        "tail": "tinkling shards settling",
+        "space": "close"
+      },
+      "sfx_prompt": "glass or ice shattering, bright crunchy break followed by tinkling shards falling and settling, no music",
+      "synth": "High-passed noise (5.5 kHz) burst plus about 18 sine pings at random 2-6.5 kHz, each 40-140 ms, clustered toward the start.",
+      "search": [
+        "glass shatter",
+        "ice break",
+        "crystal shatter",
+        "glass debris"
+      ],
       "samples": []
     },
     "ignite": {
@@ -140,9 +541,38 @@
       "kind": "one_shot",
       "duration_ms": 650,
       "describes": "A soft fwoomp as something bursts into flame.",
-      "words": ["ignite", "fwoosh", "fwoomp", "burst into flames", "flare", "fireball launch"],
-      "phases": ["release", "impact"],
-      "sfx_prompt": "fire ignition whoosh, soft fwoomp as flames burst up",
+      "words": [
+        "ignite",
+        "fwoosh",
+        "fwoomp",
+        "burst into flames",
+        "flare",
+        "fireball launch"
+      ],
+      "phases": [
+        "release",
+        "impact"
+      ],
+      "character": {
+        "texture": "soft, breathy, warm whump",
+        "pitch": "low-mid, opening up then settling",
+        "envelope": "a 50-150 ms swell into a soft peak, then a 300-600 ms decay",
+        "layers": [
+          "body: low-passed noise whose filter opens fast then closes",
+          "thump: a soft low sine",
+          "sweetener: a few crackles at the end"
+        ],
+        "tail": "short, warm",
+        "space": "close"
+      },
+      "sfx_prompt": "fire ignition, soft breathy fwoomp as flames burst up, warm whoosh, quick swell then settle, no explosion, no music",
+      "synth": "Noise through a low-pass that opens 200 to 2600 Hz in 120 ms then closes to 350 Hz; gain swells in 120 ms then decays; plus a soft 80 to 45 Hz sine thump.",
+      "search": [
+        "fire ignite",
+        "fireball whoosh",
+        "flame burst",
+        "torch ignite"
+      ],
       "samples": []
     },
     "fire": {
@@ -151,9 +581,40 @@
       "kind": "sustained",
       "duration_ms": 1000,
       "describes": "A roaring, crackling fire, like a torch or a burning area.",
-      "words": ["fire", "flames", "burning", "blaze", "torch", "inferno", "roar"],
-      "phases": ["travel", "impact", "dissipation"],
-      "sfx_prompt": "roaring fire with crackling embers, steady burning flames, loop",
+      "words": [
+        "fire",
+        "flames",
+        "burning",
+        "blaze",
+        "torch",
+        "inferno",
+        "roar"
+      ],
+      "phases": [
+        "travel",
+        "impact",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "roaring, breathy, crackling",
+        "pitch": "low roar with high crackles",
+        "envelope": "fades in over about 150 ms, holds with random swells, fades out",
+        "layers": [
+          "roar: low-passed brown noise with slow random swells",
+          "crackle: random pops of high-passed noise (embers)",
+          "air: a faint high hiss"
+        ],
+        "tail": "fade",
+        "space": "close; loopable"
+      },
+      "sfx_prompt": "roaring fire with crackling embers, steady burning flames, breathy low roar, seamless loop, no music",
+      "synth": "Brown noise low-passed at 700 Hz with slow gain wander (0.3-0.6) plus high-passed noise gated by about 14 random pops per second.",
+      "search": [
+        "fire loop",
+        "flame roar",
+        "campfire crackle",
+        "torch burning loop"
+      ],
       "samples": []
     },
     "whoosh": {
@@ -162,9 +623,37 @@
       "kind": "one_shot",
       "duration_ms": 500,
       "describes": "Air rushing past, like a fast swing or a projectile flying by.",
-      "words": ["whoosh", "swoosh", "swish", "fly by", "swing", "dash"],
-      "phases": ["release", "travel"],
-      "sfx_prompt": "fast air whoosh, swoosh passing by, clean",
+      "words": [
+        "whoosh",
+        "swoosh",
+        "swish",
+        "fly by",
+        "swing",
+        "dash"
+      ],
+      "phases": [
+        "release",
+        "travel"
+      ],
+      "character": {
+        "texture": "airy, smooth",
+        "pitch": "sweeps up then down (300 Hz to 2 kHz to 500 Hz)",
+        "envelope": "swells to a peak at about 40-50% of its length, then falls; the peak is the moment it passes",
+        "layers": [
+          "air: noise through a band-pass sweeping up then down",
+          "optional: a faint pitched tone following the sweep for magical whooshes"
+        ],
+        "tail": "short",
+        "space": "close; pan it with the motion if you can"
+      },
+      "sfx_prompt": "fast air whoosh passing by, clean swoosh rising to a peak then falling away, no impact, no music",
+      "synth": "Noise through a band-pass (Q 1.8) sweeping 300 to 2200 Hz over 45% of the length and back to 500 Hz; exponential gain up to the same peak and down.",
+      "search": [
+        "whoosh",
+        "swoosh pass by",
+        "swing whoosh",
+        "fly by"
+      ],
       "samples": []
     },
     "wind": {
@@ -173,9 +662,39 @@
       "kind": "sustained",
       "duration_ms": 1200,
       "describes": "A breathy gust of wind that rises and falls.",
-      "words": ["wind", "gust", "breeze", "storm wind", "tornado", "vortex"],
-      "phases": ["anticipation", "travel", "dissipation"],
-      "sfx_prompt": "howling wind gust rising and falling, airy",
+      "words": [
+        "wind",
+        "gust",
+        "breeze",
+        "storm wind",
+        "tornado",
+        "vortex"
+      ],
+      "phases": [
+        "anticipation",
+        "travel",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "breathy, airy, howling",
+        "pitch": "mid, slowly wandering (400-1100 Hz)",
+        "envelope": "fades in over about 350 ms, rises and falls in slow gusts, fades out",
+        "layers": [
+          "air: noise through a resonant band-pass whose center wanders (the howl)",
+          "gusts: slow random loudness swells",
+          "body: quiet low-passed noise underneath"
+        ],
+        "tail": "slow fade",
+        "space": "outdoor; loopable"
+      },
+      "sfx_prompt": "howling wind gust rising and falling, airy breathy storm wind, slow swells, no rain, no music",
+      "synth": "Pink noise through a band-pass (Q 3.5) whose center wanders between 380 and 1100 Hz every 250 ms, with a slow random gain wander.",
+      "search": [
+        "wind gust",
+        "howling wind loop",
+        "storm wind",
+        "whirlwind"
+      ],
       "samples": []
     },
     "shimmer": {
@@ -184,9 +703,372 @@
       "kind": "sustained",
       "duration_ms": 900,
       "describes": "Twinkling high chimes, like sparkles, healing or a magic glow.",
-      "words": ["shimmer", "sparkle", "twinkle", "chime", "magic", "heal", "glitter"],
-      "phases": ["anticipation", "impact", "dissipation"],
-      "sfx_prompt": "magical shimmer, twinkling bell chimes and sparkles, soft",
+      "words": [
+        "shimmer",
+        "sparkle",
+        "twinkle",
+        "chime",
+        "magic",
+        "heal",
+        "glitter"
+      ],
+      "phases": [
+        "anticipation",
+        "impact",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "glassy, bell-like, twinkling",
+        "pitch": "high (1-3 kHz notes), from a pentatonic scale so it never clashes",
+        "envelope": "a scatter of soft bell pings across the length, each with a long gentle tail",
+        "layers": [
+          "notes: sine or bell pings from a pentatonic scale at random times",
+          "air: a quiet high hiss"
+        ],
+        "tail": "long, soft, sparkly",
+        "space": "a little reverb"
+      },
+      "sfx_prompt": "magical shimmer, soft twinkling bell chimes and sparkles, gentle and airy, no melody, no music",
+      "synth": "About 14 pings per second, each a sine at a random note of a C pentatonic scale between 1 and 2.6 kHz with a 150 ms decay, plus very quiet high-passed noise.",
+      "search": [
+        "magic shimmer",
+        "sparkle chimes",
+        "twinkle",
+        "fairy dust"
+      ],
+      "samples": []
+    },
+    "splash": {
+      "label": "Splash",
+      "category": "water",
+      "kind": "one_shot",
+      "duration_ms": 700,
+      "describes": "A wet slap of water hitting something, with droplets spattering down after.",
+      "words": [
+        "splash",
+        "splat",
+        "wet hit",
+        "slosh",
+        "spray",
+        "water impact"
+      ],
+      "phases": [
+        "impact"
+      ],
+      "character": {
+        "texture": "wet, slappy, bubbly",
+        "pitch": "mid with a low body",
+        "envelope": "instant slap, a short burst of spray, then droplets pattering for 0.3-0.6 s",
+        "layers": [
+          "slap: a short band-passed noise hit with a low thump",
+          "spray: high-passed noise that decays",
+          "droplets: many tiny bloops (fast upward pitch chirps) at random times"
+        ],
+        "tail": "droplets settling",
+        "space": "close"
+      },
+      "sfx_prompt": "big water splash, wet slap with spray, then droplets pattering down, no music",
+      "synth": "Band-passed noise hit (900 Hz) with a 120 to 60 Hz thump; high-passed noise decaying over 300 ms; 20-30 tiny sine chirps rising 600 to 1600 Hz in 20 ms each, scattered over the length.",
+      "search": [
+        "water splash",
+        "big splash",
+        "wet impact",
+        "water slap"
+      ],
+      "samples": []
+    },
+    "stream": {
+      "label": "Water rush",
+      "category": "water",
+      "kind": "sustained",
+      "duration_ms": 1200,
+      "describes": "A rushing, gurgling torrent of water, like a fire hose or a river in flood.",
+      "words": [
+        "stream",
+        "torrent",
+        "rush",
+        "gush",
+        "jet",
+        "flowing water",
+        "surge",
+        "flood"
+      ],
+      "phases": [
+        "travel",
+        "impact"
+      ],
+      "character": {
+        "texture": "wet, rushing, bubbly",
+        "pitch": "broadband with a mid emphasis",
+        "envelope": "fades in over about 100 ms, holds with churning swells, fades out",
+        "layers": [
+          "rush: pink noise through a wide band-pass with random swells",
+          "bubbles: random small bloops",
+          "low churn: low-passed noise underneath"
+        ],
+        "tail": "fade",
+        "space": "close; loopable"
+      },
+      "sfx_prompt": "rushing water torrent, high-pressure water jet gushing and churning, wet and bubbly, seamless loop, no music",
+      "synth": "Pink noise band-passed around 1.2 kHz (Q 0.7) with slow random gain wander, low-passed noise at 300 Hz below it, and 15-25 random bubble chirps per second.",
+      "search": [
+        "water rush loop",
+        "fire hose",
+        "river torrent",
+        "water jet"
+      ],
+      "samples": []
+    },
+    "freeze": {
+      "label": "Freeze",
+      "category": "ice",
+      "kind": "sustained",
+      "duration_ms": 800,
+      "describes": "Ice forming and creaking: crisp crackles over a cold glassy whistle.",
+      "words": [
+        "freeze",
+        "frost",
+        "ice forming",
+        "creak",
+        "crystallize",
+        "rime",
+        "chill"
+      ],
+      "phases": [
+        "impact",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "crisp, glassy, creaky, cold",
+        "pitch": "high crackles over a thin high whistle",
+        "envelope": "builds over the length as the ice spreads, then stops",
+        "layers": [
+          "crackle: dense high clicks, like ice cubes cracking in a drink",
+          "creak: a few slow low groans (stressed ice)",
+          "air: a cold thin whistle or high hiss"
+        ],
+        "tail": "short",
+        "space": "close"
+      },
+      "sfx_prompt": "ice freezing and crystallizing, crisp crackling and creaking ice spreading, cold glassy whistle, no music",
+      "synth": "High-passed noise gated by clicks whose rate rises from 10 to 60 per second, a thin band-passed noise whistle at 6 kHz, and two or three slow saw groans at 150-250 Hz through a narrow band-pass.",
+      "search": [
+        "ice crackle",
+        "ice forming",
+        "freeze magic",
+        "ice creak"
+      ],
+      "samples": []
+    },
+    "squelch": {
+      "label": "Squelch",
+      "category": "flesh",
+      "kind": "one_shot",
+      "duration_ms": 450,
+      "describes": "A thick, wet, sticky squelch, like stepping in mud or something visceral tearing.",
+      "words": [
+        "squelch",
+        "squish",
+        "gore",
+        "visceral",
+        "wet tear",
+        "splatter",
+        "blood",
+        "slime"
+      ],
+      "phases": [
+        "release",
+        "impact"
+      ],
+      "character": {
+        "texture": "thick, wet, sticky, organic",
+        "pitch": "low-mid, with a short upward squish",
+        "envelope": "a soft attack (10-20 ms), a gloopy middle, quick decay",
+        "layers": [
+          "body: low-passed noise with a resonant filter sweeping up (the suck)",
+          "wet: a few low bloops",
+          "stick: a short high crackle at the end"
+        ],
+        "tail": "short",
+        "space": "close and dry"
+      },
+      "sfx_prompt": "thick wet squelch, sticky visceral flesh sound, gloopy and organic, short, no screams, no music",
+      "synth": "Noise through a resonant band-pass (Q 6) sweeping 250 to 900 Hz and back, gain swelling in 20 ms and decaying; plus 3-5 low sine bloops (150 to 300 Hz chirps) and a few soft clicks at the end.",
+      "search": [
+        "wet squelch",
+        "gore squish",
+        "mud squelch",
+        "flesh impact"
+      ],
+      "samples": []
+    },
+    "heartbeat": {
+      "label": "Heartbeat",
+      "category": "flesh",
+      "kind": "sustained",
+      "duration_ms": 1600,
+      "describes": "A low double thump (lub-dub) pulsing steadily, felt more than heard.",
+      "words": [
+        "heartbeat",
+        "pulse",
+        "throb",
+        "lub-dub",
+        "blood pulse",
+        "dread"
+      ],
+      "phases": [
+        "anticipation",
+        "travel",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "soft, muffled, deep",
+        "pitch": "sub (40-80 Hz)",
+        "envelope": "a lub-dub pair (the second softer, about 150 ms after the first) about 70-100 times a minute",
+        "layers": [
+          "thump: a short sine thump dropping 80 to 40 Hz",
+          "muffle: a little low-passed noise on each beat"
+        ],
+        "tail": "each beat dies fast",
+        "space": "inside the body: dry"
+      },
+      "sfx_prompt": "slow deep heartbeat, muffled low lub-dub pulse, steady rhythm, felt more than heard, no music",
+      "synth": "Each beat: a sine thump 80 to 40 Hz decaying in 120 ms with a quiet low-passed noise tick, then a softer one 150 ms later; repeat every 700 ms.",
+      "search": [
+        "heartbeat",
+        "heart pulse low",
+        "heartbeat slow",
+        "pulse throb"
+      ],
+      "samples": []
+    },
+    "whisper": {
+      "label": "Whispers",
+      "category": "dark",
+      "kind": "sustained",
+      "duration_ms": 1400,
+      "describes": "Breathy, unintelligible whispering voices drifting around, eerie and close.",
+      "words": [
+        "whisper",
+        "whispers",
+        "voices",
+        "murmur",
+        "eerie",
+        "hiss of voices",
+        "curse",
+        "hex"
+      ],
+      "phases": [
+        "anticipation",
+        "travel",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "breathy, airy, voice-like but wordless",
+        "pitch": "mid-high (formants around 500 Hz to 3 kHz)",
+        "envelope": "fades in slowly, drifts with random swells, fades out",
+        "layers": [
+          "breath: noise through two or three band-passes at vowel formant frequencies that drift",
+          "sibilance: occasional short high 'ss' bursts",
+          "movement: slow random pan"
+        ],
+        "tail": "slow fade",
+        "space": "close, intimate, a touch of reverb"
+      },
+      "sfx_prompt": "eerie whispering voices, breathy unintelligible whispers drifting around, dark and intimate, no words, no music",
+      "synth": "Pink noise through three band-passes (Q 8) at formant pairs that hop between vowels (for example 500/1500/2500 and 700/1100/2600 Hz) every 150-300 ms, gated by slow random syllable-like swells, with short 6-8 kHz 'ss' bursts.",
+      "search": [
+        "whispers eerie",
+        "ghost whisper",
+        "dark whispers",
+        "creepy voices"
+      ],
+      "samples": []
+    },
+    "drain": {
+      "label": "Life drain",
+      "category": "dark",
+      "kind": "sustained",
+      "duration_ms": 1000,
+      "describes": "A reversed, sucking inhale that pulls toward the caster, like life being drawn out.",
+      "words": [
+        "drain",
+        "siphon",
+        "life steal",
+        "leech",
+        "suck",
+        "inhale",
+        "absorb",
+        "vampiric"
+      ],
+      "phases": [
+        "travel",
+        "impact"
+      ],
+      "character": {
+        "texture": "hollow, sucking, reversed",
+        "pitch": "low to mid, rising as it pulls in",
+        "envelope": "reverse-shaped: starts quiet and swells, peaks at the end, then cuts",
+        "layers": [
+          "suck: noise through a band-pass sweeping upward (a reversed whoosh)",
+          "body: a low detuned tone rising slowly",
+          "texture: faint wet gurgles"
+        ],
+        "tail": "none; it cuts when the drain ends",
+        "space": "close"
+      },
+      "sfx_prompt": "dark magic life drain, hollow reversed sucking inhale pulling inward, swelling then cutting off, eerie, no music",
+      "synth": "Pink noise through a band-pass (Q 3) sweeping 200 to 1800 Hz with gain swelling exponentially to the end and cut in 15 ms; two detuned saws gliding 70 to 110 Hz low-passed at 500 Hz; a few low bubble chirps.",
+      "search": [
+        "reverse whoosh",
+        "life drain magic",
+        "suck inhale",
+        "reverse swell"
+      ],
+      "samples": []
+    },
+    "drone": {
+      "label": "Dark drone",
+      "category": "dark",
+      "kind": "sustained",
+      "duration_ms": 1500,
+      "describes": "An ominous, dissonant low drone with slow beating, like a curse settling in.",
+      "words": [
+        "dark drone",
+        "ominous",
+        "doom",
+        "dread",
+        "curse",
+        "void",
+        "shadow",
+        "unholy"
+      ],
+      "phases": [
+        "anticipation",
+        "travel",
+        "dissipation"
+      ],
+      "character": {
+        "texture": "dark, hollow, dissonant, slowly beating",
+        "pitch": "low (40-200 Hz) with a dissonant interval (a tritone or minor second)",
+        "envelope": "slow fade in (300 ms or more), holds, slow fade out",
+        "layers": [
+          "root: a low saw or organ-like tone",
+          "dissonance: a second tone a tritone or minor second away so it beats",
+          "air: a dark breathy noise bed",
+          "motion: a slow filter sweep"
+        ],
+        "tail": "long, dark",
+        "space": "big and dark; more reverb than most cues"
+      },
+      "sfx_prompt": "ominous dark drone, low dissonant tones slowly beating, hollow and menacing, slow swell, no melody, no music",
+      "synth": "Saws at 55, 55.4 and 77.8 Hz (a tritone up) through a low-pass that slowly wanders 200-700 Hz, plus quiet low-passed pink noise; long attack and release.",
+      "search": [
+        "dark drone",
+        "horror drone",
+        "ominous drone",
+        "evil ambience"
+      ],
       "samples": []
     }
   }
