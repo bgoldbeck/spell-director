@@ -39,6 +39,7 @@ The current version is in [`VERSION`](VERSION); what changed is in [`CHANGELOG.m
 | [`web/sounds/`](web/sounds/) | Sound cue library (`cues.json`) and where real samples go. |
 | [`tools/serve.py`](tools/serve.py) | Local server for the viewer. |
 | [`tools/export_sprites.py`](tools/export_sprites.py), [`docs/exporting.md`](docs/exporting.md) | Sprite sheet export for game engines, with a JSON file and an assembly guide; [`tools/sheet_cells.py`](tools/sheet_cells.py) crops labeled cells for review. |
+| [`tools/export_gif.py`](tools/export_gif.py) | Animated GIFs of the viewer's camera views (the viewer's **Export GIF…**). |
 | [`tools/validate.py`](tools/validate.py) | Validates templates (schema + timing/reference rules). |
 | [`tools/breakdown.py`](tools/breakdown.py) | Breaks a GIF or video down into timing, phases, palette, footprint and view hints, plus images for the AI. |
 | [`docs/director-playbook.md`](docs/director-playbook.md) | How the director turns a request into a template: questions to ask, timing, layers, views, saving. |
@@ -74,7 +75,7 @@ Claude Code picks it up from [`.mcp.json`](.mcp.json) when opened in this repo. 
 
 | Tools | Resources | Prompts |
 |---|---|---|
-| `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif`, `export_sprites`, `look_at_sprite_sheet` | `spelldirector://docs/{vocabulary, template-format, sound-design, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
+| `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif`, `export_sprites`, `export_gif`, `look_at_sprite_sheet` | `spelldirector://docs/{vocabulary, template-format, sound-design, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
 
 `save_template` validates, writes `templates/<element>/<name>.json`, rebuilds the index, and won't replace an existing template unless asked to. Run `python tools/serve.py` (or the app) to open the links it returns. The director follows [docs/director-playbook.md](docs/director-playbook.md).
 
@@ -94,9 +95,11 @@ Sound cues play in time with the beats. The sounds are procedural placeholders; 
 
 **Export sprites…** saves the current spell and seed as sprite sheets for a game engine: one per layer plus one for the whole spell, with the frames across and the four views down, a JSON file, and a guide for rebuilding it in Unity or Godot. See [docs/exporting.md](docs/exporting.md).
 
+**Export GIF…** saves the spell as looping animated GIFs, as the viewer shows it, from the views you pick (Front, Side, Top, 3/4, All four in one GIF, or all of them). Auras record their seamless loop. From the command line: `python tools/export_gif.py <template id> --views front,quad`. See [docs/exporting.md](docs/exporting.md#animated-gifs).
+
 **? Help** (or the `?` key) opens a getting-started page for new users: connecting the AI director, what to ask it, and a tour of the viewer.
 
-Keys: Space play/pause, 1-4 views, 5 all four, [ ] previous/next spell, M sound, F focus view (Esc to leave), ? help. Drag to orbit, scroll to zoom.
+Keys: Space play/pause, 1-4 views, 5 all four, [ ] previous/next spell, M sound, G export GIF, F focus view (Esc to leave), ? help. Drag to orbit, scroll to zoom.
 
 After adding a template file, run `python tools/build_index.py` so static hosting picks it up (the local server finds new files on its own).
 

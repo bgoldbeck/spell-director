@@ -21,6 +21,7 @@
         <label class="btn file-btn" title="Open a template JSON file">Open JSON…<input id="file" type="file" accept=".json,application/json" hidden></label>
         <a class="btn" href="analyze.html" title="Break down a reference GIF or video: camera shots, phase timeline, palette, footprint and view hints">Analyze GIF/MP4…</a>
         <button id="export" class="btn" title="Export sprite sheets (one per layer, every view in each) with a JSON file and an assembly guide for game engines">Export sprites…</button>
+        <button id="export-gif" class="btn" title="Export animated GIFs of the spell as the viewer shows it, from the views you pick (G)">Export GIF…</button>
         <button id="focus" class="btn" title="Hide everything but the stage (F)">Focus view</button>
         <a class="btn" href="help.html" title="Getting started: how to use SpellDirector with an AI, and a tour of the viewer (?)">? Help</a>
       </div>
@@ -168,6 +169,70 @@
       <div class="export-actions">
         <button value="cancel" class="btn" formnovalidate>Close</button>
         <button id="export-go" class="btn active" type="button">Export .zip</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="gif-dialog" class="export-dialog">
+    <form method="dialog" id="gif-form">
+      <h2>Export GIF</h2>
+      <p class="muted">Records the spell as the viewer shows it: the set and stand-ins, bloom, the art style, camera shake and screen flashes. One looping GIF per view you pick; several views come as a .zip. Uses the current seed, and leaves out layers you've unticked.</p>
+      <fieldset>
+        <legend>Views</legend>
+        <label class="check"><input type="checkbox" name="gif-all" data-all> All</label>
+        <label class="check"><input type="checkbox" name="view" value="front"> Front</label>
+        <label class="check"><input type="checkbox" name="view" value="side"> Side</label>
+        <label class="check"><input type="checkbox" name="view" value="top"> Top</label>
+        <label class="check"><input type="checkbox" name="view" value="three_quarter"> 3/4</label>
+        <label class="check" title="The four views in one GIF, like the viewer's All four"><input type="checkbox" name="view" value="quad"> All four (one GIF)</label>
+      </fieldset>
+      <div class="export-row">
+        <label>Size
+          <select name="width">
+            <option value="320">320 × 240</option>
+            <option value="480" selected>480 × 360</option>
+            <option value="640">640 × 480</option>
+            <option value="800">800 × 600</option>
+            <option value="1024">1024 × 768</option>
+          </select>
+        </label>
+        <label>Frame rate
+          <select name="fps">
+            <option value="10">10 fps</option>
+            <option value="15">15 fps</option>
+            <option value="20" selected>20 fps</option>
+            <option value="25">25 fps</option>
+            <option value="30">30 fps</option>
+          </select>
+        </label>
+        <label title="Slow motion makes fast beats easier to study">Speed
+          <select name="speed">
+            <option value="0.25">0.25×</option>
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+          </select>
+        </label>
+        <label title="Art style of the GIF">Style
+          <select name="style">
+            <option value="">As in the viewer</option>
+            <option value="stylized">Stylized</option>
+            <option value="realistic">Realistic</option>
+            <option value="toon">Toon</option>
+            <option value="pixel">Pixel art</option>
+          </select>
+        </label>
+        <label id="gif-length" title="An aura's sustain section loops with no seam, so it makes a GIF that holds forever" hidden>Length
+          <select name="length">
+            <option value="loop" selected>Seamless aura loop</option>
+            <option value="spell">Whole spell (start-up, loop, end)</option>
+          </select>
+        </label>
+        <label class="check" title="Bloom glow, as in the viewer"><input type="checkbox" name="bloom" checked> Bloom</label>
+        <label class="check" title="A fine fixed dot pattern that smooths glow gradients in the GIF's 255 colors"><input type="checkbox" name="dither" checked> Smooth gradients</label>
+      </div>
+      <p id="gif-status" class="muted" aria-live="polite"></p>
+      <div class="export-actions">
+        <button value="cancel" class="btn" formnovalidate>Close</button>
+        <button id="gif-go" class="btn active" type="button">Export GIF</button>
       </div>
     </form>
   </dialog>

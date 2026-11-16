@@ -34,6 +34,7 @@ SCHEMAS = BUNDLE / "schemas"
 
 import breakdown as _breakdown  # noqa: E402
 import build_index as _build_index  # noqa: E402
+import export_gif as _export_gif  # noqa: E402
 import export_sprites as _export_sprites  # noqa: E402
 import sheet_cells as _sheet_cells  # noqa: E402
 import validate as _validate  # noqa: E402
@@ -335,6 +336,34 @@ def export_sprites(template_id: str, seed: int = 1, frame: int = 192, fps: int |
         "view_rows": m["view_rows"],
         "style": (m.get("style") or {}).get("id", "stylized"),
         "sheets": [{k: sh[k] for k in ("image", "first_frame", "frame_count", "start_ms", "end_ms")} for sh in m["sheets"]],
+    }
+
+
+def export_gif(template_id: str, views: list[str] | None = None, seed: int = 1, width: int = 480, fps: int = 20,
+               speed: float = 1.0, length: str | None = None, style: str | None = None) -> dict:
+    """Export animated GIFs of the spell as the viewer shows it, one per view
+    (front, side, top, three_quarter, and quad = all four in one GIF; default
+    all five). Auras record their seamless loop unless length is "spell".
+    Goes to exports/<id>-seed<seed>[-<style>]-gifs/."""
+    if _find(template_id) is None:
+        raise LibraryError(f"no template with id {template_id!r}")
+    try:
+        with ThreadPoolExecutor(max_workers=1) as pool:  # Playwright's sync API can't run in the MCP event loop
+            res = pool.submit(_export_gif.export, template_id, views=views, seed=seed, width=width, fps=fps,
+                              speed=speed, length=length, style=style).result()
+    except _export_sprites.ExportError as exc:
+        raise LibraryError(str(exc)) from exc
+    m = res["manifest"]
+    return {
+        "out_dir": res["out"],
+        "files": res["files"],
+        "views": [g["view"] for g in m["gifs"]],
+        "frame_count": m["frame_count"],
+        "fps": m["fps"],
+        "size": [m["width"], m["height"]],
+        "length": m["length"],
+        "time_range_ms": [m["start_ms"], m["end_ms"]],
+        "style": m["style"],
     }
 
 

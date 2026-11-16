@@ -103,3 +103,16 @@ Output goes to an `ai/` folder inside the export. The director's MCP server has 
 - `web/js/zip.js`: a small stored-ZIP writer for the viewer's download.
 - `tools/sheet_cells.py`: crops and labels cells from an export using its JSON, for review.
 - `tools/export_sprites.py`: starts the viewer server, opens it in headless Chromium and calls `window.spellDirectorExport`.
+
+## Animated GIFs
+
+For sharing or reviewing a spell rather than rebuilding it, export GIFs: the spell exactly as the viewer shows it (the set and stand-ins, bloom, the art style, camera shake and screen flashes), one looping GIF per view.
+
+- **Viewer:** **Export GIF…** (or G). Tick any of Front, Side, Top, 3/4 and All four (the four views in one GIF, with labels), or **All**. It starts with the view on screen ticked. Pick the size (320 × 240 to 1024 × 768, always 4:3), frame rate (10 to 30 fps), speed (0.5× and 0.25× for slow motion) and style. One view downloads as `<id>-seed<seed>-<view>.gif`, several as a .zip. Uses the current seed and leaves out layers you've unticked.
+- **Command line:** `python tools/export_gif.py fire-pyre-ward --views front,quad --width 640` writes to `exports/<id>-seed<seed>-gifs/` (plus `-<style>` for non-stylized). Options: `--views` (`front`, `side`, `top`, `three_quarter`, `quad`; default all five), `--seed`, `--width`, `--fps`, `--speed`, `--length`, `--style`, `--no-bloom`, `--no-dither`. Needs a browser, as for sprite sheets above.
+- **Director (MCP):** the `export_gif` tool, with the same options.
+
+**Auras** record their seamless sustain loop by default (a whole number of frames fits in it, so the GIF wraps with no seam and holds as long as it plays). Choose **Whole spell** (`--length spell`) for the start-up, loop and end.
+
+GIFs have 255 colors. All frames share one palette, so the ground never flickers, and a fixed dot pattern (**Smooth gradients**, on by default; off for Toon and Pixel art, which are flat on purpose) keeps glows from banding. Frames that don't change are merged, and each frame stores only what changed, so files stay small: a 480 × 360 view of a one-second spell is usually a few hundred KB.
+

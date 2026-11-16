@@ -9,6 +9,8 @@ import { advancePlayhead, beatsAt, loopRange, phaseColor } from "./engine/timeli
 import { exportSpriteSheets } from "./exporter.js";
 import { STYLE_IDS, resolveStyle } from "./engine/style.js";
 import { makeZip } from "./zip.js";
+import { makeStudio, quadViewports, screenOverlays, shakeCamera } from "./engine/studio.js";
+import { GIF_VIEW_LABELS, exportGifs, gifFileName } from "./gifexport.js";
 import { ALL, groupCatalog, isExtra, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
 
 const $ = (id) => document.getElementById(id);
@@ -21,6 +23,8 @@ const ui = {
   palette: $("palette"), notes: $("notes"), layers: $("layers"), focus: $("focus"), file: $("file"),
   exportBtn: $("export"), exportDialog: $("export-dialog"), exportGo: $("export-go"), exportStatus: $("export-status"),
   exportForm: $("export-form"),
+  gifBtn: $("export-gif"), gifDialog: $("gif-dialog"), gifForm: $("gif-form"), gifGo: $("gif-go"), gifStatus: $("gif-status"),
+  gifLength: $("gif-length"),
   bloom: $("bloom"), styleSelect: $("style-select"),
   mute: $("mute"), flash: $("flash"), dim: $("dim"), quadLabels: $("quad-labels"), viewRead: $("view-read"), error: $("error"),
 };
@@ -126,58 +130,8 @@ const renderer = new THREE.WebGLRenderer({ canvas: ui.canvas, antialias: true, p
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color("#0b0d12");
-scene.add(new THREE.HemisphereLight("#8a93b8", "#1a1c24", 0.9));
-const key = new THREE.DirectionalLight("#cfd6ff", 0.5);
-key.position.set(-3, 6, 4);
-scene.add(key);
-
-const ground = new THREE.Mesh(
-  new THREE.CircleGeometry(14, 64),
-  new THREE.MeshStandardMaterial({ color: "#5d6478", roughness: 0.95 }),
-);
-ground.rotation.x = -Math.PI / 2;
-scene.add(ground);
-const grid = new THREE.GridHelper(28, 28, "#3a3f4e", "#333846");
-grid.position.y = 0.002;
-scene.add(grid);
-
-const props = new THREE.Group();
-scene.add(props);
-
-function standIn(color, facing = 1) {
-  // A simple figure, 1 unit tall, like the stand-ins in a motion study.
-  const g = new THREE.Group();
-  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
-  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.42, 4, 12), mat);
-  body.position.y = 0.37;
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 12), mat);
-  head.position.y = 0.86;
-  const visor = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.035, 0.2), new THREE.MeshStandardMaterial({ color: "#2a2d36" }));
-  visor.position.set(0.12 * facing, 0.88, 0);
-  g.add(body, head, visor);
-  return g;
-}
-
-function rebuildProps(stage) {
-  props.clear();
-  const caster = standIn("#8c90a0", 1);
-  props.add(caster);
-  for (const p of stage.targets) {
-    const d = standIn("#6c6f7b", -1);
-    d.position.set(p.x, 0, p.z);
-    d.lookAt(0, 0, 0);
-    d.rotateY(-Math.PI / 2);
-    props.add(d);
-  }
-  if (stage.showPointMarker) {
-    const m = new THREE.Mesh(new THREE.RingGeometry(0.12, 0.16, 32), new THREE.MeshBasicMaterial({ color: "#555b6e" }));
-    m.rotation.x = -Math.PI / 2;
-    m.position.set(stage.point.x, 0.01, 0);
-    props.add(m);
-  }
-}
+const studio = makeStudio();
+const scene = studio.scene;
 
 let cameras = {};
 let controls = null;
@@ -249,38 +203,16 @@ function currentStyle() {
   return resolveStyle(state.template, state.style);
 }
 
-// Shake offsets the camera for this frame only.
-function shaken(cam) {
-  const shake = state.effect.shake;
-  const saved = cam.position.clone();
-  if (shake.x || shake.y) {
-    const right = new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld, 0);
-    const up = new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld, 1);
-    cam.position.addScaledVector(right, shake.x).addScaledVector(up, shake.y);
-  }
-  return () => cam.position.copy(saved);
-}
-
 function render() {
   resize();
   // Drawing-buffer pixels; viewports have a bottom-left origin.
   const W = ui.canvas.width;
   const H = ui.canvas.height;
   post.setSize(W, H);
-  let views;
-  if (state.view === "quad") {
-    const hw = Math.floor(W / 2);
-    const hh = Math.floor(H / 2);
-    views = [
-      { camera: cameras.front, x: 0, y: hh, w: hw, h: H - hh },
-      { camera: cameras.side, x: hw, y: hh, w: W - hw, h: H - hh },
-      { camera: cameras.top, x: 0, y: 0, w: hw, h: hh },
-      { camera: cameras.three_quarter, x: hw, y: 0, w: W - hw, h: hh },
-    ];
-  } else {
-    views = [{ camera: cameras[state.view] }];
-  }
-  const undo = views.map((v) => shaken(v.camera));
+  const views = state.view === "quad"
+    ? Object.entries(quadViewports(W, H)).map(([v, port]) => ({ camera: cameras[v], ...port }))
+    : [{ camera: cameras[state.view] }];
+  const undo = views.map((v) => shakeCamera(v.camera, state.effect.shake));
   post.render(views.map((v) => ({ scene, ...v })));
   undo.forEach((u) => u());
 }
@@ -301,7 +233,7 @@ function loadEffect() {
   post.setStyle(style.view);
   for (const id of state.hidden) state.effect.setHidden(id, true);
   scene.add(state.effect.group);
-  rebuildProps(state.effect.stage);
+  studio.setStage(state.effect.stage);
   setupCameras();
   rebuildSound();
 }
@@ -516,16 +448,11 @@ function updateOverlay() {
     btn.classList.toggle("active", !!b && active.includes(b));
   });
 
-  let add = null;
-  let dark = null;
-  for (const s of state.effect.screen) {
-    if (s.dark) dark = !dark || s.opacity > dark.opacity ? s : dark;
-    else add = !add || s.opacity > add.opacity ? s : add;
-  }
-  ui.flash.style.background = add ? `#${add.color.getHexString()}` : "transparent";
-  ui.flash.style.opacity = add ? String(Math.min(0.9, add.opacity)) : "0";
-  ui.dim.style.background = dark ? `#${dark.color.getHexString()}` : "transparent";
-  ui.dim.style.opacity = dark ? String(Math.min(0.85, dark.opacity)) : "0";
+  const { flash, dim } = screenOverlays(state.effect);
+  ui.flash.style.background = flash ? flash.color : "transparent";
+  ui.flash.style.opacity = flash ? String(flash.opacity) : "0";
+  ui.dim.style.background = dim ? dim.color : "transparent";
+  ui.dim.style.opacity = dim ? String(dim.opacity) : "0";
 }
 
 function frame(now) {
@@ -624,7 +551,7 @@ document.querySelectorAll(".view").forEach((b) => {
 });
 ui.focus.onclick = () => document.body.classList.toggle("focus");
 window.addEventListener("keydown", (e) => {
-  if (e.target.matches("input, select, textarea") || ui.exportDialog.open) return;
+  if (e.target.matches("input, select, textarea") || ui.exportDialog.open || ui.gifDialog.open) return;
   if (e.key === "f" || e.key === "F") document.body.classList.toggle("focus");
   else if (e.key === "Escape") document.body.classList.remove("focus");
   else if (e.key === " ") {
@@ -633,6 +560,7 @@ window.addEventListener("keydown", (e) => {
   } else if (e.key === "m" || e.key === "M") ui.mute.click();
   else if (e.key === "b" || e.key === "B") ui.bloom.click();
   else if (e.key === "s" || e.key === "S") setStyle(STYLE_IDS[(STYLE_IDS.indexOf(currentStyle().id) + 1) % STYLE_IDS.length]);
+  else if (e.key === "g" || e.key === "G") ui.gifBtn.click();
   else if (e.key === "[") ui.prevSpell.click();
   else if (e.key === "]") ui.nextSpell.click();
   else if (["1", "2", "3", "4", "5"].includes(e.key)) {
@@ -717,12 +645,96 @@ ui.exportGo.onclick = async () => {
   }
 };
 
+// ------------------------------------------------------------ GIF export
+
+function gifOptions(form) {
+  return {
+    views: [...form.querySelectorAll('input[name="view"]:checked')].map((i) => i.value),
+    width: Number(form.elements.width.value),
+    fps: Number(form.elements.fps.value),
+    speed: Number(form.elements.speed.value),
+    style: form.elements.style.value || currentStyle().id,
+    length: loopRange(state.template) ? form.elements.length.value : "spell",
+    bloom: form.elements.bloom.checked,
+    dither: form.elements.dither.checked ? 0.5 : 0,
+  };
+}
+
+function syncGifAll() {
+  const boxes = [...ui.gifForm.querySelectorAll('input[name="view"]')];
+  const all = ui.gifForm.querySelector("[data-all]");
+  const on = boxes.filter((b) => b.checked).length;
+  all.checked = on === boxes.length;
+  all.indeterminate = on > 0 && on < boxes.length;
+}
+
+ui.gifForm.querySelector("[data-all]").onchange = (e) => {
+  ui.gifForm.querySelectorAll('input[name="view"]').forEach((b) => (b.checked = e.target.checked));
+};
+ui.gifForm.querySelectorAll('input[name="view"]').forEach((b) => (b.onchange = syncGifAll));
+
+ui.gifBtn.onclick = () => {
+  if (!state.template) return;
+  // Start from the view on screen, unless views were already picked this visit.
+  const boxes = [...ui.gifForm.querySelectorAll('input[name="view"]')];
+  if (!boxes.some((b) => b.checked)) boxes.forEach((b) => (b.checked = b.value === state.view));
+  syncGifAll();
+  ui.gifForm.elements.speed.value = String([0.25, 0.5].includes(state.speed) ? state.speed : 1);
+  ui.gifForm.elements.bloom.checked = post.enabled;
+  ui.gifLength.hidden = !loopRange(state.template);
+  ui.gifStatus.textContent = `${state.template.name}, seed ${state.seed}, ${currentStyle().label} style.`;
+  ui.gifDialog.showModal();
+};
+
+ui.gifGo.onclick = async () => {
+  const tpl = state.template;
+  if (!tpl) return;
+  const opts = gifOptions(ui.gifForm);
+  if (!opts.views.length) {
+    ui.gifStatus.textContent = "Pick at least one view.";
+    return;
+  }
+  ui.gifGo.disabled = true;
+  try {
+    const { files, plan } = await exportGifs(tpl, {
+      ...opts,
+      seed: state.seed,
+      hidden: [...state.hidden],
+      onProgress: (p) => {
+        ui.gifStatus.textContent = `Recording ${GIF_VIEW_LABELS[p.view]}… ${Math.round((p.done / p.total) * 100)}%`;
+      },
+    });
+    if (files.length === 1) {
+      download(files[0].name, files[0].data, "image/gif");
+    } else {
+      const folder = gifFileName(tpl.id, state.seed, plan.style, "x").replace(/-x\.gif$/, "-gifs");
+      download(`${folder}.zip`, makeZip(files.map((f) => ({ name: `${folder}/${f.name}`, data: f.data }))), "application/zip");
+    }
+    const kb = Math.round(files.reduce((s, f) => s + f.data.length, 0) / 1024);
+    ui.gifStatus.textContent = `Done: ${files.length} GIF${files.length > 1 ? "s" : ""} (${files.map((f) => GIF_VIEW_LABELS[f.view]).join(", ")}), ${plan.times.length} frames at ${plan.fps} fps, ${plan.width} × ${plan.height}, ${kb} KB.`;
+  } catch (err) {
+    console.error(err);
+    ui.gifStatus.textContent = `Export failed: ${err.message}`;
+  } finally {
+    ui.gifGo.disabled = false;
+  }
+};
+
 // For tools/export_sprites.py: export a template (the current one, or one
 // passed in) and return the files as base64.
+// With opts.kind "gif" (tools/export_gif.py) it exports GIFs instead.
 window.spellDirectorExport = async (opts = {}) => {
   const tpl = opts.template || (opts.id ? state.templates.find((t) => t.id === opts.id) : state.template);
   if (!tpl) throw new Error(`unknown template ${opts.id ?? ""}`.trim());
-  const { files, manifest } = await exportSpriteSheets(tpl, { ...opts, seed: opts.seed ?? state.seed, cueLibrary: sound.library });
+  const run = opts.kind === "gif"
+    ? async () => {
+      const { files, plan } = await exportGifs(tpl, { ...opts, seed: opts.seed ?? state.seed });
+      const manifest = { template: { id: tpl.id, name: tpl.name }, ...plan, times: undefined, delays: undefined, frame_count: plan.times.length,
+        gifs: files.map((f) => ({ file: f.name, view: f.view, width: f.width, height: f.height, frames: f.frames, bytes: f.data.length })) };
+      return { files, manifest };
+    }
+    : () => exportSpriteSheets(tpl, { ...opts, seed: opts.seed ?? state.seed, cueLibrary: sound.library });
+  const { files, manifest } = await run();
   const b64 = (data) => {
     const bytes = typeof data === "string" ? new TextEncoder().encode(data) : data;
     let s = "";

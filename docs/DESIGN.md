@@ -43,6 +43,7 @@ Key principles:
 | Viewer (Three.js motion study) | done, v1 | `web/`, `tools/serve.py` |
 | Director: playbook + MCP server | done, v1 | `docs/director-playbook.md`, `director/` |
 | Sprite sheet export + assembly guide | done, v1 | `docs/exporting.md`, `web/js/exporter.js`, `tools/export_sprites.py` |
+| Animated GIF export (any of the views) | done | `web/js/gifexport.js`, `web/js/gif.js`, `tools/export_gif.py` |
 | Engine integration | not started | ROADMAP |
 
 Languages: Python 3.11+ for tools and the director (jsonschema, numpy, Pillow, PyAV, pytest, mcp 2.x), plain ES modules for the web viewer (no build step, Three.js r169 vendored in `web/vendor`). No CI; tests run locally.
