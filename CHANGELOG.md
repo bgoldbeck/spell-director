@@ -6,6 +6,8 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-16
+
 ### Added
 
 - **Auras**: persistent effects around a character that start up, hold a **seamless loop** for as long as they last, then end. A template marks its loop with `timing.loop_range`; the viewer holds the loop while **Loop** is ticked (untick it to see the end) and shows the loop on the timeline, and every aura is listed under **Type → Kinds → Auras** whatever its element or line. Pulses, spins, flicker and particles in looping layers repeat exactly every loop.
