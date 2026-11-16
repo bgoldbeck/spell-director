@@ -46,6 +46,8 @@ def pyinstaller_args(version: str) -> list[str]:
             "--collect-submodules", "av",
             # --mcp: the director's MCP server (exe_main imports it lazily).
             "--hidden-import", "director.mcp_server",
+            # --setup and the Help page's Connect buttons.
+            "--hidden-import", "client_setup",
             # Without its browser driver Playwright can't run; the exe's export uses Edge or Chrome directly.
             "--exclude-module", "playwright",
             "--distpath", str(ROOT / "dist"),

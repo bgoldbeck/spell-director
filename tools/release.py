@@ -33,7 +33,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from release_notes import current_version, notes_for  # noqa: E402
+from release_notes import current_version, release_body  # noqa: E402
 
 REPO = "bgoldbeck/spell-director"
 API = "https://api.github.com"
@@ -41,7 +41,7 @@ UPLOADS = "https://uploads.github.com"
 
 
 def build_release(version: str, changelog: str, target: str = "main") -> dict:
-    notes = notes_for(version, changelog)
+    notes = release_body(version, changelog)
     if not notes:
         raise SystemExit(f"CHANGELOG.md has no section for {version}; add one first")
     tag = f"v{version}"
