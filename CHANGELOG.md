@@ -6,6 +6,8 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-16
+
 ### Added
 
 - The Windows app is now the director's MCP server too: point Claude Desktop, Claude Code or another MCP client at `SpellDirector-v<version>-windows.exe --mcp`, with no Python or source folder needed. The spells it saves, its sprite exports and GIF breakdowns go to a **SpellDirector Library** folder next to the app (or `--library <folder>`), the app's viewer shows those spells next to the built-in ones, and the director serves the viewer in the background so its preview links open straight away. Sprite export from the app uses an installed Edge or Chrome. The Help page shows the settings to copy.
