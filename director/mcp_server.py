@@ -134,6 +134,22 @@ def export_sprites(template_id: str, seed: int = 1, frame: int = 192, fps: int |
     return _call(library.export_sprites, template_id, seed, frame, fps, views, layers, style)
 
 
+@mcp.tool(annotations=ToolAnnotations(destructiveHint=False, idempotentHint=True, openWorldHint=False))
+def export_gif(template_id: str, views: list[str] | None = None, seed: int = 1, width: int = 480, fps: int = 20,
+               speed: float = 1.0, length: str | None = None, style: str | None = None) -> dict[str, Any]:
+    """Export looping animated GIFs of a spell as the viewer shows it (set,
+    stand-ins, bloom, art style, camera shake, screen flashes), one per view.
+    `views` picks any of front, side, top, three_quarter and quad (the four
+    views in one GIF); default all five. `width` in px (height is 3/4 of it),
+    `fps` 5-50, `speed` below 1 for slow motion. For an aura, `length` "loop"
+    (the default) records its seamless sustain loop and "spell" the whole
+    start-up, loop and end. `style`: stylized, realistic, toon or pixel
+    (default the template's). Good for sharing or reviewing a spell; for
+    engine handoff use export_sprites. Writes to
+    exports/<id>-seed<seed>[-<style>]-gifs/ and returns the paths."""
+    return _call(library.export_gif, template_id, views, seed, width, fps, speed, length, style)
+
+
 @mcp.tool(annotations=ToolAnnotations(destructiveHint=False, idempotentHint=True, openWorldHint=False),
           structured_output=False)
 def look_at_sprite_sheet(export_dir: str, mode: str = "frame", sheet: str = "all", view: str | None = None,

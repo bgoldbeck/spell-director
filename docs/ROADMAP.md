@@ -53,7 +53,7 @@ Done: decals are first-class (nine shapes, fade-in/out, lifetime past the spell,
 Sprite sheets are done (`docs/exporting.md`): one sheet per layer plus a whole-spell sheet, frames as columns and views as rows, a JSON file and an assembly guide, from the viewer, `tools/export_sprites.py` or the director's `export_sprites` tool.
 
 - Try an export in Unity (Sparkfall) end to end and fix what the guide gets wrong.
-- PNG sequence and GIF output.
+- PNG sequence output. (GIF output is done: **Export GIF…**, `tools/export_gif.py`, the `export_gif` tool.)
 - Fixed-seed batches for variation sets.
 - A sheet preview in the viewer to check an export plays back right.
 

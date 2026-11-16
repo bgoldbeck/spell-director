@@ -205,7 +205,7 @@ startup_timeout_sec = 120</pre>
         <dt>Focus view</dt><dd>Hides everything but the stage, for screen recording. <kbd>Esc</kbd> brings it back.</dd>
       </dl>
       <h3>Keys</h3>
-      <p class="keys"><span><kbd>Space</kbd> play / pause</span><span><kbd>1</kbd>–<kbd>4</kbd> views</span><span><kbd>5</kbd> all four</span><span><kbd>[</kbd> <kbd>]</kbd> prev / next spell</span><span><kbd>M</kbd> sound</span><span><kbd>B</kbd> bloom</span><span><kbd>S</kbd> style</span><span><kbd>F</kbd> focus</span><span><kbd>?</kbd> this page</span></p>
+      <p class="keys"><span><kbd>Space</kbd> play / pause</span><span><kbd>1</kbd>–<kbd>4</kbd> views</span><span><kbd>5</kbd> all four</span><span><kbd>[</kbd> <kbd>]</kbd> prev / next spell</span><span><kbd>M</kbd> sound</span><span><kbd>B</kbd> bloom</span><span><kbd>S</kbd> style</span><span><kbd>G</kbd> export GIF</span><span><kbd>F</kbd> focus</span><span><kbd>?</kbd> this page</span></p>
     </section>
 
     <section id="export" class="panel">
@@ -226,6 +226,8 @@ startup_timeout_sec = 120</pre>
       </div>
       <p><b>Columns are frames, rows are views.</b> Read one row left to right to play the spell from that camera. Every cell is the same size and shares the same center point, and cells line up across all the layer sheets, so stacking the layers rebuilds the full spell. Very long spells wrap onto more rows so no sheet is wider than 4096 px.</p>
       <p class="muted small">Your AI can export too: ask the director to “export sprites for sky strike”, and it can look at the sheets cell by cell to check them.</p>
+      <h3>GIFs to share</h3>
+      <p><b>Export GIF…</b> records the spell as you see it in the viewer, as looping animated GIFs. Tick the views you want (Front, Side, Top, 3/4, All four in one GIF) or <b>All</b>, pick the size, frame rate and speed, then <b>Export GIF</b>. One view downloads as a .gif, several as a .zip. Auras record their seamless loop, so they hold forever. Layers you've unticked are left out.</p>
     </section>
 
     <p class="help-foot muted small">Back to the <a href="./">viewer</a>. More detail lives in the project's <a href="https://github.com/bgoldbeck/spell-director#readme" target="_blank" rel="noopener">README</a>.</p>

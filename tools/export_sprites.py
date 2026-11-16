@@ -81,19 +81,6 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
 
     Returns {"out": folder, "files": [paths], "manifest": {...}}.
     """
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        sync_playwright = None
-
-    tpl_obj = None
-    tpl_id = None
-    if isinstance(template, dict):
-        tpl_obj = template
-    elif str(template).endswith(".json") and Path(template).exists():
-        tpl_obj = json.loads(Path(template).read_text(encoding="utf-8"))
-    else:
-        tpl_id = str(template)
     if style is not None and style not in STYLES:
         raise ExportError(f"unknown style {style!r}; use {', '.join(STYLES)}")
     views = list(views or VIEWS)
@@ -101,28 +88,12 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
     if bad:
         raise ExportError(f"unknown view(s) {', '.join(bad)}; use {', '.join(VIEWS)}")
 
-    serve.Handler.log_message = lambda *a, **k: None  # keep the output clean
-    server = serve.bind("127.0.0.1", 0)
-    port = server.server_address[1]
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
     opts = {"seed": seed, "frame": frame, "views": views, "layers": layers, "bloom": bloom, "version": _version()}
     if fps:
         opts["fps"] = fps
     if style:
         opts["style"] = style
-    if tpl_obj is not None:
-        opts["template"] = tpl_obj
-    else:
-        opts["id"] = tpl_id
-    try:
-        if sync_playwright is None:
-            result = _export_headless(port, opts, timeout_s)
-        else:
-            result = _export_playwright(sync_playwright, port, opts, timeout_s)
-    finally:
-        server.shutdown()
-        server.server_close()
+    result = run_in_page(template, opts, timeout_s)
 
     manifest = result["manifest"]
     style_id = (manifest.get("style") or {}).get("id", "stylized")
@@ -135,6 +106,40 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
         path.write_bytes(base64.b64decode(f["base64"]))
         written.append(str(path))
     return {"out": str(folder), "files": written, "manifest": manifest}
+
+
+def run_in_page(template: str | dict, opts: dict, timeout_s: float = 300) -> dict:
+    """Run an export in the viewer page (window.spellDirectorExport) in a headless browser.
+
+    `template` is a template id, a path to a JSON file, or a dict; `opts` are the page's
+    export options (opts["kind"] = "gif" for GIFs). Uses Playwright when it is installed,
+    else an installed Edge or Chrome run headless (the packaged exe).
+    Returns the page's {"manifest", "files": [{"name", "base64"}]}.
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        sync_playwright = None
+    opts = dict(opts)
+    if isinstance(template, dict):
+        opts["template"] = template
+    elif str(template).endswith(".json") and Path(template).exists():
+        opts["template"] = json.loads(Path(template).read_text(encoding="utf-8"))
+    else:
+        opts["id"] = str(template)
+
+    serve.Handler.log_message = lambda *a, **k: None  # keep the output clean
+    server = serve.bind("127.0.0.1", 0)
+    port = server.server_address[1]
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        if sync_playwright is None:
+            return _export_headless(port, opts, timeout_s)
+        return _export_playwright(sync_playwright, port, opts, timeout_s)
+    finally:
+        server.shutdown()
+        server.server_close()
 
 
 def _export_playwright(sync_playwright, port: int, opts: dict, timeout_s: float) -> dict:
