@@ -21,7 +21,7 @@
 
     <nav class="help-toc" aria-label="On this page">
       <a href="#ai">1. Talk to the director</a>
-      <a href="#setup">2. Connect it</a>
+      <a href="#setup">2. Connect your AI</a>
       <a href="#ask">3. What to ask</a>
       <a href="#viewer">4. The viewer</a>
       <a href="#export">5. Export for your engine</a>
@@ -40,34 +40,104 @@
     </section>
 
     <section id="setup" class="panel">
-      <h2>2. Connect the director</h2>
-      <p>The director is an MCP server that any MCP client can use. Claude Code is the easiest.</p>
-      <h3>With the Windows app (.exe), no Python needed</h3>
-      <p>The app is the director too: run it with <code>--mcp</code>. Add this to your client's MCP settings (for Claude Desktop, <code>claude_desktop_config.json</code>), with the path to your copy of the app:</p>
+      <h2>2. Connect your AI</h2>
+      <p>The director runs inside an AI app on this computer: <b>Claude Desktop</b> (easiest, free download from <a href="https://claude.ai/download" target="_blank" rel="noopener">claude.ai/download</a>), <b>Claude Code</b>, or <b>Codex</b> (in the ChatGPT desktop app). Three steps:</p>
+      <ol class="flow">
+        <li><b>Click Connect</b> next to your AI app below.</li>
+        <li><b>Restart that app.</b> For Claude Desktop, right-click its icon by the clock and choose <b>Quit</b>, then open it again.</li>
+        <li><b>Ask it</b> <q>List the SpellDirector spells.</q> A list means you're connected.</li>
+      </ol>
+
+      <div id="setup-clients" class="setup-clients" hidden></div>
+      <p id="setup-result" class="note" hidden></p>
+      <p id="setup-offline" class="note">Connect works when this page is opened from the SpellDirector app (double-click the .exe, then <b>? Help</b>). Otherwise, follow <a href="https://github.com/bgoldbeck/spell-director/blob/main/docs/setup.md" target="_blank" rel="noopener">the setup guide</a>.</p>
+      <p class="muted small">Connect adds a <code>spelldirector</code> entry to the app's settings and keeps everything else (the old file is saved as <code>.bak</code>). The first start can take up to a minute while the app unpacks. Your spells, exports and breakdowns are saved in <span class="fill-library">a <b>SpellDirector Library</b> folder next to the app</span>.</p>
+
+      <div class="prompts">
+        <div class="prompt-card">
+          <h3>Check the connection</h3>
+          <p class="muted small">Paste into a new chat after restarting.</p>
+          <p class="say" id="p-check">List the SpellDirector spells.</p>
+          <button class="btn copy" data-copy="p-check" type="button">Copy</button>
+        </div>
+        <div class="prompt-card">
+          <h3>Then make one</h3>
+          <p class="muted small">The director asks 2 or 3 choices, then saves it.</p>
+          <p class="say" id="p-first">Direct a spell: a quick chain shock that jumps between three enemies, side-scroller.</p>
+          <button class="btn copy" data-copy="p-first" type="button">Copy</button>
+        </div>
+      </div>
+
+      <h3>Updating to a new version</h3>
+      <p>Download the new .exe into the <b>same folder</b> as the old one and double-click it once. It switches your connected AI apps to the new version by itself (the black window says so). Restart the AI app. Your spells stay where they are.</p>
+
+      <h3>Let an AI walk you through it</h3>
+      <div class="prompts">
+        <div class="prompt-card">
+          <h3>Claude Code or Codex</h3>
+          <p class="muted small">They can run the setup for you.</p>
+          <p class="say" id="p-agent">Set up SpellDirector for me. Run this once in PowerShell: <span class="fill-setup">&amp; "C:\Users\me\Documents\SpellDirector\SpellDirector-vX.Y.Z-windows.exe" --setup</span> Show me what it printed and tell me which apps I need to restart. Don't edit any settings files by hand; that command does it safely and keeps a backup.</p>
+          <button class="btn copy" data-copy="p-agent" type="button">Copy</button>
+        </div>
+        <div class="prompt-card">
+          <h3>ChatGPT or Claude on the web</h3>
+          <p class="muted small">They can't touch your computer, so they guide you.</p>
+          <p class="say" id="p-chat">I'm setting up a Windows app called SpellDirector and I'm not technical. Give me one step at a time and wait for me to say "done" before the next. Use only these facts and don't add steps: (1) The app is already running: a black window and a browser page are open. (2) I need Claude Desktop, from claude.ai/download. (3) In the SpellDirector browser page, click "? Help", then "Connect" next to Claude Desktop. (4) Fully quit Claude Desktop: right-click its icon by the clock, choose Quit, then open it again. (5) In Claude Desktop, type "List the SpellDirector spells." It can take up to a minute the first time. If something goes wrong, ask me what I see on screen.</p>
+          <button class="btn copy" data-copy="p-chat" type="button">Copy</button>
+        </div>
+      </div>
+
+      <h3>What about ChatGPT?</h3>
+      <ul>
+        <li><b>Codex</b> (in the ChatGPT desktop app, the Codex command line and VS Code extension) works as the director: use its <b>Connect</b> button.</li>
+        <li><b>The ChatGPT website and ordinary ChatGPT chats</b> can't run programs on your computer, so they can't be the director. They only connect to servers on the internet.</li>
+      </ul>
+      <p id="no-connection"><b>No connection?</b> Any AI chat can still write a spell for you. Attach these files: <a href="docs/director-playbook.md" download>director-playbook.md</a>, <a href="docs/vocabulary.md" download>vocabulary.md</a>, <a href="docs/template-format.md" download>template-format.md</a> and <a href="docs/template-schema.json" download>template-schema.json</a>, then ask:</p>
       <div class="code-wrap">
-        <pre id="mcp-config-exe">{
+        <pre id="p-offline" class="wrap">Follow director-playbook.md and write a SpellDirector template (JSON) for: a slow, heavy boss lightning strike for a top-down game. Ask me your 2 or 3 questions first, then give me only the JSON.</pre>
+        <button class="btn copy" data-copy="p-offline" type="button">Copy</button>
+      </div>
+      <p class="muted small">Save the reply as a .json file and open it with <b>Open JSON…</b> in the viewer. To keep it in the spell list, put it in <code>SpellDirector Library\templates\&lt;element&gt;\</code>, for example <code>templates\lightning\my-spell.json</code>.</p>
+
+      <details class="manual">
+        <summary>Set it up by hand, or from the source folder</summary>
+        <h3>Claude Desktop</h3>
+        <p>Settings → Developer → Edit Config opens <code>claude_desktop_config.json</code>. Add this (merge it into <code>"mcpServers"</code> if that's already there):</p>
+        <div class="code-wrap">
+          <pre id="mcp-config-exe">{
   "mcpServers": {
     "spelldirector": {
-      "command": "C:\\path\\to\\SpellDirector-vX.Y.Z-windows.exe",
+      "command": "<span class="fill-exe-json">C:\\path\\to\\SpellDirector-vX.Y.Z-windows.exe</span>",
       "args": ["--mcp"]
     }
   }
 }</pre>
-        <button class="btn copy" data-copy="mcp-config-exe" type="button">Copy</button>
-      </div>
-      <p>For Claude Code, run this once in a terminal: <code>claude mcp add --scope user spelldirector -- "C:\path\to\SpellDirector-vX.Y.Z-windows.exe" --mcp</code></p>
-      <p class="muted small">Restart the client after changing its settings. The spells the director saves, its sprite exports and GIF breakdowns go to a <b>SpellDirector Library</b> folder next to the app, and the app shows those spells next to the built-in ones. To keep them somewhere else, add <code>"--library", "D:\\My Spells"</code> to <code>args</code>. While the client runs, the director also serves this viewer, so its links open straight away. When you download a new version, update the path in the settings.</p>
-      <h3>Claude Code, from the source folder</h3>
-      <ol>
-        <li>Get the source folder: <code>git clone https://github.com/bgoldbeck/spell-director</code></li>
-        <li>Install the packages once: <code>python -m pip install -r requirements-dev.txt</code></li>
-        <li>Open Claude Code <strong>in that folder</strong>. It finds the <code>spelldirector</code> server in <code>.mcp.json</code> and asks you to allow it. Say yes.</li>
-        <li>Check it with <code>/mcp</code>: <code>spelldirector</code> should show as connected.</li>
-      </ol>
-      <h3>Claude Desktop or another client, from the source folder</h3>
-      <p>Add a stdio server to the client's MCP settings (for Claude Desktop, <code>claude_desktop_config.json</code>):</p>
-      <div class="code-wrap">
-        <pre id="mcp-config">{
+          <button class="btn copy" data-copy="mcp-config-exe" type="button">Copy</button>
+        </div>
+        <p class="muted small">To keep your spells somewhere else, add <code>"--library", "D:\\My Spells"</code> to <code>args</code>.</p>
+        <h3>Claude Code</h3>
+        <div class="code-wrap">
+          <pre id="cc-cmd">claude mcp add --scope user spelldirector -- "<span class="fill-exe">C:\path\to\SpellDirector-vX.Y.Z-windows.exe</span>" --mcp</pre>
+          <button class="btn copy" data-copy="cc-cmd" type="button">Copy</button>
+        </div>
+        <h3>Codex</h3>
+        <p>At the end of <code>%USERPROFILE%\.codex\config.toml</code>:</p>
+        <div class="code-wrap">
+          <pre id="codex-toml">[mcp_servers.spelldirector]
+command = "<span class="fill-exe-json">C:\\path\\to\\SpellDirector-vX.Y.Z-windows.exe</span>"
+args = ["--mcp"]
+startup_timeout_sec = 120</pre>
+          <button class="btn copy" data-copy="codex-toml" type="button">Copy</button>
+        </div>
+        <h3>From the source folder (with Python)</h3>
+        <ol>
+          <li>Get the source folder: <code>git clone https://github.com/bgoldbeck/spell-director</code></li>
+          <li>Install the packages once: <code>python -m pip install -r requirements-dev.txt</code></li>
+          <li>Run <code>python tools/client_setup.py</code> to connect the AI apps it finds, or open Claude Code <strong>in that folder</strong>: it finds the <code>spelldirector</code> server in <code>.mcp.json</code> and asks you to allow it.</li>
+        </ol>
+        <p>By hand, the server is <code>python -m director.mcp_server</code> with the folder on <code>PYTHONPATH</code>:</p>
+        <div class="code-wrap">
+          <pre id="mcp-config">{
   "mcpServers": {
     "spelldirector": {
       "command": "python",
@@ -76,10 +146,11 @@
     }
   }
 }</pre>
-        <button class="btn copy" data-copy="mcp-config" type="button">Copy</button>
-      </div>
-      <p class="muted small">Change the <code>PYTHONPATH</code> path to where you cloned the folder, then restart the client.</p>
-      <p class="note">From the source folder, templates the director saves land in that folder's <code>templates/</code>, so open them with <code>run.bat</code> there.</p>
+          <button class="btn copy" data-copy="mcp-config" type="button">Copy</button>
+        </div>
+        <p class="note">From the source folder, templates the director saves land in that folder's <code>templates/</code>, so open them with <code>run.bat</code> there.</p>
+      </details>
+      <p class="muted small">Stuck? The full <a href="https://github.com/bgoldbeck/spell-director/blob/main/docs/setup.md" target="_blank" rel="noopener">setup guide</a> has a troubleshooting list.</p>
     </section>
 
     <section id="ask" class="panel">

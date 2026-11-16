@@ -16,7 +16,14 @@ def test_viewer_and_analyze_pages_link_to_help():
 def test_help_page_local_links_exist():
     refs = re.findall(r'(?:href|src)="([^"#:]+)"', HELP)
     assert refs
+    import sys
+    sys.path.insert(0, str(ROOT / "tools"))
+    import serve
+
     for ref in refs:
+        if ref.startswith("docs/"):  # served from the bundle for AI chats (serve.SHARED_DOCS)
+            assert serve.SHARED_DOCS[ref[len("docs/"):]].is_file(), ref
+            continue
         target = WEB / ref
         if ref.endswith("/") or ref == "./":
             target = target / "index.html"
@@ -38,3 +45,15 @@ def test_help_page_ships_in_the_exe():
     import build_exe
 
     assert "web" in build_exe.BUNDLED
+
+
+def test_help_page_offers_one_click_setup_and_ai_prompts():
+    for needle in ('id="setup-clients"', 'class="fill-setup"', 'class="fill-exe-json"', 'id="p-agent"', 'id="p-chat"',
+                   "--setup", "docs/setup.md", "ChatGPT"):
+        assert needle in HELP, needle
+    js = (WEB / "js" / "help.js").read_text(encoding="utf-8")
+    assert '"X-SpellDirector": "setup"' in js and "api/setup" in js
+    # The setup guide names the same flag and prompts as the page.
+    guide = (ROOT / "docs" / "setup.md").read_text(encoding="utf-8")
+    for needle in ("--setup", "List the SpellDirector spells.", "Run anyway", "Codex", "startup_timeout_sec"):
+        assert needle in guide, needle
