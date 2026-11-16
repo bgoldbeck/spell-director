@@ -6,6 +6,8 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-16
+
 ### Added
 
 - **Six-way lit smoke**: smoke can be lit by the scene from any direction. The viewer bakes six-way lightmaps (pre-lit from right, left, top, bottom, back and front) and relights every puff from the stage lights and the spell's own lights, so smoke goes dark underneath, takes the color of the light beside it and glows at the edges when backlit. Templates ask for it with shader intent `lighting: "six_way"`; the Realistic style now does it for all alpha smoke. Exports include the two packed maps per smoke layer and Unity (VFX Graph Six-way Smoke Lit) and Godot steps.
