@@ -1,0 +1,650 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "shadow-bone-tempest",
+  "name": "Bone Tempest",
+  "description": "The necromancer raises a hand and an icy cyan sigil opens under the enemies; a whirlwind of ghostly wind tears up out of it, full of tumbling bones and wailing spirit wisps, grinding everything inside, then flings the bones out across the field and collapses.",
+  "element": "shadow",
+  "line": "Necromancer",
+  "archetype": "aura",
+  "tags": [
+    "necromancer",
+    "bones",
+    "spirits",
+    "vortex",
+    "whirlwind",
+    "death",
+    "cold",
+    "area",
+    "channel"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Necromancer bone tempest: icy cyan swirling vortex of bones and spirits"
+  },
+  "timing": {
+    "duration_ms": 4400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 2.6,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.8,
+      "distribution": "edge_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: a wide, squat funnel of pale cyan wind stands on the sigil ahead, bones and wisps circling through it, and the bones are flung outward at the end.",
+      "side": "A broad cone of spectral wind wider at the top, with bones climbing it in spirals; the ground frost and sigil are a thin bright line under it.",
+      "top": "A turning disc: the sigil and frost on the ground, the funnel's wall seen from above as a spiral, bones racing around it and scattering outward at the end.",
+      "three_quarter": "Hero view. The funnel has height and spin, bones tumble around it at every height, wisps glow inside and the frost and sigil show beneath."
+    }
+  },
+  "palette": {
+    "core": "#EAFBFF",
+    "primary": "#7FE3FF",
+    "secondary": "#2B8CB0",
+    "accent": "#C7F6FF",
+    "shadow": "#0E2230"
+  },
+  "beats": [
+    {
+      "id": "summon",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 0.8
+      },
+      "intent": "The necromancer raises a hand: cold light gathers in it and an icy sigil opens under the enemies, frost creeping out."
+    },
+    {
+      "id": "rise",
+      "phase": "release",
+      "start_ms": 500,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.5,
+        "to": 1.0
+      },
+      "intent": "The tempest tears up out of the sigil, spinning faster as it climbs."
+    },
+    {
+      "id": "tempest",
+      "phase": "impact",
+      "start_ms": 1100,
+      "end_ms": 3300,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.9,
+        "to": 1.0
+      },
+      "intent": "The full storm: a whirl of spectral wind full of bones and wailing spirits, grinding the enemies inside."
+    },
+    {
+      "id": "scatter",
+      "phase": "dissipation",
+      "start_ms": 3300,
+      "end_ms": 4400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "The tempest breaks: bones are flung out across the field and the funnel unravels into streaks."
+    }
+  ],
+  "layers": [
+    {
+      "id": "frost",
+      "type": "decal",
+      "beats": [
+        "summon",
+        "rise",
+        "tempest",
+        "scatter"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 0,
+      "params": {
+        "shape": "frost",
+        "radius_px": 190,
+        "opacity": 0.6,
+        "fade_in_ms": 400,
+        "grow_ms": 700,
+        "start_scale": 0.3,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Grave-frost creeping out across the ground from the sigil.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "sigil",
+      "type": "decal",
+      "beats": [
+        "summon",
+        "rise",
+        "tempest",
+        "scatter"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 150,
+        "opacity": 0.85,
+        "fade_in_ms": 100,
+        "reveal_ms": 500,
+        "spin_deg_per_s": -16,
+        "lifetime_ms": 3600,
+        "fade_ms": 600,
+        "detail": 0.8
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "An icy cyan death sigil with skull and bone glyphs, turning against the storm.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "scour",
+      "type": "decal",
+      "beats": [
+        "tempest",
+        "scatter"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "shape": "swirl",
+        "radius_px": 130,
+        "opacity": 0.6,
+        "fade_in_ms": 400,
+        "lifetime_ms": 5000,
+        "fade_ms": 2000,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Spiral grooves of frost scoured by the wind.",
+        "technique": "decal",
+        "noise": {
+          "type": "streaks",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "tempest",
+      "type": "vortex",
+      "beats": [
+        "rise",
+        "tempest",
+        "scatter"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "keyframes": [
+        {
+          "t_ms": 500,
+          "param": "spin_hz",
+          "value": 0.6
+        },
+        {
+          "t_ms": 1300,
+          "param": "spin_hz",
+          "value": 2.2,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 3300,
+          "param": "spin_hz",
+          "value": 2.2
+        },
+        {
+          "t_ms": 4400,
+          "param": "spin_hz",
+          "value": 0.8,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 3300,
+          "param": "top_radius_px",
+          "value": 190
+        },
+        {
+          "t_ms": 4400,
+          "param": "top_radius_px",
+          "value": 120,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "height_px": 250,
+        "base_radius_px": 55,
+        "top_radius_px": 190,
+        "flare": 1.3,
+        "spin_hz": 1.4,
+        "strands": 12,
+        "twist": 1.4,
+        "turbulence": 0.65,
+        "sway_px": 12,
+        "sway_hz": 0.4,
+        "grow_ms": 600,
+        "opacity": 0.4,
+        "wander_px": 4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A broad funnel of ghostly cyan wind, streaky and translucent, glowing at its edges.",
+        "technique": "mesh",
+        "noise": {
+          "type": "streaks",
+          "scale": 4,
+          "speed": 3,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 4
+        },
+        "fresnel": 0.7,
+        "dissolve": {
+          "pattern": "streaks",
+          "edge_width": 0.3,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bones",
+      "type": "sparks",
+      "beats": [
+        "rise",
+        "tempest",
+        "scatter"
+      ],
+      "attach_to": "tempest",
+      "color": "core",
+      "z": 9,
+      "params": {
+        "look": "bone",
+        "count": 55,
+        "speed": 80,
+        "gravity": 800,
+        "lifetime_ms": 2600,
+        "size_px": {
+          "min": 11,
+          "max": 14
+        },
+        "drag": 0.25
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Old pale bones tumbling end over end in the wind, rimmed with cold light.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "skulls",
+      "type": "sparks",
+      "beats": [
+        "tempest",
+        "scatter"
+      ],
+      "attach_to": "tempest",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "look": "bone",
+        "count": 10,
+        "speed": 60,
+        "gravity": 800,
+        "lifetime_ms": 2200,
+        "size_px": {
+          "min": 17,
+          "max": 21
+        },
+        "drag": 0.25
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A few big bones and skulls circling higher in the storm.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "spirits",
+      "type": "sparks",
+      "beats": [
+        "tempest"
+      ],
+      "attach_to": "tempest",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "look": "ember",
+        "count": 30,
+        "speed": 110,
+        "gravity": 0,
+        "lifetime_ms": 1400,
+        "size_px": 4,
+        "drag": 0.2,
+        "streak_ms": 45
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Wailing spirit wisps streaking around the funnel, leaving long pale tails.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "perlin",
+          "scale": 4,
+          "speed": 3,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 5
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "grave-mist",
+      "type": "smoke",
+      "beats": [
+        "rise",
+        "tempest",
+        "scatter"
+      ],
+      "attach_to": "tempest",
+      "blend": "add",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "count": 22,
+        "rise_speed": 20,
+        "size_px": {
+          "min": 50,
+          "max": 70
+        },
+        "lifetime_ms": 1600,
+        "opacity": 0.45
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Cold cyan grave-mist swirling around the funnel's foot.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "storm-glow",
+      "type": "glow",
+      "beats": [
+        "tempest"
+      ],
+      "attach_to": "tempest",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "radius_px": 130,
+        "softness": 0.95,
+        "pulse_hz": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cold glow inside the storm.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.8,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hand-gather",
+      "type": "sparks",
+      "beats": [
+        "summon"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "params": {
+        "count": 40,
+        "speed": 100,
+        "speed_spread": 0.5,
+        "gravity": 0,
+        "lifetime_ms": 500,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "gather_px": 100,
+        "swirl": 0.6,
+        "emit_ms": 600
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Cold specks of soul-light drawn into the raised hand.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "summon",
+        "rise",
+        "tempest"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "radius_px": 40,
+        "softness": 0.8,
+        "pulse_hz": 2
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Icy necromantic light in the raised hand.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "cold-light",
+      "type": "light",
+      "beats": [
+        "rise",
+        "tempest",
+        "scatter"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A pale cyan light from inside the storm.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "tempest-shake",
+      "type": "camera_shake",
+      "beats": [
+        "tempest"
+      ],
+      "params": {
+        "amplitude_px": 2,
+        "frequency_hz": 14,
+        "decay": 0.1
+      }
+    },
+    {
+      "id": "summon-sound",
+      "type": "sound_cue",
+      "beats": [
+        "summon"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 0.45,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "wind-sound",
+      "type": "sound_cue",
+      "beats": [
+        "rise",
+        "tempest"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.6,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "wail-sound",
+      "type": "sound_cue",
+      "beats": [
+        "tempest"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.35,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "bone-sound",
+      "type": "sound_cue",
+      "beats": [
+        "tempest"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.35,
+        "pitch": 0.6,
+        "repeat_ms": 400
+      }
+    },
+    {
+      "id": "scatter-sound",
+      "type": "sound_cue",
+      "beats": [
+        "scatter"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.5,
+        "pitch": 1.3
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The bones' orbits and tumbling, the spirits, the funnel's streaks and sway, and the frost and sigil textures change per cast. The storm's timing stays fixed."
+  },
+  "director_notes": "From Lisa's spells01 image, Necromancer - Bone Tempest: 'the dead rise, death takes all'. Built on the tornado's vortex, but squat and wide (a tempest over an area, not a travelling twister) and additive, so it reads as ghost-light, not dust. Bones use the new sparks look: bone, attached to the vortex so they climb and orbit and are flung out at the scatter beat. Spirit wisps are long-streaked embers orbiting faster. Element shadow (death magic) in the spells01 icy cyan palette."
+}

@@ -808,7 +808,7 @@
         "surge"
       ],
       "params": {
-        "cue": "wind",
+        "cue": "stream",
         "gain": 0.55,
         "pitch": 0.7
       }

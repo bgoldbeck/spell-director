@@ -1,0 +1,817 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "sound-rallying-anthem",
+  "name": "Rallying Anthem",
+  "description": "The bard strikes a chord and golden rings of sound roll out across the ground in time with the music, over a turning circle of glyphs; motes of light rise from everyone inside it as the song lifts them.",
+  "element": "sound",
+  "line": "Bard",
+  "archetype": "aura",
+  "tags": [
+    "bard",
+    "song",
+    "buff",
+    "allies",
+    "aura",
+    "rings",
+    "glyphs",
+    "support"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Bard anthem: golden concentric sound rings and lyre glyphs that buff allies"
+  },
+  "timing": {
+    "duration_ms": 3000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3.0,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the bard: the glyph circle lies flat around them, golden rings roll outward across the ground one per beat, small ripples bloom off the instrument at hand height and motes rise all around.",
+      "side": "The rings read as thin bright lines sliding along the ground; the hand ripples and the rising motes give it height, and a warm glow wraps the bard.",
+      "top": "The best read of the music: three concentric rings spread evenly from the bard over a turning glyph circle, and motes speckle the whole area.",
+      "three_quarter": "Hero view. The rings are ellipses rolling out across the ground in rhythm, the glyph circle turns under them and motes drift up through the field."
+    }
+  },
+  "palette": {
+    "core": "#FFF6DA",
+    "primary": "#FFC23D",
+    "secondary": "#B9781A",
+    "accent": "#FFE38A",
+    "shadow": "#4E3A1C"
+  },
+  "beats": [
+    {
+      "id": "strum",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 450,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 0.85
+      },
+      "intent": "The bard strikes the first chord: light gathers at the instrument and the glyph circle draws itself on the ground."
+    },
+    {
+      "id": "anthem",
+      "phase": "release",
+      "start_ms": 400,
+      "end_ms": 2300,
+      "intensity": {
+        "shape": "ease_in_out",
+        "from": 0.9,
+        "to": 1.0
+      },
+      "intent": "The song swells. The glyph circle turns, the bard glows and the whole field hums with golden light."
+    },
+    {
+      "id": "pulse-1",
+      "phase": "impact",
+      "start_ms": 450,
+      "end_ms": 1250,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Downbeat 1: a ring of golden sound rolls out from the bard across the ground."
+    },
+    {
+      "id": "pulse-2",
+      "phase": "impact",
+      "start_ms": 950,
+      "end_ms": 1750,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Downbeat 2: a ring of golden sound rolls out from the bard across the ground."
+    },
+    {
+      "id": "pulse-3",
+      "phase": "impact",
+      "start_ms": 1450,
+      "end_ms": 2250,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Downbeat 3: a ring of golden sound rolls out from the bard across the ground."
+    },
+    {
+      "id": "blessing",
+      "phase": "dissipation",
+      "start_ms": 2100,
+      "end_ms": 3000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "The last chord rings out. Motes keep rising from the allies as the circle fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "glyph-circle",
+      "type": "decal",
+      "beats": [
+        "strum",
+        "anthem",
+        "blessing"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 190,
+        "opacity": 0.75,
+        "fade_in_ms": 300,
+        "grow_ms": 400,
+        "start_scale": 0.5,
+        "spin_deg_per_s": 14,
+        "lifetime_ms": 2400,
+        "fade_ms": 600,
+        "detail": 0.75
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A wide golden circle of staves and lyre glyphs etched in light, turning slowly with the music.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "inner-glyph",
+      "type": "decal",
+      "beats": [
+        "strum",
+        "anthem",
+        "blessing"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 75,
+        "opacity": 0.9,
+        "fade_in_ms": 200,
+        "spin_deg_per_s": -30,
+        "lifetime_ms": 2300,
+        "fade_ms": 500,
+        "detail": 0.9
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A bright inner ring of glyphs under the bard's feet, turning against the outer circle.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sound-ring-1",
+      "type": "ring",
+      "beats": [
+        "pulse-1"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 330,
+        "thickness_px": 14,
+        "softness": 0.5,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A thin ring of golden sound rolling across the ground, brightest on its leading edge.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sound-ring-2",
+      "type": "ring",
+      "beats": [
+        "pulse-2"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 330,
+        "thickness_px": 14,
+        "softness": 0.5,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A thin ring of golden sound rolling across the ground, brightest on its leading edge.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sound-ring-3",
+      "type": "ring",
+      "beats": [
+        "pulse-3"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 330,
+        "thickness_px": 14,
+        "softness": 0.5,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A thin ring of golden sound rolling across the ground, brightest on its leading edge.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "echo-ring-1",
+      "type": "ring",
+      "beats": [
+        "pulse-1"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 250,
+        "thickness_px": 26,
+        "softness": 0.9,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A softer, wider band trailing each sound ring, like the hum after a note.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 1.8,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "echo-ring-2",
+      "type": "ring",
+      "beats": [
+        "pulse-2"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 250,
+        "thickness_px": 26,
+        "softness": 0.9,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A softer, wider band trailing each sound ring, like the hum after a note.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 1.8,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "echo-ring-3",
+      "type": "ring",
+      "beats": [
+        "pulse-3"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 250,
+        "thickness_px": 26,
+        "softness": 0.9,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A softer, wider band trailing each sound ring, like the hum after a note.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 1.8,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "note-ripple-1",
+      "type": "ring",
+      "beats": [
+        "pulse-1"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "start_radius_px": 8,
+        "end_radius_px": 70,
+        "thickness_px": 5,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Small ripples of sound blooming off the instrument on each downbeat.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "note-ripple-2",
+      "type": "ring",
+      "beats": [
+        "pulse-2"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "start_radius_px": 8,
+        "end_radius_px": 70,
+        "thickness_px": 5,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Small ripples of sound blooming off the instrument on each downbeat.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "note-ripple-3",
+      "type": "ring",
+      "beats": [
+        "pulse-3"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "start_radius_px": 8,
+        "end_radius_px": 70,
+        "thickness_px": 5,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Small ripples of sound blooming off the instrument on each downbeat.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "instrument-glow",
+      "type": "glow",
+      "beats": [
+        "strum",
+        "anthem",
+        "blessing"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 9,
+      "params": {
+        "radius_px": 45,
+        "softness": 0.8,
+        "pulse_hz": 2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The instrument shining with each note.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bard-aura",
+      "type": "glow",
+      "beats": [
+        "anthem",
+        "blessing"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "radius_px": 130,
+        "softness": 0.95,
+        "pulse_hz": 1
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A warm golden haze around the bard.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rising-motes",
+      "type": "sparks",
+      "beats": [
+        "anthem",
+        "blessing"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 10,
+      "params": {
+        "look": "ember",
+        "count": 90,
+        "speed": 40,
+        "speed_spread": 0.6,
+        "gravity": -70,
+        "lifetime_ms": 1500,
+        "size_px": 2.6,
+        "spread_deg": 60,
+        "drag": 0.5,
+        "emit_ms": 2400,
+        "emit_radius_px": 300,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Golden motes rising from every ally inside the circle, flickering like sparks of courage.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "chord-sparkle",
+      "type": "sparks",
+      "beats": [
+        "strum"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "params": {
+        "count": 40,
+        "speed": 160,
+        "speed_spread": 0.5,
+        "gravity": 0,
+        "lifetime_ms": 450,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.6,
+        "gather_px": 90,
+        "swirl": 0.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Specks of light drawn into the strings as the first chord is struck.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "warm-light",
+      "type": "light",
+      "beats": [
+        "strum",
+        "anthem",
+        "blessing"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 1.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A warm gold light that rises and falls with the song.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "strum-sound",
+      "type": "sound_cue",
+      "beats": [
+        "strum"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.6,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "hum-sound",
+      "type": "sound_cue",
+      "beats": [
+        "anthem"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.45,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "pulse-sound",
+      "type": "sound_cue",
+      "beats": [
+        "pulse-1",
+        "pulse-2",
+        "pulse-3"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.5,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "bless-sound",
+      "type": "sound_cue",
+      "beats": [
+        "blessing"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.4,
+        "pitch": 1.5
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The glyph textures, the mote positions and the instrument sparkle change per cast. The downbeat rhythm (a ring every 500 ms) stays fixed so it can sync to music."
+  },
+  "director_notes": "From Lisa's spells01 image, Bard - Anthem: golden concentric sound rings and lyre glyphs that inspire allies. Original take, no game's art. Rings are timed as downbeats 500 ms apart so an engine can retime them to a song's tempo. Each downbeat stacks a crisp ring, a soft echo band behind it and a small billboard ripple at the instrument so the music reads in every view. A rune circle stands in for the lyre glyphs (the engine should swap in real lyre and stave glyphs). Motes rise over the whole footprint for the buff. Sound: a shimmer strum, a high hum and a chime on each downbeat; replace with the real song in an engine."
+}

@@ -28,6 +28,9 @@ Every guide has a build order (also `build_order` in the JSON): core hero layer 
 | `<id>.spritesheet.json` | The same data, machine-readable (format `spelldirector.spritesheet/1`). |
 | `<id>.template.json` | The template the sheets came from. |
 | `decal-<layer id>.png` | For each decal layer: its top-down texture for a decal projector (see [Decals](#decals)). |
+| `<id>.sounds.json` | The sound cue sheet (format `spelldirector-sounds-1`): every sound event (time, frame, file, beat, role, volume, pitch) and, per cue, what it should sound like, a text-to-SFX prompt with duration and loop settings, a synthesis recipe and library search terms. See [Sound](#sound). |
+| `<id>.preview.wav` | The whole spell's placeholder sound mix, starting at 0 ms: a timing reference to play under `all.png`. |
+| `sound-<cue>.wav` | One placeholder sound per cue, peak-normalized to -1 dBFS. Replace each with a real sound of the same name. |
 
 ### Sheet layout
 
@@ -60,7 +63,11 @@ These are exported as tracks with one value per frame, because an engine does th
 - **Screen flashes** (`flash` with `scope: screen`): color, add or multiply, and an opacity curve.
 - **Camera shake**: frequency and an amplitude curve in template pixels (100 px = one character height).
 - **Lights**: anchor, color, range and an energy curve.
-- **Sound cues**: start time and frame, cue, length, volume, pitch, one-shot or sustained, and the cue's text-to-SFX prompt.
+- **Sound cues**: start time and frame, cue, length, volume, pitch, one-shot or sustained, and the cue's text-to-SFX prompt. The full sound brief is in its own files, see [Sound](#sound).
+
+### Sound
+
+Yes, sound is exported. The viewer's sounds are procedural placeholders: the timing and rough character are right, the quality isn't final. The export carries them as WAV files so the engine side can be wired up straight away, plus everything needed to make the real ones: the guide's **Sound** section (a beat-by-beat summary, an event table, per-cue briefs with text-to-SFX prompts, recipes and search terms, a copy-paste prompt for Claude or GPT, and Unity/Godot steps) and `<id>.sounds.json`. Final sounds come from a text-to-SFX generator, an AI-written synthesizer, a sound library or your own recordings; save them under the same file names. The vocabulary behind the briefs is [sound-design.md](sound-design.md).
 
 ## Letting an AI model check the sheets
 

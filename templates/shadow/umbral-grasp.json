@@ -1,0 +1,578 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "shadow-umbral-grasp",
+  "name": "Umbral Grasp",
+  "description": "A pool of living shadow spreads under the enemy; dark claws of shadow stab up out of it and close around them, a chain of violet shadow binds them to the warlock's hand and black smoke boils off them until the claws sink back into the dark.",
+  "element": "shadow",
+  "line": "Warlock",
+  "archetype": "strike",
+  "tags": [
+    "warlock",
+    "shadow",
+    "dark",
+    "root",
+    "bind",
+    "claws",
+    "tendrils",
+    "control"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "dark shadow magic: shadow claws grab the enemy"
+  },
+  "timing": {
+    "duration_ms": 3200,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.0,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: a black pool opens under the enemy, dark claws stab up and close round them, a violet chain links them to the hand and black smoke curls off them.",
+      "side": "The claws lean in over the enemy from both sides; the chain is a twisting violet line from the hand.",
+      "top": "A dark pool with a violet rim, the claws in a ring around the enemy and the chain running back to the caster.",
+      "three_quarter": "Hero view. Pool, claws, chain and smoke all read; the claws have height and lean."
+    }
+  },
+  "palette": {
+    "core": "#E4D2FF",
+    "primary": "#7B2CFF",
+    "secondary": "#2B0E52",
+    "accent": "#B37CFF",
+    "shadow": "#07020F"
+  },
+  "beats": [
+    {
+      "id": "pool",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 0.9
+      },
+      "intent": "The warlock's hand darkens and a pool of living shadow spreads under the enemy."
+    },
+    {
+      "id": "grasp",
+      "phase": "impact",
+      "start_ms": 600,
+      "end_ms": 950,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "Shadow claws stab up out of the pool and snap shut around the enemy."
+    },
+    {
+      "id": "bind",
+      "phase": "release",
+      "start_ms": 850,
+      "end_ms": 2500,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.8,
+        "to": 0.9
+      },
+      "intent": "The enemy is held: a chain of violet shadow links them to the hand and black smoke boils off them."
+    },
+    {
+      "id": "sink",
+      "phase": "dissipation",
+      "start_ms": 2400,
+      "end_ms": 3200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The claws sink back into the pool and the dark drains out of the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "shadow-pool",
+      "type": "decal",
+      "beats": [
+        "pool",
+        "grasp",
+        "bind",
+        "sink"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 110,
+        "opacity": 0.95,
+        "fade_in_ms": 150,
+        "grow_ms": 600,
+        "start_scale": 0.2,
+        "lifetime_ms": 2900,
+        "fade_ms": 400,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A pool of inky living shadow, rippling slowly, with a faint violet sheen at its edge.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0.5,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.3
+        },
+        "fresnel": 0.4,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pool-rim",
+      "type": "decal",
+      "beats": [
+        "pool",
+        "grasp",
+        "bind"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 120,
+        "opacity": 0.65,
+        "spin_deg_per_s": -12,
+        "lifetime_ms": 2400,
+        "fade_ms": 400,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Faint violet glyphs ringing the shadow pool.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "claws",
+      "type": "eruption",
+      "beats": [
+        "grasp",
+        "bind",
+        "sink"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 7,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 2,
+        "start_radius_px": 55,
+        "end_radius_px": 85,
+        "row_delay_ms": 70,
+        "growth": 0.85,
+        "height_px": {
+          "min": 140,
+          "max": 165
+        },
+        "width_px": 13,
+        "spacing_px": 38,
+        "tilt_deg": -32,
+        "jitter": 0.5,
+        "rise_ms": 90,
+        "hold_ms": 1500,
+        "sink_ms": 550,
+        "debris_count": 0,
+        "dust": 0
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Long curved claws of solid shadow, black with a violet rim, closing over the enemy.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 1,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.5
+        },
+        "fresnel": 0.8,
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "shadow-chain",
+      "type": "beam",
+      "beats": [
+        "bind"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 8,
+      "params": {
+        "width_px": 6,
+        "wobble": 0.25,
+        "wobble_hz": 2,
+        "grow_ms": 150,
+        "spiral_count": 2,
+        "spiral_pitch_px": 60,
+        "spiral_speed": 2,
+        "spiral_radius": 1.4,
+        "spiral_width_px": 3
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A taut chain of violet shadow, two strands twisting around a dark core.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft",
+          "core_ratio": 0.2
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bind-crackle",
+      "type": "crackle",
+      "beats": [
+        "bind"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "count": 4,
+        "length_px": 45,
+        "jaggedness": 0.8,
+        "regen_ms": 90,
+        "radius_px": 50
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Violet sparks of dark energy crackling over the bound enemy.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "dark-smoke",
+      "type": "smoke",
+      "beats": [
+        "bind",
+        "sink"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 6,
+      "params": {
+        "count": 18,
+        "rise_speed": 45,
+        "size_px": {
+          "min": 40,
+          "max": 55
+        },
+        "lifetime_ms": 1200,
+        "opacity": 0.75,
+        "spread_px": 35
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Black smoke boiling up off the enemy.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 1,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3,
+          "edge_color": "primary"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "dark-motes",
+      "type": "sparks",
+      "beats": [
+        "bind"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 10,
+      "params": {
+        "look": "ember",
+        "count": 40,
+        "speed": 50,
+        "speed_spread": 0.5,
+        "gravity": -60,
+        "lifetime_ms": 1000,
+        "size_px": 2.4,
+        "spread_deg": 90,
+        "drag": 0.5,
+        "emit_ms": 1500,
+        "emit_radius_px": 70,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Violet motes rising out of the pool.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "grasp-ring",
+      "type": "ring",
+      "beats": [
+        "grasp"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 120,
+        "end_radius_px": 40,
+        "thickness_px": 10,
+        "softness": 0.6,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A violet ring snapping inward as the claws close.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "pool",
+        "grasp",
+        "bind"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 40,
+        "softness": 0.8,
+        "pulse_hz": 2
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Violet light around the warlock's clenched hand.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "violet-light",
+      "type": "light",
+      "beats": [
+        "grasp",
+        "bind"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 3.5,
+        "energy": 1.2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A dim violet light from the pool's rim.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "grasp-shake",
+      "type": "camera_shake",
+      "beats": [
+        "grasp"
+      ],
+      "params": {
+        "amplitude_px": 4,
+        "frequency_hz": 20,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "pool-sound",
+      "type": "sound_cue",
+      "beats": [
+        "pool"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 0.4,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "grasp-sound",
+      "type": "sound_cue",
+      "beats": [
+        "grasp"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.6,
+        "pitch": 0.5
+      }
+    },
+    {
+      "id": "bind-sound",
+      "type": "sound_cue",
+      "beats": [
+        "bind"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.35,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "crackle-sound",
+      "type": "sound_cue",
+      "beats": [
+        "bind"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.25,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "sink-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sink"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.4,
+        "pitch": 0.5
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The claws' heights, lean and spacing, the pool shape, the smoke and the crackle change per cast. The grab always lands at 600 ms."
+  },
+  "director_notes": "Warlock line, dark shadow magic. Shadow can't glow additively, so the dark parts are alpha (the pool, the smoke) or lit meshes in a dark colour (the claws: eruption spikes with negative tilt so they lean in like closing fingers), and violet additive layers (the rim glyphs, the chain, the crackle) carry the magic. The chain is an energy beam with two spiral strands."
+}

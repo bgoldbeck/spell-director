@@ -268,6 +268,20 @@ Water has weight: it arcs, falls back and leaves the ground wet. Ice is water th
 | whiteout, freezing fog | `smoke` alpha in pale colors | Cold mist that hides the ground. |
 | frozen ground, rime | `decal` `frost`, `grow_ms` | Ice crystals spreading out from the hit. |
 
+### Blood, shadow, death and song
+
+| Request words | Build with | Notes |
+|---|---|---|
+| drain, siphon, life steal, leech | `sparks` anchored at the target with `home_to: caster_hand` (`look: droplet` for blood, plain sparks for life-light), a thin `beam` tether, a growing `orb` in the hand | The flow must read as coming back to the caster. End with a flash and ring at the caster (the stolen life arriving). |
+| bats, bat swarm | `sparks` `look: bat` with `home_to: target`; around the target, bats attached to a faint `vortex` (low `opacity`) | Dark flapping silhouettes. On a dark background give them a lighter color. |
+| bones, skeletons, bone storm | `sparks` `look: bone`, attached to a `vortex` to orbit it | Pale bones tumbling end over end. |
+| blood thorns, blood spikes | `eruption` `shape: spikes` in the blood color, glassy shader | One row with equal start and end radius and negative `tilt_deg` makes a crown leaning in on a target. |
+| shadow claws, tendrils, grasp | `eruption` spikes in a dark color with negative `tilt_deg`, over a dark `puddle` decal; violet additive glyphs, beam and crackle carry the magic | Dark can't glow: use alpha smoke and lit meshes for the dark and an additive accent for the light. |
+| void, black hole, implosion | black alpha `smoke` packed tight and keyframed up, a `bubble` orb rim, `sparks` `gather_px` + `swirl`, an inward billboard `ring`, then flash and outward rings | Pull in, collapse, blow out. |
+| song, anthem, dirge, chord | `ring`s timed as downbeats (ground rings for a buff, `arc_deg` fronts toward a target for a debuff), small billboard ripples at the hand, `rune_circle` decals for staves and glyphs | Keep the ring rhythm regular so an engine can retime it to the music. |
+| meteor storm, rain of fire | several `orb` `look: meteor` on staggered `travel` beats with `scatter_px`; impact sparks, rubble and decals `attach_to` each meteor | Each rock lands somewhere different on the field. |
+| plague, pestilence, rot field | `rune_circle` + `puddle` + glowing `cracks` decals, low alpha `smoke` mist, rising `ember` spores, `droplet` sludge spits | A ground-first area; loop the middle beat for its duration. |
+
 ## 9. How the director uses this
 
 1. Hear the request (text) or read a GIF breakdown.
@@ -305,8 +319,18 @@ Sound is described as **timed cues**, not audio: "crackle during the charge, cra
 | `whoosh` | one-shot | air rushing past | swoosh, swing, fly by |
 | `wind` | sustained | breathy gust rising and falling | gust, breeze, vortex |
 | `shimmer` | sustained | twinkling high chimes | sparkle, magic, heal |
+| `splash` | one-shot | wet slap, spray, droplets | splash, splat, water impact |
+| `stream` | sustained | rushing, gurgling torrent | torrent, gush, jet, flood |
+| `freeze` | sustained | crisp ice crackles and creaks | freeze, frost, crystallize |
+| `squelch` | one-shot | thick wet visceral squelch | gore, splatter, blood, slime |
+| `heartbeat` | sustained | low muffled lub-dub pulse | pulse, throb, dread |
+| `whisper` | sustained | breathy wordless whispers | voices, murmur, curse, hex |
+| `drain` | sustained | reversed sucking inhale that cuts off | siphon, life steal, leech |
+| `drone` | sustained | ominous dissonant low drone | doom, curse, void, shadow |
 
 The viewer plays a procedural placeholder for every cue today; real recordings can replace any cue later without changing templates (see [`web/sounds/README.md`](../web/sounds/README.md)).
+
+The words for describing a sound (texture, pitch, envelope, space, size), how a spell's sound is layered across its phases, element flavors, timing and level rules, and how to make the real sounds with a text-to-SFX generator, an AI-written synthesizer or a library are in [sound-design.md](sound-design.md). Each cue in `cues.json` carries its `character` in those words, a `sfx_prompt`, a `synth` recipe and `search` terms.
 
 ## 11. Shader intent (the magic)
 

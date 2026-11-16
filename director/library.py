@@ -43,6 +43,7 @@ DOC_FILES = {
     "template-format": DOCS / "template-format.md",
     "director-playbook": DOCS / "director-playbook.md",
     "gif-breakdown-playbook": DOCS / "gif-breakdown-playbook.md",
+    "sound-design": DOCS / "sound-design.md",
 }
 
 VIEWS = ("front", "side", "top", "three_quarter")
@@ -156,9 +157,11 @@ def get_sound_cues(category: str | None = None) -> dict:
         cues = {k: v for k, v in cues.items() if v.get("category") == category}
     return {
         "cues": {
-            k: {f: v.get(f) for f in ("label", "category", "kind", "duration_ms", "describes", "words", "phases")}
+            k: {f: v.get(f) for f in ("label", "category", "kind", "duration_ms", "describes", "words", "phases", "character")}
             for k, v in cues.items()
         },
+        "flavors": _validate.cue_flavors(),
+        "design_doc": "resource spelldirector://docs/sound-design: phases and sound roles, words for texture, pitch and envelope, timing and level rules",
         "categories": sorted({v.get("category") for v in _validate.known_cues().values()}),
         "params": {
             "cue": "cue id from this list (required)",

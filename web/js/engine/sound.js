@@ -83,3 +83,150 @@ export function cuesAt(events, t) {
 export function eventSeed(seed, e) {
   return seedFor(seed, e.layer, "sound", e.n ?? 0);
 }
+
+// ------------------------------------------------------------ sound sheet
+// The cue sheet that goes out with an export (<id>.sounds.json): which sounds
+// the spell needs, when they play, what each should sound like and how to
+// make it (a text-to-SFX prompt, a synthesis recipe, library search terms).
+// See docs/sound-design.md.
+
+export const SOUND_SHEET_FORMAT = "spelldirector-sounds-1";
+
+const ROLE = {
+  anticipation: "build-up",
+  release: "launch",
+  travel: "travel",
+  impact: "hit",
+  dissipation: "tail",
+};
+
+const r1 = (x) => Math.round(x * 10) / 10;
+const r2 = (x) => Math.round(x * 100) / 100;
+const db = (g) => (g > 0 ? r1(20 * Math.log10(g)) : -96);
+
+export function soundFileName(cue) {
+  return `sound-${cue}.wav`;
+}
+
+// A text-to-SFX prompt for one cue in one spell: the cue's prompt plus the
+// element's flavor words and what to keep out.
+export function cuePrompt(def, flavor, element = "") {
+  const base = def?.sfx_prompt || def?.describes || "";
+  const parts = [base];
+  if (flavor?.words) parts.push(`${element ? `${element[0].toUpperCase()}${element.slice(1)} spell` : "Flavor"}: ${flavor.words}`);
+  if (flavor?.avoid) parts.push(`No ${flavor.avoid.replace(/,\s*/g, ", no ")}`);
+  return parts.filter(Boolean).join(". ") + (parts.length > 1 ? "." : "");
+}
+
+// How long to ask a generator for, in seconds. One-shots get their length plus
+// room for the tail. Sustained cues up to 2 s (and shaped ones like charge and
+// drain, which swell and cut) get exactly the length they play for; longer
+// ones get a 2-4 s seamless loop. sourceMs already allows for the pitch.
+const SHAPED = new Set(["charge", "drain"]);
+function generateFor(id, def, sourceMs) {
+  const s = sourceMs / 1000;
+  if (def.kind !== "sustained") return { duration_s: r1(Math.min(30, Math.max(0.5, s + 0.3))), loop: false };
+  if (SHAPED.has(id) || s <= 2) return { duration_s: r1(Math.min(30, Math.max(0.5, s))), loop: false };
+  return { duration_s: r1(Math.min(4, Math.max(2, s))), loop: true };
+}
+
+// soundSheet(template, seed, library, {frameOf}) -> the cue sheet object.
+// frameOf(ms) maps a time to the export's frame number (optional).
+export function soundSheet(template, seed, library = {}, { frameOf } = {}) {
+  const cues = library.cues || {};
+  const element = template.element || "";
+  const flavor = (library.flavors || {})[element] || null;
+  const beats = template.beats || [];
+  const events = soundEvents(template, seed, library);
+  const layerBeats = Object.fromEntries((template.layers || []).map((l) => [l.id, l.beats || []]));
+
+  const beatFor = (e) => {
+    const own = beats.filter((b) => (layerBeats[e.layer] || []).includes(b.id));
+    return own.find((b) => e.at >= b.start_ms && e.at < b.end_ms) || own.find((b) => e.at >= b.start_ms) || own[0] || null;
+  };
+
+  const out = events.map((e) => {
+    const b = beatFor(e);
+    const phase = b?.phase || null;
+    const ev = {
+      at_ms: r1(e.at),
+      ...(frameOf ? { frame: frameOf(e.at) } : {}),
+      cue: e.cue,
+      file: e.known ? soundFileName(e.cue) : null,
+      layer: e.layer,
+      beat: b?.id || null,
+      phase,
+      role: ROLE[phase] || null,
+      kind: e.kind,
+      loop: e.kind === "sustained",
+      duration_ms: r1(e.dur),
+      end_ms: r1(e.at + e.dur),
+      gain: r2(e.gain),
+      volume_db: db(e.gain),
+      pitch: r2(e.rate),
+    };
+    return ev;
+  });
+
+  const used = [...new Set(out.map((e) => e.cue))];
+  const cueOut = used.map((id) => {
+    const def = cues[id];
+    const evs = out.filter((e) => e.cue === id);
+    const longest = Math.max(...evs.map((e) => e.duration_ms));
+    // A file played at pitch p lasts 1/p as long, so a sped-up sustained cue needs more source.
+    const sourceMs = r1(Math.max(...evs.map((e) => e.duration_ms * (e.kind === "sustained" ? Math.max(1, e.pitch) : 1))));
+    const pitches = evs.map((e) => e.pitch);
+    if (!def) {
+      return { cue: id, known: false, plays: evs.length, note: "Not in the cue library: describe it yourself from the layer and beat it plays in." };
+    }
+    return {
+      cue: id,
+      known: true,
+      file: soundFileName(id),
+      label: def.label,
+      kind: def.kind,
+      loop: def.kind === "sustained",
+      describes: def.describes,
+      character: def.character || null,
+      plays: evs.length,
+      layers: [...new Set(evs.map((e) => e.layer))],
+      roles: [...new Set(evs.map((e) => e.role).filter(Boolean))],
+      longest_ms: longest,
+      source_ms: sourceMs,
+      pitch_range: [Math.min(...pitches), Math.max(...pitches)],
+      prompt: cuePrompt(def, flavor, element),
+      generate: { ...generateFor(id, def, sourceMs), takes: evs.length > 1 ? 3 : 2 },
+      synth: def.synth || "",
+      search: def.search || [],
+      samples: def.samples || [],
+    };
+  });
+
+  const story = beats.map((b) => {
+    const here = out.filter((e) => e.beat === b.id);
+    if (!here.length) return null;
+    return `${b.start_ms}-${b.end_ms} ms ${b.id} (${b.phase}): ${[...new Set(here.map((e) => e.cue))].join(" + ")}`;
+  }).filter(Boolean);
+
+  return {
+    format: SOUND_SHEET_FORMAT,
+    spell: {
+      id: template.id,
+      name: template.name,
+      element: element || null,
+      description: template.description || "",
+      duration_ms: template.timing?.duration_ms ?? null,
+      loop: !!template.timing?.loop,
+    },
+    seed,
+    flavor,
+    story,
+    cues: cueOut,
+    events: out,
+    mix: {
+      peak_dbfs: -1,
+      note: "volume_db is relative to full scale for that cue's own file: normalize every file to a -1 dBFS peak, then play it at volume_db. Impacts are the loudest moment; build-ups and tails sit under them.",
+      pitch_note: "pitch is a playback-rate multiplier (1 = as recorded); a range across events means each cast or hit varies.",
+    },
+  };
+}

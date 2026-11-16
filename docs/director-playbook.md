@@ -34,7 +34,7 @@ Pull these out of what the user said, and note which are missing:
 
 | Decide | Words that tell you | If missing |
 |---|---|---|
-| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash", "wave", "tide"; "ice", "frost", "freeze", "snow", "blizzard"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "sun", "solar", "holy", "radiant" (light); "raw power", "hyper", "cannon", "annihilate" (energy); "psychic", "mind", "telekinetic" (psychic); "earth", "rock", "stone", "ground", "quake", "slam", "boulder" | ask (it's rarely missing) |
+| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash", "wave", "tide"; "ice", "frost", "freeze", "snow", "blizzard"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "sun", "solar", "holy", "radiant" (light); "raw power", "hyper", "cannon", "annihilate" (energy); "psychic", "mind", "telekinetic" (psychic); "earth", "rock", "stone", "ground", "quake", "slam", "boulder"; "blood", "vampire", "bleed", "siphon" (blood); "song", "bard", "anthem", "dirge" (sound); "shadow", "dark", "void", "death", "necro" (shadow); "plague", "rot", "toxic", "disease" (poison) | ask (it's rarely missing) |
 | `archetype` | strike (from above / one hit), projectile (thrown), chain (jumps), beam (continuous), aura (around the caster), nova (bursts outward) | infer, or ask as a choice |
 | weight | heavy, boss, big, ultimate → long anticipation, hold frames, shake. quick, light, basic → snappy | default to medium |
 | camera / hero view | top-down, isometric, side-scroller, fighting game, over-the-shoulder (see vocabulary §7) | **ask** |
@@ -110,7 +110,7 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
   - impact: the weight (`boom`, `impact`, `crash`, `shatter`); heavy spells stack a one-shot and a sustained `rumble`;
   - dissipation: a quiet tail (`crackle`, `rumble`, `fire`, `sizzle`) at `gain` 0.3–0.5.
 
-  Keep it to 2–5 cues, mix loud and quiet (`gain`), and give one-shots a small `pitch` range (e.g. 0.9–1.1) so repeated casts don't sound identical. If no cue fits, use the closest one and say what you wanted in `director_notes`; don't invent cue names.
+  Think in sound roles per phase (build-up, launch, travel, hit, tail; [sound-design.md](sound-design.md) §1), stack the hit (a sharp transient cue plus a heavy one), and pick cues whose `character` matches the element (water: `stream`, `splash`; ice: `freeze`, `shatter`; blood: `squelch`, `heartbeat`; dark: `drain`, `whisper`, `drone`). Keep it to 2–5 cues, mix loud and quiet (`gain`), and give one-shots a small `pitch` range (e.g. 0.9–1.1) so repeated casts don't sound identical. If no cue fits, use the closest one and say what you wanted in `director_notes`; don't invent cue names.
 
 - **Fire** (vocabulary "Fire-specific terms"). Build it from heat, not from lines:
   - *Breath or flamethrower*: a `beam` with `style: fire` (`spread` 2.5–4 for a cone, `turbulence` 0.6–0.8, `churn` 0.3, `flow_speed` 4–7, `puff_count` 30–50 for volume, `shed_*` for embers off the edges, `sweep_px` 40–80 to rake an area). Its palette ramp does the coloring: give it `gradient_core_to_primary` and a red `secondary`. Don't stack a second white beam inside it: the stream already has a hot jet that burns out along the cone.

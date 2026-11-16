@@ -1113,6 +1113,32 @@ class FlashLayer extends Layer {
 // Sparks are drawn as short streaks along their motion (where each spark is
 // now back to where it was a moment ago), which reads as speed in a still
 // frame; slow sparks shrink to dots.
+// A bat: a flapping V of two jointed wings around its body, heading along dir.
+export function batShape(head, dir, age, ph, size, fade) {
+  const side = new THREE.Vector3().crossVectors(dir, UP);
+  if (side.lengthSq() < 1e-6) side.set(0, 0, 1);
+  side.normalize();
+  const up = new THREE.Vector3().crossVectors(side, dir).normalize();
+  const beat = Math.sin(age * Math.PI * 2 * 9 + ph);
+  const tipUp = size * 0.75 * beat;
+  const back = dir.clone().multiplyScalar(-size * 0.25);
+  const at = (s, lift, sweep) => head.clone().addScaledVector(side, s * size).addScaledVector(up, lift).add(back.clone().multiplyScalar(sweep));
+  return {
+    pts: [at(-1, tipUp, 1), at(-0.5, tipUp * 0.45 + size * 0.1, 0.2), at(0, 0, 0), at(0.5, tipUp * 0.45 + size * 0.1, 0.2), at(1, tipUp, 1)],
+    w: [0.25 * fade, 0.9 * fade, fade, 0.9 * fade, 0.25 * fade],
+  };
+}
+
+// A bone: a shaft with a knob at each end, tumbling end over end.
+export function boneShape(head, age, ph, size, fade) {
+  const a = age * 7 + ph;
+  const b = age * 4.3 + ph * 1.7;
+  const axis = new THREE.Vector3(Math.cos(a) * Math.cos(b), Math.sin(b), Math.sin(a) * Math.cos(b));
+  const L = size * 1.1;
+  const at = (s) => head.clone().addScaledVector(axis, s * L);
+  return { pts: [at(-1), at(-0.8), at(0), at(0.8), at(1)], w: [fade, 0.5 * fade, 0.42 * fade, 0.5 * fade, fade] };
+}
+
 class SparksLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
@@ -1156,7 +1182,17 @@ class SparksLayer extends Layer {
     // look "shard": ice crystals that shoot out from the anchor and freeze in
     // place as spikes (a needle from near the anchor to the head).
     this.shard = this.base.look === "shard";
-    if (this.leaf) {
+    // look "bat": small winged silhouettes that flap as they fly (a swarm);
+    // look "bone": pale bones that tumble end over end.
+    this.bat = this.base.look === "bat";
+    this.bone = this.base.look === "bone";
+    if (this.bat) {
+      this.streaks = new RibbonMesh(this.max * 6, outer, 1, 0.35, { blending: THREE.NormalBlending });
+      this.hot = new RibbonMesh(this.max * 6, core, 1, 1.2);
+    } else if (this.bone) {
+      this.streaks = new RibbonMesh(this.max * 6, outer.clone().lerp(core, 0.25), 1, 0.3, { blending: THREE.NormalBlending });
+      this.hot = new RibbonMesh(this.max * 6, core, 1, 1.4);
+    } else if (this.leaf) {
       this.streaks = new RibbonMesh(this.max * 4, outer, 1, 0.5, { blending: THREE.NormalBlending });
       this.hot = new RibbonMesh(this.max * 4, core.clone().lerp(outer, 0.5), 1, 0.3, { blending: THREE.NormalBlending });
     } else if (this.flake) {
@@ -1186,6 +1222,16 @@ class SparksLayer extends Layer {
     return attached instanceof VortexLayer ? attached : null;
   }
 
+  // Bat and bone looks: build each spark's shape from where it is.
+  shaped(head, tail, age, i, size, fade) {
+    const dir = head.clone().sub(tail);
+    if (dir.lengthSq() < 1e-10) dir.set(1, 0, 0);
+    dir.normalize();
+    const ph = i * 2.399;
+    if (this.bat) return batShape(head, dir, age, ph, size, fade);
+    return boneShape(head, age, ph, size, fade);
+  }
+
   update(t) {
     const vx = this.vortex();
     if (vx) {
@@ -1202,7 +1248,9 @@ class SparksLayer extends Layer {
     }
     this.group.visible = true;
     const r = this.rng("burst");
-    const origin = this.anchorPos();
+    // Attached to a falling orb: burst where it lands (one meteor of a storm).
+    const host = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
+    const origin = host instanceof OrbLayer ? host.landPoint() : this.anchorPos();
     const ground = origin.y < 0.05;
     if (ground) origin.y = 0.12;
     const speed = this.p("speed", 0, 300) * PX;
@@ -1239,6 +1287,11 @@ class SparksLayer extends Layer {
     const swirl = this.p("swirl", 0, 0) * Math.PI * 2;
     // wind_px: a steady sideways push in px/s along the cast direction.
     const wind = this.p("wind_px", 0, 0) * PX;
+    // home_to: each spark bursts out as usual, then is pulled to this anchor,
+    // arriving as it dies (life drained into the caster's hand, a swarm
+    // flying at the target). Ease-in, so the burst reads before the pull.
+    const homeName = typeof this.base.home_to === "string" ? this.base.home_to : null;
+    const home = homeName ? (homeName === "target" ? this.effect.stage.chest(this.instance) : this.effect.stage.anchor(homeName, this.instance)) : null;
     const paths = [];
     for (let i = 0; i < count; i++) {
       const born = r.range(0, span);
@@ -1269,7 +1322,7 @@ class SparksLayer extends Layer {
           origin.z + (dx * sn + dz * c) * d,
         );
       };
-      const at = gather > 0 ? inward : (a) => {
+      const loose = gather > 0 ? inward : (a) => {
         const travel = (v * (1 - Math.exp(-drag * a))) / drag;
         const flutter = wobble ? Math.sin(a * 7 + ph) * 0.18 * a : 0;
         // Flakes are light: air drag caps their fall at a steady gravity/4
@@ -1281,7 +1334,17 @@ class SparksLayer extends Layer {
           o.z + dz * travel + (wobble ? Math.cos(a * 5 + ph) * 0.18 * a : 0),
         );
       };
+      const at = home ? (a) => {
+        const f = Math.min(1, Math.max(0, (a * 1000) / lifeI));
+        const pull = f * f * (3 - 2 * f);
+        // A sideways bow so a stream of them doesn't run in one straight line.
+        const bow = Math.sin(Math.PI * f) * (Math.sin(ph * 5.1) * 0.25);
+        const p = loose(a).lerp(home, pull);
+        p.y += bow;
+        return p;
+      } : loose;
       let fade = 1 - (age * 1000) / lifeI;
+      if (home) fade = Math.min(1, fade * 5, (age * 1000) / 60);
       if (gather > 0) fade = Math.min(1, (1 - fade) * 4, fade * 10);
       if (this.ember) fade *= 0.55 + 0.45 * Math.abs(Math.sin(age * 23 + ph * 3));
       if (this.flake) fade = Math.min(1, fade * 3) * Math.min(1, age * 8);
@@ -1294,6 +1357,10 @@ class SparksLayer extends Layer {
       const mid = head.clone().lerp(tail, 0.5);
       // Drop size varies per spark (by index, so the burst stays seeded).
       const k = 0.45 + 0.9 * ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
+      if (this.bat || this.bone) {
+        paths.push(this.shaped(head, at(Math.max(0, age - 0.03)), age, i, sz * k, fade));
+        continue;
+      }
       paths.push({ pts: [head, mid, tail], w: [fade, fade * 0.8, 0.15 * fade], k });
     }
     this.draw(paths, sz);
@@ -1301,7 +1368,13 @@ class SparksLayer extends Layer {
 
   // Draw spark paths [{pts: [head, mid, tail], w, k}] in this layer's look.
   draw(paths, sz) {
-    if (this.leaf) {
+    if (this.bat || this.bone) {
+      // A dark (bat) or pale (bone) body with a thin bright rim or glint.
+      this.streaks.setPaths(paths, sz * (this.bat ? 0.5 : 0.35));
+      this.hot.setPaths(paths, sz * (this.bat ? 0.12 : 0.1));
+      this.streaks.opacity = 0.95;
+      this.hot.opacity = this.bat ? 0.55 : 0.5;
+    } else if (this.leaf) {
       this.streaks.setPaths(paths, sz * 0.6);
       this.hot.setPaths(paths, sz * 0.25);
       this.streaks.opacity = 0.95;
@@ -1480,6 +1553,10 @@ SparksLayer.prototype.updateOrbit = function updateOrbit(t, vx) {
     if (head.distanceTo(tailP) < sz * 0.5) tailP.copy(head).addScaledVector(UP, -sz * 0.5);
     const mid = head.clone().lerp(tailP, 0.5);
     const kk = 0.5 + 0.9 * ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
+    if (this.bat || this.bone) {
+      paths.push(this.shaped(head, at(Math.max(bornAt, t - 30)), age, i, sz * kk, fade));
+      continue;
+    }
     paths.push({ pts: [head, mid, tailP], w: [fade * kk, fade * kk, 0.4 * fade * kk], k: kk, i, age, fade });
   }
   if (this.debris) {
@@ -1675,7 +1752,8 @@ class DecalLayer extends Layer {
     this.reveal.value = st.reveal;
     this.group.visible = st.opacity > 0.001;
     if (!this.group.visible) return;
-    const at = this.anchorPos();
+    const host = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
+    const at = host instanceof OrbLayer ? host.landPoint() : this.anchorPos();
     const size = this.plan.radius_px * PX * 2.2 * st.scale;
     this.mesh.position.set(at.x, 0.004, at.z);
     this.mesh.rotation.set(-Math.PI / 2, 0, THREE.MathUtils.degToRad(st.rotation_deg));
@@ -1715,7 +1793,9 @@ class SmokeLayer extends Layer {
     if (!this.group.visible) return;
     const r = this.rng("smoke");
     const count = Math.min(32, Math.round(this.p("count", t, 6)));
-    const origin = this.anchorPos();
+    // height_px: puffs start this far above the anchor (a ball of dark
+    // smoke at a target's chest) instead of on the ground.
+    const origin = this.anchorPos().add(new THREE.Vector3(0, this.p("height_px", t, 0) * PX, 0));
     const rise = this.p("rise_speed", t, 40) * PX;
     const size = this.p("size_px", t, 24) * PX * 2;
     const opacity = this.p("opacity", t, 0.35);
@@ -1816,6 +1896,13 @@ class OrbLayer extends Layer {
     this.fromSky = (def.anchor || "target") === "sky";
     const flies = tp.space?.travel === "projectile" && ["caster_hand", "caster", "sky"].includes(def.anchor || "target");
     this.flight = flies ? (this.window?.beats || []).find((b) => b.phase === "travel") || null : null;
+    // scatter_px: a falling orb lands at a seeded spot up to this far from
+    // the target instead of on it (one meteor of a storm).
+    const sc = this.fromSky ? Number(this.base.scatter_px) || 0 : 0;
+    const rs = this.rng("scatter");
+    const ang = rs.range(0, Math.PI * 2);
+    const dist = Math.sqrt(rs()) * sc * PX;
+    this.landOffset = new THREE.Vector3(Math.cos(ang) * dist, 0, Math.sin(ang) * dist);
     // look "meteor": a burning rock with a flame and smoke trail.
     if (this.base.look === "meteor") {
       this.meteor = new MeteorParts(this);
@@ -1844,12 +1931,18 @@ class OrbLayer extends Layer {
   // direction.
   skyStart(t) {
     const st = this.effect.stage;
-    const to = st.anchor("target");
+    const to = st.anchor("target").add(this.landOffset);
     const h = st.sky.y;
     const tilt = THREE.MathUtils.degToRad(Math.max(0, Math.min(75, this.p("approach_deg", t, 0))));
     const yaw = THREE.MathUtils.degToRad(this.p("approach_yaw_deg", t, 0));
     const off = Math.tan(tilt) * h;
     return to.add(new THREE.Vector3(Math.cos(yaw) * off, h, -Math.sin(yaw) * off));
+  }
+
+  // Where a falling orb hits the ground (its anchor for anything else).
+  landPoint() {
+    if (!this.fromSky) return this.anchorPos();
+    return this.effect.stage.anchor("target").add(this.landOffset);
   }
 
   // Where the orb is at time t: in the hand, on its way, or at the target.
@@ -1859,7 +1952,7 @@ class OrbLayer extends Layer {
     if (!f) return this.anchorPos().add(new THREE.Vector3(0, this.p("height_px", t, 0) * PX, 0));
     const st = this.effect.stage;
     const from = this.fromSky ? this.skyStart(t) : st.hand.clone();
-    const to = this.fromSky ? st.anchor("target") : st.chest(0);
+    const to = this.fromSky ? this.landPoint() : st.chest(0);
     const u = Math.max(0, Math.min(1, (t - f.start_ms) / Math.max(1, f.end_ms - f.start_ms)));
     const e = this.p("travel_ease", t, "linear") === "ease_in" ? u * u : u;
     const arc = this.p("arc_height_px", t, 0) * PX * 4 * e * (1 - e);

@@ -9,7 +9,7 @@ import { beatsAt, phaseColor } from "./engine/timeline.js";
 import { exportSpriteSheets } from "./exporter.js";
 import { STYLE_IDS, resolveStyle } from "./engine/style.js";
 import { makeZip } from "./zip.js";
-import { ALL, groupByType, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
+import { ALL, groupCatalog, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
 
 const $ = (id) => document.getElementById(id);
 const ui = {
@@ -323,14 +323,21 @@ function selectTemplate(tpl) {
 
 function setCatalog(templates) {
   state.templates = templates;
-  state.groups = groupByType(templates);
+  state.groups = groupCatalog(templates);
 }
 
 function buildTypeSelect() {
   ui.typeSelect.innerHTML = "";
   const all = new Option(`${typeLabel(ALL)} (${state.templates.length})`, ALL);
   ui.typeSelect.add(all);
-  for (const g of state.groups) ui.typeSelect.add(new Option(`${g.label} (${g.templates.length})`, g.type));
+  for (const g of state.groups.filter((x) => !x.line)) ui.typeSelect.add(new Option(`${g.label} (${g.templates.length})`, g.type));
+  const lines = state.groups.filter((x) => x.line);
+  if (lines.length) {
+    const og = document.createElement("optgroup");
+    og.label = "Spell lines";
+    for (const g of lines) og.appendChild(new Option(`${g.label} (${g.templates.length})`, g.type));
+    ui.typeSelect.appendChild(og);
+  }
   ui.typeSelect.value = state.type;
 }
 
@@ -343,7 +350,7 @@ function spellOption(tpl) {
 function buildSpellSelect() {
   ui.spellSelect.innerHTML = "";
   if (state.type === ALL) {
-    for (const g of state.groups) {
+    for (const g of state.groups.filter((x) => !x.line)) {
       const og = document.createElement("optgroup");
       og.label = g.label;
       g.templates.forEach((t) => og.appendChild(spellOption(t)));

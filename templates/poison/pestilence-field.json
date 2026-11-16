@@ -1,0 +1,686 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "poison-pestilence-field",
+  "name": "Pestilence Field",
+  "description": "The cabalist points and a sickly green sigil burns itself into the ground under the enemies; the ground rots into glowing sludge, a heavy green mist rises out of it, spores drift up and the sludge bubbles and spits while the field lasts.",
+  "element": "poison",
+  "line": "Cabalist",
+  "archetype": "aura",
+  "tags": [
+    "cabalist",
+    "poison",
+    "disease",
+    "rot",
+    "field",
+    "sigil",
+    "mist",
+    "area",
+    "damage over time"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Cabalist pestilence field: toxic green ground circle with sigils and rot mist"
+  },
+  "timing": {
+    "duration_ms": 4200,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.9,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: a green sigil on the ground ahead, a low wall of green mist rising off it and spores floating up through the mist.",
+      "side": "The mist reads as a low, heavy band hugging the ground with spores and spattering sludge above it; the sigil is a thin bright line.",
+      "top": "The sigil is the star: a glowing green circle of glyphs over a dark sludge stain with glowing cracks, mist puffs scattered across it.",
+      "three_quarter": "Hero view. The sigil and stain lie on the ground, the mist rolls and rises off them, spores drift up and bubbles spit all over the field."
+    }
+  },
+  "palette": {
+    "core": "#EAFFD2",
+    "primary": "#5CFF3A",
+    "secondary": "#1E7F2A",
+    "accent": "#B4FF5A",
+    "shadow": "#13230E"
+  },
+  "beats": [
+    {
+      "id": "inscribe",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 0.8
+      },
+      "intent": "The cabalist points: a green sigil draws itself outward across the ground under the enemies."
+    },
+    {
+      "id": "blight",
+      "phase": "impact",
+      "start_ms": 600,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.5
+      },
+      "intent": "The sigil flares, a pulse of rot runs out through the ground and the earth sickens into sludge."
+    },
+    {
+      "id": "fester",
+      "phase": "release",
+      "start_ms": 900,
+      "end_ms": 3600,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.75,
+        "to": 0.9
+      },
+      "intent": "The field festers: mist rises and rolls, spores drift up and the sludge bubbles."
+    },
+    {
+      "id": "rot-pulse",
+      "phase": "impact",
+      "start_ms": 2200,
+      "end_ms": 2700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "A second pulse of rot ripples out from the centre."
+    },
+    {
+      "id": "wane",
+      "phase": "dissipation",
+      "start_ms": 3300,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The sigil dims and the mist thins, leaving a stain of dead ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "rot-stain",
+      "type": "decal",
+      "beats": [
+        "blight",
+        "fester",
+        "wane"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 200,
+        "opacity": 0.7,
+        "fade_in_ms": 300,
+        "grow_ms": 700,
+        "start_scale": 0.4,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Ground rotted into dark, wet green sludge with a slimy rim.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.2,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "none",
+          "speed": 0
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "sigil",
+      "type": "decal",
+      "beats": [
+        "inscribe",
+        "blight",
+        "fester",
+        "wane"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 175,
+        "opacity": 0.85,
+        "fade_in_ms": 100,
+        "reveal_ms": 600,
+        "spin_deg_per_s": 8,
+        "lifetime_ms": 3700,
+        "fade_ms": 500,
+        "detail": 0.85
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A sickly green circle of cabalist glyphs and a star, burning into the ground.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "inner-sigil",
+      "type": "decal",
+      "beats": [
+        "blight",
+        "fester",
+        "wane"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 70,
+        "opacity": 0.9,
+        "spin_deg_per_s": -22,
+        "lifetime_ms": 2700,
+        "fade_ms": 500,
+        "detail": 0.9
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A small bright sigil at the heart of the field, turning against the outer one.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rot-veins",
+      "type": "decal",
+      "beats": [
+        "blight",
+        "fester"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": 165,
+        "opacity": 0.8,
+        "fade_in_ms": 60,
+        "reveal_ms": 350,
+        "lifetime_ms": 2600,
+        "fade_ms": 800,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Veins of glowing green rot running through the ground.",
+        "technique": "decal",
+        "noise": {
+          "type": "ridged",
+          "scale": 4,
+          "speed": 0.3,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 0.5
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "blight-ring",
+      "type": "ring",
+      "beats": [
+        "blight"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 230,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A pulse of rot rushing out through the ground.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "pulse-ring",
+      "type": "ring",
+      "beats": [
+        "rot-pulse"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 210,
+        "thickness_px": 10,
+        "softness": 0.8,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A slower second pulse of rot.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rot-mist",
+      "type": "smoke",
+      "beats": [
+        "fester",
+        "wane"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "count": 28,
+        "rise_speed": 22,
+        "size_px": {
+          "min": 65,
+          "max": 85
+        },
+        "lifetime_ms": 2200,
+        "opacity": 0.5,
+        "spread_px": 160,
+        "spread_speed": 15
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Heavy, sickly green mist rolling low across the field.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.4,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.3
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3,
+          "edge_color": "primary"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "miasma-glow",
+      "type": "smoke",
+      "beats": [
+        "fester"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": 14,
+        "rise_speed": 35,
+        "size_px": {
+          "min": 45,
+          "max": 60
+        },
+        "lifetime_ms": 1600,
+        "opacity": 0.3,
+        "spread_px": 140
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Patches of the mist lit from inside by the sigil.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0.6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.5
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "spores",
+      "type": "sparks",
+      "beats": [
+        "fester",
+        "wane"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "look": "ember",
+        "count": 90,
+        "speed": 30,
+        "speed_spread": 0.6,
+        "gravity": -50,
+        "lifetime_ms": 1700,
+        "size_px": 2.4,
+        "spread_deg": 80,
+        "drag": 0.5,
+        "emit_ms": 2900,
+        "emit_radius_px": 175,
+        "streak_ms": 25
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Glowing green spores drifting up out of the rot.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sludge-spit",
+      "type": "sparks",
+      "beats": [
+        "fester"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "look": "droplet",
+        "count": 60,
+        "speed": 150,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 500,
+        "size_px": 3,
+        "spread_deg": 40,
+        "drag": 0.2,
+        "emit_ms": 2600,
+        "emit_radius_px": 160,
+        "streak_ms": 20
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Bubbles of sludge popping and spitting little gobs.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 8,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "flies",
+      "type": "sparks",
+      "beats": [
+        "fester"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 10,
+      "params": {
+        "look": "leaf",
+        "count": 30,
+        "speed": 60,
+        "speed_spread": 0.8,
+        "gravity": -20,
+        "lifetime_ms": 1200,
+        "size_px": 3,
+        "spread_deg": 200,
+        "drag": 0.3,
+        "emit_ms": 2500,
+        "emit_radius_px": 120,
+        "wind_px": 0
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Specks of dark flies buzzing over the rot.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 6,
+          "speed": 3,
+          "contrast": 0.7
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "inscribe",
+        "blight"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "radius_px": 40,
+        "softness": 0.8,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Green witch-light at the cabalist's pointing hand.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "toxic-light",
+      "type": "light",
+      "beats": [
+        "blight",
+        "fester",
+        "wane"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 1.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A sickly green underlight on everything in the field.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "inscribe-sound",
+      "type": "sound_cue",
+      "beats": [
+        "inscribe"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.45,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "blight-sound",
+      "type": "sound_cue",
+      "beats": [
+        "blight"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.6,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "bubble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fester"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.35,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "fly-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fester"
+      ],
+      "params": {
+        "cue": "buzz",
+        "gain": 0.2,
+        "pitch": 1.6
+      }
+    },
+    {
+      "id": "pulse-sound",
+      "type": "sound_cue",
+      "beats": [
+        "rot-pulse"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.4,
+        "pitch": 0.5
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The sigil glyphs, stain shape, mist puffs, spores and spitting bubbles change per cast. The field size and the rot pulse every 1.6 s stay fixed (it's a damage-over-time area)."
+  },
+  "director_notes": "From Lisa's spells01 image, Cabalist - Pestilence Field: 'disease spreads, all things rot'. A ground-first area spell: the sigil draws itself (reveal_ms), a rot stain grows under it, glowing veins run out, then mist (alpha, dull green) and glow patches (add) rise over it with spores, spitting sludge and a few flies (leaf look in the shadow color). In an engine, loop the fester beat for the field's duration and fire a rot pulse on each damage tick."
+}

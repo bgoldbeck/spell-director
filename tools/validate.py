@@ -29,13 +29,13 @@ KNOWN_PARAMS = {
     "flash": {"scope", "radius_px", "peak"},
     "sparks": {
         "count", "speed", "speed_spread", "gravity", "lifetime_ms", "size_px", "spread_deg", "drag", "emit_ms", "streak_ms", "look", "glow",
-        "gather_px", "swirl", "emit_radius_px", "wind_px",
+        "gather_px", "swirl", "emit_radius_px", "wind_px", "home_to",
     },
     "crackle": {"count", "length_px", "jaggedness", "regen_ms", "radius_px"},
     "orb": {
         "radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease", "look", "height_px", "bubble",
         "approach_deg", "approach_yaw_deg", "smoke_trail_ms", "smoke_opacity", "crescent_deg", "tilt_deg",
-        "side_offset_px",
+        "side_offset_px", "scatter_px",
     },
     "beam": {
         "width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms", "style", "flow_speed", "turbulence",
@@ -62,7 +62,7 @@ KNOWN_PARAMS = {
         "rotation_deg", "spin_deg_per_s", "stretch", "pulse_hz", "detail", "arc_deg", "reveal_ms",
         "depth", "fill", "fill_color", "fill_flow", "fill_in_ms",
     },
-    "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity", "spread_speed", "spread_px"},
+    "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity", "spread_speed", "spread_px", "height_px"},
     "light": {"radius", "energy"},
     "camera_shake": {"amplitude_px", "frequency_hz", "decay"},
     "sound_cue": {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms"},
@@ -77,6 +77,11 @@ CUE_LIBRARY = ROOT / "web" / "sounds" / "cues.json"
 def known_cues() -> dict:
     """The sound cue library (web/sounds/cues.json): cue id -> definition."""
     return json.loads(CUE_LIBRARY.read_text(encoding="utf-8"))["cues"]
+
+
+def cue_flavors() -> dict:
+    """Per-element sound flavor words from the cue library: element -> {words, avoid}."""
+    return json.loads(CUE_LIBRARY.read_text(encoding="utf-8")).get("flavors", {})
 
 
 def _ranges(node, path="$"):

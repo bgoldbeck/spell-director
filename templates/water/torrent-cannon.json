@@ -990,7 +990,7 @@
         "torrent"
       ],
       "params": {
-        "cue": "wind",
+        "cue": "stream",
         "gain": 0.6,
         "pitch": 1.0
       }

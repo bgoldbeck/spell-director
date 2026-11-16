@@ -18,8 +18,10 @@ import { decalDepthMaps, decalExportMaps, tintDecal } from "./engine/decaltex.js
 import { resolveStyle, styleCell } from "./engine/style.js";
 import {
   ALL_ID, DEFAULTS, SHEET_VIEWS, buildManifest, buildTracks, cellRect, framePlan, guideMarkdown, layoutSheet,
-  sheetFileName, spriteLayers, visibleRange,
+  frameAt, sheetFileName, soundPreviewName, soundSheetName, spriteLayers, visibleRange,
 } from "./engine/spritesheet.js";
+import { soundEvents, soundSheet } from "./engine/sound.js";
+import { renderExportAudio } from "./audio.js";
 
 const VISIBLE = 3; // a pixel channel more than this (0-255) away from the empty background counts as drawn
 
@@ -162,7 +164,8 @@ function toPng(canvas) {
 
 /**
  * Export sprite sheets.
- * opts: {seed, frame, fps, views, layers (true = layer rows), bloom (default true), style (stylized, realistic, toon, pixel; default the template's), maxWidth, cueLibrary, version, onProgress}
+ * opts: {seed, frame, fps, views, layers (true = layer rows), bloom (default true), style (stylized, realistic, toon, pixel; default the template's), maxWidth, cueLibrary, version, onProgress,
+ *        sound (default true: write the sounds JSON and render placeholder WAVs)}
  * Returns {manifest, files: [{name, data: Uint8Array | string}]}.
  */
 export async function exportSpriteSheets(template, opts = {}) {
@@ -290,6 +293,27 @@ export async function exportSpriteSheets(template, opts = {}) {
       { name: `${base}.guide.md`, about: "This guide" },
       { name: `${base}.template.json`, about: "The SpellDirector template the sheets were made from" },
     ];
+    // Sound: the cue sheet plus placeholder WAVs (the whole mix and one per cue).
+    const cueLibrary = opts.cueLibrary || { cues: {} };
+    const sheet = soundSheet(template, seed, cueLibrary, { frameOf: (ms) => frameAt(plan, ms) });
+    let audio = [];
+    if (sheet.events.length) {
+      manifest.sound_sheet = soundSheetName(base);
+      extra.push({ name: soundSheetName(base), about: "Sound cue sheet: what plays when, what each sound should be, prompts and recipes" });
+      if (opts.sound !== false) {
+        progress({ stage: "sound" });
+        try {
+          audio = await renderExportAudio(template, soundEvents(template, seed, cueLibrary), sheet, cueLibrary, { seed });
+        } catch (err) {
+          console.warn("SpellDirector: could not render the sound files", err);
+        }
+        if (audio.length) {
+          manifest.sound_files = audio.map((f) => f.name);
+          extra.push({ name: soundPreviewName(base), about: "Placeholder sound mix of the whole spell, from 0 ms (timing reference)" });
+          extra.push({ name: "sound-<cue>.wav", about: "One placeholder sound per cue; replace with real sounds of the same name" });
+        }
+      }
+    }
     const files = [];
     for (const sh of sheets) {
       files.push({ name: sheetFileName(sh.id), data: new Uint8Array(await (await toPng(sh.canvas)).arrayBuffer()) });
@@ -311,6 +335,8 @@ export async function exportSpriteSheets(template, opts = {}) {
     files.push({ name: extra[0].name, data: `${JSON.stringify(manifest, null, 2)}\n` });
     files.push({ name: extra[1].name, data: guideMarkdown(manifest, { files: extra }) });
     files.push({ name: extra[2].name, data: `${JSON.stringify(template, null, 2)}\n` });
+    if (sheet.events.length) files.push({ name: soundSheetName(base), data: `${JSON.stringify(sheet, null, 2)}\n` });
+    files.push(...audio);
     return { manifest, files };
   } finally {
     scene.remove(effect.group);

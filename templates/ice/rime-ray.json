@@ -770,9 +770,9 @@
         "freeze"
       ],
       "params": {
-        "cue": "crackle",
+        "cue": "freeze",
         "gain": 0.4,
-        "pitch": 1.5
+        "pitch": 1.1
       }
     },
     {

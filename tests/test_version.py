@@ -40,7 +40,10 @@ def test_release_payload_uses_version_and_changelog():
     payload = release.build_release("1.2.3", changelog)
     assert payload["tag_name"] == "v1.2.3"
     assert payload["target_commitish"] == "main"
-    assert payload["body"] == "- thing"
+    assert payload["body"].startswith("- thing\n\n---")
+    # Every release tells a new user how to set up the exe, with this version's guide.
+    assert "SpellDirector-v1.2.3-windows.exe" in payload["body"]
+    assert "/blob/v1.2.3/docs/setup.md" in payload["body"]
 
 
 def test_release_refuses_missing_changelog_section():

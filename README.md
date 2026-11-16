@@ -4,6 +4,14 @@ An AI "director" for game spell effects. You describe a spell loosely ("heavy bo
 
 You don't need to know VFX terminology. The director does, and it offers you concrete choices in plain words.
 
+## Quick start (Windows, no Python)
+
+1. Download `SpellDirector-v<version>-windows.exe` from the [latest release](https://github.com/bgoldbeck/spell-director/releases/latest), put it in its own folder and double-click it. The viewer opens in your browser.
+2. Click **? Help**, then **Connect** next to Claude Desktop, Claude Code or Codex (the ChatGPT desktop app). Restart that app.
+3. Ask it: *"List the SpellDirector spells."* Then: *"Direct a spell: a quick chain shock that jumps between three enemies."*
+
+Step by step, with prompts to paste into ChatGPT or Claude if you'd like an AI to walk you through it, what works with ChatGPT, updating, and troubleshooting: **[docs/setup.md](docs/setup.md)**.
+
 ## Plan
 
 Full design: [docs/DESIGN.md](docs/DESIGN.md). What's next: [docs/ROADMAP.md](docs/ROADMAP.md).
@@ -21,10 +29,12 @@ The current version is in [`VERSION`](VERSION); what changed is in [`CHANGELOG.m
 
 | Path | What |
 |---|---|
+| [`docs/setup.md`](docs/setup.md), [`tools/client_setup.py`](tools/client_setup.py) | Setting up the Windows app and connecting it to Claude Desktop, Claude Code or Codex (`exe --setup`, the Help page's Connect buttons). |
+| [`docs/sound-design.md`](docs/sound-design.md) | Sound vocabulary: sound roles per phase, words for texture, pitch and envelope, timing and levels, and how to make real sounds (text-to-SFX prompts, AI-written synths, libraries). |
 | [`docs/vocabulary.md`](docs/vocabulary.md) | Terms the director uses: phases, timing, shape, color, layers, space, lightning terms. |
 | [`docs/template-format.md`](docs/template-format.md) | The template format, field by field. |
 | [`schemas/`](schemas/) | JSON Schema for templates. |
-| [`templates/`](templates/) | Templates by element: lightning (sky strike, chain arc, charge and discharge, boss storm call, ball lightning), water (pressure jet), fire (dragon breath, meteor strike), wind (tornado, gale shove, scythe volley, maelstrom), light (sunlance), energy (annihilator beam), psychic (mind crush) and earth (ground pound, rending quake, rockfall, stone spires). |
+| [`templates/`](templates/) | Templates by element: lightning (sky strike, chain arc, charge and discharge, boss storm call, ball lightning), water (pressure jet), fire (dragon breath, meteor strike), wind (tornado, gale shove, scythe volley, maelstrom), light (sunlance), energy (annihilator beam), psychic (mind crush), earth (ground pound, rending quake, rockfall, stone spires), sound (rallying anthem, sorrow dirge, lingering refrain), poison (pestilence field), blood (sanguine siphon, crimson nova, nightwing swarm, hemorrhage curse) and shadow (bone tempest, umbral grasp, void collapse). Templates can also name a spell line (Bard, Sorcerer, Cabalist, Necromancer, Vampire, Warlock). |
 | [`web/`](web/) | The viewer (Three.js r169 vendored in `web/vendor`, no build step). |
 | [`web/sounds/`](web/sounds/) | Sound cue library (`cues.json`) and where real samples go. |
 | [`tools/serve.py`](tools/serve.py) | Local server for the viewer. |
@@ -47,7 +57,7 @@ python -m director.mcp_server        # stdio MCP server; run from the repo root
 
 Claude Code picks it up from [`.mcp.json`](.mcp.json) when opened in this repo. For Claude Desktop or another client, add a stdio server with command `python`, args `["-m", "director.mcp_server"]` and the repo as the working directory.
 
-**Without Python:** the Windows app is the MCP server too. Point the client at the exe with the `--mcp` argument:
+**Without Python:** the Windows app is the MCP server too: `SpellDirector.exe --mcp`. The easy way to connect it is **? Help → Connect** in the viewer, or `SpellDirector.exe --setup` (from the source folder: `python tools/client_setup.py`), which adds it to Claude Desktop, Claude Code (`claude mcp add --scope user`) and Codex (`~/.codex/config.toml`, shared by the ChatGPT desktop app, Codex CLI and IDE extension) wherever they're installed, keeping other settings and a `.bak`. When a newer exe starts, it switches the apps already connected to an older one over to itself. See [docs/setup.md](docs/setup.md). By hand, the client entry is:
 
 ```json
 {
@@ -64,7 +74,7 @@ Claude Code picks it up from [`.mcp.json`](.mcp.json) when opened in this repo. 
 
 | Tools | Resources | Prompts |
 |---|---|---|
-| `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif`, `export_sprites`, `look_at_sprite_sheet` | `spelldirector://docs/{vocabulary, template-format, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
+| `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif`, `export_sprites`, `look_at_sprite_sheet` | `spelldirector://docs/{vocabulary, template-format, sound-design, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
 
 `save_template` validates, writes `templates/<element>/<name>.json`, rebuilds the index, and won't replace an existing template unless asked to. Run `python tools/serve.py` (or the app) to open the links it returns. The director follows [docs/director-playbook.md](docs/director-playbook.md).
 
@@ -78,7 +88,7 @@ To get the latest version, double-click `update.bat` (Windows) or run `./update.
 
 Use another port with `run.bat 50123` / `./run.sh 50123`, or set `SPELLDIRECTOR_PORT`. If the port is busy, the next free one is used. Without the scripts: `python tools/serve.py --open`.
 
-Sound cues play in time with the beats (placeholder sounds for now). Sound starts **off**: click **Sound off** or press M to turn it on, and the viewer remembers your choice.
+Sound cues play in time with the beats. The sounds are procedural placeholders; exports include them as WAV files plus a sound brief per cue (text-to-SFX prompts, synthesis recipes, search terms) for making the real ones, see [docs/sound-design.md](docs/sound-design.md). Sound starts **off**: click **Sound off** or press M to turn it on, and the viewer remembers your choice.
 
 **Analyze GIF/MP4…** opens a page where you drop a reference clip and see its breakdown (camera shots, phase timeline, palette, footprint and view hints) next to the clip, then save it or copy a prompt for the director. It runs on your computer through the local server; from a source checkout it needs `pip install -r requirements-dev.txt`.
 

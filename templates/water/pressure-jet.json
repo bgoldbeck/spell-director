@@ -914,7 +914,7 @@
         "jet"
       ],
       "params": {
-        "cue": "wind",
+        "cue": "stream",
         "gain": 0.5,
         "pitch": 1.4
       }
@@ -926,7 +926,7 @@
         "splash"
       ],
       "params": {
-        "cue": "impact",
+        "cue": "splash",
         "gain": 0.7
       }
     },

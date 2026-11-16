@@ -1,0 +1,681 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "blood-sanguine-siphon",
+  "name": "Sanguine Siphon",
+  "description": "The vampire clenches a fist toward the enemy: a crimson brand opens under them, a thin tether of blood latches on, and streams of blood and red life-light are torn out of them and flow back into the vampire's hand, which swells with a glowing orb until the stolen life floods through them.",
+  "element": "blood",
+  "line": "Vampire",
+  "archetype": "beam",
+  "tags": [
+    "vampire",
+    "blood",
+    "drain",
+    "siphon",
+    "life steal",
+    "tether",
+    "heal",
+    "channel"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "vampire blood drain siphon"
+  },
+  "timing": {
+    "duration_ms": 3400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "beam",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: a thin crimson thread runs to the enemy, blood droplets and red sparks pour back along it toward the camera into a growing orb in the hand.",
+      "side": "The best read of the flow: a line from the hand to the enemy's chest with droplets arcing back along it in a stream; the enemy's brand and pool show under them.",
+      "top": "The tether is a line, the stream of droplets runs along it, the brand turns under the enemy and a ring bursts out around the caster when the drain finishes.",
+      "three_quarter": "Hero view. The thread, the stream bowing back toward the caster, the orb growing in the hand and the brand under the enemy all read at once."
+    }
+  },
+  "palette": {
+    "core": "#FFD8D8",
+    "primary": "#D3122C",
+    "secondary": "#6A0612",
+    "accent": "#FF4A5E",
+    "shadow": "#1E0408"
+  },
+  "beats": [
+    {
+      "id": "seize",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 450,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 0.9
+      },
+      "intent": "The vampire reaches out and clenches: a crimson brand opens under the enemy and its chest flares red."
+    },
+    {
+      "id": "latch",
+      "phase": "release",
+      "start_ms": 350,
+      "end_ms": 650,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.7
+      },
+      "intent": "A thin tether of blood snaps out from the hand and hooks into the enemy."
+    },
+    {
+      "id": "drain",
+      "phase": "travel",
+      "start_ms": 550,
+      "end_ms": 2700,
+      "intensity": {
+        "shape": "ease_in_out",
+        "from": 0.8,
+        "to": 1.0
+      },
+      "intent": "Blood and red life-light are torn out of the enemy and pour back along the tether into the vampire's hand."
+    },
+    {
+      "id": "sate",
+      "phase": "impact",
+      "start_ms": 2600,
+      "end_ms": 3000,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.4
+      },
+      "intent": "The stolen life floods into the vampire: a red flash and a ring of power around them."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 2700,
+      "end_ms": 3400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The tether snaps and drips away, the brand fades and the vampire glows, sated."
+    }
+  ],
+  "layers": [
+    {
+      "id": "brand",
+      "type": "decal",
+      "beats": [
+        "seize",
+        "latch",
+        "drain",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 85,
+        "opacity": 0.85,
+        "fade_in_ms": 120,
+        "grow_ms": 200,
+        "start_scale": 0.5,
+        "spin_deg_per_s": -18,
+        "lifetime_ms": 2900,
+        "fade_ms": 500,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A crimson brand of fanged glyphs opening under the victim.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "blood-pool",
+      "type": "decal",
+      "beats": [
+        "drain",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 65,
+        "opacity": 0.85,
+        "fade_in_ms": 300,
+        "grow_ms": 1500,
+        "start_scale": 0.3,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Dark blood pooling under the victim, glossy at its rim.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.5
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "tether",
+      "type": "beam",
+      "beats": [
+        "latch",
+        "drain"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_primary_to_secondary",
+      "z": 7,
+      "params": {
+        "style": "water",
+        "width_px": 7,
+        "wobble": 0.3,
+        "wobble_hz": 3,
+        "grow_ms": 120,
+        "flow_speed": 4,
+        "turbulence": 0.4,
+        "foam": 0.1,
+        "churn": 0.5,
+        "shed_count": 20,
+        "shed_speed": 40,
+        "shed_size_px": 3,
+        "shed_life_ms": 400
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A thin, pulsing thread of blood, its surges running from the victim back to the hand.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "voronoi",
+          "scale": 8,
+          "speed": 3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft",
+          "core_ratio": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "blood-stream",
+      "type": "sparks",
+      "beats": [
+        "drain"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "look": "droplet",
+        "count": 110,
+        "speed": 140,
+        "speed_spread": 0.6,
+        "gravity": 0,
+        "lifetime_ms": 750,
+        "size_px": 3.4,
+        "spread_deg": 360,
+        "drag": 0.4,
+        "emit_ms": 1900,
+        "streak_ms": 40,
+        "home_to": "caster_hand"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Drops of blood torn out of the victim and pulled back to the vampire in a bowing stream.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 1,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "toward_target",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 1.3,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "life-light",
+      "type": "sparks",
+      "beats": [
+        "drain"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "count": 60,
+        "speed": 100,
+        "speed_spread": 0.6,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.4,
+        "emit_ms": 1900,
+        "streak_ms": 80,
+        "home_to": "caster_hand"
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "Streaks of bright red life-light flowing with the blood.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "victim-flare",
+      "type": "glow",
+      "beats": [
+        "seize",
+        "drain"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 60,
+        "softness": 0.85,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The victim's chest glowing red as the life is pulled out.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "pain-ripples",
+      "type": "ring",
+      "beats": [
+        "drain"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 70,
+        "thickness_px": 5,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A shudder rippling through the victim.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "blood-orb",
+      "type": "orb",
+      "beats": [
+        "latch",
+        "drain",
+        "sate"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "keyframes": [
+        {
+          "t_ms": 350,
+          "param": "radius_px",
+          "value": 6
+        },
+        {
+          "t_ms": 2600,
+          "param": "radius_px",
+          "value": 22,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 3000,
+          "param": "radius_px",
+          "value": 4,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "radius_px": 10,
+        "pulse_hz": 2.5,
+        "wobble": 0.3,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A swelling ball of glowing blood held in the vampire's claw, its surface rippling.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 2,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 2
+        },
+        "fresnel": 0.6,
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft",
+          "core_ratio": 0.4
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sate-flash",
+      "type": "flash",
+      "beats": [
+        "sate"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 20,
+      "params": {
+        "scope": "local",
+        "radius_px": 140,
+        "peak": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A red flash as the stolen life floods in.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sate-ring",
+      "type": "ring",
+      "beats": [
+        "sate"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 170,
+        "thickness_px": 12,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A ring of red power bursting out around the sated vampire.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sated-aura",
+      "type": "glow",
+      "beats": [
+        "sate",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "radius_px": 110,
+        "softness": 0.95,
+        "pulse_hz": 1.2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A deep red glow around the vampire.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sated-motes",
+      "type": "sparks",
+      "beats": [
+        "sate",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 10,
+      "params": {
+        "look": "ember",
+        "count": 35,
+        "speed": 60,
+        "speed_spread": 0.6,
+        "gravity": -80,
+        "lifetime_ms": 900,
+        "size_px": 2.4,
+        "spread_deg": 120,
+        "drag": 0.5,
+        "emit_ms": 700,
+        "emit_radius_px": 40,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Red motes rising off the vampire as the life settles in.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "crimson-light",
+      "type": "light",
+      "beats": [
+        "drain",
+        "sate"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "params": {
+        "radius": 4,
+        "energy": 1.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A deep red light from the orb in the hand.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "seize-sound",
+      "type": "sound_cue",
+      "beats": [
+        "seize"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.5,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "latch-sound",
+      "type": "sound_cue",
+      "beats": [
+        "latch"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.5,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "drain-sound",
+      "type": "sound_cue",
+      "beats": [
+        "drain"
+      ],
+      "params": {
+        "cue": "drain",
+        "gain": 0.5,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "flow-sound",
+      "type": "sound_cue",
+      "beats": [
+        "drain"
+      ],
+      "params": {
+        "cue": "heartbeat",
+        "gain": 0.4,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "sate-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sate"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.6,
+        "pitch": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The droplets' paths and the bow of the stream, the tether's wobble and the brand change per cast. The drain length stays fixed."
+  },
+  "director_notes": "Vampire line, a blood drain. The flow must read as coming back to the caster, so the blood is sparks anchored at the target with home_to: caster_hand (new): each drop bursts out of the victim and is pulled to the hand, arriving as it dies, with a seeded bow so the stream isn't one straight line. The tether is a thin water-style beam in blood colours. The orb in the hand grows by keyframes as the drain runs, then pops into a flash and a ring at sate."
+}
