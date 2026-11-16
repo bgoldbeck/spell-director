@@ -1,0 +1,449 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "ice-rime-mantle",
+  "name": "Rime Mantle",
+  "description": "A frost aura: a ring of ice spikes grows up around the caster, frost spreads across the ground over a turning snowflake sigil, snow swirls round them and a wave of cold rolls out every 1.5 s, chilling everything nearby.",
+  "element": "ice",
+  "line": "Sorcerer",
+  "archetype": "aura",
+  "tags": [
+    "aura",
+    "looping",
+    "sustained",
+    "sorcerer",
+    "frost",
+    "cold",
+    "slow",
+    "chill",
+    "snow",
+    "ice",
+    "protection"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Frost aura around the caster: ice spikes, swirling snow, cold waves"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 2.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Jagged ice spikes stand in a ring round the caster, snow swirls past them and a pale mist creeps along the ground.",
+      "side": "Same spikes edge-on either side; swirling snow and the cold waves sliding along the ground give it depth.",
+      "top": "A frosted disc with a six-fold snowflake sigil turning on it, a ring of spikes round the edge and cold waves rolling out.",
+      "three_quarter": "Hero view. Spikes, frost, swirling snow and the cold wave read as a bitter, still circle of winter."
+    }
+  },
+  "palette": {
+    "core": "#F4FBFF",
+    "primary": "#9ADFFF",
+    "secondary": "#3C8FCF",
+    "accent": "#D6F3FF",
+    "shadow": "#15283A"
+  },
+  "beats": [
+    {
+      "id": "kindle",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Frost bites into the ground: it spreads out from the caster, ice spikes crack up in a ring and the snow begins to swirl."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The mantle holds: snow circles, frost glints, mist creeps and a wave of cold rolls out every 1.5 s. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The mantle breaks: the spikes crumble back down, the snow settles and the frost thaws away."
+    }
+  ],
+  "layers": [
+    {
+      "id": "frost-ground",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": -1,
+      "params": {
+        "shape": "frost",
+        "radius_px": 220,
+        "opacity": 0.75,
+        "fade_in_ms": 700,
+        "reveal_ms": 800,
+        "lifetime_ms": 4500,
+        "fade_ms": 500,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Hoarfrost crystals spreading out across the ground from the caster.",
+        "technique": "decal",
+        "fresnel": 0.4,
+        "noise": {
+          "type": "voronoi",
+          "scale": 9,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "styles": {
+          "realistic": {
+            "look": "A crust of rime and frozen dew with crystals catching the light, raised slightly off the ground."
+          }
+        }
+      }
+    },
+    {
+      "id": "snowflake-sigil",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 150,
+        "opacity": 0.7,
+        "fade_in_ms": 600,
+        "spin_deg_per_s": 20,
+        "symmetry": 6,
+        "lifetime_ms": 4300,
+        "fade_ms": 550,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "A pale blue six-fold snowflake sigil turning slowly under the frost.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "ice-spikes",
+      "type": "eruption",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 2,
+        "start_radius_px": 170,
+        "end_radius_px": 200,
+        "growth": 0.7,
+        "row_delay_ms": 160,
+        "height_px": 50,
+        "width_px": 18,
+        "spacing_px": 42,
+        "tilt_deg": 20,
+        "jitter": 0.6,
+        "rise_ms": 180,
+        "hold_ms": 3900,
+        "sink_ms": 500,
+        "debris_count": 2,
+        "debris_speed": 140,
+        "debris_size_px": 4,
+        "dust": 0.3,
+        "dust_size_px": 22,
+        "dust_life_ms": 700
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Clear blue ice spikes with frosted edges, cracking up out of the ground and shattering back down.",
+        "technique": "mesh",
+        "fresnel": 0.7,
+        "distortion": 0.2,
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0,
+          "contrast": 0.5
+        },
+        "notes": "Refractive ice with a bright rim; shatter into shards on the way down."
+      }
+    },
+    {
+      "id": "swirling-snow",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 9,
+      "params": {
+        "look": "flake",
+        "count": 70,
+        "speed": 50,
+        "speed_spread": 0.5,
+        "gravity": -40,
+        "lifetime_ms": 950,
+        "size_px": 3,
+        "spread_deg": 50,
+        "drag": 0.6,
+        "emit_radius_px": 190,
+        "orbit_hz": 0.4
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Soft snow flakes swirling round the caster in a slow spiral.",
+        "technique": "particles",
+        "flow": {
+          "direction": "swirl",
+          "speed": 1
+        }
+      }
+    },
+    {
+      "id": "cold-mist",
+      "type": "smoke",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 5,
+      "params": {
+        "count": 14,
+        "rise_speed": 8,
+        "size_px": 36,
+        "lifetime_ms": 1100,
+        "opacity": 0.35,
+        "spread_px": 40,
+        "spread_speed": 300
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Pale freezing mist creeping outward along the ground.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.3,
+          "contrast": 0.4
+        }
+      }
+    },
+    {
+      "id": "cold-wave",
+      "type": "ring",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 230,
+        "thickness_px": 16,
+        "softness": 0.75,
+        "repeat_ms": 1500
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A ring of biting cold rolling out across the frost, leaving glints behind.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 1.6
+        },
+        "distortion": 0.2
+      }
+    },
+    {
+      "id": "frost-glints",
+      "type": "crackle",
+      "beats": [
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 6,
+      "params": {
+        "count": 4,
+        "length_px": 10,
+        "jaggedness": 0.3,
+        "regen_ms": 250,
+        "radius_px": 200
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "Tiny cracks of frost glinting across the ground.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        }
+      }
+    },
+    {
+      "id": "frost-glow",
+      "type": "glow",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 110,
+        "softness": 0.95,
+        "pulse_hz": 0.333
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A cold blue glow around the caster.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "frost-light",
+      "type": "light",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "params": {
+        "radius": 5,
+        "energy": 1.3
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Cold blue light from the frost.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "freeze-sound",
+      "type": "sound_cue",
+      "beats": [
+        "kindle"
+      ],
+      "params": {
+        "cue": "freeze",
+        "gain": 0.6,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "winter-wind",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.35,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "cold-tick",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "freeze",
+        "gain": 0.25,
+        "pitch": 1.5,
+        "offset_ms": 300,
+        "repeat_ms": 1500
+      }
+    },
+    {
+      "id": "shatter-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "shatter",
+        "gain": 0.45,
+        "pitch": 1.1,
+        "offset_ms": 40
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Spike placement and lean, the snow's paths and the frost pattern change per cast; cold waves every 1.5 s."
+  },
+  "director_notes": "The coordinator suggested a frost aura. Reuses the eruption layer for the spike ring (pale blue, lit like ice) and the flake look with the new orbit_hz for the swirl. Frost glints use a crackle whose redraw ticks wrap with the loop. Loop 1200-4200 ms."
+}

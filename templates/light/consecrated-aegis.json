@@ -1,0 +1,475 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "light-consecrated-aegis",
+  "name": "Consecrated Aegis",
+  "description": "A paladin's holy aura: a golden circle of sacred glyphs turns under their feet, a faint dome of light stands over them, shafts of light rise through it and halo rings roll out in a slow, steady rhythm for as long as the aura holds.",
+  "element": "light",
+  "line": "Paladin",
+  "archetype": "aura",
+  "tags": [
+    "aura",
+    "looping",
+    "sustained",
+    "paladin",
+    "holy",
+    "chivalry",
+    "buff",
+    "allies",
+    "protection",
+    "glyphs"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Paladin chivalry aura: holy golden circle, light shafts and a protective dome that lasts"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 2.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The dome reads as a soft golden arch around the paladin, shafts of light climb past them and the halo rings slide out along the ground at their feet.",
+      "side": "Same arch edge-on; the rising shafts give it height and the rings read as thin bright lines on the ground.",
+      "top": "The best read of the glyph circle: it turns slowly under the dome's bright rim while halo rings spread out over it.",
+      "three_quarter": "Hero view. Dome, turning circle, rising shafts and rolling rings all read at once: a steady, calm holy field."
+    }
+  },
+  "palette": {
+    "core": "#FFFBEA",
+    "primary": "#FFD158",
+    "secondary": "#E39A2B",
+    "accent": "#FFF0B0",
+    "shadow": "#4A3818"
+  },
+  "beats": [
+    {
+      "id": "kindle",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The paladin raises their guard: the glyph circle draws itself and turns, the dome fades up and the first motes rise."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The aura holds. The circle turns, shafts of light climb, the dome breathes and a halo ring rolls out every 1.5 s. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The aura lifts: the dome and shafts thin out, the last ring rolls away and the circle fades from the ground."
+    },
+    {
+      "id": "consecrate",
+      "phase": "release",
+      "start_ms": 450,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A bright flare of consecration rolls out from the paladin as the aura takes hold (start-up only)."
+    }
+  ],
+  "layers": [
+    {
+      "id": "sacred-circle",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 210,
+        "opacity": 0.8,
+        "fade_in_ms": 600,
+        "grow_ms": 700,
+        "start_scale": 0.55,
+        "spin_deg_per_s": 15,
+        "symmetry": 8,
+        "lifetime_ms": 4300,
+        "fade_ms": 600,
+        "detail": 0.8
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Gold-leaf glyphs etched in light on the ground, turning slowly, brightest along the rings.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.25
+        },
+        "lighting": "emits_light",
+        "styles": {
+          "realistic": {
+            "look": "Glyphs burned into the stone in molten gold, a faint light rising off them."
+          },
+          "toon": {
+            "look": "Flat gold glyph bands with a hard white inner line."
+          }
+        }
+      }
+    },
+    {
+      "id": "inner-seal",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 85,
+        "opacity": 0.85,
+        "fade_in_ms": 400,
+        "spin_deg_per_s": -30,
+        "symmetry": 4,
+        "lifetime_ms": 4200,
+        "fade_ms": 500,
+        "detail": 0.9
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A smaller seal turning the other way under the paladin's feet.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "consecration-wave",
+      "type": "ring",
+      "beats": [
+        "consecrate"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 2,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 300,
+        "thickness_px": 22,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A single bright shockwave of holy light that marks the aura taking hold.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "soft"
+        },
+        "distortion": 0.15
+      }
+    },
+    {
+      "id": "halo-rings",
+      "type": "ring",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 240,
+        "thickness_px": 10,
+        "softness": 0.6,
+        "repeat_ms": 1500,
+        "count": 2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Calm halo rings of gold light rolling out across the circle, one every 0.75 s.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 1.4
+        }
+      }
+    },
+    {
+      "id": "aegis-dome",
+      "type": "orb",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 115,
+        "height_px": 50,
+        "bubble": true,
+        "opacity": 0.22,
+        "pulse_hz": 0.667,
+        "wobble": 0,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A barely-there dome of holy light: clear in the middle, a warm gold rim that breathes slowly.",
+        "technique": "mesh",
+        "fresnel": 0.9,
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.3
+        }
+      }
+    },
+    {
+      "id": "light-shafts",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "gradient_core_to_primary",
+      "z": 8,
+      "params": {
+        "count": 26,
+        "speed": 230,
+        "speed_spread": 0.3,
+        "gravity": 0,
+        "lifetime_ms": 800,
+        "size_px": 3.2,
+        "spread_deg": 6,
+        "drag": 0.2,
+        "emit_radius_px": 170,
+        "streak_ms": 260
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Long thin shafts of light rising straight up through the dome and thinning out at the top.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 2.3
+        }
+      }
+    },
+    {
+      "id": "holy-motes",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "look": "ember",
+        "count": 60,
+        "speed": 30,
+        "speed_spread": 0.6,
+        "gravity": -80,
+        "lifetime_ms": 950,
+        "size_px": 2.4,
+        "spread_deg": 50,
+        "drag": 0.5,
+        "emit_radius_px": 210,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Soft gold motes drifting up through the whole circle and twinkling out.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        }
+      }
+    },
+    {
+      "id": "paladin-glow",
+      "type": "glow",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 120,
+        "softness": 0.95,
+        "pulse_hz": 0.667
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A warm golden radiance around the paladin's body.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "holy-light",
+      "type": "light",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 1.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A warm gold point light under the dome that lights the paladin and allies.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "raise-sound",
+      "type": "sound_cue",
+      "beats": [
+        "kindle"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.6,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "consecrate-sound",
+      "type": "sound_cue",
+      "beats": [
+        "consecrate"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.35,
+        "pitch": 1.5
+      }
+    },
+    {
+      "id": "aura-hum",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.35,
+        "pitch": 1.25
+      }
+    },
+    {
+      "id": "halo-chime",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.3,
+        "pitch": 1.4,
+        "offset_ms": 300,
+        "repeat_ms": 1500
+      }
+    },
+    {
+      "id": "lift-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.4,
+        "pitch": 0.85
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The glyphs, where the shafts and motes rise and the circle's starting angle change per cast. The loop itself never changes length: halo rings every 1.5 s, two rings in flight."
+  },
+  "director_notes": "Lisa asked for chivalry/paladin auras. Built as a calm protective field: everything slow and even so it can sit under a character for minutes. The 8-fold glyph circle turns 45 degrees per 3 s loop and the 4-fold seal 90 degrees the other way, so both line up again at the loop's end. One-shot consecration ring only in the start-up. In an engine, loop 1200-4200 ms."
+}

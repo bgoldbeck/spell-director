@@ -42,14 +42,33 @@ export function groupByLine(templates) {
     .map(([line, list]) => ({ type: LINE_PREFIX + line, label: line, line: true, templates: list.slice().sort(byName) }));
 }
 
-// Element groups followed by spell-line groups: what the Type dropdown lists.
-export function groupCatalog(templates) {
-  return [...groupByType(templates), ...groupByLine(templates)];
+// Kinds of spell that cut across elements and lines. "Auras": persistent
+// effects around the caster that loop while they last (templates with a
+// timing.loop_range), whatever their element or line. Type "kind:aura".
+export const KIND_PREFIX = "kind:";
+
+export function isAura(tpl) {
+  const r = tpl?.timing?.loop_range;
+  return !!r && typeof r.start_ms === "number" && typeof r.end_ms === "number" && r.end_ms > r.start_ms;
 }
+
+export function groupByKind(templates) {
+  const byName = (a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id));
+  const auras = templates.filter(isAura).sort(byName);
+  return auras.length ? [{ type: `${KIND_PREFIX}aura`, label: "Auras", kind: true, templates: auras }] : [];
+}
+
+// Element groups, then spell-line groups, then kinds: what the Type dropdown lists.
+export function groupCatalog(templates) {
+  return [...groupByType(templates), ...groupByLine(templates), ...groupByKind(templates)];
+}
+
+// Line and kind groups list spells that an element group already lists.
+export const isExtra = (g) => !!(g.line || g.kind);
 
 // The templates the Spell dropdown shows for a type, in dropdown order.
 export function spellsFor(groups, type) {
-  if (type === ALL) return groups.filter((g) => !g.line).flatMap((g) => g.templates);
+  if (type === ALL) return groups.filter((g) => !isExtra(g)).flatMap((g) => g.templates);
   return groups.find((g) => g.type === type)?.templates ?? [];
 }
 

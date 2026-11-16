@@ -34,6 +34,12 @@ def new_template():
     return doc
 
 
+def test_list_shows_lines_and_aura_loops():
+    auras = {t["id"]: t for t in library.list_templates(archetype="aura") if t["loop_range"]}
+    assert auras["light-consecrated-aegis"]["line"] == "Paladin"
+    assert auras["nature-verdant-bloom"]["loop_range"] == {"start_ms": 1200, "end_ms": 4200}
+
+
 def test_list_and_filter():
     all_ids = {t["id"] for t in library.list_templates()}
     assert {"lightning-sky-strike", "lightning-chain-arc", "lightning-boss-storm-call"} <= all_ids

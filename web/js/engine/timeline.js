@@ -165,3 +165,69 @@ export function phaseColor(phase) {
     }[phase] || "#888888"
   );
 }
+
+// ------------------------------------------------------------ aura loops
+// An aura (a persistent effect around the caster) has a start-up, a sustain
+// section that loops seamlessly for as long as the aura lasts, and an end.
+// timing.loop_range {start_ms, end_ms} marks the sustain section. A layer
+// that is on across the whole range is "looping": everything periodic in it
+// (pulses, spins, flicker ticks, particle emission) repeats exactly every
+// loop length, so the frame at end_ms is the frame at start_ms.
+
+// {start, end, len} or null.
+export function loopRange(template) {
+  const r = template?.timing?.loop_range;
+  if (!r || typeof r.start_ms !== "number" || typeof r.end_ms !== "number" || r.end_ms <= r.start_ms) return null;
+  return { start: r.start_ms, end: r.end_ms, len: r.end_ms - r.start_ms };
+}
+
+// The loop for a layer whose window ({start, end}) covers the whole range,
+// else null.
+export function layerLoop(template, window) {
+  const lr = loopRange(template);
+  if (!lr || !window) return null;
+  return window.start <= lr.start && window.end >= lr.end ? lr : null;
+}
+
+// A frequency (Hz, or any per-second rate) nudged so a whole number of cycles
+// fits in the loop. Never rounds a non-zero rate down to zero.
+export function loopHz(hz, loop, cycle = 1) {
+  if (!loop || !hz) return hz;
+  const perLoop = (Math.abs(hz) * loop.len) / 1000 / cycle;
+  const n = Math.max(1, Math.round(perLoop));
+  return Math.sign(hz) * (n * cycle * 1000) / loop.len;
+}
+
+// A period (ms) nudged so a whole number of them fits in the loop.
+export function loopPeriod(ms, loop) {
+  if (!loop || !(ms > 0)) return ms;
+  return loop.len / Math.max(1, Math.round(loop.len / ms));
+}
+
+// Tick index for regenerating randomness every `period` ms (crackle redraws,
+// wobble), measured from `t0`. In a loop it wraps, so the ticks after the
+// loop's end replay the ones after its start.
+export function loopTick(t, t0, period, loop) {
+  if (!loop) return Math.floor(Math.max(0, t - t0) / period);
+  const p = loopPeriod(period, loop);
+  const n = Math.max(1, Math.round(loop.len / p));
+  const k = Math.floor((t - loop.start) / p);
+  return ((k % n) + n) % n;
+}
+
+// Playback: where the playhead goes after advancing from t to next (ms).
+// With looping on, an aura holds its sustain section (jumps from the loop's
+// end back to its start) and any other spell replays from 0; with looping
+// off it plays through to the end (an aura's end section plays) and stops.
+// Returns {t, wrap: null | {end, start} (the jump, for scheduling sound),
+// ended}.
+export function advancePlayhead(t, next, duration, looping, loop = null) {
+  if (looping && loop && t <= loop.end && next > loop.end) {
+    return { t: loop.start + ((next - loop.end) % loop.len), wrap: { end: loop.end, start: loop.start }, ended: false };
+  }
+  if (next > duration) {
+    if (looping) return { t: next % duration, wrap: { end: duration, start: 0 }, ended: false };
+    return { t: duration, wrap: null, ended: true };
+  }
+  return { t: next, wrap: null, ended: false };
+}

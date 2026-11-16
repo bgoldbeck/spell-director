@@ -4,7 +4,7 @@
 // its default blend, and how a decal's opacity, scale and rotation change
 // over time. No DOM or Three.js here.
 
-import { layerWindow, resolveParams, rng, seedFor } from "./timeline.js";
+import { layerLoop, layerWindow, loopHz, resolveParams, rng, seedFor } from "./timeline.js";
 
 // shape -> {blend, about}. `add` decals glow (light on the ground); `alpha`
 // decals paint the ground (darken or tint it).
@@ -38,6 +38,7 @@ export const DECAL_DEFAULTS = {
   detail: 0.5,
   arc_deg: 360,
   reveal_ms: 0,
+  symmetry: 0,
 };
 
 export function decalShape(layer) {
@@ -68,6 +69,14 @@ export function decalPlan(template, layer, seed, instance = 0) {
   // Without a rotation, each cast lays the mark at a random angle; an arc
   // mark faces the cast direction.
   const rotation = base.rotation_deg ?? (arc < 360 ? 0 : rng(seedFor(seed, layer.id, instance, "rotation")).range(0, 360));
+  // In a looping aura the mark is on through the whole loop: its spin turns
+  // a whole number of symmetry steps (360/symmetry degrees, or full turns)
+  // per loop and its pulse fits whole cycles, so the loop is seamless.
+  const hold = start + Math.max(0, lifetime);
+  const loop = layerLoop(template, win ? { start, end: Math.max(win.end, hold) } : null);
+  const symmetry = decalShape(layer) === "rune_circle" && p("symmetry") >= 3 ? Math.min(12, Math.round(p("symmetry"))) : 0;
+  const spin = loopHz(p("spin_deg_per_s"), loop, symmetry ? 360 / symmetry : 360);
+  const pulse = loopHz(Math.max(0, p("pulse_hz")), loop);
   return {
     shape: decalShape(layer),
     blend: decalBlend(layer),
@@ -80,9 +89,10 @@ export function decalPlan(template, layer, seed, instance = 0) {
     grow_ms: Math.max(0, p("grow_ms")),
     start_scale: p("start_scale"),
     rotation_deg: rotation,
-    spin_deg_per_s: p("spin_deg_per_s"),
+    spin_deg_per_s: spin,
     stretch: p("stretch"),
-    pulse_hz: Math.max(0, p("pulse_hz")),
+    pulse_hz: pulse,
+    symmetry,
     detail: clamp01(p("detail")),
     arc_deg: arc,
     reveal_ms: Math.max(0, p("reveal_ms")),

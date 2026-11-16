@@ -1,0 +1,420 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "shadow-grave-miasma",
+  "name": "Grave Miasma",
+  "description": "A necromancer's necrotic aura: black grave-mist pools around them over a sickly green sigil, pale souls are drawn out of the ground and spiral up, bones drift slowly round them and a draining pulse pulls inward every 1.5 s.",
+  "element": "shadow",
+  "line": "Necromancer",
+  "archetype": "aura",
+  "tags": [
+    "aura",
+    "looping",
+    "sustained",
+    "necromancer",
+    "necrotic",
+    "death",
+    "drain",
+    "debuff",
+    "souls",
+    "bones",
+    "dark"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Necrotic aura around a necromancer: grave mist, souls, bones, life drain"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 2.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Dark mist hangs at the necromancer's knees, pale souls spiral up past them and bones circle slowly at waist height.",
+      "side": "Same low bank of mist with souls climbing out of it; the drain pulses read as thin green lines closing in on the ground.",
+      "top": "A dark pool of mist over a turning green sigil, bones orbiting the necromancer and drain rings closing in.",
+      "three_quarter": "Hero view. Mist, sigil, rising souls and orbiting bones read as a slow, grim, draining presence."
+    }
+  },
+  "palette": {
+    "core": "#E6FFE9",
+    "primary": "#7DF0A2",
+    "secondary": "#2F7F55",
+    "accent": "#B6FFD0",
+    "shadow": "#0C0F12"
+  },
+  "beats": [
+    {
+      "id": "kindle",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The necromancer calls on the grave: the sigil seeps into the ground, black mist wells up and the first souls are torn loose."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The miasma holds: mist churns, souls spiral up, bones circle and a drain pulse pulls in every 1.5 s. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The necromancer lets go: the mist sinks into the ground, the bones drop away and the sigil fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "grave-stain",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "blend": "alpha",
+      "z": -2,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 210,
+        "opacity": 0.7,
+        "fade_in_ms": 900,
+        "grow_ms": 900,
+        "start_scale": 0.4,
+        "lifetime_ms": 4400,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Ground stained black and dead, as if the life has been pulled out of it.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "death-sigil",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 190,
+        "opacity": 0.75,
+        "fade_in_ms": 700,
+        "spin_deg_per_s": -24,
+        "symmetry": 5,
+        "lifetime_ms": 4300,
+        "fade_ms": 600,
+        "detail": 0.9
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A sickly green five-pointed sigil glowing faintly through the dark ground, turning against the clock.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.2,
+          "contrast": 0.5
+        }
+      }
+    },
+    {
+      "id": "grave-mist",
+      "type": "smoke",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 4,
+      "params": {
+        "count": 30,
+        "rise_speed": 10,
+        "size_px": 62,
+        "lifetime_ms": 1100,
+        "opacity": 0.6,
+        "spread_px": 150
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Heavy black mist pooling low around the necromancer, curling slowly.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.3
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.15,
+          "edge_color": "secondary"
+        }
+      }
+    },
+    {
+      "id": "rising-souls",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "count": 30,
+        "speed": 30,
+        "speed_spread": 0.5,
+        "gravity": -120,
+        "lifetime_ms": 950,
+        "size_px": 5,
+        "spread_deg": 25,
+        "drag": 0.5,
+        "emit_radius_px": 160,
+        "orbit_hz": -0.45,
+        "streak_ms": 240
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Pale green wisps of souls pulled from the ground, spiralling up and thinning to nothing.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1.2
+        },
+        "dissolve": {
+          "pattern": "streaks",
+          "edge_width": 0.3,
+          "edge_color": "accent"
+        }
+      }
+    },
+    {
+      "id": "orbiting-bones",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 8,
+      "params": {
+        "look": "bone",
+        "count": 14,
+        "speed": 90,
+        "speed_spread": 0.3,
+        "gravity": 0,
+        "lifetime_ms": 1000,
+        "size_px": 10,
+        "spread_deg": 70,
+        "drag": 1.5,
+        "emit_radius_px": 110,
+        "orbit_hz": 0.3
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Old bones and finger-bones tumbling slowly round the necromancer, a faint green sheen on them.",
+        "technique": "mesh",
+        "fresnel": 0.3,
+        "emissive": {
+          "hdr": 0.6,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "drain-pulse",
+      "type": "ring",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 220,
+        "end_radius_px": 20,
+        "thickness_px": 10,
+        "softness": 0.7,
+        "repeat_ms": 1500,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A thin green ring sucked inward to the necromancer: life drained from everything in range.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "flow": {
+          "direction": "inward",
+          "speed": 1.6
+        }
+      }
+    },
+    {
+      "id": "necro-glow",
+      "type": "glow",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "radius_px": 80,
+        "softness": 0.95,
+        "pulse_hz": 0.667
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A faint sick green glow around the necromancer's body.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "sigil-light",
+      "type": "light",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 4,
+        "energy": 0.9
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Dim green underlight from the sigil.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "call-sound",
+      "type": "sound_cue",
+      "beats": [
+        "kindle"
+      ],
+      "params": {
+        "cue": "drain",
+        "gain": 0.5,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "miasma-drone",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 0.4,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "soul-whispers",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.3,
+        "pitch": 1.0,
+        "offset_ms": 300,
+        "repeat_ms": 1500
+      }
+    },
+    {
+      "id": "release-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.3,
+        "pitch": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The mist's shape, the souls' paths and the bones change per cast. Drain pulses every 1.5 s, always."
+  },
+  "director_notes": "The coordinator suggested a necrotic aura alongside Lisa's examples. Dark things can't be additive, so the mist and stain are alpha and the magic (sigil, souls, drain ring) is the additive green accent. Souls orbit the other way from the bones so the aura churns. Loop 1200-4200 ms."
+}

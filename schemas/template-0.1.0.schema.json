@@ -120,6 +120,25 @@
         "loop": {
           "type": "boolean",
           "default": false
+        },
+        "loop_range": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start_ms",
+            "end_ms"
+          ],
+          "description": "An aura's sustain section: the frames from start_ms to end_ms loop seamlessly for as long as the aura lasts (start-up before, end after).",
+          "properties": {
+            "start_ms": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "end_ms": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
         }
       }
     },

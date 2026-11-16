@@ -282,6 +282,19 @@ Water has weight: it arcs, falls back and leaves the ground wet. Ice is water th
 | meteor storm, rain of fire | several `orb` `look: meteor` on staggered `travel` beats with `scatter_px`; impact sparks, rubble and decals `attach_to` each meteor | Each rock lands somewhere different on the field. |
 | plague, pestilence, rot field | `rune_circle` + `puddle` + glowing `cracks` decals, low alpha `smoke` mist, rising `ember` spores, `droplet` sludge spits | A ground-first area; loop the middle beat for its duration. |
 
+### Auras
+
+| Word | Means | Template |
+|---|---|---|
+| aura | a persistent effect around a character that lasts as long as the game says | `archetype: aura` + `timing.loop_range` |
+| start-up / sustain / end | switching on, holding, switching off | beats before, across and after the loop range |
+| tick | a pulse that repeats while it holds (a heal, a burn, a beat) | ring `repeat_ms`, sound `repeat_ms` |
+| halo, consecration | holy light pooled round a paladin | rune circle + dome (orb `bubble`, low `opacity`) + rising shafts |
+| grove, bloom | living, healing nature round a druid | mushrooms (eruption `shape: mushrooms`), swirling leaves (`orbit_hz`), inward pulse |
+| cadence | a song you can see | `look: note` orbiting, rings on the beat |
+| miasma | a dark, draining cloud | alpha smoke, souls rising, inward drain rings |
+| mantle | a cold field that hangs round the caster | frost decal, ice spikes, swirling flakes |
+
 ## 9. How the director uses this
 
 1. Hear the request (text) or read a GIF breakdown.

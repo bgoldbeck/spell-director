@@ -1,0 +1,443 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "nature-verdant-bloom",
+  "name": "Verdant Bloom",
+  "description": "A druid's healing aura: a ring of glowing mushrooms pops up around them, leaves swirl through the circle, green motes of life rise from the ground and soft pulses of healing draw in toward the druid.",
+  "element": "nature",
+  "line": "Druid",
+  "archetype": "aura",
+  "tags": [
+    "aura",
+    "looping",
+    "sustained",
+    "druid",
+    "healing",
+    "regeneration",
+    "buff",
+    "allies",
+    "leaves",
+    "mushrooms",
+    "nature"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Druid healing aura with leaves and mushrooms"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 2.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Mushrooms stand in a ring around the druid, leaves circle past them at different heights and green motes drift up through the field.",
+      "side": "The ring of mushrooms reads as caps either side of the druid; the swirling leaves and rising motes give it height.",
+      "top": "Two loose rings of glowing caps around a turning leaf-green circle, leaves orbiting over it and healing pulses closing in on the druid.",
+      "three_quarter": "Hero view. Glowing caps, the turning circle, orbiting leaves and the inward pulses read as a living, breathing grove."
+    }
+  },
+  "palette": {
+    "core": "#F3FFE6",
+    "primary": "#8BF06A",
+    "secondary": "#3F9A44",
+    "accent": "#5FE6C8",
+    "shadow": "#1E3A22"
+  },
+  "beats": [
+    {
+      "id": "kindle",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The druid kneels into the earth: the circle greens, mushrooms pop up in two rings and the first leaves lift off the ground."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The grove holds. Leaves swirl around the druid, motes of life rise, the caps glow and a healing pulse draws in every second. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The grove withdraws: the mushrooms sink back into the earth, the leaves settle and the green fades from the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "grove-circle",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 220,
+        "opacity": 0.65,
+        "fade_in_ms": 700,
+        "grow_ms": 800,
+        "start_scale": 0.4,
+        "spin_deg_per_s": 24,
+        "symmetry": 5,
+        "lifetime_ms": 4300,
+        "fade_ms": 650,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A ring of moss and leaf-veined glyphs glowing softly green through the grass.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        },
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0.1,
+          "contrast": 0.5
+        },
+        "styles": {
+          "realistic": {
+            "look": "Fresh moss and clover spreading across the ground in a ring, faintly luminous."
+          }
+        }
+      }
+    },
+    {
+      "id": "mossy-ground",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "blend": "alpha",
+      "z": -1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 200,
+        "opacity": 0.45,
+        "fade_in_ms": 900,
+        "grow_ms": 900,
+        "start_scale": 0.5,
+        "lifetime_ms": 4400,
+        "fade_ms": 600,
+        "detail": 0.4,
+        "depth": 0
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Dark, damp, mossy earth under the grove.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "mushroom-ring",
+      "type": "eruption",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "shape": "mushrooms",
+        "arc_deg": 360,
+        "rows": 2,
+        "start_radius_px": 150,
+        "end_radius_px": 200,
+        "growth": 0.75,
+        "row_delay_ms": 220,
+        "height_px": 44,
+        "width_px": 38,
+        "spacing_px": 100,
+        "tilt_deg": 6,
+        "jitter": 0.7,
+        "rise_ms": 260,
+        "hold_ms": 3950,
+        "sink_ms": 450,
+        "debris_count": 0,
+        "dust": 0.25,
+        "dust_size_px": 22,
+        "dust_life_ms": 600
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Plump mushrooms with softly glowing teal caps and pale stems, popping up with a springy overshoot.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "fresnel": 0.3,
+        "lighting": "lit",
+        "notes": "Grow from scale 0 with a little overshoot; shrink back into the ground at the end."
+      }
+    },
+    {
+      "id": "swirling-leaves",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "look": "leaf",
+        "count": 48,
+        "speed": 60,
+        "speed_spread": 0.5,
+        "gravity": -60,
+        "lifetime_ms": 950,
+        "size_px": 9,
+        "spread_deg": 40,
+        "drag": 0.6,
+        "emit_radius_px": 170,
+        "orbit_hz": 0.35,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Leaves swept round the druid in a lazy spiral, flashing as they turn edge-on.",
+        "technique": "particles",
+        "flow": {
+          "direction": "swirl",
+          "speed": 1.2
+        }
+      }
+    },
+    {
+      "id": "life-motes",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "look": "ember",
+        "count": 70,
+        "speed": 25,
+        "speed_spread": 0.6,
+        "gravity": -70,
+        "lifetime_ms": 950,
+        "size_px": 2.2,
+        "spread_deg": 40,
+        "drag": 0.5,
+        "emit_radius_px": 220,
+        "orbit_hz": 0.15,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Tiny green motes of life rising out of the grass and twinkling out.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.7
+        }
+      }
+    },
+    {
+      "id": "healing-pulse",
+      "type": "ring",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 210,
+        "end_radius_px": 30,
+        "thickness_px": 14,
+        "softness": 0.8,
+        "repeat_ms": 1000,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft green ring drawing in from the mushroom ring to the druid: life flowing inward with each heal tick.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "flow": {
+          "direction": "inward",
+          "speed": 1.8
+        }
+      }
+    },
+    {
+      "id": "druid-glow",
+      "type": "glow",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 100,
+        "softness": 0.95,
+        "pulse_hz": 1
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft green glow around the druid that swells with each heal tick.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.3,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "grove-light",
+      "type": "light",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "params": {
+        "radius": 5,
+        "energy": 1.2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cool teal light from the mushroom caps.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "root-sound",
+      "type": "sound_cue",
+      "beats": [
+        "kindle"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.4,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "mushroom-pops",
+      "type": "sound_cue",
+      "beats": [
+        "kindle"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.3,
+        "pitch": 1.7,
+        "offset_ms": 40,
+        "repeat_ms": 110
+      }
+    },
+    {
+      "id": "grove-rustle",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.25,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "heal-tick",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.3,
+        "pitch": 1.2,
+        "offset_ms": 800,
+        "repeat_ms": 1000
+      }
+    },
+    {
+      "id": "withdraw-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.3,
+        "pitch": 0.8
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Mushroom placement, cap sizes, the leaves' paths and the circle's angle change per cast. Heal pulses every 1 s, always."
+  },
+  "director_notes": "Lisa asked for druid healing auras with leaves and mushrooms. Mushrooms are the new eruption shape `mushrooms` (two loose rings, smaller outer row) so they pop up with a springy overshoot and sink back at the end. Leaves and motes use the new sparks `orbit_hz` to swirl round the druid. The heal pulse runs inward (start radius bigger than end) to say life flows in. Loop 1200-4200 ms."
+}

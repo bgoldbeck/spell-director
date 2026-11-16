@@ -1,0 +1,554 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-pyre-ward",
+  "name": "Pyre Ward",
+  "description": "An area-of-effect damage aura: the ground around the caster catches fire in a wide burning ring, flames lick up across it, embers stream upward and a wave of heat rolls out once a second, burning anything inside.",
+  "element": "fire",
+  "line": "Sorcerer",
+  "archetype": "aura",
+  "tags": [
+    "aura",
+    "looping",
+    "sustained",
+    "sorcerer",
+    "damage",
+    "area",
+    "aoe",
+    "burn",
+    "flames",
+    "embers",
+    "telegraph"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Area of effect flame damage aura around the caster"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 2.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Flames lick up all around the caster, embers stream into the air and the heat waves slide out along the ground.",
+      "side": "Same wall of flame tongues edge-on, with embers rising above it; the damage ring's edge reads at both ends.",
+      "top": "The clearest read of the danger zone: a scorched, glowing disc ringed in orange, flame tongues dotted across it and heat waves rolling outward each second.",
+      "three_quarter": "Hero view. Burning ground, flame tongues, embers and the rolling heat waves read as 'don't stand here'."
+    }
+  },
+  "palette": {
+    "core": "#FFF2C2",
+    "primary": "#FF8A24",
+    "secondary": "#D2361A",
+    "accent": "#FFC34D",
+    "shadow": "#2A140C"
+  },
+  "beats": [
+    {
+      "id": "kindle",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The caster's flames spill out: the ground scorches and catches, the ring of fire flares up and the first embers rise."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The pyre burns. Flames lick across the area, embers stream up and a heat wave rolls out every second (a damage tick). Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The fire dies down: the flames sink, the last embers drift up and the ground is left scorched and smoking."
+    },
+    {
+      "id": "ignite",
+      "phase": "release",
+      "start_ms": 100,
+      "end_ms": 500,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A burst of flame rolls out as the ground catches (start-up only)."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scorched-ground",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": -2,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 230,
+        "opacity": 0.8,
+        "fade_in_ms": 900,
+        "grow_ms": 900,
+        "start_scale": 0.3,
+        "lifetime_ms": 9000,
+        "fade_ms": 1500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "Blackened, sooty ground left behind, with ash streaks radiating out.",
+        "technique": "decal",
+        "styles": {
+          "realistic": {
+            "look": "Charred earth with grey ash and cracked, smouldering grass at the edge."
+          }
+        }
+      }
+    },
+    {
+      "id": "burning-ground",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "burn",
+        "radius_px": 210,
+        "opacity": 0.75,
+        "fade_in_ms": 700,
+        "grow_ms": 800,
+        "start_scale": 0.3,
+        "lifetime_ms": 4200,
+        "fade_ms": 800,
+        "pulse_hz": 1,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Glowing embers in the ground across the whole area, brightening with each heat wave.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 5,
+          "speed": 0.4,
+          "contrast": 0.7
+        }
+      }
+    },
+    {
+      "id": "danger-edge",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "warning_ring",
+        "radius_px": 235,
+        "opacity": 0.7,
+        "fade_in_ms": 500,
+        "grow_ms": 800,
+        "start_scale": 0.3,
+        "lifetime_ms": 4200,
+        "fade_ms": 600,
+        "pulse_hz": 1,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A burning orange edge that marks exactly where the damage reaches.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "notes": "This is the gameplay radius: keep it readable in every style."
+      }
+    },
+    {
+      "id": "ignite-burst",
+      "type": "smoke",
+      "beats": [
+        "ignite"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 7,
+      "params": {
+        "count": 20,
+        "rise_speed": 50,
+        "size_px": 34,
+        "lifetime_ms": 700,
+        "opacity": 0.75,
+        "spread_px": 20,
+        "spread_speed": 560
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A ring of flame billowing out across the ground as it catches.",
+        "technique": "flipbook",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2,
+          "edge_color": "accent"
+        }
+      }
+    },
+    {
+      "id": "flame-tongues",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "gradient_core_to_primary",
+      "z": 8,
+      "params": {
+        "count": 90,
+        "speed": 240,
+        "speed_spread": 0.4,
+        "gravity": -80,
+        "lifetime_ms": 480,
+        "size_px": 10,
+        "spread_deg": 14,
+        "drag": 1.0,
+        "emit_radius_px": 210,
+        "streak_ms": 200
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Short tongues of flame flickering up all over the burning ground.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 2,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 2
+        },
+        "distortion": 0.4,
+        "styles": {
+          "toon": {
+            "look": "Hard-edged three-tone flame licks (yellow, orange, red) with an ink outline."
+          },
+          "pixel": {
+            "look": "Chunky 4-frame flame licks, two oranges and a yellow core."
+          }
+        }
+      }
+    },
+    {
+      "id": "ember-stream",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "look": "ember",
+        "count": 90,
+        "speed": 60,
+        "speed_spread": 0.6,
+        "gravity": -160,
+        "lifetime_ms": 950,
+        "size_px": 2.4,
+        "spread_deg": 40,
+        "drag": 0.4,
+        "emit_radius_px": 220,
+        "streak_ms": 35
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers rising off the whole area on the heat, flickering as they go.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1.5
+        }
+      }
+    },
+    {
+      "id": "flame-billows",
+      "type": "smoke",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": 20,
+        "rise_speed": 90,
+        "size_px": 34,
+        "lifetime_ms": 750,
+        "opacity": 0.7,
+        "spread_px": 170
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Billows of flame rolling up off the burning ground all over the area.",
+        "technique": "flipbook",
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "exponential"
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 1.5,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1.2
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2,
+          "edge_color": "accent"
+        }
+      }
+    },
+    {
+      "id": "heat-wave",
+      "type": "ring",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 240,
+        "thickness_px": 26,
+        "softness": 0.85,
+        "repeat_ms": 1000
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A wave of heat rolling out to the edge once a second: the damage tick.",
+        "technique": "procedural",
+        "distortion": 0.6,
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 2.2
+        },
+        "notes": "Fire the damage tick when the wave starts."
+      }
+    },
+    {
+      "id": "heat-glow",
+      "type": "glow",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 160,
+        "softness": 0.95,
+        "pulse_hz": 1
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A hot orange glow over the whole area, flaring with each heat wave.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "pyre-smoke",
+      "type": "smoke",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 6,
+      "params": {
+        "count": 12,
+        "rise_speed": 45,
+        "size_px": 40,
+        "lifetime_ms": 1100,
+        "opacity": 0.3,
+        "spread_px": 190
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Thin dark smoke drifting up from the burning ground.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.4,
+          "contrast": 0.4
+        }
+      }
+    },
+    {
+      "id": "fire-light",
+      "type": "light",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 2.2
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Flickering orange firelight over the area.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "catch-sound",
+      "type": "sound_cue",
+      "beats": [
+        "ignite"
+      ],
+      "params": {
+        "cue": "ignite",
+        "gain": 0.7,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "pyre-roar",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.45,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "burn-tick",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.35,
+        "pitch": 1.1,
+        "offset_ms": 800,
+        "repeat_ms": 1000
+      }
+    },
+    {
+      "id": "die-down",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.3,
+        "pitch": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Where the flame tongues and embers rise and the scorch's shape change per cast. The heat wave ticks every 1 s, always."
+  },
+  "director_notes": "Lisa asked for an area-of-effect flame damage aura. The gameplay read comes first: a warning ring marks the exact edge, the burning ground pulses and a heat wave rolls out on each 1 s damage tick. Flame tongues are short streaky sparks across the whole disc rather than one wall, so the area reads from the top view too. The scorch stays after the spell. Loop 1200-4200 ms."
+}

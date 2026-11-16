@@ -124,6 +124,9 @@ def list_templates(element: str | None = None, archetype: str | None = None) -> 
             "name": doc.get("name"),
             "element": doc.get("element"),
             "archetype": doc.get("archetype"),
+            "line": doc.get("line"),
+            # An aura's seamless sustain loop, or None for a one-shot.
+            "loop_range": doc.get("timing", {}).get("loop_range"),
             "hero_view": doc.get("views", {}).get("hero"),
             "duration_ms": doc.get("timing", {}).get("duration_ms"),
             "tags": doc.get("tags", []),

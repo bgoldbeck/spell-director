@@ -2,7 +2,7 @@
 // No Web Audio here, so it runs in Node tests. web/js/audio.js plays the
 // events; the renderer never depends on what was played.
 
-import { resolveValue, seedFor } from "./timeline.js";
+import { loopRange, resolveValue, seedFor } from "./timeline.js";
 
 export const DEFAULT_GAIN = 0.8;
 const FALLBACK = { kind: "one_shot", duration_ms: 300 };
@@ -18,7 +18,8 @@ function num(v, seed, fallback, ...parts) {
 // - one_shot cues fire at the start of each of the layer's beats (plus
 //   offset_ms), and again every repeat_ms inside that beat if set.
 // - sustained cues span the layer's active window (first beat start to last
-//   beat end), or duration_ms if set.
+//   beat end), or duration_ms if set; with repeat_ms they play like
+//   one-shots, again every repeat_ms, each for the cue's own length.
 export function soundEvents(template, seed, library = {}) {
   const cues = library.cues || {};
   const events = [];
@@ -33,7 +34,10 @@ export function soundEvents(template, seed, library = {}) {
     const offset = pick("offset_ms", 0);
     const base = { layer: layer.id, cue, kind: def.kind, known: cue in cues };
 
-    if (def.kind === "sustained") {
+    // A sustained cue with repeat_ms plays again every repeat_ms inside each
+    // beat, each time for its own length (duration_ms or the cue's): a
+    // shimmer on every beat of an aura, a sizzle on each damage tick.
+    if (def.kind === "sustained" && !(pick("repeat_ms", 0) > 0)) {
       const start = Math.min(...beats.map((b) => b.start_ms)) + offset;
       const end = Math.max(...beats.map((b) => b.end_ms));
       const dur = pick("duration_ms", Math.max(1, end - start));
@@ -145,6 +149,8 @@ export function soundSheet(template, seed, library = {}, { frameOf } = {}) {
     return own.find((b) => e.at >= b.start_ms && e.at < b.end_ms) || own.find((b) => e.at >= b.start_ms) || own[0] || null;
   };
 
+  // An aura's seamless loop: sounds inside it repeat every loop.
+  const lr = loopRange(template);
   const out = events.map((e) => {
     const b = beatFor(e);
     const phase = b?.phase || null;
@@ -165,6 +171,13 @@ export function soundSheet(template, seed, library = {}, { frameOf } = {}) {
       volume_db: db(e.gain),
       pitch: r2(e.rate),
     };
+    if (lr) {
+      // intro: plays once when the aura starts; loop: repeats every loop
+      // (a sustained cue spanning the loop is held while the aura lasts);
+      // outro: plays once when it ends.
+      ev.section = e.at < lr.start ? "intro" : e.at < lr.end ? "loop" : "outro";
+      ev.in_loop = ev.section === "loop" || (e.kind === "sustained" && e.at <= lr.start && e.at + e.dur >= lr.end);
+    }
     return ev;
   });
 
@@ -217,6 +230,7 @@ export function soundSheet(template, seed, library = {}, { frameOf } = {}) {
       description: template.description || "",
       duration_ms: template.timing?.duration_ms ?? null,
       loop: !!template.timing?.loop,
+      loop_range: lr ? { start_ms: lr.start, end_ms: lr.end } : null,
     },
     seed,
     flavor,

@@ -5,6 +5,10 @@
 import * as THREE from "three";
 import {
   layerIntensity,
+  layerLoop,
+  loopHz,
+  loopPeriod,
+  loopTick,
   layerWindow,
   paramAtFrom,
   resolveParams,
@@ -607,6 +611,46 @@ export function cragGeometry(kind, r) {
   return geo;
 }
 
+// A mushroom for eruptions with shape "mushrooms": a pale stem under a
+// rounded cap with darker gills, 1 unit tall and about 1 wide, standing on
+// y = 0. Vertex colors: cap in `cap`, stem and gills in `stem`.
+export function mushroomGeometry(r, cap, stem) {
+  const parts = [];
+  const bend = new THREE.Vector2(r.range(-0.08, 0.08), r.range(-0.08, 0.08));
+  const stemGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.62, 8, 3, true);
+  stemGeo.translate(0, 0.31, 0);
+  jitterVertices(stemGeo, (v) => {
+    v.x += bend.x * v.y * v.y * 2;
+    v.z += bend.y * v.y * v.y * 2;
+    return v;
+  });
+  parts.push([stemGeo, stem]);
+  const capR = r.range(0.42, 0.52);
+  const capGeo = new THREE.SphereGeometry(capR, 14, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+  capGeo.scale(1, r.range(0.5, 0.75), 1);
+  capGeo.translate(bend.x * 0.75, 0.58, bend.y * 0.75);
+  parts.push([capGeo, cap]);
+  const gills = new THREE.CircleGeometry(capR * 0.98, 14);
+  gills.rotateX(Math.PI / 2);
+  gills.translate(bend.x * 0.75, 0.58, bend.y * 0.75);
+  parts.push([gills, stem.clone().multiplyScalar(0.6)]);
+  const pos = [];
+  const nor = [];
+  const col = [];
+  for (const [g0, c] of parts) {
+    const g = g0.index ? g0.toNonIndexed() : g0;
+    g.computeVertexNormals();
+    pos.push(...g.attributes.position.array);
+    nor.push(...g.attributes.normal.array);
+    for (let i = 0; i < g.attributes.position.count; i++) col.push(c.r, c.g, c.b);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  return geo;
+}
+
 function rockMaterial(color) {
   return new THREE.MeshStandardMaterial({ color, vertexColors: true, flatShading: true, roughness: 0.95, metalness: 0 });
 }
@@ -829,6 +873,19 @@ class Layer {
     this.offset = effect.chainOffset(def, instance);
     this.colors = colorsFor(effect.template, def.color);
     this.visible = true;
+    // Looping aura: this layer is on across the template's loop_range, so
+    // everything periodic in it repeats exactly every loop length.
+    this.loop = layerLoop(effect.template, this.window);
+  }
+
+  // A rate param (Hz, turns per second) nudged to whole cycles per loop.
+  hz(name, t, fallback) {
+    return loopHz(this.p(name, t, fallback), this.loop);
+  }
+
+  // Tick index for redrawing randomness every `period` ms (wraps in a loop).
+  tick(t, period) {
+    return loopTick(t, this.window?.start ?? 0, Math.max(1, period), this.loop);
   }
 
   p(name, t, fallback) {
@@ -1020,7 +1077,7 @@ class CrackleLayer extends Layer {
     this.group.visible = I > 0.001;
     if (!this.group.visible) return;
     const regen = this.p("regen_ms", t, 50);
-    const tick = Math.floor(Math.max(0, this.local(t)) / Math.max(10, regen));
+    const tick = this.tick(t, Math.max(10, regen));
     const r = this.rng("crackle", tick);
     const count = Math.round(this.p("count", t, 3));
     const len = this.p("length_px", t, 16) * PX * 2.2;
@@ -1064,7 +1121,7 @@ class GlowLayer extends Layer {
     const pts = attached ? attached.points() : [this.anchorPos()];
     let radius = this.p("radius_px", t, 30) * PX;
     if (attached instanceof OrbLayer) radius += attached.currentRadius * 1.5;
-    const pulse = this.p("pulse_hz", t, 0);
+    const pulse = this.hz("pulse_hz", t, 0);
     const k = pulse ? 1 + 0.15 * Math.sin((t / 1000) * pulse * Math.PI * 2) : 1;
     while (this.sprites.length < pts.length) {
       const s = new THREE.Sprite(this.material);
@@ -1139,6 +1196,41 @@ export function boneShape(head, age, ph, size, fade) {
   return { pts: [at(-1), at(-0.8), at(0), at(0.8), at(1)], w: [fade, 0.5 * fade, 0.42 * fade, 0.5 * fade, fade] };
 }
 
+// A music note: an oval head, a stem and a flag, swaying as it drifts.
+// Returns several paths (head, stem, flag).
+export function noteShape(head, age, ph, size, fade) {
+  const sway = 0.35 * Math.sin(age * 3 + ph);
+  const side = new THREE.Vector3(Math.cos(ph * 1.7), 0, Math.sin(ph * 1.7));
+  const up = UP.clone().addScaledVector(side, sway * 0.4).normalize();
+  const at = (s, u) => head.clone().addScaledVector(side, s * size).addScaledVector(up, u * size);
+  const top = at(0.42, 2.5);
+  return [
+    { pts: [at(-0.5, -0.2), at(0, 0), at(0.5, 0.2)], w: [0.55 * fade, fade, 0.55 * fade] },
+    { pts: [at(0.42, 0.15), at(0.42, 1.3), top], w: [0.3 * fade, 0.3 * fade, 0.3 * fade] },
+    { pts: [top, at(0.95, 1.9), at(1.05, 1.2)], w: [0.35 * fade, 0.3 * fade, 0.12 * fade] },
+  ];
+}
+
+// Ages (s) at time `local` of a spark born at `born` (ms after its layer's
+// start) that lives `life` ms. In a looping aura the spark is reborn every
+// loop length for as long as the layer's window lasts, so emission repeats
+// exactly each loop (start the window at least one lifetime before the loop
+// so it is already full when the loop begins).
+function sparkAges(local, born, life, loop, windowLen) {
+  if (!loop) {
+    const a = local - born;
+    return a >= 0 && a <= life ? [a / 1000] : [];
+  }
+  const out = [];
+  const L = loop.len;
+  const k0 = Math.max(0, Math.ceil((local - life - born) / L));
+  for (let k = k0; born + k * L <= local; k++) {
+    if (born + k * L > windowLen) break;
+    out.push((local - born - k * L) / 1000);
+  }
+  return out;
+}
+
 class SparksLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
@@ -1186,6 +1278,8 @@ class SparksLayer extends Layer {
     // look "bone": pale bones that tumble end over end.
     this.bat = this.base.look === "bat";
     this.bone = this.base.look === "bone";
+    // look "note": glowing music notes (head, stem and flag) that sway.
+    this.note = this.base.look === "note";
     if (this.bat) {
       this.streaks = new RibbonMesh(this.max * 6, outer, 1, 0.35, { blending: THREE.NormalBlending });
       this.hot = new RibbonMesh(this.max * 6, core, 1, 1.2);
@@ -1224,6 +1318,7 @@ class SparksLayer extends Layer {
 
   // Bat and bone looks: build each spark's shape from where it is.
   shaped(head, tail, age, i, size, fade) {
+    if (this.note) return noteShape(head, age, i * 2.399, size, fade);
     const dir = head.clone().sub(tail);
     if (dir.lengthSq() < 1e-10) dir.set(1, 0, 0);
     dir.normalize();
@@ -1292,9 +1387,14 @@ class SparksLayer extends Layer {
     // flying at the target). Ease-in, so the burst reads before the pull.
     const homeName = typeof this.base.home_to === "string" ? this.base.home_to : null;
     const home = homeName ? (homeName === "target" ? this.effect.stage.chest(this.instance) : this.effect.stage.anchor(homeName, this.instance)) : null;
+    // orbit_hz: each spark also circles the anchor (turns per second around
+    // the vertical axis, negative = clockwise seen from above): leaves, notes
+    // or embers swirling around a caster.
+    const orbit = this.p("orbit_hz", 0, 0) * Math.PI * 2;
     const paths = [];
     for (let i = 0; i < count; i++) {
-      const born = r.range(0, span);
+      // Looping: `count` sparks per loop, each reborn every loop.
+      const born = r.range(0, this.loop ? this.loop.len : span);
       const lifeI = life * r.range(0.7, 1.2);
       const theta = r.range(0, Math.PI * 2);
       const cone = THREE.MathUtils.degToRad(spreadDeg / 2);
@@ -1305,8 +1405,7 @@ class SparksLayer extends Layer {
       const dz = Math.sin(phi) * Math.sin(theta);
       // Drawn before any skip below so each spark keeps its spot.
       const o = startAt();
-      const age = (local - born) / 1000;
-      if (age < 0 || age * 1000 > lifeI) continue;
+      for (const age of sparkAges(local, born, lifeI, this.loop, w.end - w.start)) {
       const ph = i * 2.399; // not from r: sparks skipped above would shift the sequence
       const wobble = this.ember || this.flake;
       const reach = gather * (0.7 + 0.6 * (((Math.sin(i * 78.233) * 43758.5453) % 1 + 1) % 1));
@@ -1322,7 +1421,7 @@ class SparksLayer extends Layer {
           origin.z + (dx * sn + dz * c) * d,
         );
       };
-      const loose = gather > 0 ? inward : (a) => {
+      const flown = gather > 0 ? inward : (a) => {
         const travel = (v * (1 - Math.exp(-drag * a))) / drag;
         const flutter = wobble ? Math.sin(a * 7 + ph) * 0.18 * a : 0;
         // Flakes are light: air drag caps their fall at a steady gravity/4
@@ -1334,6 +1433,16 @@ class SparksLayer extends Layer {
           o.z + dz * travel + (wobble ? Math.cos(a * 5 + ph) * 0.18 * a : 0),
         );
       };
+      const loose = orbit ? (a) => {
+        const q = flown(a);
+        const c = Math.cos(orbit * a);
+        const sn = Math.sin(orbit * a);
+        const ox = q.x - origin.x;
+        const oz = q.z - origin.z;
+        q.x = origin.x + ox * c - oz * sn;
+        q.z = origin.z + ox * sn + oz * c;
+        return q;
+      } : flown;
       const at = home ? (a) => {
         const f = Math.min(1, Math.max(0, (a * 1000) / lifeI));
         const pull = f * f * (3 - 2 * f);
@@ -1350,6 +1459,8 @@ class SparksLayer extends Layer {
       if (this.flake) fade = Math.min(1, fade * 3) * Math.min(1, age * 8);
       // Frozen shards hold, then go in the last fifth of their life.
       if (this.shard) fade = Math.min(1, fade * 5);
+      // Notes fade in as they appear and hold until late in their life.
+      if (this.note) fade = Math.min(1, fade * 2.5, age * 5);
       const head = at(age);
       // A shard is a needle that grows from near the anchor out to its head.
       const tail = this.shard ? at(0).lerp(head, 0.3) : at(Math.max(0, age - streakS));
@@ -1357,18 +1468,28 @@ class SparksLayer extends Layer {
       const mid = head.clone().lerp(tail, 0.5);
       // Drop size varies per spark (by index, so the burst stays seeded).
       const k = 0.45 + 0.9 * ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
+      if (this.note) {
+        paths.push(...this.shaped(head, tail, age, i, sz * k, fade));
+        continue;
+      }
       if (this.bat || this.bone) {
         paths.push(this.shaped(head, at(Math.max(0, age - 0.03)), age, i, sz * k, fade));
         continue;
       }
       paths.push({ pts: [head, mid, tail], w: [fade, fade * 0.8, 0.15 * fade], k });
+      }
     }
     this.draw(paths, sz);
   }
 
   // Draw spark paths [{pts: [head, mid, tail], w, k}] in this layer's look.
   draw(paths, sz) {
-    if (this.bat || this.bone) {
+    if (this.note) {
+      this.streaks.setPaths(paths, sz * 0.5);
+      this.hot.setPaths(paths, sz * 0.2);
+      this.streaks.opacity = 0.9;
+      this.hot.opacity = 1;
+    } else if (this.bat || this.bone) {
       // A dark (bat) or pale (bone) body with a thin bright rim or glint.
       this.streaks.setPaths(paths, sz * (this.bat ? 0.5 : 0.35));
       this.hot.setPaths(paths, sz * (this.bat ? 0.12 : 0.1));
@@ -1659,11 +1780,20 @@ class RingLayer extends Layer {
       polygonOffsetFactor: -2,
       polygonOffsetUnits: -2,
     });
-    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.material);
-    if (this.plane === "ground") this.mesh.rotation.x = -Math.PI / 2;
-    else if (this.plane === "vertical") this.mesh.rotation.y = Math.PI / 2;
-    this.mesh.frustumCulled = this.plane !== "billboard";
-    this.group.add(this.mesh);
+    // repeat_ms: the ring rolls out again and again (pulses of an aura),
+    // `count` of them in flight at once, evenly staggered.
+    this.repeat = typeof this.base.repeat_ms === "number" && this.base.repeat_ms > 0 ? loopPeriod(Math.max(50, this.base.repeat_ms), this.loop) : 0;
+    const n = this.repeat ? Math.max(1, Math.min(8, Math.round(this.base.count ?? 1))) : 1;
+    this.meshes = [];
+    for (let i = 0; i < n; i++) {
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), i === 0 ? this.material : this.material.clone());
+      if (this.plane === "ground") mesh.rotation.x = -Math.PI / 2;
+      else if (this.plane === "vertical") mesh.rotation.y = Math.PI / 2;
+      mesh.frustumCulled = this.plane !== "billboard";
+      this.meshes.push(mesh);
+      this.group.add(mesh);
+    }
+    this.mesh = this.meshes[0];
   }
 
   update(t) {
@@ -1671,7 +1801,25 @@ class RingLayer extends Layer {
     const I = this.intensityAt(t);
     this.group.visible = !!w && I > 0.001;
     if (!this.group.visible) return;
+    if (this.repeat) {
+      const n = this.meshes.length;
+      const local = this.local(t);
+      this.meshes.forEach((mesh, i) => {
+        const since = local - (i * this.repeat) / n;
+        mesh.visible = since >= 0;
+        if (!mesh.visible) return;
+        const u = (since % this.repeat) / this.repeat;
+        // Fades in as it leaves the centre and out as it reaches the edge.
+        this.place(mesh, mesh.material, t, u, I * Math.min(1, u * 8) * (1 - u * u) * 1.3);
+      });
+      return;
+    }
     const u = Math.min(1, Math.max(0, this.local(t) / Math.max(1, w.end - w.start)));
+    this.place(this.mesh, this.material, t, u, Math.min(1, I * (1 - u * 0.7) * 1.3));
+  }
+
+  // Size and fade one ring mesh u (0-1) of the way through its roll-out.
+  place(mesh, material, t, u, opacity) {
     // ease: ease_out (default, a burst that slows), linear (a steady wave
     // front, e.g. to keep pace with an eruption) or ease_in (speeds up).
     const ease = this.p("ease", t, "ease_out");
@@ -1680,15 +1828,15 @@ class RingLayer extends Layer {
     const r1 = this.p("end_radius_px", t, 80) * PX;
     const radius = r0 + (r1 - r0) * e;
     // A soft ring needs room to fade: draw it a little wider than its thickness.
-    const thick = (this.p("thickness_px", t, 5) * PX) * (1 + this.material.uniforms.softness.value);
+    const thick = (this.p("thickness_px", t, 5) * PX) * (1 + material.uniforms.softness.value);
     const outer = radius + thick / 2;
     const at = this.anchorPos();
     if (this.plane === "ground") at.y = 0.02;
     else if (at.y < 0.05) at.y = 0.55;
-    this.mesh.position.copy(at);
-    this.mesh.scale.setScalar(outer);
-    this.material.uniforms.inner.value = Math.max(0, (radius - thick / 2) / outer);
-    this.material.uniforms.opacity.value = Math.min(1, I * (1 - u * 0.7) * 1.3);
+    mesh.position.copy(at);
+    mesh.scale.setScalar(outer);
+    material.uniforms.inner.value = Math.max(0, (radius - thick / 2) / outer);
+    material.uniforms.opacity.value = Math.min(1, opacity);
   }
 }
 
@@ -1700,7 +1848,7 @@ class DecalLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
     this.plan = decalPlan(effect.template, def, effect.seed, instance);
-    this.canvas = drawDecal(this.plan.shape, seedFor(effect.seed, def.id, instance, "texture"), { detail: this.plan.detail, arc_deg: this.plan.arc_deg });
+    this.canvas = drawDecal(this.plan.shape, seedFor(effect.seed, def.id, instance, "texture"), { detail: this.plan.detail, arc_deg: this.plan.arc_deg, symmetry: this.plan.symmetry });
     const map = new THREE.CanvasTexture(this.canvas);
     map.colorSpace = THREE.SRGBColorSpace;
     map.anisotropy = 4;
@@ -1809,11 +1957,18 @@ class SmokeLayer extends Layer {
     this.sprites.forEach((s, i) => {
       const ang = ((i + ro.range(-0.35, 0.35)) / Math.max(1, count)) * Math.PI * 2;
       const kOut = ro.range(0.75, 1.2);
-      const born = r.range(0, Math.max(1, (w.end - w.start) * 0.5));
+      let born = r.range(0, this.loop ? this.loop.len : Math.max(1, (w.end - w.start) * 0.5));
       const dx = r.range(-scatter, scatter);
       const dz = r.range(-scatter, scatter);
       const spin0 = r.range(0, Math.PI * 2);
       const spin = r.range(-1.2, 1.2);
+      // Looping aura: each puff is reborn every loop length while the
+      // layer's window lasts (keep lifetime_ms under the loop length).
+      if (this.loop && local > born) {
+        const k = Math.floor((local - born) / this.loop.len);
+        const last = Math.floor((w.end - w.start - born) / this.loop.len);
+        born += Math.max(0, Math.min(k, last)) * this.loop.len;
+      }
       const age = (local - born) / life;
       s.visible = i < count && age >= 0 && age <= 1;
       if (!s.visible) return;
@@ -2042,10 +2197,10 @@ class OrbLayer extends Layer {
     }
     const at = this.posAt(t);
     this.pos = at;
-    const pulse = this.p("pulse_hz", t, 4);
+    const pulse = this.hz("pulse_hz", t, 4);
     const wob = this.p("wobble", t, 0.1);
     const r = this.p("radius_px", t, 10) * PX * (1 + 0.08 * Math.sin((t / 1000) * pulse * Math.PI * 2));
-    const n = this.rng("wobble", Math.floor(t / 33));
+    const n = this.rng("wobble", this.loop ? this.tick(t, 33) : Math.floor(t / 33));
     this.currentRadius = r;
     this.core.position.copy(at);
     this.shell.position.copy(at);
@@ -2053,8 +2208,10 @@ class OrbLayer extends Layer {
     this.shell.scale.set(r * (1 + wob * n.range(-0.5, 0.5)), r * (1 + wob * n.range(-0.5, 0.5)), r * (1 + wob * n.range(-0.5, 0.5)));
     this.core.visible = !this.bubble;
     this.coreMat.opacity = Math.min(1, I * 1.2);
-    if (this.bubble) this.shellMat.uniforms.opacity.value = Math.min(1, I);
-    else this.shellMat.opacity = 0.45 * I;
+    // opacity: a fainter orb or bubble (a barely-there dome), default 1.
+    const op = Math.max(0, Math.min(1, this.p("opacity", t, 1)));
+    if (this.bubble) this.shellMat.uniforms.opacity.value = Math.min(1, I) * op;
+    else this.shellMat.opacity = 0.45 * I * op;
     const count = Math.round(this.p("crackle_count", t, 3));
     let segs = [];
     for (let i = 0; i < count; i++) {
@@ -2594,8 +2751,12 @@ class EruptionLayer extends Layer {
     super(effect, def, instance);
     const b = this.base;
     const num = (k, d) => (typeof b[k] === "number" ? b[k] : d);
-    const shape = b.shape === "slabs" ? "slab" : "spike";
+    const shape = b.shape === "slabs" ? "slab" : b.shape === "mushrooms" ? "mushroom" : "spike";
     this.slab = shape === "slab";
+    // shape "mushrooms": mushrooms pop up out of the ground (a druid's ring
+    // of fungi) instead of rock: smooth, softly glowing caps in the layer's
+    // color on pale stems. Pair with debris_count 0 and little dust.
+    this.mushroom = shape === "mushroom";
     const rows = Math.max(1, Math.min(12, Math.round(num("rows", 5))));
     const arc = THREE.MathUtils.degToRad(Math.max(5, Math.min(360, num("arc_deg", 100))));
     const full = arc >= Math.PI * 2 - 1e-3;
@@ -2625,8 +2786,13 @@ class EruptionLayer extends Layer {
     const heading = castHeading(effect.stage);
     const r = this.rng("layout");
     const rockColor = this.colors[1];
-    this.material = rockMaterial(rockColor);
     const pal = effect.template.palette || {};
+    this.material = rockMaterial(rockColor);
+    let stemColor = null;
+    if (this.mushroom) {
+      stemColor = new THREE.Color(pal.core || "#f2ead8").lerp(new THREE.Color("#e8e0cc"), 0.5);
+      this.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0, emissive: rockColor.clone().multiplyScalar(0.35) });
+    }
     const dustColor = new THREE.Color(pal.secondary || pal.primary || "#c8b89a");
     this.spikes = [];
     this.debris = [];
@@ -2659,7 +2825,7 @@ class EruptionLayer extends Layer {
         const q = new THREE.Quaternion().setFromAxisAngle(axis, tilt * r.range(0.6, 1.3)).multiply(yaw);
         // The front bows: the ends of the arc lag the middle a little.
         const time = Math.max(0, t0 + r.range(-0.5, 0.5) * jitter * Math.min(delay, 120) * 0.5 + (full ? 0 : Math.abs(u) * Math.min(delay, 160) * 0.3));
-        const mesh = new THREE.Mesh(cragGeometry(shape, r), this.material);
+        const mesh = new THREE.Mesh(this.mushroom ? mushroomGeometry(r, rockColor, stemColor) : cragGeometry(shape, r), this.material);
         mesh.visible = false;
         this.group.add(mesh);
         this.spikes.push({ mesh, base, q, height, width, t: time });
@@ -3324,7 +3490,7 @@ class ShakeLayer extends Layer {
     if (I <= 0.001) return;
     const amp = this.p("amplitude_px", t, 4) * PX * 0.5 * I;
     const hz = this.p("frequency_hz", t, 25);
-    const tick = Math.floor((t / 1000) * hz);
+    const tick = this.loop ? this.tick(t, 1000 / Math.max(1, hz)) : Math.floor((t / 1000) * hz);
     const r = this.rng("shake", tick);
     this.effect.shake.x += r.range(-amp, amp);
     this.effect.shake.y += r.range(-amp, amp);
