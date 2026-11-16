@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { GifWriter, TRANSPARENT, changedRect, encodeGif, gifDelays, histogram, lzw, makeMapper, medianCut } from "../web/js/gif.js";
-import { GIF_VIEWS, gifFileName, gifPlan, gifSize } from "../web/js/gifplan.js";
+import { GIF_VIEWS, coverageBox, fitFrame, gifFileName, gifPlan, gifSize } from "../web/js/gifplan.js";
 
 const load = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), "utf8"));
 const sky = load("../templates/lightning/sky-strike.json");
@@ -216,4 +216,26 @@ test("GIF views, sizes and file names", () => {
   assert.deepEqual(gifSize(5000), { width: 1280, height: 960 });
   assert.equal(gifFileName("fire-pyre-ward", 3, "stylized", "quad"), "fire-pyre-ward-seed3-four-views.gif");
   assert.equal(gifFileName("fire-pyre-ward", 3, "toon", "three_quarter"), "fire-pyre-ward-seed3-toon-three-quarter.gif");
+});
+
+test("fitFrame keeps the usual framing when the spell fits, and only ever widens it", () => {
+  assert.equal(fitFrame({ x0: 50, y0: 40, x1: 300, y1: 200 }, 480, 360), null);
+  assert.equal(fitFrame(null, 480, 360), null);
+  // A spell rising above the frame: widen, keep 4:3, cover the whole spell and the usual frame.
+  const f = fitFrame({ x0: 100, y0: -300, x1: 380, y1: 330 }, 480, 360);
+  assert.ok(Math.abs(f.w / f.h - 480 / 360) < 1e-9);
+  assert.ok(f.y < -300 && f.y + f.h > 360 && f.x <= 0 && f.x + f.w >= 480);
+});
+
+test("coverageBox drops a stray wisp but keeps the spell", () => {
+  const cols = new Float64Array(100);
+  const rows = new Float64Array(100);
+  for (let i = 40; i <= 60; i++) {
+    cols[i] = 1000;
+    rows[i] = 1000;
+  }
+  cols[2] = 1; // one stray pixel far away
+  rows[97] = 1;
+  assert.deepEqual(coverageBox(cols, rows), { x0: 40, y0: 40, x1: 60, y1: 60 });
+  assert.equal(coverageBox(new Float64Array(5), new Float64Array(5)), null);
 });

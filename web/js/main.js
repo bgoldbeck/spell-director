@@ -701,7 +701,9 @@ ui.gifGo.onclick = async () => {
       seed: state.seed,
       hidden: [...state.hidden],
       onProgress: (p) => {
-        ui.gifStatus.textContent = `Recording ${GIF_VIEW_LABELS[p.view]}… ${Math.round((p.done / p.total) * 100)}%`;
+        ui.gifStatus.textContent = p.stage === "framing"
+          ? "Framing the views around the whole spell…"
+          : `Recording ${GIF_VIEW_LABELS[p.view]}… ${Math.round((p.done / p.total) * 100)}%`;
       },
     });
     if (files.length === 1) {
