@@ -63,7 +63,7 @@ KNOWN_PARAMS = {
         "depth", "fill", "fill_color", "fill_flow", "fill_in_ms", "symmetry",
     },
     "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity", "spread_speed", "spread_px", "height_px"},
-    "light": {"radius", "energy"},
+    "light": {"radius", "energy", "height_px", "forward_px", "side_px", "orbit_hz", "tint"},
     "camera_shake": {"amplitude_px", "frequency_hz", "decay"},
     "sound_cue": {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms"},
 }
@@ -242,16 +242,28 @@ def _check_loop(doc: dict, beats: dict, errors: list[str], warnings: list[str]) 
             warnings.append(f"layer {layer['id']!r} ({layer['type']}): starts {start - w0} ms before the loop but its "
                             f"particles live up to {round(life)} ms, so the loop's first frames are thinner than its last "
                             "(start the layer earlier)")
+        # Steady beats may switch the layer on and off inside the loop (a light
+        # that takes its turn in a cycle) as long as it is in the same state at
+        # both ends of the loop; anything else must span the whole loop.
+        def steady(beat):
+            curve = beat.get("intensity") or {}
+            shape = curve.get("shape", "hold")
+            return shape == "hold" or (shape != "flicker" and curve.get("to", curve.get("from", 1)) == curve.get("from", 1))
+
+        def level(t):
+            return max([(b.get("intensity") or {}).get("from", 1) for b in active
+                        if steady(b) and b["start_ms"] <= t <= b["end_ms"]] or [0])
+
+        seam_ok = level(start) == level(end)
         for beat in active:
             if not (beat["start_ms"] < end and beat["end_ms"] > start):
                 continue
-            curve = beat.get("intensity") or {}
-            shape = curve.get("shape", "hold")
-            steady = shape == "hold" or (shape != "flicker" and curve.get("to", curve.get("from", 1)) == curve.get("from", 1))
-            if not (beat["start_ms"] <= start and beat["end_ms"] >= end and steady):
+            spans = beat["start_ms"] <= start and beat["end_ms"] >= end
+            if not steady(beat) or not (spans or seam_ok):
                 warnings.append(f"layer {layer['id']!r}: beat {beat['id']!r} changes across the loop, so the loop is not "
                                 "seamless (let one steady beat span the whole loop_range; start-up and end beats "
-                                "should end at its start and begin at its end)")
+                                "should end at its start and begin at its end; steady beats that switch a layer on "
+                                "and off inside the loop must leave it the same at both ends)")
                 break
 
 

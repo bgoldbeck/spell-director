@@ -37,7 +37,7 @@ export const STYLES = {
 
   realistic: {
     label: "Realistic",
-    about: "Physically based: lit smoke, ground that really cracks open with depth, heat haze, real lights and filmic tone mapping.",
+    about: "Physically based: six-way lit smoke, ground that really cracks open with depth, heat haze, real lights and filmic tone mapping.",
     look: "Matter looks like matter: lit, shadowed, with depth and weight. Light comes from hot things and lights the scene. Colors are less saturated; only truly hot or energetic parts glow, and they over-expose to white.",
     view: { bloom: { strength: 0.45, radius: 0.5, threshold: 0.85 }, tone: "aces", saturation: 0.9, posterize: 0, outline: 0, pixel: 0, decal: "depth" },
     unity: [
@@ -73,10 +73,10 @@ export const STYLES = {
       },
       smoke: {
         unity: [
-          "Lit smoke: VFX Graph **Output Particle Six-way Smoke Lit** (or a normal-mapped flipbook) so puffs are lit by the scene and the effect's own lights, darker underneath, with Soft Particles.",
+          "Lit smoke: six-way lighting. The export bakes this layer's two six-way lightmap flipbooks (`smoke-<id>-sixway-pos.png` / `-neg.png`); use them in VFX Graph **Output Particle Six-way Smoke Lit** so puffs are lit by the scene and the effect's own lights, darker underneath and glowing at the edges when backlit, with Soft Particles. (Glowing `add` smoke such as flame billows stays unlit.)",
         ],
         godot: [
-          "Lit smoke: GPUParticles3D with a normal-mapped smoke flipbook in a lit material (not unshaded), proximity fade on, so the effect's own lights shade it.",
+          "Lit smoke: six-way lighting. GPUParticles3D with a spatial shader that blends the export's two six-way lightmap flipbooks (`smoke-<id>-sixway-pos.png` / `-neg.png`) by each light's direction in `light()`, proximity fade on, so the scene and the effect's own lights shade it. (Glowing `add` smoke such as flame billows stays unlit.)",
         ],
       },
       sparks: {

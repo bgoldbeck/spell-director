@@ -59,7 +59,7 @@ export function describeShader(sh) {
   if (sh.fresnel) bits.push(`fresnel rim ${sh.fresnel}`);
   if (sh.dissolve) bits.push(`dissolves with ${sh.dissolve.pattern || "noise"}${sh.dissolve.edge_width ? `, edge ${sh.dissolve.edge_width}` : ""}${sh.dissolve.edge_color ? ` in ${sh.dissolve.edge_color}` : ""}`);
   if (sh.emissive) bits.push(`emissive HDR ×${sh.emissive.hdr ?? 1}${sh.emissive.falloff ? `, ${sh.emissive.falloff} falloff` : ""}${sh.emissive.core_ratio ? `, core ${Math.round(sh.emissive.core_ratio * 100)}%` : ""}`);
-  if (sh.lighting) bits.push(sh.lighting.replace("_", " "));
+  if (sh.lighting) bits.push(sh.lighting === "six_way" ? "six-way lit (relit by every scene light from six baked directions)" : sh.lighting.replace("_", " "));
   return bits.join("; ");
 }
 
@@ -96,7 +96,10 @@ export function engineRecipe(layer, sh, blend) {
   const tech = sh.technique || "procedural";
   unity.push(`Build with ${UNITY_TECH[tech] || UNITY_TECH.procedural}.`);
   godot.push(`Build with ${GODOT_TECH[tech] || GODOT_TECH.procedural}.`);
-  if (tech !== "light") {
+  if (sh.lighting === "six_way") {
+    unity.push("Material: VFX Graph **Output Particle Six-way Smoke Lit** with this layer's two six-way lightmaps (`smoke-<id>-sixway-pos.png` / `-neg.png`, linear) as a flipbook over each particle's life; Soft Particles on.");
+    godot.push("Shader: `render_mode blend_mix, depth_draw_never;` billboard quad that samples the two six-way lightmaps and adds `sixway(LIGHT) * ATTENUATION * LIGHT_COLOR / PI` to DIFFUSE_LIGHT in `light()` (see the Six-way lit smoke section).");
+  } else if (tech !== "light") {
     const add = blend === "add" || blend === "screen";
     unity.push(`Material: ${sh.lighting === "lit" ? "Lit" : "Unlit"} Shader Graph, Surface ${blend === "alpha" || blend === "multiply" ? "Transparent, Blend Alpha" : "Transparent, Blend Additive"}${blend === "multiply" ? " (or Multiply)" : ""}.`);
     godot.push(`Shader: \`render_mode ${add ? "blend_add" : blend === "multiply" ? "blend_mul" : "blend_mix"}${sh.lighting === "lit" ? "" : ", unshaded"}\`.`);

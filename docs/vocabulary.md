@@ -391,7 +391,7 @@ Rendered frames show *when* and *where* things happen. They don't carry the magi
 | `emissive.hdr` | 1 = no bloom, 2–4 glowing, 5–10 blinding | How hard it drives bloom. |
 | `emissive.falloff` | `hard`, `soft`, `exponential`, `gaussian` | How brightness drops from the center line or center point. |
 | `emissive.core_ratio` | 0–1 | How much of the width is white-hot core. |
-| `lighting` | `unlit`, `lit`, `emits_light` | Whether scene lights affect it, and whether it lights the scene. |
+| `lighting` | `unlit`, `lit`, `emits_light`, `six_way` | Whether scene lights affect it, and whether it lights the scene. `six_way` (smoke): relit from six baked directions, see [Six-way lit smoke](#six-way-lit-smoke). |
 | `look` | one sentence | What it should feel like, in plain words ("a wet, glassy jet that refracts what's behind it"). |
 | `notes` | text | Anything else an engine artist should know. |
 
@@ -432,9 +432,23 @@ The same spell can be built in different art styles. A style doesn't change *wha
 | flow map | an image whose red/green give a direction to scroll a texture along (`decal-<id>-flow.png`, outward from the centre) | two noise samples offset by flow × time, cross-faded every half cycle | same, in the fragment shader |
 | crust / cooling | lava darkens to rock from the edges and as it ages | lerp emission to 0 and albedo to near-black by the `heat` curve | same |
 | soft particles | particles fade where they meet geometry instead of cutting a line | Soft Particles / depth fade | `proximity_fade_enabled` |
-| six-way lighting | smoke flipbooks with lighting baked from six directions, so smoke is lit by the scene | VFX Graph **Six-way Smoke Lit** output | normal-mapped smoke flipbook in a lit material |
+| six-way lighting | smoke flipbooks with lighting baked from six directions, so smoke is lit by the scene (see [Six-way lit smoke](#six-way-lit-smoke)) | VFX Graph **Output Particle Six-way Smoke Lit** | a spatial shader that blends the two six-way maps in `light()` |
 | heat haze | the air bends behind hot or energetic things | Scene Color with offset UVs (HDRP Distortion) | `hint_screen_texture` at offset SCREEN_UV |
 | tone mapping | maps HDR light to the screen so bright things roll off to white | Volume Tonemapping ACES / Neutral | WorldEnvironment tonemap ACES / AgX |
+
+### Six-way lit smoke
+
+Smoke that the scene lights instead of smoke with its light painted in. A smoke flipbook is pre-lit from six directions (right, left, top, bottom, back, front) and packed into two textures; at runtime the shader blends the six by each light's direction, so the same puffs go pink on the side facing a magenta light, dark underneath when lit from above, and glow at their thin edges when a light is behind them. It's the cheap way to get volumetric-looking smoke from sprites.
+
+| Word | Means |
+|---|---|
+| six-way lightmaps | the two packed textures: **positive** = R right, G top, B back, A alpha; **negative** = R left, G bottom, B front, A emissive. Linear, not sRGB |
+| back light / rim | a light behind the smoke: the thin edges glow, the thick middle stays dark |
+| under light | a light below (a fire, lava): only the undersides light up |
+| key, fill, rim | the main light, a softer light from the other side, a light from behind |
+| emissive (six-way) | the thick core of a puff, where a fire inside it would glow through |
+
+In a template: `"shader": { "lighting": "six_way" }` on a `smoke` layer (alpha blend) asks for it in every style; the **Realistic** style lights every alpha smoke layer this way unless it says `unlit`. Glowing `add` smoke (flame billows) is never six-way lit: it is the light. The viewer bakes the maps procedurally and draws the smoke with them, lit by the stage lights and the spell's own `light` layers; the export writes the maps (`smoke-<id>-sixway-pos.png`, `-neg.png`) with Unity and Godot steps. Give the smoke something to react to: a `light` layer below it (firelight), beside it (`forward_px`, `side_px`), behind it, or circling it (`orbit_hz`), with `tint` for colored stage lights. [`templates/fire/neon-campfire.json`](../templates/fire/neon-campfire.json) is a test piece that cycles neon lights round a campfire's smoke from all six directions.
 
 ### Decal depth and fill
 

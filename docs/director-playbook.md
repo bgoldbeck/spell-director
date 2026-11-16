@@ -125,7 +125,7 @@ Start from the silhouette (vocabulary §3): what's the one shape that reads as a
   - *Ground*: a `burn` decal (add, `lifetime_ms` 400–800) and glowing `cracks` (add) over a `scorch` (alpha, outlives the spell). For a sweep, lay them across the line of fire (`rotation_deg` 90, `stretch` 1.6–2.2).
   - *Tail*: embers (`sparks` `look: ember`, `gravity` −80 to −200, long `emit_ms`), a dark smoke plume, and a quiet `fire` cue.
   - *Sound*: `wind` (inhale) or `charge` → `ignite` (+ `whoosh`) → `fire` (stream) → `impact` or `boom` for a blast → `fire` at gain 0.3–0.4 for the smolder.
-  - *Shader intent*: `fiery` for flames, `plasma` for a ball of fire, `molten` for glowing ground and cracks, `ashen` for scorch, `smoky` for smoke; fBm noise flowing `along_path` or `upward`, `dissolve` with a red `edge_color`, `distortion` 0.3–0.6 for heat haze, `emissive.hdr` 3–6.
+  - *Shader intent*: `fiery` for flames, `plasma` for a ball of fire, `molten` for glowing ground and cracks, `ashen` for scorch, `smoky` for smoke (add `lighting: "six_way"` to dark alpha smoke that should be lit by the fire and the scene, see [vocabulary.md](vocabulary.md#six-way-lit-smoke)); fBm noise flowing `along_path` or `upward`, `dissolve` with a red `edge_color`, `distortion` 0.3–0.6 for heat haze, `emissive.hdr` 3–6.
 
 - **Wind** (vocabulary "Wind-specific terms"). Air is invisible; build it from what it carries:
   - *Tornado or whirlwind*: a `vortex` (`material: airy`, alpha). Keyframe `spin_hz` from ~0.4 up to 2–3 during the release, and `height_px`/`top_radius_px` from a low swirl in the anticipation to full size. To send it, set `start_offset_px` 150–250 and `meander_px` 20–40 with a `travel` beat; to drop it on the target, leave them at 0.

@@ -14,6 +14,7 @@ import { soundSheet } from "./sound.js";
 import { decalBlend, decalFillState, decalPlan, decalState } from "./decal.js";
 import { HOW_TO_USE, describeShader, engineRecipe, shaderFor } from "./shader.js";
 import { DECAL_FILLS, STYLES, decalRender, resolveStyle, shaderForStyle, styleGuideLines, styleRecipe } from "./style.js";
+import { SIXWAY_EXPORT_PX, SIXWAY_FRAMES, smokeLighting } from "./sixway.js";
 
 export const FORMAT = "spelldirector.spritesheet/1";
 export const SHEET_VIEWS = ["front", "side", "top", "three_quarter"];
@@ -166,6 +167,39 @@ export function buildDecals(template, seed, plan, style = resolveStyle(template)
   });
 }
 
+export function sixwayMapName(id, sign) {
+  return `smoke-${id}-sixway-${sign}.png`;
+}
+
+// Smoke layers drawn as six-way lit smoke in this style: their two packed
+// lightmap flipbooks (engine/sixway.js) and how to read them.
+export function buildSixWay(template, seed, style = resolveStyle(template)) {
+  const cols = Math.ceil(Math.sqrt(SIXWAY_FRAMES));
+  return (template.layers || [])
+    .filter((l) => smokeLighting(l, style, shaderForStyle(shaderFor(l), style.id)) === "six_way")
+    .map((l) => {
+      const p = resolveParams(l.params, seed, `${l.id}#0`);
+      return {
+        layer: l.id,
+        positive_map: sixwayMapName(l.id, "pos"),
+        negative_map: sixwayMapName(l.id, "neg"),
+        frame_px: SIXWAY_EXPORT_PX,
+        columns: cols,
+        rows: Math.ceil(SIXWAY_FRAMES / cols),
+        frames: SIXWAY_FRAMES,
+        // Frames run over one puff's life: play the flipbook once per particle lifetime.
+        lifetime_ms: p.lifetime_ms ?? 500,
+        color: colorHexes(template, l.color)[0],
+        packing: {
+          positive: "R = lit from the right (+X), G = from the top (+Y), B = from the back (behind the puff), A = alpha",
+          negative: "R = lit from the left (-X), G = from below (-Y), B = from the front (the camera's side), A = emissive (thick core)",
+          color_space: "linear (turn sRGB off on import)",
+          frame_order: "left to right, top to bottom; frame 0 top left",
+        },
+      };
+    });
+}
+
 export function sheetFileName(id) {
   return id === ALL_ID ? "all.png" : `layer-${id}.png`;
 }
@@ -219,10 +253,16 @@ export function buildTracks(template, seed, plan, cueLibrary = { cues: {} }) {
       });
     } else if (kind === "light") {
       const hex = colorHexes(template, l.color);
+      const tint = typeof l.params?.tint === "string" && /^#[0-9a-fA-F]{6}$/.test(l.params.tint) ? l.params.tint.toUpperCase() : null;
+      const p0 = resolveParams(l.params, seed, `${l.id}#0`);
       lights.push({
         ...common,
         anchor: l.anchor || "target",
-        color: hex[hex.length - 1],
+        color: tint || hex[hex.length - 1],
+        // Where it hangs from its anchor, in world units: x along the cast
+        // direction, y up, z to the cast direction's right.
+        offset_units: [r3((p0.forward_px ?? 0) / 100), r3((p0.height_px ?? 80) / 100), r3(-(p0.side_px ?? 0) / 100)],
+        orbit_hz: r3(p0.orbit_hz ?? 0),
         radius_units: curve(template, l, plan, seed, (I, p, t) => p("radius", t, 6))[0],
         energy: curve(template, l, plan, seed, (I, p, t) => p("energy", t, 2) * I),
       });
@@ -296,6 +336,8 @@ function shaderInfo(l, blend, style, params) {
   if (!sh) return { shader: null, engine_hints: null };
   const { from_template: fromTemplate, ...base } = sh;
   const shader = shaderForStyle(base, style.id);
+  // The realistic style lights smoke six ways even when the intent only says "lit".
+  if (smokeLighting(l, style, shader) === "six_way") shader.lighting = "six_way";
   const hints = engineRecipe(l, shader, blend);
   const extra = styleRecipe(style.id, l, params);
   if (extra.unity.length) hints.unity.push(...extra.unity.map((x) => `${STYLES[style.id].label}: ${x}`));
@@ -375,6 +417,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
   });
   const tracksOut = tracks || { screen_flashes: [], camera_shake: [], lights: [], sounds: [], sound_cues: [], sound_story: [] };
   const decals = buildDecals(template, seed, plan, style);
+  const sixWay = buildSixWay(template, seed, style);
   const st = STYLES[style.id];
   return {
     format: FORMAT,
@@ -411,6 +454,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
     })),
     palette: template.palette || {},
     decals,
+    six_way_smoke: sixWay,
     ...tracksOut,
   };
 }
@@ -535,6 +579,10 @@ export function guideMarkdown(m, { files } = {}) {
     if (d.height_map) fileRows.push([`\`${d.height_map}\``, `Height map of decal \`${d.layer}\` for parallax (${d.depth < 0 ? "black = ground, white = highest" : "white = ground, black = deepest"})`]);
     if (d.emissive_mask) fileRows.push([`\`${d.emissive_mask}\``, `Where decal \`${d.layer}\`'s ${d.fill} fill sits (white = fill)`]);
     if (d.flow_map) fileRows.push([`\`${d.flow_map}\``, `Flow map for decal \`${d.layer}\`'s ${d.fill} (RG = direction, outward from the centre)`]);
+  }
+  for (const w of m.six_way_smoke || []) {
+    fileRows.push([`\`${w.positive_map}\``, `Six-way lightmap flipbook of smoke \`${w.layer}\`, positive axes (R right, G top, B back, A alpha)`]);
+    fileRows.push([`\`${w.negative_map}\``, `Six-way lightmap flipbook of smoke \`${w.layer}\`, negative axes (R left, G bottom, B front, A emissive)`]);
   }
   add(table(["File", "What it is"], fileRows), "");
 
@@ -671,6 +719,8 @@ export function guideMarkdown(m, { files } = {}) {
     );
   }
 
+  if ((m.six_way_smoke || []).length) add(...sixWayGuideLines(m.six_way_smoke), "");
+
   add("## Not in the sheets: flashes, shake, lights and sound", "");
   add("These are better done by the engine than baked into pixels. Their per-frame curves are in the JSON file (one value per spell frame).", "");
   if (m.screen_flashes.length) {
@@ -685,8 +735,8 @@ export function guideMarkdown(m, { files } = {}) {
   }
   if (m.lights.length) {
     add("### Lights", "");
-    add(table(["Layer", "At", "Color", "Range", "When"], m.lights.map((l) => [l.layer, l.anchor, l.color, `${l.radius_units} units`, curveSummary(l.energy, plan)])), "");
-    add("Add a point light at that spot (about 0.8 units up) and set its intensity from the `energy` curve to light up the scene around the spell.", "");
+    add(table(["Layer", "At", "Offset (x, y, z units)", "Color", "Range", "When"], m.lights.map((l) => [l.layer, l.anchor, `${(l.offset_units || [0, 0.8, 0]).join(", ")}${l.orbit_hz ? `, orbiting ${l.orbit_hz} turns/s` : ""}`, l.color, `${l.radius_units} units`, curveSummary(l.energy, plan)])), "");
+    add("Add a point light at its anchor plus the offset (x along the cast direction, y up, z to its right; an orbiting light circles the anchor at that distance, counter-clockwise from above) and set its intensity from the `energy` curve to light up the scene around the spell.", "");
   }
   if (m.sounds.length) add("Sound has its own section below: [Sound](#sound).", "");
   if (!m.screen_flashes.length && !m.camera_shake.length && !m.lights.length && !m.sounds.length) add("None for this spell.", "");
@@ -888,4 +938,31 @@ export function soundGuide(m) {
     "- Positional sound: put travel and impact sounds at the target (or on the projectile), build-ups at the caster.",
   );
   return out;
+}
+
+// Guide section for six-way lit smoke layers.
+export function sixWayGuideLines(list) {
+  const lines = [
+    "## Six-way lit smoke",
+    "",
+    "These smoke layers are lit by the scene instead of having their light painted in. Each comes with two flipbooks pre-lit from six directions (a puff over its life, 4 × 4 frames), so a shader can relight every puff from any light: magenta from the left, a fire underneath, the sun behind it.",
+    "",
+    table(["Smoke", "Maps", "Flipbook", "Albedo", "Play over"], list.map((w) => [
+      w.layer,
+      `\`${w.positive_map}\`, \`${w.negative_map}\``,
+      `${w.columns} × ${w.rows}, ${w.frames} frames of ${w.frame_px} px`,
+      w.color,
+      `${w.lifetime_ms} ms (one particle's life)`,
+    ])),
+    "",
+    "- **Packing** (Unity's six-way layout): positive map R = lit from the right, G = from the top, B = from the back (light behind the puff shining through its thin edges), A = alpha; negative map R = from the left, G = from below, B = from the front (the camera's side), A = emissive (the thick core, where a fire inside would glow through). Import both **linear** (sRGB off), no compression artifacts on alpha.",
+    "- **Shading:** for each light, turn its direction into the particle's frame (x right, y up, z toward the camera, rotated by the particle's spin), square the components as weights and blend: `w.x·(x>0 ? R : L) + w.y·(y>0 ? T : B) + w.z·(z>0 ? Front : Back)`, times the light color and attenuation, times the albedo. Ambient light uses the average of the six maps (sky from the top map, ground from the bottom map).",
+    "",
+    "**Unity (VFX Graph, URP or HDRP).** Use **Output Particle Six-way Smoke Lit** (Unity 2022.2+). Set **Positive Axes Lightmap** to the `-pos` map and **Negative Axes Lightmap** to the `-neg` map, **UV Mode: Flipbook** with the size above, and drive **Tex Index** from age over lifetime (0 → frames − 1, Flipbook Blend Frames on). Base Color = the albedo; turn on Soft Particles. For a fire inside the smoke, enable **Use Emissive** and color the emissive channel from the fire's palette.",
+    "",
+    "**Godot 4 (GPUParticles3D).** No built-in six-way output: draw a QuadMesh with a spatial shader (`render_mode blend_mix, depth_draw_never;`, billboard in `vertex()`), sample both maps at the flipbook frame (`INSTANCE_CUSTOM.z` with Particles Anim), set `ALBEDO` to the albedo and `ALPHA` to the positive map's A, and in `light()` add `DIFFUSE_LIGHT += sixway(LIGHT) * ATTENUATION * LIGHT_COLOR / PI` where `sixway()` is the blend above (LIGHT is already in view space, so x/y/z are right/up/toward the camera).",
+    "",
+    "The viewer draws these exactly this way, so what you saw there is what this builds.",
+  ];
+  return lines;
 }

@@ -15,6 +15,8 @@ import { Effect } from "./engine/effect.js";
 import { viewCamera } from "./engine/stage.js";
 import { Post } from "./engine/post.js";
 import { decalDepthMaps, decalExportMaps, tintDecal } from "./engine/decaltex.js";
+import { SIXWAY_EXPORT_PX, SIXWAY_FRAMES, bakeSixWay } from "./engine/sixway.js";
+import { encodePng } from "./engine/png.js";
 import { resolveStyle, styleCell } from "./engine/style.js";
 import {
   ALL_ID, DEFAULTS, SHEET_VIEWS, buildManifest, buildTracks, cellRect, framePlan, guideMarkdown, layoutSheet,
@@ -330,6 +332,17 @@ export async function exportSpriteSheets(template, opts = {}) {
         if (d.height_map) files.push({ name: d.height_map, data: new Uint8Array(await (await toPng(maps.height)).arrayBuffer()) });
         if (d.emissive_mask) files.push({ name: d.emissive_mask, data: new Uint8Array(await (await toPng(maps.emissive)).arrayBuffer()) });
         if (d.flow_map) files.push({ name: d.flow_map, data: new Uint8Array(await (await toPng(maps.flow)).arrayBuffer()) });
+      }
+    }
+    // Six-way lightmap flipbooks for lit smoke (one bake, shared by every such layer).
+    if (manifest.six_way_smoke.length) {
+      progress({ stage: "encode", sheet: "six-way smoke" });
+      const bake = bakeSixWay({ size: SIXWAY_EXPORT_PX, frames: SIXWAY_FRAMES });
+      const pos = await encodePng(bake.width, bake.height, bake.pos);
+      const neg = await encodePng(bake.width, bake.height, bake.neg);
+      for (const w of manifest.six_way_smoke) {
+        files.push({ name: w.positive_map, data: pos });
+        files.push({ name: w.negative_map, data: neg });
       }
     }
     files.push({ name: extra[0].name, data: `${JSON.stringify(manifest, null, 2)}\n` });

@@ -1,0 +1,646 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-neon-campfire",
+  "name": "Neon Campfire",
+  "description": "A test piece for six-way lit smoke: a small campfire with a pale smoke column, lit in turn by neon lights from the right, left, top, below, front and behind, then by three colored lights circling it, so you can see the smoke respond to every light direction.",
+  "element": "fire",
+  "archetype": "aura",
+  "tags": [
+    "test",
+    "six-way",
+    "lit smoke",
+    "lighting",
+    "campfire",
+    "looping",
+    "neon"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A small test effect for six-way smoke: a campfire, with different neon lights on it in a cycle."
+  },
+  "timing": {
+    "duration_ms": 8900,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1500,
+      "end_ms": 7800
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "point",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "point",
+      "length": 1.0
+    }
+  },
+  "views": {
+    "hero": "side",
+    "reads": {
+      "front": "Over the caster's shoulder: the fire and its smoke column ahead, side-lit by each colored light in turn; the front and behind lights read here as left and right.",
+      "side": "Hero view. The lights are placed for this view: right, left, top, below, front (toward you) and behind, each clearly shading the smoke column from its side.",
+      "top": "Looking down the smoke column: the tops of the puffs light up green under the top light and the colored lights paint their sides as they come round.",
+      "three_quarter": "The column from above and to the side; each light shades a different face of the puffs, and the circling lights sweep color round it."
+    }
+  },
+  "palette": {
+    "core": "#FFF3C4",
+    "primary": "#FF8A24",
+    "secondary": "#E0431B",
+    "accent": "#FFC34D",
+    "shadow": "#BDBDC9"
+  },
+  "beats": [
+    {
+      "id": "kindle",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The fire catches: flames climb out of the logs and the first smoke rises."
+    },
+    {
+      "id": "burn",
+      "phase": "release",
+      "start_ms": 900,
+      "end_ms": 8100,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The campfire burns steadily under a column of smoke while the colored lights take turns. Seamless loop."
+    },
+    {
+      "id": "from-right",
+      "phase": "release",
+      "start_ms": 900,
+      "end_ms": 1800,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "A magenta light from the right of the side view: the smoke's right side lights up pink, its left falls into shadow."
+    },
+    {
+      "id": "from-left",
+      "phase": "release",
+      "start_ms": 1800,
+      "end_ms": 2700,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "A cyan light from the left: the shading flips to the other side."
+    },
+    {
+      "id": "from-top",
+      "phase": "release",
+      "start_ms": 2700,
+      "end_ms": 3600,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "A lime light from straight above: the tops of the puffs catch it, the undersides go dark."
+    },
+    {
+      "id": "from-below",
+      "phase": "release",
+      "start_ms": 3600,
+      "end_ms": 4500,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "A violet light from under the ground: only the undersides of the puffs light up."
+    },
+    {
+      "id": "from-front",
+      "phase": "release",
+      "start_ms": 4500,
+      "end_ms": 5400,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "A yellow light from the camera's side: the smoke is lit flat and full, its edges thin."
+    },
+    {
+      "id": "from-behind",
+      "phase": "release",
+      "start_ms": 5400,
+      "end_ms": 6300,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "A hot red light from behind the smoke: it glows through the thin edges (a rim) while the thick middle stays dark."
+    },
+    {
+      "id": "orbit",
+      "phase": "release",
+      "start_ms": 6300,
+      "end_ms": 7200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "Magenta, cyan and lime lights circle the fire together: the colors sweep round the smoke."
+    },
+    {
+      "id": "from-right-again",
+      "phase": "release",
+      "start_ms": 7200,
+      "end_ms": 8100,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The magenta light from the right again, so the cycle loops back to where it started."
+    },
+    {
+      "id": "die-down",
+      "phase": "dissipation",
+      "start_ms": 8100,
+      "end_ms": 8900,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The fire dies down and the last smoke drifts away."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "burn",
+        "die-down"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": -2,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 75,
+        "opacity": 0.85,
+        "fade_in_ms": 600,
+        "lifetime_ms": 9000,
+        "fade_ms": 1200,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "technique": "decal",
+        "look": "A ring of black soot and ash under the fire."
+      }
+    },
+    {
+      "id": "coals",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "burn",
+        "die-down"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "blend": "add",
+      "z": -1,
+      "params": {
+        "shape": "burn",
+        "radius_px": 34,
+        "opacity": 0.9,
+        "fade_in_ms": 700,
+        "grow_ms": 700,
+        "start_scale": 0.4,
+        "lifetime_ms": 8100,
+        "fade_ms": 800,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "molten",
+        "technique": "decal",
+        "look": "Glowing coals in the middle of the fire pit.",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 6,
+          "speed": 0.5,
+          "contrast": 0.7
+        }
+      }
+    },
+    {
+      "id": "flames",
+      "type": "smoke",
+      "beats": [
+        "kindle",
+        "burn",
+        "die-down"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "count": 16,
+        "rise_speed": 120,
+        "size_px": 17,
+        "lifetime_ms": 560,
+        "opacity": 0.8,
+        "spread_px": 12
+      },
+      "shader": {
+        "material": "fiery",
+        "technique": "flipbook",
+        "lighting": "unlit",
+        "look": "Soft billows of flame licking up off the logs, white-yellow at the base, orange at the tips.",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 2
+        }
+      }
+    },
+    {
+      "id": "flame-licks",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "burn",
+        "die-down"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 7,
+      "params": {
+        "count": 36,
+        "speed": 150,
+        "speed_spread": 0.4,
+        "gravity": -60,
+        "lifetime_ms": 360,
+        "size_px": 6,
+        "spread_deg": 16,
+        "drag": 1.0,
+        "emit_radius_px": 20,
+        "streak_ms": 150
+      },
+      "shader": {
+        "material": "fiery",
+        "technique": "particles",
+        "look": "Thin tongues of flame flicking up out of the fire.",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "distortion": 0.3
+      }
+    },
+    {
+      "id": "embers",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "burn",
+        "die-down"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 26,
+        "speed": 50,
+        "speed_spread": 0.6,
+        "gravity": -130,
+        "lifetime_ms": 1100,
+        "size_px": 2.2,
+        "spread_deg": 35,
+        "drag": 0.4,
+        "emit_radius_px": 22,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "fiery",
+        "technique": "particles",
+        "look": "Embers drifting up on the heat, flickering as they cool.",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1.2
+        }
+      }
+    },
+    {
+      "id": "fire-glow",
+      "type": "glow",
+      "beats": [
+        "kindle",
+        "burn",
+        "die-down"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 60,
+        "softness": 0.9,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "fiery",
+        "technique": "procedural",
+        "look": "A warm flickering glow around the flames.",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "smoke-column",
+      "type": "smoke",
+      "beats": [
+        "kindle",
+        "burn",
+        "die-down"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 4,
+      "params": {
+        "count": 60,
+        "rise_speed": 50,
+        "size_px": 40,
+        "lifetime_ms": 1450,
+        "opacity": 0.75,
+        "spread_px": 16,
+        "height_px": 40
+      },
+      "shader": {
+        "material": "smoky",
+        "technique": "flipbook",
+        "lighting": "six_way",
+        "look": "A thick pale-grey column of smoke rolling up off the fire, lit by whatever light is on it: dark on the side away from the light, glowing at the edges when lit from behind.",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.5
+        },
+        "notes": "The test subject for six-way lighting: keep it pale and neutral so each colored light reads."
+      }
+    },
+    {
+      "id": "firelight",
+      "type": "light",
+      "beats": [
+        "kindle",
+        "burn",
+        "die-down"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 5,
+        "energy": 1.4,
+        "tint": "#FF8A24",
+        "height_px": 25
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "Warm orange firelight from inside the flames, lighting the smoke from below."
+      }
+    },
+    {
+      "id": "magenta-right",
+      "type": "light",
+      "beats": [
+        "from-right",
+        "from-right-again"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 5,
+        "energy": 3.4,
+        "tint": "#FF2BD6",
+        "forward_px": 220,
+        "height_px": 150
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "A neon magenta light to the right of the smoke (in the side view)."
+      }
+    },
+    {
+      "id": "cyan-left",
+      "type": "light",
+      "beats": [
+        "from-left"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 5,
+        "energy": 3.4,
+        "tint": "#00F0FF",
+        "forward_px": -220,
+        "height_px": 150
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "A neon cyan light to the left of the smoke (in the side view)."
+      }
+    },
+    {
+      "id": "lime-top",
+      "type": "light",
+      "beats": [
+        "from-top"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 5,
+        "energy": 3.4,
+        "tint": "#7CFF2B",
+        "height_px": 400
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "A neon lime light straight above the smoke."
+      }
+    },
+    {
+      "id": "violet-below",
+      "type": "light",
+      "beats": [
+        "from-below"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 5,
+        "energy": 3,
+        "tint": "#8A2BFF",
+        "height_px": -70
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "A neon violet light under the ground, below the smoke."
+      }
+    },
+    {
+      "id": "yellow-front",
+      "type": "light",
+      "beats": [
+        "from-front"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 5,
+        "energy": 3.4,
+        "tint": "#FFF01F",
+        "side_px": -220,
+        "height_px": 150
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "A neon yellow light between the smoke and the side-view camera."
+      }
+    },
+    {
+      "id": "red-behind",
+      "type": "light",
+      "beats": [
+        "from-behind"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 5,
+        "energy": 4,
+        "tint": "#FF1F4B",
+        "side_px": 220,
+        "height_px": 150
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "A hot red light behind the smoke (seen from the side view), so it glows through the edges."
+      }
+    },
+    {
+      "id": "orbit-magenta",
+      "type": "light",
+      "beats": [
+        "orbit"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 5,
+        "energy": 2.4,
+        "tint": "#FF2BD6",
+        "forward_px": 150,
+        "height_px": 80,
+        "orbit_hz": 0.9
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "Magenta light circling the fire."
+      }
+    },
+    {
+      "id": "orbit-cyan",
+      "type": "light",
+      "beats": [
+        "orbit"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 5,
+        "energy": 2.4,
+        "tint": "#00F0FF",
+        "forward_px": -75,
+        "side_px": 130,
+        "height_px": 110,
+        "orbit_hz": 0.9
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "Cyan light circling the fire, a third of a turn behind the magenta one."
+      }
+    },
+    {
+      "id": "orbit-lime",
+      "type": "light",
+      "beats": [
+        "orbit"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 5,
+        "energy": 2.4,
+        "tint": "#7CFF2B",
+        "forward_px": -75,
+        "side_px": -130,
+        "height_px": 140,
+        "orbit_hz": 0.9
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "Lime light circling the fire, a third of a turn behind the cyan one."
+      }
+    },
+    {
+      "id": "crackling",
+      "type": "sound_cue",
+      "beats": [
+        "burn"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.35,
+        "pitch": 1.1
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Puff placement, flame licks and embers change per cast; the light cycle is always the same."
+  },
+  "director_notes": "Built to check six-way lit smoke, not as a spell. The smoke column asks for six-way lighting in its shader intent, so it is lit in every style; it is pale grey so the neon colors read true. Each light holds for 900 ms from one of the six directions of the side view (the hero view), then three lights orbit together. The loop runs from the middle of the first magenta beat to the middle of its repeat, so it is seamless. The orange firelight stays on underneath the whole time, as a fire would."
+}
