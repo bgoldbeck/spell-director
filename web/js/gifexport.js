@@ -14,7 +14,7 @@ import { VIEWS, viewCamera } from "./engine/stage.js";
 import { makeStudio, quadViewports, screenOverlays, shakeCamera } from "./engine/studio.js";
 import { resolveStyle } from "./engine/style.js";
 import { GifWriter, histogram, medianCut } from "./gif.js";
-import { GIF_VIEWS, gifFileName, gifPlan, gifSize } from "./gifplan.js";
+import { GIF_VIEWS, coverageBox, fitFrame, gifFileName, gifPlan, gifSize } from "./gifplan.js";
 
 export { GIF_VIEWS, GIF_VIEW_LABELS, gifFileName, gifPlan, gifSize } from "./gifplan.js";
 
@@ -41,7 +41,8 @@ const nextTick = () => new Promise((r) => setTimeout(r, 0));
  * opts: {seed, views (front, side, top, three_quarter, quad; default all), width,
  *        fps, speed, length ("spell" | "loop"), style, bloom (default true),
  *        hidden (layer ids to leave out), dither (0..1, default 0.5; always 0 for toon
- *        and pixel art), onProgress}
+ *        and pixel art), fit (default true: widen each view to keep the whole spell in
+ *        frame), onProgress}
  * Returns {plan, files: [{name, view, data: Uint8Array, width, height, frames}]}.
  */
 export async function exportGifs(template, opts = {}) {
@@ -74,6 +75,7 @@ export async function exportGifs(template, opts = {}) {
     cam.updateMatrixWorld();
     return [v, cam];
   }));
+  const used = new Set(views.flatMap((v) => (v === "quad" ? VIEWS : [v])));
   const out = document.createElement("canvas");
   out.width = W;
   out.height = H;
@@ -111,11 +113,81 @@ export async function exportGifs(template, opts = {}) {
     return ctx.getImageData(0, 0, W, H).data;
   };
 
+  // Widen each camera so everything the spell draws over the GIF stays in
+  // frame. The spell alone is drawn on grey through a camera zoomed out
+  // SCAN_ZOOM times, frame by frame, and every pixel that differs from the
+  // empty grey counts toward its row and column. The camera then frames the
+  // box holding nearly all of it (coverageBox), so a stray wisp of smoke
+  // drifting past the lens doesn't shrink the spell to a speck.
+  const SCAN_ZOOM = 3;
+  const SCAN_MIN = 16; // how far (0-255) from the empty grey a pixel must be to count: faint smoke tails and haze do not
+  const frameCameras = async () => {
+    const scanScene = new THREE.Scene();
+    scanScene.background = new THREE.Color("#808080");
+    scanScene.add(new THREE.HemisphereLight("#8a93b8", "#1a1c24", 0.9));
+    const ox = (-W * (SCAN_ZOOM - 1)) / 2;
+    const oy = (-H * (SCAN_ZOOM - 1)) / 2;
+    const grab = (cam) => {
+      renderer.setRenderTarget(null);
+      renderer.setViewport(0, 0, W, H);
+      renderer.setScissorTest(false);
+      renderer.render(scanScene, cam);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
+      ctx.drawImage(canvas, 0, 0);
+      return ctx.getImageData(0, 0, W, H).data;
+    };
+    const boxes = {};
+    const refs = {};
+    for (const v of used) {
+      cams[v].setViewOffset(W, H, ox, oy, W * SCAN_ZOOM, H * SCAN_ZOOM);
+      refs[v] = grab(cams[v]).slice();
+      boxes[v] = { cols: new Float64Array(W), rows: new Float64Array(H) };
+    }
+    studio.scene.remove(effect.group);
+    scanScene.add(effect.group);
+    try {
+      for (let i = 0; i < plan.times.length; i++) {
+        effect.update(plan.times[i]);
+        for (const v of used) {
+          const px = grab(cams[v]);
+          const ref = refs[v];
+          const b = boxes[v];
+          for (let y = 0, k = 0; y < H; y++) {
+            for (let x = 0; x < W; x++, k += 4) {
+              if (Math.abs(px[k] - ref[k]) > SCAN_MIN || Math.abs(px[k + 1] - ref[k + 1]) > SCAN_MIN || Math.abs(px[k + 2] - ref[k + 2]) > SCAN_MIN) {
+                b.cols[x]++;
+                b.rows[y]++;
+              }
+            }
+          }
+        }
+        progress({ stage: "framing", view: views[0], done: 0, total: 1 });
+        if (i % 4 === 3) await nextTick();
+      }
+    } finally {
+      scanScene.remove(effect.group);
+      studio.scene.add(effect.group);
+    }
+    const framing = {};
+    for (const v of used) {
+      const b = coverageBox(boxes[v].cols, boxes[v].rows);
+      const box = b ? { x0: ox + b.x0 * SCAN_ZOOM, y0: oy + b.y0 * SCAN_ZOOM, x1: ox + (b.x1 + 1) * SCAN_ZOOM - 1, y1: oy + (b.y1 + 1) * SCAN_ZOOM - 1 } : null;
+      const f = fitFrame(box, W, H);
+      if (f) cams[v].setViewOffset(W, H, f.x, f.y, f.w, f.h);
+      else cams[v].clearViewOffset();
+      cams[v].updateProjectionMatrix();
+      framing[v] = f ? Math.round((f.w / W) * 100) / 100 : 1;
+    }
+    return framing;
+  };
+
   const n = plan.times.length;
   const total = views.length * n * 2;
   let done = 0;
   const files = [];
   try {
+    const zoom = opts.fit === false ? null : await frameCameras();
     for (const view of views) {
       // Pass 1: the palette, from every frame.
       let hist;
@@ -133,7 +205,7 @@ export async function exportGifs(template, opts = {}) {
       }
       files.push({ name: gifFileName(template.id, seed, style.id, view), view, data: gif.finish(), width: W, height: H, frames: n });
     }
-    return { plan: { ...plan, seed, style: style.id, width: W, height: H, views }, files };
+    return { plan: { ...plan, seed, style: style.id, width: W, height: H, views, zoom_out: zoom }, files };
   } finally {
     studio.scene.remove(effect.group);
     effect.dispose();

@@ -106,7 +106,7 @@ Output goes to an `ai/` folder inside the export. The director's MCP server has 
 
 ## Animated GIFs
 
-For sharing or reviewing a spell rather than rebuilding it, export GIFs: the spell exactly as the viewer shows it (the set and stand-ins, bloom, the art style, camera shake and screen flashes), one looping GIF per view.
+For sharing or reviewing a spell rather than rebuilding it, export GIFs: the spell as the viewer shows it (the set and stand-ins, bloom, the art style, camera shake and screen flashes), one looping GIF per view. Each view starts from the viewer's camera and widens, if needed, so the whole spell stays in frame for the whole GIF (a tall tornado, rising smoke, a long beam); it never zooms in, so the caster and targets stay in the picture.
 
 - **Viewer:** **Export GIF…** (or G). Tick any of Front, Side, Top, 3/4 and All four (the four views in one GIF, with labels), or **All**. It starts with the view on screen ticked. Pick the size (320 × 240 to 1024 × 768, always 4:3), frame rate (10 to 30 fps), speed (0.5× and 0.25× for slow motion) and style. One view downloads as `<id>-seed<seed>-<view>.gif`, several as a .zip. Uses the current seed and leaves out layers you've unticked.
 - **Command line:** `python tools/export_gif.py fire-pyre-ward --views front,quad --width 640` writes to `exports/<id>-seed<seed>-gifs/` (plus `-<style>` for non-stylized). Options: `--views` (`front`, `side`, `top`, `three_quarter`, `quad`; default all five), `--seed`, `--width`, `--fps`, `--speed`, `--length`, `--style`, `--no-bloom`, `--no-dither`. Needs a browser, as for sprite sheets above.

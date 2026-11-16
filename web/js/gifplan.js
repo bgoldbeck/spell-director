@@ -53,3 +53,54 @@ export function gifPlan(template, { fps, speed, length } = {}) {
   return { times, delays: gifDelays(count, dt / sp), fps: f, speed: sp, length: lr && mode === "loop" ? "loop" : "spell", start_ms: start, end_ms: end };
 }
 
+
+/**
+ * Where to point a view's camera so the whole spell stays in frame.
+ * `box` {x0, y0, x1, y1} is everything the spell draws over the GIF, in the
+ * view's own pixels (0..W, 0..H; it may reach outside them), or null. The
+ * view's usual framing is kept and only widened: never zoomed in, so the
+ * caster and targets stay in the picture. Returns the camera view offset
+ * {x, y, w, h} (w/h = W/H), or null when the usual framing already fits.
+ */
+export function fitFrame(box, W, H, { margin = 0.06 } = {}) {
+  if (!box || !(box.x1 >= box.x0)) return null;
+  const padX = (box.x1 - box.x0 + 1) * margin;
+  const padY = (box.y1 - box.y0 + 1) * margin;
+  const x0 = Math.min(0, box.x0 - padX);
+  const y0 = Math.min(0, box.y0 - padY);
+  const x1 = Math.max(W, box.x1 + 1 + padX);
+  const y1 = Math.max(H, box.y1 + 1 + padY);
+  if (x0 >= 0 && y0 >= 0 && x1 <= W && y1 <= H) return null;
+  // Grow to the view's aspect, around the middle of what must show.
+  const aspect = W / H;
+  let w = x1 - x0;
+  let h = y1 - y0;
+  if (w / h < aspect) w = h * aspect;
+  else h = w / aspect;
+  const cx = (x0 + x1) / 2;
+  const cy = (y0 + y1) / 2;
+  return { x: cx - w / 2, y: cy - h / 2, w, h };
+}
+
+/**
+ * The box {x0, y0, x1, y1} (inclusive) holding all but `trim` of what was
+ * drawn, from per-column and per-row counts of drawn pixels (summed over
+ * frames). Trimming a sliver from each side drops stray wisps far from the
+ * spell. null if nothing was drawn.
+ */
+export function coverageBox(cols, rows, trim = 0.005) {
+  const span = (counts) => {
+    let total = 0;
+    for (const c of counts) total += c;
+    if (!total) return null;
+    const cut = total * trim;
+    let lo = 0;
+    for (let acc = 0; lo < counts.length - 1 && acc + counts[lo] <= cut; lo++) acc += counts[lo];
+    let hi = counts.length - 1;
+    for (let acc = 0; hi > lo && acc + counts[hi] <= cut; hi--) acc += counts[hi];
+    return [lo, hi];
+  };
+  const x = span(cols);
+  const y = span(rows);
+  return x && y ? { x0: x[0], y0: y[0], x1: x[1], y1: y[1] } : null;
+}
