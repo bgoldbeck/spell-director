@@ -71,7 +71,11 @@ These are exported as tracks with one value per frame, because an engine does th
 
 - **Screen flashes** (`flash` with `scope: screen`): color, add or multiply, and an opacity curve.
 - **Camera shake**: frequency and an amplitude curve in template pixels (100 px = one character height).
-- **Lights**: anchor, color, range and an energy curve.
+- **Lights**: anchor, offset from it (`offset_units`, x along the cast direction, y up, z to its right) and `orbit_hz`, color, range and an energy curve.
+
+### Six-way lit smoke
+
+Smoke layers drawn six-way lit (shader intent `lighting: "six_way"`, or any alpha smoke in the Realistic style) export two lightmap flipbooks each, `smoke-<id>-sixway-pos.png` and `smoke-<id>-sixway-neg.png` (4 × 4 frames over a puff's life, linear, Unity's packing), listed in the JSON's `six_way_smoke` with their layout. The guide's **Six-way lit smoke** section has the Unity (Output Particle Six-way Smoke Lit) and Godot (spatial shader) steps.
 - **Sound cues**: start time and frame, cue, length, volume, pitch, one-shot or sustained, and the cue's text-to-SFX prompt. The full sound brief is in its own files, see [Sound](#sound).
 
 ### Sound

@@ -770,6 +770,97 @@
                 }
               }
             }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "light"
+                }
+              },
+              "required": [
+                "type"
+              ]
+            },
+            "then": {
+              "properties": {
+                "params": {
+                  "properties": {
+                    "radius": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "How far it reaches, in world units (1 = one character height), default 6."
+                    },
+                    "energy": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Brightness at full intensity, default 2."
+                    },
+                    "height_px": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Height above the ground, default 80; negative = under the ground (an under light)."
+                    },
+                    "forward_px": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Offset from the anchor along the cast direction (negative = behind it), default 0."
+                    },
+                    "side_px": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Offset from the anchor to the side, positive = left of the cast direction, default 0."
+                    },
+                    "orbit_hz": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "Turns per second it circles the anchor at its forward/side distance (counter-clockwise seen from above; negative = clockwise), default 0."
+                    },
+                    "tint": {
+                      "type": "string",
+                      "pattern": "^#[0-9a-fA-F]{6}$",
+                      "description": "A light color outside the palette (#RRGGBB), e.g. neon stage or rim lights. Overrides the layer's color slot."
+                    }
+                  }
+                }
+              }
+            }
           }
         ]
       }
@@ -1085,8 +1176,10 @@
           "enum": [
             "unlit",
             "lit",
-            "emits_light"
-          ]
+            "emits_light",
+            "six_way"
+          ],
+          "description": "unlit: draws its own light; lit: shaded by the scene's lights; emits_light: also lights the scene; six_way: smoke relit from six baked directions (six-way lightmaps), see docs/vocabulary.md#six-way-lit-smoke."
         },
         "notes": {
           "type": "string"

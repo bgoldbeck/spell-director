@@ -19,7 +19,11 @@ import { PX, buildStage } from "./stage.js";
 import { decalFillState, decalPlan, decalState } from "./decal.js";
 import { decalDepthMaps, drawDecal } from "./decaltex.js";
 import { makeDecalMaterial } from "./decalmat.js";
-import { decalRender, resolveStyle } from "./style.js";
+import { decalRender, resolveStyle, shaderForStyle } from "./style.js";
+import { shaderFor } from "./shader.js";
+import { smokeLighting, sixwayFrame } from "./sixway.js";
+import { makeSixWayMaterial } from "./sixwaymat.js";
+import { lightOffset } from "./lights.js";
 import { centerAt, radiusAt, shapeAt, spinTurns, wallPoint, vortexPlan } from "./vortex.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -1928,17 +1932,40 @@ class DecalLayer extends Layer {
   }
 }
 
+const SMOKE_MAX = 64; // puffs per smoke layer (per loop, in an aura)
+
 class SmokeLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
     this.sprites = [];
-    for (let i = 0; i < 32; i++) {
+    // Six-way lit smoke (engine/sixway.js): puffs relit by every light in
+    // the scene, darker underneath, glowing at the edges when backlit. Asked
+    // for by the layer's shader intent, or by the realistic style.
+    this.sixway = smokeLighting(def, effect.style, shaderForStyle(shaderFor(def), effect.style.id)) === "six_way";
+    const quad = this.sixway ? new THREE.PlaneGeometry(1, 1) : null;
+    for (let i = 0; i < SMOKE_MAX; i++) {
       // blend "add": glowing billows of flame instead of lit smoke.
       const blending = def.blend === "add" ? THREE.AdditiveBlending : THREE.NormalBlending;
-      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloud(i % 4), color: this.colors[0], transparent: true, depthWrite: false, blending }));
+      const s = this.sixway
+        ? new THREE.Mesh(quad, makeSixWayMaterial(this.colors[0]))
+        : new THREE.Sprite(new THREE.SpriteMaterial({ map: cloud(i % 4), color: this.colors[0], transparent: true, depthWrite: false, blending }));
+      if (this.sixway) s.frustumCulled = false;
       this.sprites.push(s);
       this.group.add(s);
     }
+  }
+
+  // Turn, fade and age one puff (sprite or six-way quad).
+  puff(s, rotation, opacity, age) {
+    if (!this.sixway) {
+      s.material.rotation = rotation;
+      s.material.opacity = opacity;
+      return;
+    }
+    const u = s.material.uniforms;
+    u.rot.value = rotation;
+    u.opacity.value = opacity;
+    u.frame.value = sixwayFrame(age);
   }
 
   update(t) {
@@ -1948,7 +1975,7 @@ class SmokeLayer extends Layer {
     this.group.visible = !!w && local >= 0 && local <= (w.end - w.start) + life;
     if (!this.group.visible) return;
     const r = this.rng("smoke");
-    const count = Math.min(32, Math.round(this.p("count", t, 6)));
+    const count = Math.min(SMOKE_MAX, Math.round(this.p("count", t, 6)));
     // height_px: puffs start this far above the anchor (a ball of dark
     // smoke at a target's chest) instead of on the ground.
     const origin = this.anchorPos().add(new THREE.Vector3(0, this.p("height_px", t, 0) * PX, 0));
@@ -1998,8 +2025,10 @@ class SmokeLayer extends Layer {
         s.position.z += Math.sin(ang) * d;
       }
       s.scale.setScalar(size * (0.6 + age));
-      s.material.rotation = spin0 + spin * age;
-      s.material.opacity = opacity * Math.sin(Math.PI * age);
+      // Six-way puffs carry their own soft falloff and thin out through
+      // the flipbook, so they fade in fast and out slowly.
+      const fade = this.sixway ? Math.min(1, age * 6) * Math.min(1, (1 - age) * 2.2) : Math.sin(Math.PI * age);
+      this.puff(s, spin0 + spin * age, opacity * fade, age);
     });
   }
 }
@@ -3480,13 +3509,21 @@ class WaveLayer extends Layer {
 class LightLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
-    this.light = new THREE.PointLight(this.colors[1], 0, 6, 1.5);
+    const tint = typeof this.base.tint === "string" && /^#[0-9a-fA-F]{6}$/.test(this.base.tint) ? new THREE.Color(this.base.tint) : this.colors[1];
+    this.light = new THREE.PointLight(tint, 0, 6, 1.5);
     this.group.add(this.light);
   }
 
   update(t) {
     const I = this.intensityAt(t);
-    this.light.position.copy(this.anchorPos()).setY(0.8);
+    const [x, y, z] = lightOffset({
+      forward: this.p("forward_px", t, 0),
+      side: this.p("side_px", t, 0),
+      height: this.p("height_px", t, 80),
+      orbit_hz: this.hz("orbit_hz", t, 0),
+    }, this.local(t));
+    const a = this.anchorPos();
+    this.light.position.set(a.x + x * PX, y * PX, a.z + z * PX);
     this.light.distance = this.p("radius", t, 6);
     this.light.intensity = I * this.p("energy", t, 2) * 3;
   }

@@ -474,7 +474,8 @@ function buildTemplateUI() {
     const li = document.createElement("li");
     const id = `layer-${l.id}`;
     const mat = l.shader?.material ? ` · ${l.shader.material}` : "";
-    li.innerHTML = `<label for="${id}"><input id="${id}" type="checkbox" checked> ${l.id} <small>${l.type}${mat}</small></label>`;
+    const lit = l.shader?.lighting === "six_way" ? " · six-way lit" : "";
+    li.innerHTML = `<label for="${id}"><input id="${id}" type="checkbox" checked> ${l.id} <small>${l.type}${mat}${lit}</small></label>`;
     if (l.shader?.look) li.title = `Shader intent: ${l.shader.look}`;
     li.querySelector("input").onchange = (e) => {
       const hide = !e.target.checked;
