@@ -6,6 +6,12 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Added
+
+- One-click setup for the AI director: on the Help page, **Connect** adds SpellDirector to Claude Desktop, Claude Code or Codex (the ChatGPT desktop app, Codex CLI and VS Code extension), keeping your other settings and a backup. The app does the same with `--setup` (`--setup --status` shows what's connected).
+- When you start a newer version of the app, it switches the AI apps that were connected to the old one over to itself, so updating is: download into the same folder, double-click, restart the AI app.
+- A step-by-step setup guide for people who just downloaded the app ([docs/setup.md](docs/setup.md)), with prompts to paste into Claude Code or Codex (they run the setup) or into ChatGPT or Claude on the web (they walk you through it), an honest note on what works with ChatGPT, a way to use any AI chat without a connection, and troubleshooting. The Help page has the same prompts with your app's real path filled in, and every release's notes now end with a short "New here?" section.
+
 ## [0.7.0] - 2026-11-16
 
 ### Added

@@ -15,6 +15,13 @@ second server. --new-instance skips that check (used by tests and tools).
 
 GET /version.json returns {"app": "SpellDirector", "version": "<VERSION>"}.
 
+GET /api/setup tells the Help page which AI apps are on this computer and
+whether the director is set up in them; POST /api/setup {"clients": [...]}
+sets them up (tools/client_setup.py). The POST needs the header
+X-SpellDirector: setup and a localhost Host/Origin, so other web pages can't
+trigger it. GET /docs/<name>.md serves the director's docs, for AI chats that
+can't connect to the director and need the files uploaded instead.
+
 POST /api/analyze?name=<file name>&start=<s>&end=<s> takes a GIF or video as
 the raw request body, runs tools/breakdown.py on it (start/end optional) and
 answers {"id", "base", "breakdown"}. The breakdown's images and per-frame
@@ -185,6 +192,23 @@ def analyze_upload(name: str, body, length: int, start_s: float | None, end_s: f
     return {"id": run_id, "base": f"analysis/{run_id}/", "summary": text, "breakdown": result}
 
 
+LOCAL_HOSTS = {"localhost", "127.0.0.1", "[::1]", "::1"}
+# Docs an AI chat needs when it can't connect to the director (help.html links them).
+SHARED_DOCS = {name: ROOT / "docs" / name
+               for name in ("director-playbook.md", "vocabulary.md", "template-format.md", "setup.md")}
+SHARED_DOCS["template-schema.json"] = ROOT / "schemas" / "template-0.1.0.schema.json"
+
+
+def setup_info() -> dict:
+    """What the Help page needs to offer one-click setup and fill in its prompts."""
+    import client_setup
+
+    entry = client_setup.server_entry()
+    return {"version": VERSION, "frozen": app_paths.FROZEN, "command": entry["command"],
+            "args": entry["args"], "library": str(app_paths.library_root()),
+            "clients": client_setup.status(entry)}
+
+
 class Handler(SimpleHTTPRequestHandler):
     extensions_map = {**SimpleHTTPRequestHandler.extensions_map, ".js": "text/javascript", ".json": "application/json"}
 
@@ -197,6 +221,11 @@ class Handler(SimpleHTTPRequestHandler):
                 target = (base / urllib.parse.unquote(parts[1])).resolve()
                 if base in target.parents:
                     return str(target)
+            return str(ROOT / "web" / "404")
+        if clean.startswith("/docs/"):
+            name = urllib.parse.unquote(clean[len("/docs/"):])
+            if name in SHARED_DOCS:
+                return str(SHARED_DOCS[name])
             return str(ROOT / "web" / "404")
         if clean.startswith("/templates/"):
             # The user's library first (the exe's saved spells), then the built-in templates.
@@ -221,6 +250,9 @@ class Handler(SimpleHTTPRequestHandler):
         if clean == "/version.json":
             self.send_json({"app": APP, "version": VERSION})
             return
+        if clean == "/api/setup":
+            self.send_json(setup_info())
+            return
         if clean == "/templates/index.json":
             body = json.dumps(app_paths.template_index()).encode()
             self.send_response(200)
@@ -235,6 +267,9 @@ class Handler(SimpleHTTPRequestHandler):
         url = urllib.parse.urlsplit(self.path)
         if url.path.startswith("/api/export-job/"):
             self.receive_export(url.path)
+            return
+        if url.path == "/api/setup":
+            self.receive_setup()
             return
         if url.path != "/api/analyze":
             self.send_json({"error": "not found"}, 404)
@@ -253,6 +288,37 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_json({"error": "bad Content-Length"}, 400)
             return
         self.send_json(result)
+
+    def local_request(self) -> bool:
+        """Sent by our own page: the custom header forces a CORS preflight that we never
+        answer, and Host/Origin rule out other sites and DNS rebinding."""
+        if self.headers.get("X-SpellDirector") != "setup":
+            return False
+        host = (self.headers.get("Host") or "").rsplit(":", 1)[0]
+        if host not in LOCAL_HOSTS:
+            return False
+        origin = self.headers.get("Origin")
+        return origin is None or urllib.parse.urlsplit(origin).hostname in LOCAL_HOSTS
+
+    def receive_setup(self) -> None:
+        if not self.local_request():
+            self.close_connection = True
+            self.send_json({"error": "forbidden"}, 403)
+            return
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            body = json.loads(self.rfile.read(length) or b"{}") if 0 <= length <= 10_000 else None
+            clients = body.get("clients") if isinstance(body, dict) else None
+            if clients is not None and not (isinstance(clients, list) and all(isinstance(c, str) for c in clients)):
+                raise ValueError
+        except ValueError:
+            self.close_connection = True
+            self.send_json({"error": "bad setup body"}, 400)
+            return
+        import client_setup
+
+        results = client_setup.setup(clients)
+        self.send_json({"results": results, **setup_info()})
 
     def receive_export(self, path: str) -> None:
         job = _export_job(path)
