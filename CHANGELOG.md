@@ -6,6 +6,8 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-11-16
+
 ### Fixed
 
 - **Export GIF** keeps the whole spell in frame in every view: each camera widens (never zooms in) to fit everything the spell draws over the whole GIF, such as a tall tornado, smoke rising from a meteor or a long beam. Stray wisps of smoke far from the spell are ignored, so the spell doesn't shrink to a speck.
