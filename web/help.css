@@ -53,3 +53,18 @@ kbd { font: 12px ui-monospace, Consolas, monospace; background: var(--panel-2); 
 .help-hint p { margin: 0; flex: 1 1 260px; }
 .help-hint a.btn.active { color: var(--text); }
 body.focus .help-hint { display: none; }
+
+/* Connect your AI (help.js) */
+.setup-clients { display: grid; gap: 6px; margin: 4px 0 10px; }
+.setup-row { display: grid; grid-template-columns: minmax(150px, max-content) 1fr auto; gap: 12px; align-items: center; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.setup-row.ok { border-color: #5fd38d88; }
+.setup-row.ok span::before { content: "✓ "; color: #5fd38d; }
+#setup-result { white-space: pre-line; border-left-color: #5fd38d; }
+#setup-result.bad { border-left-color: #ff7a7a; }
+.help details.manual { margin: 12px 0 8px; }
+.help details.manual summary { cursor: pointer; color: var(--accent); }
+@media (max-width: 640px) {
+  .setup-row { grid-template-columns: 1fr auto; }
+  .setup-row span { grid-column: 1; }
+}
+.help pre.wrap { white-space: pre-wrap; padding-right: 70px; }

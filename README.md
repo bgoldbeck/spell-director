@@ -4,6 +4,14 @@ An AI "director" for game spell effects. You describe a spell loosely ("heavy bo
 
 You don't need to know VFX terminology. The director does, and it offers you concrete choices in plain words.
 
+## Quick start (Windows, no Python)
+
+1. Download `SpellDirector-v<version>-windows.exe` from the [latest release](https://github.com/bgoldbeck/spell-director/releases/latest), put it in its own folder and double-click it. The viewer opens in your browser.
+2. Click **? Help**, then **Connect** next to Claude Desktop, Claude Code or Codex (the ChatGPT desktop app). Restart that app.
+3. Ask it: *"List the SpellDirector spells."* Then: *"Direct a spell: a quick chain shock that jumps between three enemies."*
+
+Step by step, with prompts to paste into ChatGPT or Claude if you'd like an AI to walk you through it, what works with ChatGPT, updating, and troubleshooting: **[docs/setup.md](docs/setup.md)**.
+
 ## Plan
 
 Full design: [docs/DESIGN.md](docs/DESIGN.md). What's next: [docs/ROADMAP.md](docs/ROADMAP.md).
@@ -21,6 +29,7 @@ The current version is in [`VERSION`](VERSION); what changed is in [`CHANGELOG.m
 
 | Path | What |
 |---|---|
+| [`docs/setup.md`](docs/setup.md), [`tools/client_setup.py`](tools/client_setup.py) | Setting up the Windows app and connecting it to Claude Desktop, Claude Code or Codex (`exe --setup`, the Help page's Connect buttons). |
 | [`docs/vocabulary.md`](docs/vocabulary.md) | Terms the director uses: phases, timing, shape, color, layers, space, lightning terms. |
 | [`docs/template-format.md`](docs/template-format.md) | The template format, field by field. |
 | [`schemas/`](schemas/) | JSON Schema for templates. |
@@ -47,7 +56,7 @@ python -m director.mcp_server        # stdio MCP server; run from the repo root
 
 Claude Code picks it up from [`.mcp.json`](.mcp.json) when opened in this repo. For Claude Desktop or another client, add a stdio server with command `python`, args `["-m", "director.mcp_server"]` and the repo as the working directory.
 
-**Without Python:** the Windows app is the MCP server too. Point the client at the exe with the `--mcp` argument:
+**Without Python:** the Windows app is the MCP server too: `SpellDirector.exe --mcp`. The easy way to connect it is **? Help → Connect** in the viewer, or `SpellDirector.exe --setup` (from the source folder: `python tools/client_setup.py`), which adds it to Claude Desktop, Claude Code (`claude mcp add --scope user`) and Codex (`~/.codex/config.toml`, shared by the ChatGPT desktop app, Codex CLI and IDE extension) wherever they're installed, keeping other settings and a `.bak`. When a newer exe starts, it switches the apps already connected to an older one over to itself. See [docs/setup.md](docs/setup.md). By hand, the client entry is:
 
 ```json
 {
