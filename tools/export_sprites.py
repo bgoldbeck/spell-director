@@ -4,6 +4,7 @@ assembly guide (Markdown) for rebuilding the spell in a game engine.
     python tools/export_sprites.py lightning-sky-strike
     python tools/export_sprites.py lightning-sky-strike --seed 7 --frame 256 --fps 24
     python tools/export_sprites.py my-spell.json --views front,three_quarter --out exports/test
+    python tools/export_sprites.py fire-meteor-strike --style realistic
 
 Writes to exports/<template id>-seed<seed>/ by default: all.png (the whole
 spell), layer-<layer id>.png for each drawn layer (columns are frames, rows are
@@ -41,6 +42,7 @@ import serve  # noqa: E402
 
 VIEWS = ("front", "side", "top", "three_quarter")
 EXPORTS = app_paths.library_root() / "exports"
+STYLES = ("stylized", "realistic", "toon", "pixel")  # web/js/engine/style.js STYLE_IDS
 
 
 class ExportError(RuntimeError):
@@ -74,7 +76,7 @@ def _version() -> str:
 
 def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | None = None,
            views: list[str] | None = None, layers: bool = True, out: Path | str | None = None,
-           timeout_s: float = 300, bloom: bool = True) -> dict:
+           timeout_s: float = 300, bloom: bool = True, style: str | None = None) -> dict:
     """Export sprite sheets. `template` is a template id, a path to a JSON file, or a dict.
 
     Returns {"out": folder, "files": [paths], "manifest": {...}}.
@@ -92,6 +94,8 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
         tpl_obj = json.loads(Path(template).read_text(encoding="utf-8"))
     else:
         tpl_id = str(template)
+    if style is not None and style not in STYLES:
+        raise ExportError(f"unknown style {style!r}; use {', '.join(STYLES)}")
     views = list(views or VIEWS)
     bad = [v for v in views if v not in VIEWS]
     if bad:
@@ -105,6 +109,8 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
     opts = {"seed": seed, "frame": frame, "views": views, "layers": layers, "bloom": bloom, "version": _version()}
     if fps:
         opts["fps"] = fps
+    if style:
+        opts["style"] = style
     if tpl_obj is not None:
         opts["template"] = tpl_obj
     else:
@@ -119,7 +125,9 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
         server.server_close()
 
     manifest = result["manifest"]
-    folder = Path(out) if out else EXPORTS / f"{manifest['template']['id']}-seed{manifest['seed']}"
+    style_id = (manifest.get("style") or {}).get("id", "stylized")
+    suffix = "" if style_id == "stylized" else f"-{style_id}"
+    folder = Path(out) if out else EXPORTS / f"{manifest['template']['id']}-seed{manifest['seed']}{suffix}"
     folder.mkdir(parents=True, exist_ok=True)
     written = []
     for f in result["files"]:
@@ -234,12 +242,13 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--views", default=",".join(VIEWS), help="comma-separated views (default all four)")
     ap.add_argument("--no-layers", action="store_true", help="only the whole-spell row, no row per layer")
     ap.add_argument("--no-bloom", action="store_true", help="don't bake the bloom glow into the sprites")
-    ap.add_argument("--out", help="output folder (default exports/<id>-seed<seed>)")
+    ap.add_argument("--style", choices=STYLES, help="art style: stylized, realistic, toon or pixel (default: the template's)")
+    ap.add_argument("--out", help="output folder (default exports/<id>-seed<seed>, plus -<style> for non-stylized)")
     args = ap.parse_args(argv)
     try:
         res = export(args.template, seed=args.seed, frame=args.frame, fps=args.fps,
                      views=[v.strip() for v in args.views.split(",") if v.strip()],
-                     layers=not args.no_layers, out=args.out, bloom=not args.no_bloom)
+                     layers=not args.no_layers, out=args.out, bloom=not args.no_bloom, style=args.style)
     except ExportError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

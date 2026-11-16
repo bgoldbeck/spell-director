@@ -86,6 +86,15 @@
           </select>
         </label>
         <label class="check"><input id="loop" type="checkbox" checked> Loop</label>
+        <label title="Art style (S cycles): the same spell drawn Stylized, Realistic (ground with depth, lava in the cracks), Toon or Pixel art. Exports carry the style's engine recipe.">Style
+          <select id="style-select">
+            <option value="">Template's</option>
+            <option value="stylized">Stylized</option>
+            <option value="realistic">Realistic</option>
+            <option value="toon">Toon</option>
+            <option value="pixel">Pixel art</option>
+          </select>
+        </label>
         <label class="check" title="Bloom: bright light glows past its edges (B)"><input id="bloom" type="checkbox" checked> Bloom</label>
         <label>Seed <input id="seed" type="number" min="0" step="1" value="1"></label>
         <button id="reroll" class="btn" title="New random seed: same template, different cast">New cast</button>
@@ -141,6 +150,15 @@
             <option value="24">24 fps</option>
             <option value="30">30 fps</option>
             <option value="60">60 fps</option>
+          </select>
+        </label>
+        <label title="Art style for the sheets and the engine guide's shader recipes">Style
+          <select name="style">
+            <option value="">As in the viewer</option>
+            <option value="stylized">Stylized</option>
+            <option value="realistic">Realistic</option>
+            <option value="toon">Toon</option>
+            <option value="pixel">Pixel art</option>
           </select>
         </label>
         <label class="check"><input type="checkbox" name="layers" checked> A sheet per layer</label>

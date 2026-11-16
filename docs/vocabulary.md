@@ -396,3 +396,41 @@ Rendered frames show *when* and *where* things happen. They don't carry the magi
 | fresnel | Fresnel Effect node | `pow(1.0 - dot(NORMAL, VIEW), p)` |
 | dissolve | Alpha Clip with Step/Smoothstep | `smoothstep` into ALPHA |
 | emissive HDR | HDR color × intensity, with Bloom | EMISSION × intensity, with Glow |
+
+## 12. Styles
+
+The same spell can be built in different art styles. A style doesn't change *what happens* (beats, layers, timing, palette); it changes *how it's made*. The viewer previews each style, and the export guide adds per-style Unity and Godot steps to every layer. Pick the style that matches the game; a template's `style.preset` says which one it was designed for.
+
+| Style | Looks like | Key techniques |
+|---|---|---|
+| `stylized` (default) | clean readable shapes, saturated palette, soft gradients, strong bloom (most action games, MOBAs, ARPGs) | additive glows with a white-hot core, smooth noise, HDR emission ×2–6, bloom |
+| `realistic` | matter that looks like matter: lit smoke, ground that really cracks open, heat haze, real lights, filmic color | depth decals (height map + parallax occlusion mapping + normal from height), flow maps for lava, emissive masks, soft particles, six-way lit smoke, distortion, ACES tone mapping, real lights with shadows |
+| `toon` | cel-shaded, anime or cartoon: flat color bands, hard edges, ink outlines, snappy timing | stepped color ramps (posterize), alpha clip, inverted-hull or screen-space outlines, smear frames, animating on twos |
+| `pixel` | low-res pixel art with a limited palette | low-res render or small flipbooks, point filtering, pixel snapping, palette shades, 8–12 fps |
+
+### Realistic terms
+
+| Term | What it is | Unity | Godot 4 |
+|---|---|---|---|
+| height map | greyscale image of how high each point is (the export's `decal-<id>-height.png`: white = ground, black = deepest) | texture input of the POM node | `heightmap_texture` / sampled in the shader |
+| parallax occlusion mapping (POM) | marches a ray through the height map so a flat decal looks carved in, with walls you can see into | Shader Graph **Parallax Occlusion Mapping** node | StandardMaterial3D **Heightmap** with **Deep Parallax**, or a POM loop in a spatial shader |
+| normal from height | slopes of the height map turned into a normal map so walls catch the light | **Normal From Height** node | a baked normal map, or three height samples in the shader |
+| emissive mask | where a decal glows or holds its fill (`decal-<id>-emissive.png`) | multiply into Emission | multiply into EMISSION |
+| flow map | an image whose red/green give a direction to scroll a texture along (`decal-<id>-flow.png`, outward from the centre) | two noise samples offset by flow × time, cross-faded every half cycle | same, in the fragment shader |
+| crust / cooling | lava darkens to rock from the edges and as it ages | lerp emission to 0 and albedo to near-black by the `heat` curve | same |
+| soft particles | particles fade where they meet geometry instead of cutting a line | Soft Particles / depth fade | `proximity_fade_enabled` |
+| six-way lighting | smoke flipbooks with lighting baked from six directions, so smoke is lit by the scene | VFX Graph **Six-way Smoke Lit** output | normal-mapped smoke flipbook in a lit material |
+| heat haze | the air bends behind hot or energetic things | Scene Color with offset UVs (HDRP Distortion) | `hint_screen_texture` at offset SCREEN_UV |
+| tone mapping | maps HDR light to the screen so bright things roll off to white | Volume Tonemapping ACES / Neutral | WorldEnvironment tonemap ACES / AgX |
+
+### Decal depth and fill
+
+A decal's `depth` (carved, flat or raised) and `fill` (`lava`, `glow`, `liquid`, `void`) say what the ground mark is in 3D. In the realistic style the viewer draws it with parallax and lit walls; in every style it draws the fill. The export adds the height map, emissive mask and flow map, and the curves `fill` (how far it has risen) and `heat` (1 = fresh, 0 = cooled).
+
+| Fill | Use for | Feels like |
+|---|---|---|
+| `lava` | meteors, eruptions, fire slams, earth + fire | molten rock flowing along the cracks, white-hot deep down, a dark crust floating on it, cooling to black rock |
+| `glow` | lightning, holy, arcane, energy hits | light shining up out of the cracks |
+| `liquid` | water, blood, poison, slime | liquid pooling in the cracks, glossy, a moving highlight |
+| `void` | shadow, dark magic, curses | darkness welling up from below with a faint colored swirl |
+

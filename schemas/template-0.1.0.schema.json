@@ -286,6 +286,50 @@
         }
       }
     },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The art style this template is meant for (the viewer and export can switch to any other). See docs/template-format.md#style and docs/vocabulary.md section 12.",
+      "properties": {
+        "preset": {
+          "enum": [
+            "stylized",
+            "realistic",
+            "toon",
+            "pixel"
+          ],
+          "description": "stylized (default): saturated, soft, strong bloom. realistic: lit, depth decals, heat haze, filmic. toon: cel bands and ink outlines. pixel: low-res pixel art."
+        },
+        "depth": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How deep carved decals look in the realistic style, default 0.6."
+        },
+        "saturation": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Color saturation in the viewer for this preset (1 = as authored)."
+        },
+        "outline": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Ink outline strength (toon)."
+        },
+        "bloom": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3,
+          "description": "Multiplier on the preset's bloom strength."
+        },
+        "notes": {
+          "type": "string",
+          "description": "What the style should feel like for this spell, for the engine artist."
+        }
+      }
+    },
     "beats": {
       "type": "array",
       "minItems": 1,
@@ -657,6 +701,51 @@
                         }
                       ],
                       "description": "The mark spreads out from its centre over this long from its start, like cracks running across the ground (default 0: appears whole)."
+                    },
+                    "depth": {
+                      "oneOf": [
+                        {
+                          "type": "number",
+                          "minimum": -1,
+                          "maximum": 1
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "How carved the mark looks with depth (realistic): 1 deep, 0 flat, negative raised. Default per shape."
+                    },
+                    "fill": {
+                      "enum": [
+                        "none",
+                        "lava",
+                        "glow",
+                        "liquid",
+                        "void"
+                      ],
+                      "description": "What sits in the bottom of the mark: lava, glow (energy light), liquid (water, blood), void (darkness). Default none."
+                    },
+                    "fill_color": {
+                      "enum": [
+                        "core",
+                        "primary",
+                        "secondary",
+                        "accent",
+                        "shadow",
+                        "gradient_core_to_primary",
+                        "gradient_primary_to_secondary"
+                      ],
+                      "description": "Palette slot of the fill. Default: lava gradient_core_to_primary, glow the layer's color, liquid primary, void shadow."
+                    },
+                    "fill_flow": {
+                      "type": "number",
+                      "minimum": 0,
+                      "description": "How fast the fill flows (1 = default)."
+                    },
+                    "fill_in_ms": {
+                      "type": "number",
+                      "minimum": 0,
+                      "description": "Time for the fill to rise into the mark from its start, default 200."
                     }
                   }
                 }
@@ -982,6 +1071,25 @@
         },
         "notes": {
           "type": "string"
+        },
+        "styles": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Per-style refinements of this shader intent (merged over it when the spell is built in that style), e.g. a realistic look sentence or material.",
+          "properties": {
+            "stylized": {
+              "$ref": "#/$defs/shader"
+            },
+            "realistic": {
+              "$ref": "#/$defs/shader"
+            },
+            "toon": {
+              "$ref": "#/$defs/shader"
+            },
+            "pixel": {
+              "$ref": "#/$defs/shader"
+            }
+          }
         }
       }
     }

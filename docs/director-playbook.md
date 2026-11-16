@@ -175,6 +175,10 @@ The rendered frames are a timing and composition reference; the magic in a game 
 
 Keep the same material and noise family across a spell's layers so they read as one substance, and vary scale and HDR between core and support layers.
 
+### Style (vocabulary §12)
+
+Every spell works in every style (`stylized`, `realistic`, `toon`, `pixel`), so don't write separate "realistic" spells. If the user names a look ("realistic", "gritty", "anime", "cel-shaded", "retro", "pixel art"), set `style.preset` and put the feel in `style.notes`; otherwise leave `style` out (stylized). Where a layer should read differently in a style, add `shader.styles.<style>` with just the fields that change (usually a `look` sentence). For ground marks, think in 3D: is the ground carved (`depth`), and does anything sit in the cracks (`fill`: `lava` for fire and earth, `glow` for lightning, holy and arcane, `liquid` for water and blood, `void` for shadow and dark magic)?
+
 ### Sizes and weight
 
 Sizes are in pixels at 100 px per world unit (1 unit = a character's height).
@@ -210,7 +214,7 @@ Set `views.hero` from the camera answer. Then write `views.reads` for **all four
 2. `save_template`. It validates again, writes `templates/<element>/<id>.json` and rebuilds `templates/index.json`. It refuses to replace an existing template unless you pass `overwrite: true`, which you should only do when revising that template on purpose.
 3. Give the user the preview URL from the result (`http://localhost:47811/?template=<id>&view=<hero>`, with the viewer running via `run.sh`, `run.bat`, `python tools/serve.py` or the app; the result's URL already points at a running viewer's port when there is one, and the app's `--mcp` mode serves the viewer itself) and a two-line summary: what you made and the choices you took.
 4. Offer one revision round in plain words ("heavier hit?", "fewer forks?"). Revise the same template id with `overwrite: true`.
-5. When the user wants the spell in their game, call `export_sprites` (or point them at **Export sprites…** in the viewer) and give them the guide path. It makes a sheet per layer with the four views as rows, a JSON file and a guide for Unity and Godot ([exporting.md](exporting.md)).
+5. When the user wants the spell in their game, call `export_sprites` (or point them at **Export sprites…** in the viewer) and give them the guide path; pass `style` when their game has a look (`realistic`, `toon`, `pixel`). It makes a sheet per layer with the four views as rows, a JSON file and a guide for Unity and Godot ([exporting.md](exporting.md)).
 
 More examples: [`templates/light/sunlance.json`](../templates/light/sunlance.json) (a long sunlight gather and a steady lance of light with two spirals), [`templates/energy/annihilator-beam.json`](../templates/energy/annihilator-beam.json) (an all-out beam with recoil, an explosion and a recharge) and [`templates/psychic/mind-crush.json`](../templates/psychic/mind-crush.json) (warping ripples, a held bubble, a crush).
 

@@ -30,6 +30,7 @@ A **template** is what the director writes. It describes a spell effect well eno
 | `space` | yes | Origin, destination, travel mode, footprint, chain targets. |
 | `views` | yes | `hero` view plus `reads` for `front`, `side`, `top`, `three_quarter`. |
 | `palette` | yes | `core` and `primary` required; `secondary`, `accent`, `shadow` optional. |
+| `style` | no | The art style the spell is meant for: `preset` (`stylized` default, `realistic`, `toon`, `pixel`) and a few knobs. Every spell works in every style; see [Style](#style). |
 | `beats` | yes | The timeline. |
 | `layers` | yes | What gets drawn. |
 | `variation` | no | Notes on what should differ between casts. |
@@ -105,6 +106,30 @@ Each drawn layer may have a `shader` object: what it's made of and how its surfa
 
 Fields: `material`, `look`, `technique`, `noise` (`type`, `scale`, `speed`, `contrast`), `flow` (`direction`, `speed`), `distortion`, `fresnel`, `dissolve` (`pattern`, `edge_width`, `edge_color`), `emissive` (`hdr`, `falloff`, `core_ratio`), `lighting`, `notes`. All optional. `sound_cue` and `camera_shake` layers take none.
 
+## Style
+
+One template, several looks. The viewer's **Style** menu (or `?style=`, or the `S` key) and the export can draw any spell **Stylized**, **Realistic**, **Toon** or **Pixel art**; the template's `style` only says which one it's meant for and refines it. A style changes how the viewer draws the spell and, more importantly, the engine recipe the export writes (per-style Unity and Godot steps, [vocabulary §12](vocabulary.md#12-styles)). Beats, layers, timing and palette stay the same.
+
+```json
+"style": { "preset": "realistic", "depth": 0.8, "notes": "Gritty and heavy: the ground should look torn open." }
+```
+
+| Field | Meaning |
+|---|---|
+| `preset` | `stylized` (default): saturated, soft, strong bloom. `realistic`: lit, decals with depth, heat haze, filmic tone mapping. `toon`: cel bands, hard edges, ink outlines. `pixel`: low-res pixel art. |
+| `depth` | 0–1, how deep carved decals look in the realistic style (default 0.6). |
+| `saturation`, `outline`, `bloom` | Viewer knobs for this preset: color saturation (1 = as authored), ink outline strength (toon), multiplier on the preset's bloom. |
+| `notes` | What the style should feel like for this spell, copied into the export guide. |
+
+A layer's shader intent can be refined per style with `shader.styles`: each key (`realistic`, `toon`, ...) holds shader fields that replace the base ones in that style (a realistic `look` sentence, a different `material`).
+
+```json
+"shader": {
+  "material": "molten", "look": "Glowing cracks around the crater.", "technique": "decal",
+  "styles": { "realistic": { "look": "The ground splits open: deep cracks with lit walls and lava welling up in them, crusting over as it cools." } }
+}
+```
+
 ## Known params by layer type
 
 Unknown params are allowed (the validator warns) so the director can experiment, but renderers only promise to support these.
@@ -148,7 +173,7 @@ A `decal` layer is a mark on the ground: drawn flat on the ground plane under ev
 | `warning_ring` | add | faint fill, bright rim and ticks | telegraphs: "get out of here" |
 | `fissures` | alpha | long jagged ground splits fanning out from the centre, with shadow and rubble | quakes, ground pounds, earth waves (pair with `arc_deg` for a frontal fan) |
 
-The layer's `blend` overrides the default (e.g. `cracks` with `blend: add` are glowing cracks). The color is the layer's palette slot.
+The layer's `blend` overrides the default (e.g. `cracks` with `blend: add` are glowing cracks). The color is the layer's palette slot. In the realistic style a carved glowing mark (`cracks` with `blend: add`) is drawn as a real crack in the ground with the light coming up out of it.
 
 | Param | Default | Meaning |
 |---|---|---|
@@ -166,6 +191,11 @@ The layer's `blend` overrides the default (e.g. `cracks` with `blend: add` are g
 | `detail` | 0.5 | How busy the texture is: number of cracks, rays, glyphs, droplets. |
 | `arc_deg` | 360 | Keep only the sector facing the cast direction (a frontal fan of fissures). Without `rotation_deg`, an arc mark faces the cast direction. |
 | `reveal_ms` | 0 | The mark spreads outward from its centre over this long (cracks running across the ground), instead of appearing whole. Match it to the wave it follows. |
+| `depth` | per shape | How carved the mark looks in the realistic style: 1 deep (cracks, fissures), 0 flat (puddles, warning rings), negative raised (frost). Drawn with parallax and lit walls; exported as a height map. |
+| `fill` | `none` | What sits in the bottom of the mark, in every style: `lava` (molten rock flowing along the cracks, white-hot deep down, crusting over as it cools), `glow` (light shining up out of the cracks), `liquid` (water, blood or poison pooling, glossy), `void` (darkness welling up). Exported as an emissive mask (and a flow map for lava and void). |
+| `fill_color` | per fill | Palette slot of the fill: lava `gradient_core_to_primary` (deep = core, shallow = primary), glow the layer's color, liquid `primary`, void `shadow`. |
+| `fill_flow` | 1 | How fast the fill flows. |
+| `fill_in_ms` | 200 | The fill rises into the mark over this long from its start; it cools (lava crusts, glow fades) while the decal fades out. |
 
 Decal beats set when it appears (the start of its first beat) and, without `lifetime_ms`, how long it holds. A decal's brightness does not follow the beats' intensity curves: marks don't flicker. Stack two decals for a hot mark that cools: a glowing `burn`/`cracks` (add, short lifetime) over a dark `scorch` (alpha, long lifetime).
 

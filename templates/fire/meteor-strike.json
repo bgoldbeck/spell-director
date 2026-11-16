@@ -226,9 +226,12 @@
         "fade_in_ms": 40,
         "grow_ms": 200,
         "start_scale": 0.3,
-        "lifetime_ms": 800,
-        "fade_ms": 650,
-        "detail": 0.75
+        "lifetime_ms": 1500,
+        "fade_ms": 1100,
+        "detail": 0.75,
+        "fill": "lava",
+        "fill_color": "gradient_core_to_primary",
+        "fill_in_ms": 250
       },
       "shader": {
         "material": "molten",
@@ -249,7 +252,13 @@
           "hdr": 3,
           "falloff": "hard"
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "styles": {
+          "realistic": {
+            "look": "The ground splits open around the crater: deep cracks with lit, crumbling walls and lava welling up in them, white-yellow deep down, flowing outward and crusting over as it cools.",
+            "notes": "Depth decal: height map + parallax occlusion, lava in the emissive output scrolled along the flow map."
+          }
+        }
       }
     },
     {

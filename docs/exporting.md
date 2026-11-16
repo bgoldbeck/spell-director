@@ -50,6 +50,12 @@ The viewer's bloom glow is baked into the sprites by default (`bloom_baked` in t
 
 Each `decal` layer gets its sheet like any layer, plus `decal-<layer id>.png`: a 512 × 512 top-down texture (straight alpha, palette color baked in, right edge along the cast direction) for an engine's decal projector. The JSON's `decals` list gives its size in world units, blend (`alpha` paints the ground, `add` glows and belongs in emission), anchor, timing (`start_ms`, `fade_in_ms`, `hold_until_ms`, `fade_out_ms`, `end_ms`, which may be after the spell ends) and per-frame `curves` for opacity, scale and rotation. The guide has step-by-step setups for Unity's URP/HDRP Decal Projector and Godot 4's Decal node, and a note for 2D engines.
 
+Decals with depth or a fill (the realistic style, or a template `fill` such as `lava`) also get `decal-<id>-height.png` (white = ground, black = deepest; for parallax occlusion mapping), `decal-<id>-emissive.png` (where the fill sits) and, for lava and void, `decal-<id>-flow.png` (a flow map, outward from the centre). The JSON adds `depth`, `fill`, `fill_colors` and `fill`/`heat` curves, and the guide has a "Depth and fills" section.
+
+### Styles
+
+Pick a **Style** in the export dialog (it defaults to the viewer's), or pass `--style realistic` (`stylized`, `realistic`, `toon`, `pixel`) to `tools/export_sprites.py` or `style` to the director's `export_sprites` tool. The guide gets a "Style" section with whole-effect Unity and Godot steps for that style, and every layer's recipe gets the style's extra steps (vocabulary §12). The sheets show the style too: realistic decals with depth, toon cells posterized with hard edges and ink outlines, pixel art cells in chunky pixels with few shades. Tone mapping is left to your engine. Non-default styles export to `<id>-seed<seed>-<style>`.
+
 ### Not drawn into the sheets
 
 These are exported as tracks with one value per frame, because an engine does them better than baked pixels:

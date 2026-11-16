@@ -12,8 +12,10 @@ import {
   seedFor,
 } from "./timeline.js";
 import { PX, buildStage } from "./stage.js";
-import { decalPlan, decalState } from "./decal.js";
-import { drawDecal } from "./decaltex.js";
+import { decalFillState, decalPlan, decalState } from "./decal.js";
+import { decalDepthMaps, drawDecal } from "./decaltex.js";
+import { makeDecalMaterial } from "./decalmat.js";
+import { decalRender, resolveStyle } from "./style.js";
 import { centerAt, radiusAt, shapeAt, spinTurns, wallPoint, vortexPlan } from "./vortex.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -1702,30 +1704,44 @@ class DecalLayer extends Layer {
     const map = new THREE.CanvasTexture(this.canvas);
     map.colorSpace = THREE.SRGBColorSpace;
     map.anisotropy = 4;
-    this.material = new THREE.MeshBasicMaterial({
-      map,
-      color: this.colors[0],
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-      blending: this.plan.blend === "add" ? THREE.AdditiveBlending : this.plan.blend === "multiply" ? THREE.MultiplyBlending : THREE.NormalBlending,
-      premultipliedAlpha: this.plan.blend === "multiply",
-      polygonOffset: true,
-      polygonOffsetFactor: -4,
-      polygonOffsetUnits: -4,
-    });
-    // reveal_ms: the mark spreads out from its centre (cracks running
-    // outward) instead of appearing whole.
+    // The style and the template's fill decide the material: depth (realistic),
+    // cel bands (toon), or a fill in the cracks need the decal shader.
+    this.look = decalRender(this.plan.shape, this.plan.blend, this.plan.look, effect.style, def.color);
     this.reveal = { value: 1 };
-    if (this.plan.reveal_ms > 0) {
-      this.material.onBeforeCompile = (shader) => {
-        shader.uniforms.reveal = this.reveal;
-        shader.fragmentShader = `uniform float reveal;\n${shader.fragmentShader}`.replace(
-          "#include <map_fragment>",
-          "#include <map_fragment>\n  if (reveal < 1.0) diffuseColor.a *= 1.0 - smoothstep(reveal * 1.02 - 0.06, reveal * 1.02, length(vMapUv - 0.5) * 2.0);",
-        );
-      };
-      this.material.customProgramCacheKey = () => "decal-reveal";
+    if (this.look.custom) {
+      this.maps = decalDepthMaps(this.canvas, this.plan.shape);
+      const [fillA, fillB] = colorsFor(effect.template, this.look.fill_color || def.color);
+      this.material = makeDecalMaterial({
+        map, maps: this.maps, color: this.colors[0], fillA, fillB,
+        mode: this.look.mode, depth: this.look.depth, fill: this.look.fill, flow: this.look.fill_flow,
+        additive: this.look.mode === "flat" && this.look.light, addLook: this.look.light,
+      });
+      this.custom = true;
+    } else {
+      this.material = new THREE.MeshBasicMaterial({
+        map,
+        color: this.colors[0],
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: this.plan.blend === "add" ? THREE.AdditiveBlending : this.plan.blend === "multiply" ? THREE.MultiplyBlending : THREE.NormalBlending,
+        premultipliedAlpha: this.plan.blend === "multiply",
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        polygonOffsetUnits: -4,
+      });
+      // reveal_ms: the mark spreads out from its centre (cracks running
+      // outward) instead of appearing whole.
+      if (this.plan.reveal_ms > 0) {
+        this.material.onBeforeCompile = (shader) => {
+          shader.uniforms.reveal = this.reveal;
+          shader.fragmentShader = `uniform float reveal;\n${shader.fragmentShader}`.replace(
+            "#include <map_fragment>",
+            "#include <map_fragment>\n  if (reveal < 1.0) diffuseColor.a *= 1.0 - smoothstep(reveal * 1.02 - 0.06, reveal * 1.02, length(vMapUv - 0.5) * 2.0);",
+          );
+        };
+        this.material.customProgramCacheKey = () => "decal-reveal";
+      }
     }
     this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), this.material);
     this.group.add(this.mesh);
@@ -1742,7 +1758,17 @@ class DecalLayer extends Layer {
     this.mesh.position.set(at.x, 0.004, at.z);
     this.mesh.rotation.set(-Math.PI / 2, 0, THREE.MathUtils.degToRad(st.rotation_deg));
     this.mesh.scale.set(size * this.plan.stretch, size, 1);
-    this.material.opacity = st.opacity;
+    if (this.custom) {
+      const u = this.material.uniforms;
+      const f = decalFillState(this.plan, t, this.look.fill_in_ms);
+      u.opacity.value = st.opacity;
+      u.reveal.value = st.reveal;
+      u.fillAmt.value = f.amount;
+      u.heat.value = f.heat;
+      u.time.value = Math.max(0, t - this.plan.start_ms) / 1000;
+    } else {
+      this.material.opacity = st.opacity;
+    }
   }
 }
 
@@ -3331,9 +3357,11 @@ const TYPES = {
 // ------------------------------------------------------------ effect
 
 export class Effect {
-  constructor(template, seed) {
+  // opts.style: a resolved style (engine/style.js resolveStyle); defaults to the template's own.
+  constructor(template, seed, opts = {}) {
     this.template = template;
     this.seed = seed >>> 0;
+    this.style = opts.style || resolveStyle(template);
     this.stage = buildStage(template, this.seed);
     this.group = new THREE.Group();
     this.layers = [];

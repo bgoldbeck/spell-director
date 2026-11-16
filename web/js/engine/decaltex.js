@@ -483,3 +483,95 @@ export function tintDecal(canvas, color) {
   g.drawImage(canvas, 0, 0);
   return out;
 }
+
+/**
+ * Depth and fill maps for a decal canvas (browser only): a canvas whose red
+ * channel is how deep the ground is carved (0 = ground level, 1 = deepest;
+ * blurred so cracks get sloped walls) and green channel where a fill (lava,
+ * glow, liquid) sits (the dense middle of the mark). A crater's lighter rim
+ * counts as less deep than its dark dent.
+ */
+export function decalDepthMaps(canvas, shape) {
+  const s = canvas.width;
+  const src = canvas.getContext("2d").getImageData(0, 0, s, s).data;
+  const carve = new ImageData(s, s);
+  for (let i = 0; i < src.length; i += 4) {
+    const a = src[i + 3] / 255;
+    const lum = (src[i] + src[i + 1] + src[i + 2]) / 765;
+    const d = shape === "crater" ? a * Math.min(1, Math.max(0, 1.15 - lum)) : a;
+    carve.data[i] = carve.data[i + 1] = carve.data[i + 2] = 255;
+    carve.data[i + 3] = Math.round(d * 255);
+  }
+  const flat = document.createElement("canvas");
+  flat.width = flat.height = s;
+  flat.getContext("2d").putImageData(carve, 0, 0);
+  const blurred = (px) => {
+    const c = document.createElement("canvas");
+    c.width = c.height = s;
+    const g = c.getContext("2d", { willReadFrequently: true });
+    g.filter = `blur(${px}px)`;
+    g.drawImage(flat, 0, 0);
+    return g.getImageData(0, 0, s, s).data;
+  };
+  const wide = blurred(Math.max(1, s / 70));
+  const tight = blurred(Math.max(0.5, s / 400));
+  const out = document.createElement("canvas");
+  out.width = out.height = s;
+  const g = out.getContext("2d");
+  const img = g.createImageData(s, s);
+  for (let i = 0; i < img.data.length; i += 4) {
+    // Blur spreads the depth thin; lift it back so line cracks keep a floor.
+    img.data[i] = Math.min(255, wide[i + 3] * 2.2);
+    img.data[i + 1] = tight[i + 3];
+    img.data[i + 2] = 0;
+    img.data[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  return out;
+}
+
+/**
+ * Export textures from the depth maps: a height map (carved: white = ground,
+ * black = deepest; raised: black = ground, white = highest), an emissive/fill
+ * mask (white = fill) and a radial flow map (RG = flow direction, outward
+ * from the centre, 0.5 = still), for engine shaders.
+ */
+export function decalExportMaps(maps, { raised = false, fillLo = 0.35, fillHi = 0.85 } = {}) {
+  const s = maps.width;
+  const src = maps.getContext("2d").getImageData(0, 0, s, s).data;
+  const make = () => {
+    const c = document.createElement("canvas");
+    c.width = c.height = s;
+    return c;
+  };
+  const height = make();
+  const emissive = make();
+  const flow = make();
+  const hi = height.getContext("2d").createImageData(s, s);
+  const ei = emissive.getContext("2d").createImageData(s, s);
+  const fi = flow.getContext("2d").createImageData(s, s);
+  const smooth = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
+  for (let y = 0; y < s; y++) {
+    for (let x = 0; x < s; x++) {
+      const i = (y * s + x) * 4;
+      const d = src[i] / 255;
+      const h = Math.round((raised ? d : 1 - d) * 255);
+      hi.data[i] = hi.data[i + 1] = hi.data[i + 2] = h;
+      hi.data[i + 3] = 255;
+      const e = Math.round(smooth((src[i + 1] / 255 - fillLo) / (fillHi - fillLo)) * 255);
+      ei.data[i] = ei.data[i + 1] = ei.data[i + 2] = e;
+      ei.data[i + 3] = 255;
+      const dx = x + 0.5 - s / 2;
+      const dy = y + 0.5 - s / 2;
+      const len = Math.hypot(dx, dy) || 1;
+      fi.data[i] = Math.round((0.5 + 0.5 * (dx / len)) * 255);
+      fi.data[i + 1] = Math.round((0.5 - 0.5 * (dy / len)) * 255);
+      fi.data[i + 2] = 128;
+      fi.data[i + 3] = 255;
+    }
+  }
+  height.getContext("2d").putImageData(hi, 0, 0);
+  emissive.getContext("2d").putImageData(ei, 0, 0);
+  flow.getContext("2d").putImageData(fi, 0, 0);
+  return { height, emissive, flow };
+}
