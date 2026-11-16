@@ -122,7 +122,7 @@
         "emit_ms": 950,
         "gather_px": 240,
         "swirl": 0.8,
-        "streak_ms": 90
+        "streak_ms": 35
       },
       "shader": {
         "material": "arcane",
@@ -200,15 +200,16 @@
         }
       ],
       "params": {
-        "count": 10,
+        "count": 14,
         "rise_speed": 0,
         "size_px": {
           "min": 40,
           "max": 50
         },
-        "lifetime_ms": 500,
-        "opacity": 0.95,
-        "spread_px": 8
+        "lifetime_ms": 400,
+        "opacity": 1.0,
+        "spread_px": 6,
+        "height_px": 55
       },
       "shader": {
         "material": "shadowy",
@@ -232,7 +233,7 @@
         "open"
       ],
       "anchor": "target",
-      "color": "gradient_core_to_primary",
+      "color": "primary",
       "z": 12,
       "keyframes": [
         {

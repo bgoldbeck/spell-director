@@ -1767,7 +1767,9 @@ class SmokeLayer extends Layer {
     if (!this.group.visible) return;
     const r = this.rng("smoke");
     const count = Math.min(32, Math.round(this.p("count", t, 6)));
-    const origin = this.anchorPos();
+    // height_px: puffs start this far above the anchor (a ball of dark
+    // smoke at a target's chest) instead of on the ground.
+    const origin = this.anchorPos().add(new THREE.Vector3(0, this.p("height_px", t, 0) * PX, 0));
     const rise = this.p("rise_speed", t, 40) * PX;
     const size = this.p("size_px", t, 24) * PX * 2;
     const opacity = this.p("opacity", t, 0.35);

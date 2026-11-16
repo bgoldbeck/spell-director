@@ -386,8 +386,8 @@
           "min": 60,
           "max": 75
         },
-        "width_px": 14,
-        "spacing_px": 34,
+        "width_px": 15,
+        "spacing_px": 52,
         "tilt_deg": 25,
         "jitter": 0.4,
         "rise_ms": 80,

@@ -164,8 +164,8 @@
         "gravity": 0,
         "lifetime_ms": 1000,
         "size_px": {
-          "min": 9,
-          "max": 12
+          "min": 13,
+          "max": 16
         },
         "spread_deg": 140,
         "drag": 0.5,
@@ -233,13 +233,13 @@
       "z": 10,
       "params": {
         "look": "bat",
-        "count": 45,
+        "count": 80,
         "speed": 70,
         "gravity": -200,
         "lifetime_ms": 1800,
         "size_px": {
-          "min": 9,
-          "max": 12
+          "min": 13,
+          "max": 16
         },
         "drag": 0.2
       },
@@ -267,8 +267,8 @@
         "gravity": -150,
         "lifetime_ms": 800,
         "size_px": {
-          "min": 9,
-          "max": 11
+          "min": 12,
+          "max": 15
         },
         "spread_deg": 110,
         "drag": 0.3
