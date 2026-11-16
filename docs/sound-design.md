@@ -93,7 +93,8 @@ Bigger means lower, longer and with more sub. Small spells: higher pitch, shorte
 | energy | sci-fi energy, pure tone, humming | guns |
 | psychic | warped, pulsing, otherworldly, pressure in the ears | voices saying words |
 | blood | wet, visceral, thick, pulsing | screams, voices |
-| dark | hollow, ominous, whispering, reversed | screams, horror stingers, words |
+| dark, shadow | hollow, ominous, whispering, reversed | screams, horror stingers, words |
+| sound (bard songs) | musical, resonant, sung tones | lyrics, words, drums |
 | nature | organic, woody, rustling leaves | birdsong |
 | poison | bubbling, acidic hiss, gloopy | voices |
 | arcane | magical, shimmering, resonant | music |

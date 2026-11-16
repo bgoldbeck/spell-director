@@ -664,9 +664,9 @@
         "open"
       ],
       "params": {
-        "cue": "wind",
-        "gain": 0.4,
-        "pitch": 0.6
+        "cue": "drain",
+        "gain": 0.5,
+        "pitch": 0.8
       }
     },
     {

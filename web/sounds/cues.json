@@ -57,6 +57,14 @@
     "arcane": {
       "words": "magical, shimmering, resonant",
       "avoid": "music"
+    },
+    "shadow": {
+      "words": "hollow, ominous, whispering, reversed",
+      "avoid": "screams, horror stingers, words"
+    },
+    "sound": {
+      "words": "musical, resonant, sung tones",
+      "avoid": "lyrics, words, drums"
     }
   },
   "cues": {

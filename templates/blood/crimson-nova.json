@@ -546,9 +546,9 @@
         "well"
       ],
       "params": {
-        "cue": "charge",
+        "cue": "heartbeat",
         "gain": 0.6,
-        "pitch": 0.5
+        "pitch": 1.3
       }
     },
     {
@@ -570,9 +570,9 @@
         "spray"
       ],
       "params": {
-        "cue": "crash",
-        "gain": 0.45,
-        "pitch": 1.4
+        "cue": "squelch",
+        "gain": 0.55,
+        "pitch": 0.9
       }
     },
     {

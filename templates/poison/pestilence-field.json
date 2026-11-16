@@ -636,9 +636,9 @@
         "blight"
       ],
       "params": {
-        "cue": "impact",
+        "cue": "squelch",
         "gain": 0.6,
-        "pitch": 0.6
+        "pitch": 0.8
       }
     },
     {

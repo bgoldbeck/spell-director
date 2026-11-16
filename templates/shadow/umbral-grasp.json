@@ -516,9 +516,9 @@
         "pool"
       ],
       "params": {
-        "cue": "rumble",
+        "cue": "drone",
         "gain": 0.4,
-        "pitch": 0.6
+        "pitch": 0.8
       }
     },
     {
@@ -540,9 +540,9 @@
         "bind"
       ],
       "params": {
-        "cue": "hum",
-        "gain": 0.4,
-        "pitch": 0.5
+        "cue": "whisper",
+        "gain": 0.35,
+        "pitch": 0.8
       }
     },
     {
