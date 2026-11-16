@@ -1,0 +1,701 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "shadow-void-collapse",
+  "name": "Void Collapse",
+  "description": "The warlock opens a hole of nothing at the enemy's chest: violet light and dust are sucked into a growing black sphere, it collapses to a point with a crack, then blows out in a ring of violet force, leaving a scorched circle of dead glyphs.",
+  "element": "shadow",
+  "line": "Warlock",
+  "archetype": "nova",
+  "tags": [
+    "warlock",
+    "shadow",
+    "void",
+    "implosion",
+    "black hole",
+    "burst",
+    "dark"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "dark shadow magic: a void that implodes on the target"
+  },
+  "timing": {
+    "duration_ms": 2900,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.6,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: specks of violet light spiral into a black sphere at the enemy, it shrinks to a point with a flash and a violet ring blows outward.",
+      "side": "The sphere sits at chest height with light streaming into it; the burst ring stands up around the enemy and the ground ring spreads under it.",
+      "top": "The spiral gather reads clearly from above, then the ground ring and the scorched circle.",
+      "three_quarter": "Hero view. Gather, black sphere, collapse and burst read in order."
+    }
+  },
+  "palette": {
+    "core": "#E4D2FF",
+    "primary": "#7B2CFF",
+    "secondary": "#2B0E52",
+    "accent": "#B37CFF",
+    "shadow": "#07020F"
+  },
+  "beats": [
+    {
+      "id": "open",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A hole of nothing opens at the enemy's chest; violet light and dust spiral into it and it grows."
+    },
+    {
+      "id": "collapse",
+      "phase": "impact",
+      "start_ms": 950,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The void collapses to a point with a crack of violet light."
+    },
+    {
+      "id": "burst",
+      "phase": "release",
+      "start_ms": 1050,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.1
+      },
+      "intent": "A ring of violet force blows outward and the enemy is thrown in the shockwave."
+    },
+    {
+      "id": "scar",
+      "phase": "dissipation",
+      "start_ms": 1500,
+      "end_ms": 2900,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "Dark smoke drifts off and a scorched circle of dead glyphs is left on the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "void-pull",
+      "type": "sparks",
+      "beats": [
+        "open"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "count": 120,
+        "speed": 100,
+        "speed_spread": 0.5,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.4,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_ms": 950,
+        "gather_px": 240,
+        "swirl": 0.8,
+        "streak_ms": 90
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Streaks of violet light spiralling into the void.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "void-dust",
+      "type": "sparks",
+      "beats": [
+        "open"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 20,
+        "speed": 80,
+        "gravity": 0,
+        "lifetime_ms": 900,
+        "size_px": {
+          "min": 3,
+          "max": 5
+        },
+        "spread_deg": 60,
+        "drag": 0.3,
+        "emit_ms": 800,
+        "emit_radius_px": 160
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Pebbles lifted off the ground toward the void.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "void-core",
+      "type": "smoke",
+      "beats": [
+        "open"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 11,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "size_px",
+          "value": 10
+        },
+        {
+          "t_ms": 950,
+          "param": "size_px",
+          "value": 70,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "count": 10,
+        "rise_speed": 0,
+        "size_px": {
+          "min": 40,
+          "max": 50
+        },
+        "lifetime_ms": 500,
+        "opacity": 0.95,
+        "spread_px": 8
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A sphere of perfect black: no light, no surface, just a hole in the world.",
+        "technique": "mesh",
+        "noise": {
+          "type": "none",
+          "scale": 1,
+          "speed": 0,
+          "contrast": 0
+        },
+        "distortion": 0.6,
+        "fresnel": 0.0,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "void-rim",
+      "type": "orb",
+      "beats": [
+        "open"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 10
+        },
+        {
+          "t_ms": 950,
+          "param": "radius_px",
+          "value": 60,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "bubble": true,
+        "radius_px": 40,
+        "height_px": 55,
+        "pulse_hz": 3,
+        "wobble": 0.1,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A thin violet event horizon around the black sphere, bending light at its edge.",
+        "technique": "mesh",
+        "noise": {
+          "type": "perlin",
+          "scale": 4,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "inward",
+          "speed": 2
+        },
+        "distortion": 0.7,
+        "fresnel": 1.0,
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "inward-ring",
+      "type": "ring",
+      "beats": [
+        "open"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "start_radius_px": 200,
+        "end_radius_px": 20,
+        "thickness_px": 8,
+        "softness": 0.6,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A ripple of warped space being sucked in.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "collapse-flash",
+      "type": "flash",
+      "beats": [
+        "collapse"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 20,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A pinpoint crack of violet-white light as the void closes.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "burst-ring",
+      "type": "ring",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 260,
+        "thickness_px": 16,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A ring of violet force blowing outward.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ground-ring",
+      "type": "ring",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 300,
+        "thickness_px": 20,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "The shockwave racing out along the ground.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "burst-sparks",
+      "type": "sparks",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 15,
+      "params": {
+        "count": 70,
+        "speed": 600,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 450,
+        "size_px": 2.6,
+        "spread_deg": 360,
+        "drag": 0.4
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Violet sparks blown outward by the burst.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "dark-smoke",
+      "type": "smoke",
+      "beats": [
+        "burst",
+        "scar"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 6,
+      "params": {
+        "count": 16,
+        "rise_speed": 30,
+        "size_px": {
+          "min": 45,
+          "max": 60
+        },
+        "lifetime_ms": 1300,
+        "opacity": 0.65,
+        "spread_speed": 160
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Black smoke rolling out and drifting up after the burst.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0.8,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 1
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "scar",
+      "type": "decal",
+      "beats": [
+        "burst",
+        "scar"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 140,
+        "opacity": 0.8,
+        "fade_in_ms": 60,
+        "grow_ms": 200,
+        "start_scale": 0.4,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A dead, scorched circle where the void blew out.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "dead-glyphs",
+      "type": "decal",
+      "beats": [
+        "burst",
+        "scar"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 120,
+        "opacity": 0.7,
+        "fade_in_ms": 60,
+        "lifetime_ms": 700,
+        "fade_ms": 900,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Violet glyphs burned into the scorch, guttering out.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "open"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 40,
+        "softness": 0.8,
+        "pulse_hz": 2
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Violet light in the warlock's outstretched hand.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "violet-light",
+      "type": "light",
+      "beats": [
+        "collapse",
+        "burst"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 2.2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A violet light that flares at the collapse.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "collapse-shake",
+      "type": "camera_shake",
+      "beats": [
+        "collapse",
+        "burst"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 8,
+          "max": 10
+        },
+        "frequency_hz": 24,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "open-sound",
+      "type": "sound_cue",
+      "beats": [
+        "open"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.6,
+        "pitch": 0.5
+      }
+    },
+    {
+      "id": "pull-sound",
+      "type": "sound_cue",
+      "beats": [
+        "open"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.4,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "collapse-sound",
+      "type": "sound_cue",
+      "beats": [
+        "collapse"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.8,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "burst-sound",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.7,
+        "pitch": 1.1
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The spiral gather, the dust, the burst sparks, smoke and the scorch change per cast. The collapse always comes at 950 ms."
+  },
+  "director_notes": "Warlock line, dark shadow magic. The void is drawn as black alpha smoke puffs packed tight and grown by keyframes, wrapped in a bubble orb for the glowing rim, while sparks gather_px with swirl stream light into it and a billboard ring shrinks inward. Then the reverse: flash, outward rings, sparks and smoke."
+}

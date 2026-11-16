@@ -1,0 +1,498 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "blood-nightwing-swarm",
+  "name": "Nightwing Swarm",
+  "description": "The vampire flings out an arm and their cloak bursts into a swarm of bats that streams across to the enemy, engulfs them in a shrieking, biting whirl with flecks of blood flying, then scatters up into the night.",
+  "element": "blood",
+  "line": "Vampire",
+  "archetype": "projectile",
+  "tags": [
+    "vampire",
+    "bats",
+    "swarm",
+    "projectile",
+    "engulf",
+    "blood",
+    "night",
+    "summon"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "vampire crimson bat swarm"
+  },
+  "timing": {
+    "duration_ms": 3200,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 4,
+      "distribution": "random"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: a cloud of dark bats boils off the vampire and streams away to the enemy, circles them in a whirl, and scatters upward.",
+      "side": "The swarm reads as a ribbon of flapping silhouettes arcing from hand to target, then a column of circling bats around the enemy.",
+      "top": "A stream of bats from caster to target, then a ring of bats circling the enemy with a red mark under them, then bats fanning out in every direction.",
+      "three_quarter": "Hero view. The swarm has depth: bats at different heights flapping out of sync, swirling around the enemy and lifting away."
+    }
+  },
+  "palette": {
+    "core": "#FFD8D8",
+    "primary": "#D3122C",
+    "secondary": "#6A0612",
+    "accent": "#FF4A5E",
+    "shadow": "#1E0408"
+  },
+  "beats": [
+    {
+      "id": "unfurl",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.4,
+        "to": 1.0
+      },
+      "intent": "The vampire flings out an arm and the cloak dissolves into dark smoke and the first bats."
+    },
+    {
+      "id": "flight",
+      "phase": "travel",
+      "start_ms": 350,
+      "end_ms": 1400,
+      "intensity": {
+        "shape": "ease_in_out",
+        "from": 1.0,
+        "to": 0.9
+      },
+      "intent": "The swarm streams across to the enemy, flapping and jostling."
+    },
+    {
+      "id": "engulf",
+      "phase": "impact",
+      "start_ms": 1250,
+      "end_ms": 2400,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.9,
+        "to": 1.0
+      },
+      "intent": "The bats whirl round and round the enemy, biting: flecks of blood fly and a red mark spreads under them."
+    },
+    {
+      "id": "scatter",
+      "phase": "dissipation",
+      "start_ms": 2400,
+      "end_ms": 3200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "The swarm breaks and scatters up and away into the night."
+    }
+  ],
+  "layers": [
+    {
+      "id": "cloak-smoke",
+      "type": "smoke",
+      "beats": [
+        "unfurl"
+      ],
+      "anchor": "caster_hand",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 5,
+      "params": {
+        "count": 12,
+        "rise_speed": 30,
+        "size_px": {
+          "min": 35,
+          "max": 45
+        },
+        "lifetime_ms": 700,
+        "opacity": 0.7,
+        "spread_px": 25,
+        "spread_speed": 40
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "The vampire's cloak coming apart into black smoke.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 1,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 1
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.3,
+          "edge_color": "primary"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "bats-out",
+      "type": "sparks",
+      "beats": [
+        "unfurl",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "shadow",
+      "z": 10,
+      "params": {
+        "look": "bat",
+        "count": 70,
+        "speed": 260,
+        "speed_spread": 0.5,
+        "gravity": 0,
+        "lifetime_ms": 1000,
+        "size_px": {
+          "min": 9,
+          "max": 12
+        },
+        "spread_deg": 140,
+        "drag": 0.5,
+        "emit_ms": 900,
+        "home_to": "target"
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Small black bats with red-lit wing edges, flapping fast and out of sync.",
+        "technique": "flipbook",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "swirl-wind",
+      "type": "vortex",
+      "beats": [
+        "engulf",
+        "scatter"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 4,
+      "params": {
+        "height_px": 150,
+        "base_radius_px": 45,
+        "top_radius_px": 90,
+        "flare": 1.2,
+        "spin_hz": 1.6,
+        "strands": 6,
+        "twist": 1.0,
+        "turbulence": 0.6,
+        "sway_px": 8,
+        "sway_hz": 0.6,
+        "grow_ms": 250,
+        "opacity": 0.18,
+        "wander_px": 4
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A barely-there swirl of dark air carrying the bats round.",
+        "technique": "mesh",
+        "noise": {
+          "type": "streaks",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 3
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "bats-circling",
+      "type": "sparks",
+      "beats": [
+        "engulf",
+        "scatter"
+      ],
+      "attach_to": "swirl-wind",
+      "color": "shadow",
+      "z": 10,
+      "params": {
+        "look": "bat",
+        "count": 45,
+        "speed": 70,
+        "gravity": -200,
+        "lifetime_ms": 1800,
+        "size_px": {
+          "min": 9,
+          "max": 12
+        },
+        "drag": 0.2
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Bats whirling around the enemy and flung up and away when the swarm breaks.",
+        "technique": "flipbook",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "bats-scatter",
+      "type": "sparks",
+      "beats": [
+        "scatter"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 10,
+      "params": {
+        "look": "bat",
+        "count": 35,
+        "speed": 300,
+        "speed_spread": 0.5,
+        "gravity": -150,
+        "lifetime_ms": 800,
+        "size_px": {
+          "min": 9,
+          "max": 11
+        },
+        "spread_deg": 110,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "The last bats fanning up and out into the dark.",
+        "technique": "flipbook",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "blood-flecks",
+      "type": "sparks",
+      "beats": [
+        "engulf"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "look": "droplet",
+        "count": 70,
+        "speed": 220,
+        "speed_spread": 0.6,
+        "gravity": 900,
+        "lifetime_ms": 500,
+        "size_px": 2.6,
+        "spread_deg": 300,
+        "drag": 0.2,
+        "emit_ms": 1100,
+        "emit_radius_px": 30,
+        "streak_ms": 25
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Flecks of blood flicked off the enemy by the bites.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 1,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "toward_target",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 1.3,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "bite-glow",
+      "type": "glow",
+      "beats": [
+        "engulf"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "radius_px": 60,
+        "softness": 0.85,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A flickering red glow on the enemy as the bats bite.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "blood-mark",
+      "type": "decal",
+      "beats": [
+        "engulf",
+        "scatter"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "splash",
+        "radius_px": 90,
+        "opacity": 0.8,
+        "fade_in_ms": 300,
+        "grow_ms": 900,
+        "start_scale": 0.3,
+        "lifetime_ms": 5000,
+        "fade_ms": 2000,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Blood spattered on the ground under the enemy.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "unfurl"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 45,
+        "softness": 0.8,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Red light where the swarm pours out of the cloak.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "red-light",
+      "type": "light",
+      "beats": [
+        "engulf"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 3.5,
+        "energy": 1.2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A dim red light on the enemy.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "unfurl-sound",
+      "type": "sound_cue",
+      "beats": [
+        "unfurl"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.6,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "wings-sound",
+      "type": "sound_cue",
+      "beats": [
+        "flight",
+        "engulf"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.35,
+        "pitch": 1.8
+      }
+    },
+    {
+      "id": "shriek-sound",
+      "type": "sound_cue",
+      "beats": [
+        "flight"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.3,
+        "pitch": 2.0,
+        "offset_ms": 200
+      }
+    },
+    {
+      "id": "swirl-sound",
+      "type": "sound_cue",
+      "beats": [
+        "engulf"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.4,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "scatter-sound",
+      "type": "sound_cue",
+      "beats": [
+        "scatter"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.5,
+        "pitch": 1.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Every bat's path, size and flap timing change per cast, as do the blood flecks and the mark. The swarm always reaches the enemy at about 1.3 s."
+  },
+  "director_notes": "Vampire line, a bat swarm. Uses the new sparks look: bat (a flapping V silhouette in the layer colour with a faint rim). The outbound swarm is sparks home_to: target, so each bat bursts off the cloak and curves in to the enemy. Around the enemy, bats orbit a very faint vortex (opacity 0.18, mostly there to carry them) and are flung up when it dissipates. Bats are drawn alpha-blended in the palette's shadow colour so they read dark against a lit scene; on a black background, give them a lighter colour."
+}

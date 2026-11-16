@@ -6,6 +6,14 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Added
+
+- **Spell lines.** A template can name the class, school or skill line it belongs to (`line`), and the viewer's Type list now also groups spells by line.
+- Spells from the spells01 set, in its palettes: **Bard** (Rallying Anthem, Sorrow Dirge, Lingering Refrain, as a new **Sound** type), **Sorcerer** (Meteor Storm: seven meteors scattered over a field), **Cabalist** (Pestilence Field) and **Necromancer** (Bone Tempest: an icy whirlwind of bones and spirits).
+- A **Blood** type and **Vampire** line: Sanguine Siphon (blood drained back into the caster's hand), Crimson Nova, Nightwing Swarm (a bat swarm) and Hemorrhage Curse.
+- A **Warlock** line of dark shadow magic: Umbral Grasp (shadow claws and a chain) and Void Collapse (an implosion).
+- Viewer: sparks `look: bat` and `look: bone`, sparks `home_to` (particles that fly to an anchor, for drains and swarms), falling orbs' `scatter_px`, and sparks and decals that `attach_to` a falling orb appear where it lands.
+
 ## [0.7.0] - 2026-11-16
 
 ### Added

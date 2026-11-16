@@ -48,3 +48,21 @@ test("resolveStart honors template and type, and reports unknown ids instead of 
   assert.equal(badType.type, ALL);
   assert.match(badType.error, /No spells of type "ice"/);
 });
+
+test("spell lines become extra groups that All types skips", async () => {
+  const { groupCatalog, LINE_PREFIX } = await import("../web/js/catalog.js");
+  const withLines = [
+    { id: "a", name: "Anthem", element: "sound", line: "Bard" },
+    { id: "d", name: "Dirge", element: "sound", line: "Bard" },
+    { id: "m", name: "Meteor Storm", element: "fire", line: "Sorcerer" },
+    { id: "f", name: "Flame", element: "fire" },
+  ];
+  const g = groupCatalog(withLines);
+  assert.deepEqual(g.map((x) => x.type), ["fire", "sound", `${LINE_PREFIX}Bard`, `${LINE_PREFIX}Sorcerer`]);
+  assert.equal(g[2].label, "Bard");
+  assert.equal(spellsFor(g, ALL).length, 4);
+  assert.deepEqual(spellsFor(g, "line:Bard").map((t) => t.id), ["a", "d"]);
+  assert.equal(step(g, "line:Bard", "d", 1).id, "a");
+  assert.equal(resolveStart(g, { template: "m", type: "line:Sorcerer" }).type, "line:Sorcerer");
+  assert.equal(resolveStart(g, { template: "f", type: "line:Bard" }).type, "fire");
+});

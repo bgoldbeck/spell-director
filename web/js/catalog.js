@@ -23,9 +23,33 @@ export function groupByType(templates) {
     .map(([type, list]) => ({ type, label: typeLabel(type), templates: list.slice().sort(byName) }));
 }
 
+// Spell lines (the template's optional `line`: a class, school or skill line
+// such as Bard or Necromancer) as extra groups after the elements. Their type
+// is "line:<name>" and they carry `line: true`; "All types" skips them so no
+// spell is listed twice.
+export const LINE_PREFIX = "line:";
+
+export function groupByLine(templates) {
+  const groups = new Map();
+  for (const tpl of templates) {
+    if (!tpl.line) continue;
+    if (!groups.has(tpl.line)) groups.set(tpl.line, []);
+    groups.get(tpl.line).push(tpl);
+  }
+  const byName = (a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id));
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([line, list]) => ({ type: LINE_PREFIX + line, label: line, line: true, templates: list.slice().sort(byName) }));
+}
+
+// Element groups followed by spell-line groups: what the Type dropdown lists.
+export function groupCatalog(templates) {
+  return [...groupByType(templates), ...groupByLine(templates)];
+}
+
 // The templates the Spell dropdown shows for a type, in dropdown order.
 export function spellsFor(groups, type) {
-  if (type === ALL) return groups.flatMap((g) => g.templates);
+  if (type === ALL) return groups.filter((g) => !g.line).flatMap((g) => g.templates);
   return groups.find((g) => g.type === type)?.templates ?? [];
 }
 
@@ -52,7 +76,7 @@ export function resolveStart(groups, { template: wantId, type: wantType } = {}) 
   if (wantId) {
     template = all.find((t) => t.id === wantId) ?? null;
     if (template) {
-      if (type !== ALL && template.element !== type) type = template.element || "other";
+      if (type !== ALL && !spellsFor(groups, type).includes(template)) type = template.element || "other";
     } else {
       const fallback = spellsFor(groups, type)[0];
       error = `No template with id "${wantId}".` + (fallback ? ` Showing ${fallback.name || fallback.id} instead.` : "");
