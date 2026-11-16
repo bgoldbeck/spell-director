@@ -371,7 +371,11 @@ const SHAPES = {
     }
   },
 
-  rune_circle(g, s, R, detail) {
+  rune_circle(g, s, R, detail, _arc, symmetry = 0) {
+    // symmetry n (3-12): the circle looks the same turned by 360/n degrees
+    // (an n-pointed star, glyphs repeating n times), so a spinning circle in
+    // a looping aura only has to turn 360/n degrees per loop.
+    const sym = symmetry >= 3 ? Math.min(12, Math.round(symmetry)) : 0;
     const c = s / 2;
     g.strokeStyle = "rgba(255,255,255,1)";
     g.fillStyle = "rgba(255,255,255,1)";
@@ -385,7 +389,13 @@ const SHAPES = {
     ring(s * 0.4, s * 0.006);
     ring(s * 0.25, s * 0.008);
     // Glyph marks between the two outer rings.
-    const glyphs = 12 + Math.round(detail * 12);
+    let glyphs = 12 + Math.round(detail * 12);
+    if (sym) glyphs = Math.max(1, Math.round(glyphs / sym)) * sym;
+    const per = sym ? glyphs / sym : glyphs;
+    const marks = Array.from({ length: per }, () => {
+      const strokes = R.int(2, 4);
+      return Array.from({ length: strokes }, () => [R(), R(), R(), R()]);
+    });
     for (let i = 0; i < glyphs; i++) {
       const a = (i / glyphs) * TAU;
       g.save();
@@ -394,25 +404,30 @@ const SHAPES = {
       g.lineWidth = s * 0.005;
       const h = s * 0.022;
       g.beginPath();
-      const strokes = R.int(2, 4);
-      for (let k = 0; k < strokes; k++) {
-        g.moveTo(R.range(-h, h), R.range(-h, h));
-        g.lineTo(R.range(-h, h), R.range(-h, h));
+      for (const [a1, b1, a2, b2] of marks[i % per]) {
+        g.moveTo((a1 * 2 - 1) * h, (b1 * 2 - 1) * h);
+        g.lineTo((a2 * 2 - 1) * h, (b2 * 2 - 1) * h);
       }
       g.stroke();
       g.restore();
     }
     // A star joining points on the inner ring.
-    const n = [5, 6, 7, 8][R.int(0, 3)];
-    const step = n === 6 ? 2 : Math.floor(n / 2);
+    const n = sym || [5, 6, 7, 8][R.int(0, 3)];
+    // With symmetry: the densest star {n/k}, drawn as gcd(n, k) separate
+    // polygons when they share points (a hexagram is two triangles).
+    const step = sym ? Math.max(1, Math.floor((n - 1) / 2)) : n === 6 ? 2 : Math.floor(n / 2);
+    const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+    const loops = sym ? gcd(n, step) : 1;
     g.lineWidth = s * 0.006;
     g.beginPath();
-    for (let i = 0; i <= n; i++) {
-      const a = ((i * step) / n) * TAU - Math.PI / 2;
-      const x = c + Math.cos(a) * s * 0.4;
-      const y = c + Math.sin(a) * s * 0.4;
-      if (i === 0) g.moveTo(x, y);
-      else g.lineTo(x, y);
+    for (let o = 0; o < loops; o++) {
+      for (let i = 0; i <= n / loops; i++) {
+        const a = ((o + i * step) / n) * TAU - Math.PI / 2;
+        const x = c + Math.cos(a) * s * 0.4;
+        const y = c + Math.sin(a) * s * 0.4;
+        if (i === 0) g.moveTo(x, y);
+        else g.lineTo(x, y);
+      }
     }
     g.stroke();
     radial(g, c, c, s * 0.25, [[0, "rgba(255,255,255,0.35)"], [1, "rgba(255,255,255,0)"]]);
@@ -459,12 +474,12 @@ function maskArc(g, s, arc) {
 
 /** Draw a decal into a new canvas of `size` px (white + alpha). */
 // arc_deg < 360 keeps only the sector facing the cast direction (canvas +x).
-export function drawDecal(shape, seed, { detail = 0.5, size = TEXTURE_SIZE, arc_deg = 360 } = {}) {
+export function drawDecal(shape, seed, { detail = 0.5, size = TEXTURE_SIZE, arc_deg = 360, symmetry = 0 } = {}) {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
   const g = canvas.getContext("2d", { willReadFrequently: arc_deg < 360 });
   const arc = (Math.max(1, Math.min(360, arc_deg)) * Math.PI) / 180;
-  (SHAPES[shape] || SHAPES.scorch)(g, size, rng(seed), detail, arc);
+  (SHAPES[shape] || SHAPES.scorch)(g, size, rng(seed), detail, arc, symmetry);
   if (arc_deg < 360) maskArc(g, size, arc);
   return canvas;
 }

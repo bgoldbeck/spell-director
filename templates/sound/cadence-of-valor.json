@@ -1,0 +1,370 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "sound-cadence-of-valor",
+  "name": "Cadence of Valor",
+  "description": "A bard's marching song held as an aura: golden music notes circle the bard and drift upward, a beat ring rolls out across the ground on every downbeat and the staff circle under them turns in time.",
+  "element": "sound",
+  "line": "Bard",
+  "archetype": "aura",
+  "tags": [
+    "aura",
+    "looping",
+    "sustained",
+    "bard",
+    "song",
+    "music",
+    "notes",
+    "buff",
+    "allies",
+    "rhythm"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Bard music aura: notes orbiting the bard, rings on the beat, lasts as long as the song"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 2.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Notes float round the bard at chest height and climb away; each downbeat a ring slides out along the ground.",
+      "side": "Same notes passing in front of and behind the bard; the beat rings are thin bright lines on the ground.",
+      "top": "Notes orbit the bard in a ring; the staff circle turns under them and the beat rings spread out like ripples.",
+      "three_quarter": "Hero view. Orbiting notes, beat rings rolling out in time and the turning staff circle read as a song you can see."
+    }
+  },
+  "palette": {
+    "core": "#FFF7DC",
+    "primary": "#FFC94A",
+    "secondary": "#C27B1C",
+    "accent": "#FFE6A0",
+    "shadow": "#4C3818"
+  },
+  "beats": [
+    {
+      "id": "kindle",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The bard strikes up: the staff circle draws itself, the first notes peel off the instrument and start to circle."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The song holds: notes circle and rise, a ring rolls out on every beat (80 bpm) and the bard's glow pulses with it. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The song ends: the last notes drift away, the rings stop and the circle fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "staff-circle",
+      "type": "decal",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "shape": "rune_circle",
+        "depth": 0,
+        "radius_px": 180,
+        "opacity": 0.7,
+        "fade_in_ms": 500,
+        "grow_ms": 600,
+        "start_scale": 0.5,
+        "spin_deg_per_s": 20,
+        "symmetry": 6,
+        "lifetime_ms": 4300,
+        "fade_ms": 550,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A circle of golden staff lines and note glyphs turning in time with the music.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "beat-rings",
+      "type": "ring",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 260,
+        "thickness_px": 9,
+        "softness": 0.5,
+        "repeat_ms": 750,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A crisp gold sound ring on every downbeat, rolling out at a steady speed.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "distortion": 0.1
+      }
+    },
+    {
+      "id": "orbiting-notes",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "look": "note",
+        "count": 22,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": -55,
+        "lifetime_ms": 1000,
+        "size_px": 9,
+        "spread_deg": 30,
+        "drag": 0.6,
+        "emit_radius_px": 120,
+        "orbit_hz": 0.33,
+        "streak_ms": 20
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Glowing golden music notes circling the bard, swaying as they rise and fade.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 1
+        },
+        "notes": "Use a small atlas of note glyphs (eighth notes, pairs, rests) as particle sprites, turned to face the camera."
+      }
+    },
+    {
+      "id": "chord-motes",
+      "type": "sparks",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 50,
+        "speed": 30,
+        "speed_spread": 0.6,
+        "gravity": -70,
+        "lifetime_ms": 900,
+        "size_px": 2.2,
+        "spread_deg": 60,
+        "drag": 0.5,
+        "emit_radius_px": 200,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Fine golden sparkles drifting up through the song's circle.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        }
+      }
+    },
+    {
+      "id": "instrument-glow",
+      "type": "glow",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 7,
+      "params": {
+        "radius_px": 40,
+        "softness": 0.8,
+        "pulse_hz": 1.333
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The instrument glows and throbs on each beat.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "bard-glow",
+      "type": "glow",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 110,
+        "softness": 0.95,
+        "pulse_hz": 1.333
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A warm glow round the bard pulsing on the beat.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.3,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "song-light",
+      "type": "light",
+      "beats": [
+        "kindle",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 4.5,
+        "energy": 1.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Warm gold light from the song circle.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "strike-up",
+      "type": "sound_cue",
+      "beats": [
+        "kindle"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.55,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "song-drone",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.3,
+        "pitch": 1.5
+      }
+    },
+    {
+      "id": "downbeat",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.35,
+        "pitch": 1.0,
+        "offset_ms": 300,
+        "repeat_ms": 750
+      }
+    },
+    {
+      "id": "song-ends",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.35,
+        "pitch": 1.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The notes' paths and sizes and the circle's angle change per cast; the beat (750 ms, four per loop) never does."
+  },
+  "director_notes": "Lisa asked for bard music auras. The new sparks look `note` draws music notes and `orbit_hz` circles them round the bard. Everything is locked to an 80 bpm beat: rings every 750 ms, glows pulsing at 1.33 Hz, four beats per 3 s loop, so the loop lands on a downbeat. Pairs with Rallying Anthem (the one-shot version). Loop 1200-4200 ms."
+}

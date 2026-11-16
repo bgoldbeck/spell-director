@@ -6,6 +6,13 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Added
+
+- **Auras**: persistent effects around a character that start up, hold a **seamless loop** for as long as they last, then end. A template marks its loop with `timing.loop_range`; the viewer holds the loop while **Loop** is ticked (untick it to see the end) and shows the loop on the timeline, and every aura is listed under **Type → Kinds → Auras** whatever its element or line. Pulses, spins, flicker and particles in looping layers repeat exactly every loop.
+- Exports of an aura mark the loop: the frames and each layer's loop columns in the JSON, an **Aura loop** section in the guide with Unity and Godot steps, and intro / loop / outro sections in the sound sheet.
+- Six auras and two new spell lines: **Paladin** (Consecrated Aegis, a holy field), **Druid** (Verdant Bloom, a healing grove with mushrooms and leaves, as a new **Nature** type), **Bard** (Cadence of Valor, music notes and beat rings), **Sorcerer** (Pyre Ward, an area-of-effect flame damage aura, and Rime Mantle, a frost aura) and **Necromancer** (Grave Miasma, a necrotic aura).
+- Viewer: sparks `orbit_hz` (particles that circle the caster) and `look: note` (music notes), rings that repeat (`repeat_ms`, `count`), eruption `shape: mushrooms`, rune circles with `symmetry`, orb `opacity`, and sustained sound cues with `repeat_ms`.
+
 ## [0.8.0] - 2026-11-16
 
 ### Added

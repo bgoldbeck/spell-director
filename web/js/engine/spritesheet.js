@@ -9,7 +9,7 @@
 // up pixel for pixel across sheets. A sheet wider than the limit wraps into
 // further blocks of view rows.
 
-import { layerIntensity, layerWindow, paramAtFrom, resolveParams } from "./timeline.js";
+import { layerIntensity, layerLoop, layerWindow, loopRange, paramAtFrom, resolveParams } from "./timeline.js";
 import { soundSheet } from "./sound.js";
 import { decalBlend, decalFillState, decalPlan, decalState } from "./decal.js";
 import { HOW_TO_USE, describeShader, engineRecipe, shaderFor } from "./shader.js";
@@ -303,8 +303,29 @@ function shaderInfo(l, blend, style, params) {
   return { shader, shader_source: fromTemplate ? (l.shader?.styles?.[style.id] ? `template, with its ${style.id} refinement` : "template") : "default for this layer type", engine_hints: hints };
 }
 
+// An aura's seamless loop in frames: frames first_frame..end_frame-1 repeat
+// while the aura lasts (end_frame looks the same as first_frame, so it is
+// where the end section picks up). null for one-shot spells.
+export function loopFrames(template, plan) {
+  const lr = loopRange(template);
+  if (!lr) return null;
+  const first = Math.round(lr.start / plan.frameMs);
+  const end = Math.max(first + 1, Math.round(lr.end / plan.frameMs));
+  return {
+    start_ms: lr.start,
+    end_ms: lr.end,
+    first_frame: first,
+    end_frame: end,
+    frame_count: end - first,
+    frame_exact: Math.abs(lr.start / plan.frameMs - first) < 1e-6 && Math.abs(lr.end / plan.frameMs - end) < 1e-6,
+    intro_frames: [0, first - 1],
+    outro_frames: [end, plan.count - 1],
+  };
+}
+
 export function buildManifest({ template, seed, plan, sheets, visible, views, tracks, version = "", frame, bloom = true, style = resolveStyle(template) }) {
   const loop = !!template.timing?.loop;
+  const loopRangeOut = loopFrames(template, plan);
   const ms = (f) => r1(f * plan.frameMs);
   const viewOrder = Object.keys(views);
   const sheetsOut = sheets.map((sh) => ({
@@ -342,6 +363,10 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       attach_to: l.attach_to || null,
       plane: l.plane || DEFAULT_PLANE[l.type] || "volume",
       loop,
+      // Columns of this layer's sheet that loop with the aura (end exclusive).
+      loop_columns: loopRangeOut && sheet && layerLoop(template, win)
+        ? { first: loopRangeOut.first_frame - sheet.first_frame, end: loopRangeOut.end_frame - sheet.first_frame }
+        : null,
       params: resolveParams(l.params, seed, `${l.id}#0`),
       keyframes: l.keyframes || [],
       empty: !visible[l.id],
@@ -361,6 +386,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
     seed,
     duration_ms: plan.duration,
     loop,
+    loop_range: loopRangeOut,
     fps: plan.fps,
     frame_ms: r3(plan.frameMs),
     frame_count: plan.count,
@@ -413,6 +439,35 @@ function curveSummary(values, plan) {
   return `on frames ${on.first}–${on.last}, peak ${peak} at frame ${at} (${Math.round(at * plan.frameMs)} ms)`;
 }
 
+// The "Aura loop" section of the guide: how to play start-up, loop and end.
+function auraGuideLines(m) {
+  const L = m.loop_range;
+  const lines = [
+    "## Aura loop", "",
+    "This spell is an aura: it starts up, then holds a **seamless loop** for as long as the aura lasts, then plays its end. Play it in three parts:", "",
+    table(["Part", "Frames (whole spell)", "Time", "Play"], [
+      ["Start-up", L.first_frame > 0 ? `0–${L.first_frame - 1}` : "none", `0–${L.start_ms} ms`, "once, when the aura is applied"],
+      ["Loop", `${L.first_frame}–${L.end_frame - 1}`, `${L.start_ms}–${L.end_ms} ms`, "repeat while the aura lasts (frame " + L.end_frame + " looks the same as frame " + L.first_frame + ")"],
+      ["End", L.end_frame <= m.frame_count - 1 ? `${L.end_frame}–${m.frame_count - 1}` : "none", `${L.end_ms}–${m.duration_ms} ms`, "once, when the aura is removed: finish the current loop pass (or jump at once) and play on from frame " + L.end_frame],
+    ]), "",
+    "Every layer that is on across the loop repeats exactly: its pulses, spins and flicker fit whole cycles into the loop and its particles are reborn every loop, so the jump from the last loop frame back to the first doesn't show. Layers that only play in the start-up or the end (a flash when it is cast, a burst when it ends) are one-shots.", "",
+  ];
+  const looping = (m.layers || []).filter((l) => l.loop_columns);
+  if (looping.length) {
+    lines.push("Loop columns in each layer's own sheet (end exclusive):", "");
+    lines.push(table(["Layer", "Sheet", "Loop columns"], looping.map((l) => [l.id, l.image ? `\`${l.image}\`` : "", `${l.loop_columns.first}–${l.loop_columns.end - 1}`])), "");
+  }
+  if (!L.frame_exact) lines.push(`> The loop's ends don't fall exactly on frames at ${m.fps} fps, so the jump may stutter by part of a frame. Export at a frame rate that divides the loop.`, "");
+  lines.push(
+    "- **Unity**: split the sheet into three clips (start-up, loop with **Loop Time** on, end) and chain them in an Animator: start-up → loop (exit time 1), loop → end on a trigger such as `AuraEnd`. Particle systems rebuilt from the layers: **Looping** on, **Prewarm** on, duration = the loop length, and turn emission off at the end so the last particles finish.",
+    "- **Godot 4**: give the AnimatedSprite2D/3D three animations (`start`, `loop` with looping on, `end`) and play `loop` from `animation_finished` after `start`; play `end` when the aura is removed. GPUParticles: **One Shot** off, **Preprocess** = one particle lifetime, **Lifetime** that divides the loop; set `emitting = false` at the end.",
+    "- **Ground marks** (decals) on across the loop just stay on and keep turning or pulsing in the engine; fade them out with the end.",
+    "- **Sound**: start the sustained cues when the loop starts and keep them looping; one-shots marked `in_loop` in the sound sheet repeat every loop.",
+    "",
+  );
+  return lines;
+}
+
 export function guideMarkdown(m, { files } = {}) {
   const plan = { frameMs: m.frame_ms };
   const fw = m.frame.width;
@@ -460,7 +515,7 @@ export function guideMarkdown(m, { files } = {}) {
   const all = m.sheets.find((x) => x.id === ALL_ID);
   add("## At a glance", "");
   add(table(["", ""], [
-    ["Length", `${m.duration_ms} ms, ${m.loop ? "loops" : "plays once (one-shot)"}`],
+    ["Length", `${m.duration_ms} ms, ${m.loop_range ? `an aura: start-up, a seamless loop (frames ${m.loop_range.first_frame}–${m.loop_range.end_frame - 1}, ${m.loop_range.start_ms}–${m.loop_range.end_ms} ms) held while it lasts, then its end` : m.loop ? "loops" : "plays once (one-shot)"}`],
     ["Frame rate", `${m.fps} fps (one frame every ${m.frame_ms} ms)`],
     ["Frames", `${m.frame_count} for the whole spell (frame 0 is 0 ms)`],
     ["Cell size", `${fw} × ${fh} px`],
@@ -469,6 +524,8 @@ export function guideMarkdown(m, { files } = {}) {
     ["Alpha", "Straight (not premultiplied), transparent background"],
     ["Bloom", m.bloom_baked ? "Baked into the sprites (the soft glow around bright parts). Turn your engine's bloom down on these, or export without bloom." : "Not baked in: add bloom in your engine for the glow"],
   ]), "");
+
+  if (m.loop_range) add(...auraGuideLines(m));
 
   add("## Files", "");
   const fileRows = m.sheets.map((sh) => [`\`${sh.image}\``, sh.id === ALL_ID ? "The whole spell, every layer together" : `Layer \`${sh.id}\``]);

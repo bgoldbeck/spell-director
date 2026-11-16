@@ -56,6 +56,15 @@ Decals with depth or a fill (the realistic style, or a template `fill` such as `
 
 Pick a **Style** in the export dialog (it defaults to the viewer's), or pass `--style realistic` (`stylized`, `realistic`, `toon`, `pixel`) to `tools/export_sprites.py` or `style` to the director's `export_sprites` tool. The guide gets a "Style" section with whole-effect Unity and Godot steps for that style, and every layer's recipe gets the style's extra steps (vocabulary §12). The sheets show the style too: realistic decals with depth, toon cells posterized with hard edges and ink outlines, pixel art cells in chunky pixels with few shades. Tone mapping is left to your engine. Non-default styles export to `<id>-seed<seed>-<style>`.
 
+### Auras (looping)
+
+An aura (a template with `timing.loop_range`, see [template-format.md](template-format.md#auras)) exports the same sheets, plus where its loop is:
+
+- the JSON's `loop_range`: `first_frame`, `end_frame` (exclusive: it looks the same as `first_frame`), `frame_count`, the start-up and end frames, and `frame_exact` (false when the loop's ends don't fall on frames at the export's fps);
+- each looping layer's `loop_columns` in its own sheet (`first`, `end` exclusive); one-shot layers have `null`;
+- the guide's **Aura loop** section: a start-up / loop / end table and the Unity (Animator clips, looping prewarmed particle systems) and Godot (three animations, preprocessed GPUParticles) steps;
+- in the sound sheet, `spell.loop_range` and each event's `section` (`intro`, `loop`, `outro`) and `in_loop` (sustained cues held while the aura lasts, and one-shots that repeat every loop).
+
 ### Not drawn into the sheets
 
 These are exported as tracks with one value per frame, because an engine does them better than baked pixels:

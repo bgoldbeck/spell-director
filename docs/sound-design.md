@@ -110,6 +110,10 @@ Blood and dark magic (vampiric spells) lean on `squelch`, `heartbeat`, `drain`, 
 - **One thing at a time at the top.** At any moment one sound should lead. Drop the others 6-10 dB under it (the template's `gain`).
 - **Variation.** Cues that play more than once (chain hops, restrikes, volleys) want 2-3 takes, picked at random, plus a small pitch range.
 
+### Auras
+
+An aura's sound has the same three parts as its picture: a start-up sound (once), a loop bed and ticks (repeat while it lasts), and an end sound (once). Keep the bed quiet and steady (`hum`, `drone`, `wind`, `fire` at -10 to -12 dB) so it can play for minutes, and give each pulse or damage tick a short sound that lands with the ring or wave it belongs to (`repeat_ms` that divides the loop, `offset_ms` to line it up). The sound sheet marks every event `intro`, `loop` or `outro`; make the bed a seamless loop (crossfade its end into its start).
+
 ## 5. Levels
 
 - Normalize every file to a **-1 dBFS peak**. The cue sheet's `volume_db` (from the layer's `gain`) sets the mix: 0 dB for the main hit, -3 to -6 dB for support layers, -8 to -14 dB for beds and tails.

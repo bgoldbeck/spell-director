@@ -29,13 +29,13 @@ KNOWN_PARAMS = {
     "flash": {"scope", "radius_px", "peak"},
     "sparks": {
         "count", "speed", "speed_spread", "gravity", "lifetime_ms", "size_px", "spread_deg", "drag", "emit_ms", "streak_ms", "look", "glow",
-        "gather_px", "swirl", "emit_radius_px", "wind_px", "home_to",
+        "gather_px", "swirl", "emit_radius_px", "wind_px", "home_to", "orbit_hz",
     },
     "crackle": {"count", "length_px", "jaggedness", "regen_ms", "radius_px"},
     "orb": {
         "radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease", "look", "height_px", "bubble",
         "approach_deg", "approach_yaw_deg", "smoke_trail_ms", "smoke_opacity", "crescent_deg", "tilt_deg",
-        "side_offset_px", "scatter_px",
+        "side_offset_px", "scatter_px", "opacity",
     },
     "beam": {
         "width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms", "style", "flow_speed", "turbulence",
@@ -51,7 +51,7 @@ KNOWN_PARAMS = {
         "width_px", "height_px", "travel_ms", "crash_ms", "curl", "flow_speed", "turbulence", "foam",
         "shed_count", "shed_speed", "shed_size_px", "shed_life_ms",
     },
-    "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness", "arc_deg", "ease"},
+    "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness", "arc_deg", "ease", "repeat_ms", "count"},
     "eruption": {
         "shape", "arc_deg", "rows", "start_radius_px", "end_radius_px", "row_delay_ms", "delay_growth", "growth",
         "height_px", "width_px", "spacing_px", "tilt_deg", "jitter", "rise_ms", "hold_ms", "sink_ms", "debris_count",
@@ -60,7 +60,7 @@ KNOWN_PARAMS = {
     "decal": {
         "radius_px", "shape", "opacity", "fade_in_ms", "lifetime_ms", "fade_ms", "grow_ms", "start_scale",
         "rotation_deg", "spin_deg_per_s", "stretch", "pulse_hz", "detail", "arc_deg", "reveal_ms",
-        "depth", "fill", "fill_color", "fill_flow", "fill_in_ms",
+        "depth", "fill", "fill_color", "fill_flow", "fill_in_ms", "symmetry",
     },
     "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity", "spread_speed", "spread_px", "height_px"},
     "light": {"radius", "energy"},
@@ -162,11 +162,97 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
             if key not in known:
                 warnings.append(f"layer {lid!r} ({layer['type']}): unknown param {key!r}")
 
+    _check_loop(doc, beats, errors, warnings)
+
     for path, rng in _ranges(doc):
         if rng["min"] > rng["max"]:
             errors.append(f"{path}: min {rng['min']} is greater than max {rng['max']}")
 
     return errors, warnings
+
+
+def _max(v, default=0):
+    """The largest value a fixed number or {min, max} range can take."""
+    if isinstance(v, dict) and "max" in v:
+        return v["max"]
+    return v if isinstance(v, (int, float)) else default
+
+
+def _check_loop(doc: dict, beats: dict, errors: list[str], warnings: list[str]) -> None:
+    """An aura's timing.loop_range: inside the spell, on frame boundaries, and
+    every looping particle layer already full when the loop starts."""
+    timing = doc["timing"]
+    lr = timing.get("loop_range")
+    if not lr:
+        return
+    start, end = lr["start_ms"], lr["end_ms"]
+    if end <= start:
+        errors.append(f"timing.loop_range: end_ms {end} must be after start_ms {start}")
+        return
+    if end > timing["duration_ms"]:
+        errors.append(f"timing.loop_range: ends at {end} ms, after duration {timing['duration_ms']} ms")
+        return
+    if timing.get("loop"):
+        warnings.append("timing.loop and timing.loop_range are both set: loop replays the whole spell, "
+                        "loop_range holds an aura's sustain section; use one")
+    fps = timing.get("fps_hint", 30)
+    for name, ms in (("start_ms", start), ("end_ms", end)):
+        frames = ms * fps / 1000
+        if abs(frames - round(frames)) > 1e-6:
+            warnings.append(f"timing.loop_range.{name} {ms} is not on a frame at {fps} fps, "
+                            "so the exported loop is not frame-exact")
+    if start == 0 or end == timing["duration_ms"]:
+        warnings.append("timing.loop_range: leave room for a start-up before the loop and an end after it")
+    for layer in doc["layers"]:
+        active = [beats[b] for b in layer["beats"] if b in beats]
+        if not active:
+            continue
+        w0 = min(b["start_ms"] for b in active)
+        w1 = max(b["end_ms"] for b in active)
+        params = layer.get("params", {})
+        if not (w0 <= start and w1 >= end):
+            # A one-shot whose particles are still flying when the loop starts
+            # shows in the loop's first frame but not its last.
+            tail = 0
+            if layer["type"] in ("sparks", "smoke"):
+                tail = _max(params.get("lifetime_ms"), 400 if layer["type"] == "sparks" else 500) * (1.2 if layer["type"] == "sparks" else 1)
+            if w1 <= start < w1 + tail or (w0 < end < w1 and w0 > start):
+                warnings.append(f"layer {layer['id']!r} ({layer['type']}): a one-shot that is still showing at the loop's "
+                                "start (or starts inside the loop), so the loop is not seamless; end it a lifetime earlier")
+            continue
+        life = 0
+        if layer["type"] == "sparks" and not layer.get("attach_to"):
+            life = _max(params.get("lifetime_ms"), 400) * 1.2
+        elif layer["type"] == "smoke":
+            life = _max(params.get("lifetime_ms"), 500)
+            if life > end - start:
+                warnings.append(f"layer {layer['id']!r} (smoke): lifetime_ms {life} is longer than the loop "
+                                f"({end - start} ms), so puffs pop when they are reborn")
+        if layer["type"] == "ring" and isinstance(params.get("repeat_ms"), (int, float)) and params["repeat_ms"] > 0:
+            n = max(1, min(8, round(params.get("count", 1))))
+            lead = params["repeat_ms"] * (n - 1) / n
+            if start - w0 < lead:
+                warnings.append(f"layer {layer['id']!r} (ring): its {n} rings aren't all rolling yet when the loop starts "
+                                f"(start the layer at least {round(lead)} ms before the loop)")
+            cycles = (end - start) / params["repeat_ms"]
+            if abs(cycles - round(cycles)) > 1e-6:
+                warnings.append(f"layer {layer['id']!r} (ring): repeat_ms {params['repeat_ms']} doesn't divide the loop "
+                                f"({end - start} ms); the viewer stretches it to fit")
+        if life and start - w0 < life:
+            warnings.append(f"layer {layer['id']!r} ({layer['type']}): starts {start - w0} ms before the loop but its "
+                            f"particles live up to {round(life)} ms, so the loop's first frames are thinner than its last "
+                            "(start the layer earlier)")
+        for beat in active:
+            if not (beat["start_ms"] < end and beat["end_ms"] > start):
+                continue
+            curve = beat.get("intensity") or {}
+            shape = curve.get("shape", "hold")
+            steady = shape == "hold" or (shape != "flicker" and curve.get("to", curve.get("from", 1)) == curve.get("from", 1))
+            if not (beat["start_ms"] <= start and beat["end_ms"] >= end and steady):
+                warnings.append(f"layer {layer['id']!r}: beat {beat['id']!r} changes across the loop, so the loop is not "
+                                "seamless (let one steady beat span the whole loop_range; start-up and end beats "
+                                "should end at its start and begin at its end)")
+                break
 
 
 def main(argv: list[str]) -> int:

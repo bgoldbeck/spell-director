@@ -93,6 +93,7 @@ h2 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing
 .scrub { position: relative; background: var(--panel); padding: 4px 12px 8px; }
 .bands { position: relative; height: 6px; border-radius: 3px; overflow: hidden; background: #2a2d38; margin: 0 2px; }
 .bands span { position: absolute; top: 0; bottom: 0; opacity: .55; }
+.bands span.loop-range { opacity: 1; background: transparent; border: 2px solid #f4f1e8; border-radius: 3px; box-sizing: border-box; }
 #scrubber { width: 100%; accent-color: var(--accent); margin: 4px 0 0; }
 .beats { border-radius: 0 0 8px 8px; }
 .beats .btn { border-left-width: 4px; }

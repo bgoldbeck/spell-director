@@ -60,3 +60,64 @@ def test_every_template_renders_in_every_view_without_errors():
     finally:
         server.shutdown()
         server.server_close()
+
+
+AURAS = [
+    (doc["id"], doc["timing"]["loop_range"])
+    for doc in (
+        json.loads((ROOT / "templates" / p).read_text(encoding="utf-8"))
+        for p in json.loads((ROOT / "templates" / "index.json").read_text(encoding="utf-8"))["templates"]
+    )
+    if doc["timing"].get("loop_range")
+]
+
+_CANVAS = """() => {
+  const c = document.getElementById('canvas');
+  const tmp = document.createElement('canvas');
+  tmp.width = 240; tmp.height = Math.round(240 * c.height / c.width);
+  const g = tmp.getContext('2d');
+  g.drawImage(c, 0, 0, tmp.width, tmp.height);
+  return Array.from(g.getImageData(0, 0, tmp.width, tmp.height).data);
+}"""
+
+
+def _diff(a, b):
+    """Mean absolute RGB difference (0-255) between two RGBA pixel lists."""
+    total = sum(abs(x - y) for i, (x, y) in enumerate(zip(a, b)) if i % 4 != 3)
+    return total / (len(a) * 0.75)
+
+
+@pytest.mark.skipif(not _browser_available(), reason="needs Playwright and a browser")
+def test_aura_loops_are_seamless():
+    """An aura's frame at the end of its loop matches the frame at its start
+    (much closer than two neighbouring frames are), in all four views."""
+    from playwright.sync_api import sync_playwright
+
+    assert AURAS, "no aura templates"
+    serve.Handler.log_message = lambda *a, **k: None
+    server = serve.bind("127.0.0.1", 0)
+    port = server.server_address[1]
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        with sync_playwright() as p:
+            browser = export_sprites._launch(p)
+            try:
+                page = browser.new_page(viewport={"width": 480, "height": 320})
+
+                def grab(tid, t):
+                    page.goto(f"http://127.0.0.1:{port}/?template={tid}&view=quad&t={t}&sound=off")
+                    page.wait_for_function("window.spellDirector && window.spellDirector.effect", timeout=20000)
+                    page.wait_for_timeout(150)
+                    return page.evaluate(_CANVAS)
+
+                for tid, lr in AURAS:
+                    start = grab(tid, lr["start_ms"])
+                    end = grab(tid, lr["end_ms"])
+                    step = grab(tid, lr["start_ms"] + 34)
+                    seam, frame = _diff(start, end), _diff(start, step)
+                    assert seam < 0.5 * frame, f"{tid}: loop seam {seam:.3f} vs one frame {frame:.3f}"
+            finally:
+                browser.close()
+    finally:
+        server.shutdown()
+        server.server_close()

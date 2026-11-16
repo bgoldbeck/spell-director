@@ -5,11 +5,11 @@ import { Post } from "./engine/post.js";
 import { cuesAt, eventsBetween, soundEvents } from "./engine/sound.js";
 import { SoundPlayer } from "./audio.js";
 import { VIEWS, VIEW_LABELS, viewCamera } from "./engine/stage.js";
-import { beatsAt, phaseColor } from "./engine/timeline.js";
+import { advancePlayhead, beatsAt, loopRange, phaseColor } from "./engine/timeline.js";
 import { exportSpriteSheets } from "./exporter.js";
 import { STYLE_IDS, resolveStyle } from "./engine/style.js";
 import { makeZip } from "./zip.js";
-import { ALL, groupCatalog, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
+import { ALL, groupCatalog, isExtra, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
 
 const $ = (id) => document.getElementById(id);
 const ui = {
@@ -113,10 +113,9 @@ function rebuildSound() {
 }
 
 // Play the cues whose start time playback crossed this frame.
-function playSound(from, to, wrapped) {
-  const d = duration();
-  const due = wrapped
-    ? eventsBetween(sound.events, from, d + 1).concat(eventsBetween(sound.events, 0, to))
+function playSound(from, to, wrap) {
+  const due = wrap
+    ? eventsBetween(sound.events, from, wrap.end + (wrap.start === 0 ? 1 : 0)).concat(eventsBetween(sound.events, wrap.start, to))
     : eventsBetween(sound.events, from, to);
   sound.player.play(due, { seed: state.seed, speed: state.speed });
 }
@@ -330,12 +329,12 @@ function buildTypeSelect() {
   ui.typeSelect.innerHTML = "";
   const all = new Option(`${typeLabel(ALL)} (${state.templates.length})`, ALL);
   ui.typeSelect.add(all);
-  for (const g of state.groups.filter((x) => !x.line)) ui.typeSelect.add(new Option(`${g.label} (${g.templates.length})`, g.type));
-  const lines = state.groups.filter((x) => x.line);
-  if (lines.length) {
+  for (const g of state.groups.filter((x) => !isExtra(x))) ui.typeSelect.add(new Option(`${g.label} (${g.templates.length})`, g.type));
+  for (const [label, list] of [["Spell lines", state.groups.filter((x) => x.line)], ["Kinds", state.groups.filter((x) => x.kind)]]) {
+    if (!list.length) continue;
     const og = document.createElement("optgroup");
-    og.label = "Spell lines";
-    for (const g of lines) og.appendChild(new Option(`${g.label} (${g.templates.length})`, g.type));
+    og.label = label;
+    for (const g of list) og.appendChild(new Option(`${g.label} (${g.templates.length})`, g.type));
     ui.typeSelect.appendChild(og);
   }
   ui.typeSelect.value = state.type;
@@ -350,7 +349,7 @@ function spellOption(tpl) {
 function buildSpellSelect() {
   ui.spellSelect.innerHTML = "";
   if (state.type === ALL) {
-    for (const g of state.groups.filter((x) => !x.line)) {
+    for (const g of state.groups.filter((x) => !isExtra(x))) {
       const og = document.createElement("optgroup");
       og.label = g.label;
       g.templates.forEach((t) => og.appendChild(spellOption(t)));
@@ -411,7 +410,11 @@ function buildTemplateUI() {
   const tpl = state.template;
   const d = duration();
   ui.title.textContent = `${tpl.element} / ${tpl.name}`;
-  ui.subtitle.textContent = `${tpl.archetype} · ${d} ms · hero view ${VIEW_LABELS[tpl.views?.hero] || "3/4"}`;
+  const lr = loopRange(tpl);
+  ui.subtitle.textContent = `${tpl.archetype} · ${d} ms${lr ? ` · loops ${lr.start}–${lr.end} ms` : ""} · hero view ${VIEW_LABELS[tpl.views?.hero] || "3/4"}`;
+  ui.loop.parentElement.title = lr
+    ? "On: the aura holds, looping its sustain section. Off: it plays its end and stops."
+    : "Replay the spell when it ends";
   ui.description.textContent = tpl.description || "";
   ui.notes.textContent = tpl.director_notes ? `Director's notes: ${tpl.director_notes}` : "";
   ui.scrubber.max = String(d);
@@ -438,6 +441,15 @@ function buildTemplateUI() {
     };
     ui.beats.appendChild(btn);
   });
+  if (lr) {
+    // The aura's seamless loop, bracketed over the beat bands.
+    const mark = document.createElement("span");
+    mark.className = "loop-range";
+    mark.style.left = `${(lr.start / d) * 100}%`;
+    mark.style.width = `${(lr.len / d) * 100}%`;
+    mark.title = `Seamless loop ${lr.start}–${lr.end} ms: an engine repeats this while the aura lasts`;
+    ui.bands.appendChild(mark);
+  }
   const clear = document.createElement("button");
   clear.className = "btn";
   clear.textContent = "Clear";
@@ -523,20 +535,14 @@ function frame(now) {
     if (state.t !== sound.at || (sound.playing && !state.playing)) sound.player.stopAll();
     if (state.playing) {
       const from = state.t;
-      let wrapped = false;
-      state.t += dt * state.speed;
-      const d = duration();
-      if (state.t > d) {
-        if (ui.loop.checked) {
-          state.t = state.t % d;
-          wrapped = true;
-        } else {
-          state.t = d;
-          state.playing = false;
-          ui.play.textContent = "Play";
-        }
+      // An aura with Loop on holds its sustain loop; Loop off lets it end.
+      const step = advancePlayhead(from, from + dt * state.speed, duration(), ui.loop.checked, loopRange(state.template));
+      state.t = step.t;
+      if (step.ended) {
+        state.playing = false;
+        ui.play.textContent = "Play";
       }
-      playSound(from, state.t, wrapped);
+      playSound(from, state.t, step.wrap);
     }
     sound.at = state.t;
     sound.playing = state.playing;

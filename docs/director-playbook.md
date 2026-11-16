@@ -88,6 +88,10 @@ Write the beats first; everything else hangs off them.
 3. Choose each beat's intensity curve: anticipation `ease_in`, release `spike`, lightning impact `flicker` (10–16 Hz), fire stream or impact `flicker` (5–9 Hz: flames are slower than electricity), a wind hold `flicker` (4–6 Hz, a narrow `from`–`to` range: a steady roar), dissipation `ease_out`. Let impact and dissipation overlap by 30–60 ms so the hit doesn't cut off.
 4. Write each beat's `intent` in plain words a non-artist understands. It's shown as the caption in the viewer. Mention hold frames in the release intent if you use them.
 
+### Auras (persistent effects)
+
+If the request is for something that *lasts* ("an aura", "while it's active", "a field around me", "a damage zone", "a buff that stays"), make an aura (template-format.md, *Auras*): `archetype: aura`, three beats (start-up `anticipation`, a steady `hold` sustain, end `dissipation`) and `timing.loop_range` exactly over the sustain, e.g. 1200–4200 ms in a 5000 ms spell. Give the looping layers all three beats so they build up in the start-up, keep particle lifetimes under ~1 s, use rings with `repeat_ms` for ticks and line the tick sounds up with them. Put one-shots (the cast flare) early in the start-up. Choose the line from the request (Paladin, Druid, Bard, ...) and the element from what it's made of. Tell the user the loop range so they can set it up in the engine.
+
 ## Step 4. Choose layers
 
 Start from the silhouette (vocabulary §3): what's the one shape that reads as a black cutout? Build that layer first, then add support layers. Keep it to the layers that do a job; 8–14 is typical.
