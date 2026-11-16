@@ -1,0 +1,766 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "blood-hemorrhage-curse",
+  "name": "Hemorrhage Curse",
+  "description": "A crimson sigil closes in on the enemy and seizes them; a crown of blood thorns stabs up out of the ground around them and they bleed in three hard pulses, each spraying blood, until the curse lets go and leaves them standing in a spreading pool.",
+  "element": "blood",
+  "line": "Vampire",
+  "archetype": "strike",
+  "tags": [
+    "vampire",
+    "blood",
+    "curse",
+    "bleed",
+    "damage over time",
+    "thorns",
+    "sigil",
+    "single target"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "vampire hemorrhage curse"
+  },
+  "timing": {
+    "duration_ms": 3400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.0,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: a red ring closes on the enemy, thorns stab up around them and three bursts of blood spray off them, a pool spreading under their feet.",
+      "side": "The thorns lean in around the enemy; each bleed pulse throws a spray up and out, and a ripple shudders through them.",
+      "top": "A crimson sigil and a closing ring, then a crown of thorns in a circle and a pool growing under the enemy.",
+      "three_quarter": "Hero view. The thorn crown, the pulses of spray and the growing pool read together."
+    }
+  },
+  "palette": {
+    "core": "#FFD8D8",
+    "primary": "#D3122C",
+    "secondary": "#6A0612",
+    "accent": "#FF4A5E",
+    "shadow": "#1E0408"
+  },
+  "beats": [
+    {
+      "id": "brand",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 650,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 0.9
+      },
+      "intent": "The vampire points: a crimson ring closes in on the enemy over a sigil of fanged glyphs."
+    },
+    {
+      "id": "seize",
+      "phase": "impact",
+      "start_ms": 600,
+      "end_ms": 850,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.5
+      },
+      "intent": "The curse takes hold: a red flash and a crown of blood thorns stabs up out of the ground."
+    },
+    {
+      "id": "bleed",
+      "phase": "release",
+      "start_ms": 800,
+      "end_ms": 2600,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.7,
+        "to": 0.8
+      },
+      "intent": "The enemy bleeds; a red mist hangs on them and the pool spreads."
+    },
+    {
+      "id": "bleed-1",
+      "phase": "impact",
+      "start_ms": 900,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Bleed pulse 1: blood sprays off the enemy and a ripple shudders through them."
+    },
+    {
+      "id": "bleed-2",
+      "phase": "impact",
+      "start_ms": 1450,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Bleed pulse 2: blood sprays off the enemy and a ripple shudders through them."
+    },
+    {
+      "id": "bleed-3",
+      "phase": "impact",
+      "start_ms": 2000,
+      "end_ms": 2250,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Bleed pulse 3: blood sprays off the enemy and a ripple shudders through them."
+    },
+    {
+      "id": "release",
+      "phase": "dissipation",
+      "start_ms": 2500,
+      "end_ms": 3400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The curse lets go: the thorns crumble, the sigil fades and the pool stays."
+    }
+  ],
+  "layers": [
+    {
+      "id": "sigil",
+      "type": "decal",
+      "beats": [
+        "brand",
+        "seize",
+        "bleed",
+        "release"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 110,
+        "opacity": 0.85,
+        "fade_in_ms": 150,
+        "spin_deg_per_s": 20,
+        "lifetime_ms": 2900,
+        "fade_ms": 500,
+        "detail": 0.75
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A crimson curse sigil of fanged glyphs under the enemy.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "closing-ring",
+      "type": "ring",
+      "beats": [
+        "brand"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 160,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.5,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A ring of red light tightening on the enemy.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "blood-pool",
+      "type": "decal",
+      "beats": [
+        "seize",
+        "bleed",
+        "release"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 95,
+        "opacity": 0.9,
+        "fade_in_ms": 200,
+        "grow_ms": 2000,
+        "start_scale": 0.2,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A dark pool of blood spreading under the enemy, glossy at its rim.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.5
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "seize-flash",
+      "type": "flash",
+      "beats": [
+        "seize"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 20,
+      "params": {
+        "scope": "local",
+        "radius_px": 120,
+        "peak": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A red flash as the curse seizes the enemy.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "thorn-crown",
+      "type": "eruption",
+      "beats": [
+        "seize",
+        "bleed",
+        "release"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 1,
+        "start_radius_px": 60,
+        "end_radius_px": 60,
+        "growth": 1.0,
+        "height_px": {
+          "min": 85,
+          "max": 100
+        },
+        "width_px": 16,
+        "spacing_px": 30,
+        "tilt_deg": -20,
+        "jitter": 0.35,
+        "rise_ms": 70,
+        "hold_ms": 1700,
+        "sink_ms": 500,
+        "debris_count": 2,
+        "debris_speed": 140,
+        "debris_size_px": 4,
+        "dust": 0.15
+      },
+      "shader": {
+        "material": "glassy",
+        "look": "A crown of glossy blood-crystal thorns leaning in on the enemy.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0.2,
+          "contrast": 0.6
+        },
+        "fresnel": 0.6,
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.2,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "spurt-1",
+      "type": "sparks",
+      "beats": [
+        "bleed-1"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "look": "droplet",
+        "count": 45,
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 1000,
+        "lifetime_ms": 650,
+        "size_px": 3.4,
+        "spread_deg": 120,
+        "drag": 0.15,
+        "emit_ms": 100,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A spurt of blood thrown up off the enemy, arcing down onto the pool.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 1,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "toward_target",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 1.3,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "spurt-2",
+      "type": "sparks",
+      "beats": [
+        "bleed-2"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "look": "droplet",
+        "count": 45,
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 1000,
+        "lifetime_ms": 650,
+        "size_px": 3.4,
+        "spread_deg": 120,
+        "drag": 0.15,
+        "emit_ms": 100,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A spurt of blood thrown up off the enemy, arcing down onto the pool.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 1,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "toward_target",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 1.3,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "spurt-3",
+      "type": "sparks",
+      "beats": [
+        "bleed-3"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "look": "droplet",
+        "count": 45,
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 1000,
+        "lifetime_ms": 650,
+        "size_px": 3.4,
+        "spread_deg": 120,
+        "drag": 0.15,
+        "emit_ms": 100,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A spurt of blood thrown up off the enemy, arcing down onto the pool.",
+        "technique": "particles",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 1,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "toward_target",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 1.3,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "ripple-1",
+      "type": "ring",
+      "beats": [
+        "bleed-1"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 80,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A shudder of pain through the enemy.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ripple-2",
+      "type": "ring",
+      "beats": [
+        "bleed-2"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 80,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A shudder of pain through the enemy.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ripple-3",
+      "type": "ring",
+      "beats": [
+        "bleed-3"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 80,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A shudder of pain through the enemy.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bleed-glow",
+      "type": "glow",
+      "beats": [
+        "bleed"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.85,
+        "pulse_hz": 1.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A throbbing red glow on the enemy.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "blood-mist",
+      "type": "smoke",
+      "beats": [
+        "bleed",
+        "release"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "count": 14,
+        "rise_speed": 12,
+        "size_px": {
+          "min": 45,
+          "max": 60
+        },
+        "lifetime_ms": 1300,
+        "opacity": 0.45,
+        "spread_px": 40
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A thin red mist hanging around the bleeding enemy.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.4,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.3
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "brand",
+        "seize"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 35,
+        "softness": 0.8,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Red light at the vampire's pointing claw.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "red-light",
+      "type": "light",
+      "beats": [
+        "seize",
+        "bleed"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 3.5,
+        "energy": 1.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A red light on the enemy.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "brand-sound",
+      "type": "sound_cue",
+      "beats": [
+        "brand"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.5,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "seize-sound",
+      "type": "sound_cue",
+      "beats": [
+        "seize"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.6,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "thorn-sound",
+      "type": "sound_cue",
+      "beats": [
+        "seize"
+      ],
+      "params": {
+        "cue": "shatter",
+        "gain": 0.45,
+        "pitch": 0.6,
+        "offset_ms": 30
+      }
+    },
+    {
+      "id": "bleed-sound",
+      "type": "sound_cue",
+      "beats": [
+        "bleed-1",
+        "bleed-2",
+        "bleed-3"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.5,
+        "pitch": 1.3
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The thorns' heights and lean, the spurts and the pool change per cast. The three bleed pulses stay 550 ms apart (damage ticks)."
+  },
+  "director_notes": "Vampire line, a hemorrhage curse. A single eruption row (start_radius = end_radius) with negative tilt makes a crown of thorns leaning in on the target. Each bleed pulse is a beat of its own with a droplet spurt and a billboard ripple, so an engine can line them up with damage ticks."
+}

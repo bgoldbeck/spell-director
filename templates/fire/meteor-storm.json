@@ -1,0 +1,2097 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-meteor-storm",
+  "name": "Meteor Storm",
+  "description": "The sorcerer raises both hands and the sky over the enemy turns to fire; a wide warning field glows on the ground and burning rocks rain down all over it one after another, each landing with a flash, a spray of sparks and burning rubble, until the field is scorched and cratered.",
+  "element": "fire",
+  "line": "Sorcerer",
+  "archetype": "strike",
+  "tags": [
+    "sorcerer",
+    "meteor",
+    "storm",
+    "rain",
+    "area",
+    "fire",
+    "sky",
+    "barrage",
+    "craters"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Sorcerer meteor storm: orange meteors raining down, fire everywhere"
+  },
+  "timing": {
+    "duration_ms": 4200,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "target",
+    "travel": "projectile",
+    "scale": {
+      "min": 4.6,
+      "max": 5.0
+    },
+    "footprint": {
+      "shape": "circle",
+      "radius": 2.6,
+      "distribution": "random"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: a glowing field on the ground ahead, a red sky and meteors dropping in one after another from high on the far side, each bursting into sparks and rock on a different spot.",
+      "side": "The best read of the falls: diagonal streaks from the top of the frame to scattered landing points, smoke trails hanging in the air, a dark cloud deck overhead.",
+      "top": "The landing pattern: impacts scattered across the warning field, each leaving a scorch or crater, so the field fills up with marks over the storm.",
+      "three_quarter": "Hero view. Several meteors are in the air at once at different heights, their trails crossing, and impacts pop up all over the field."
+    }
+  },
+  "palette": {
+    "core": "#FFF2CF",
+    "primary": "#FF7A18",
+    "secondary": "#B8240E",
+    "accent": "#FFB347",
+    "shadow": "#4A3A33"
+  },
+  "beats": [
+    {
+      "id": "invoke",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 0.9
+      },
+      "intent": "The sky over the enemy darkens and glows red; a wide warning field burns onto the ground."
+    },
+    {
+      "id": "storm",
+      "phase": "release",
+      "start_ms": 400,
+      "end_ms": 3000,
+      "intensity": {
+        "shape": "hold",
+        "from": 0.9,
+        "to": 0.9
+      },
+      "intent": "The storm is on: the sky burns and meteors keep coming."
+    },
+    {
+      "id": "fall-1",
+      "phase": "travel",
+      "start_ms": 450,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.8,
+        "to": 1.0
+      },
+      "intent": "Meteor 1 tears down out of the burning sky at an angle."
+    },
+    {
+      "id": "hit-1",
+      "phase": "impact",
+      "start_ms": 1100,
+      "end_ms": 1450,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Meteor 1 slams into the ground: a flash, a spray of sparks and burning rock."
+    },
+    {
+      "id": "fall-2",
+      "phase": "travel",
+      "start_ms": 800,
+      "end_ms": 1450,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.8,
+        "to": 1.0
+      },
+      "intent": "Meteor 2 tears down out of the burning sky at an angle."
+    },
+    {
+      "id": "hit-2",
+      "phase": "impact",
+      "start_ms": 1450,
+      "end_ms": 1800,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Meteor 2 slams into the ground: a flash, a spray of sparks and burning rock."
+    },
+    {
+      "id": "fall-3",
+      "phase": "travel",
+      "start_ms": 1080,
+      "end_ms": 1730,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.8,
+        "to": 1.0
+      },
+      "intent": "Meteor 3 tears down out of the burning sky at an angle."
+    },
+    {
+      "id": "hit-3",
+      "phase": "impact",
+      "start_ms": 1730,
+      "end_ms": 2080,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Meteor 3 slams into the ground: a flash, a spray of sparks and burning rock."
+    },
+    {
+      "id": "fall-4",
+      "phase": "travel",
+      "start_ms": 1330,
+      "end_ms": 1980,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.8,
+        "to": 1.0
+      },
+      "intent": "Meteor 4 tears down out of the burning sky at an angle."
+    },
+    {
+      "id": "hit-4",
+      "phase": "impact",
+      "start_ms": 1980,
+      "end_ms": 2330,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Meteor 4 slams into the ground: a flash, a spray of sparks and burning rock."
+    },
+    {
+      "id": "fall-5",
+      "phase": "travel",
+      "start_ms": 1600,
+      "end_ms": 2250,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.8,
+        "to": 1.0
+      },
+      "intent": "Meteor 5 tears down out of the burning sky at an angle."
+    },
+    {
+      "id": "hit-5",
+      "phase": "impact",
+      "start_ms": 2250,
+      "end_ms": 2600,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Meteor 5 slams into the ground: a flash, a spray of sparks and burning rock."
+    },
+    {
+      "id": "fall-6",
+      "phase": "travel",
+      "start_ms": 1850,
+      "end_ms": 2500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.8,
+        "to": 1.0
+      },
+      "intent": "Meteor 6 tears down out of the burning sky at an angle."
+    },
+    {
+      "id": "hit-6",
+      "phase": "impact",
+      "start_ms": 2500,
+      "end_ms": 2850,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Meteor 6 slams into the ground: a flash, a spray of sparks and burning rock."
+    },
+    {
+      "id": "fall-7",
+      "phase": "travel",
+      "start_ms": 2150,
+      "end_ms": 2800,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.8,
+        "to": 1.0
+      },
+      "intent": "Meteor 7 tears down out of the burning sky at an angle."
+    },
+    {
+      "id": "hit-7",
+      "phase": "impact",
+      "start_ms": 2800,
+      "end_ms": 3150,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Meteor 7 slams into the ground: a flash, a spray of sparks and burning rock."
+    },
+    {
+      "id": "aftermath",
+      "phase": "dissipation",
+      "start_ms": 2700,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "The last rock lands. Fires burn down across a field of smoking craters, embers drifting up."
+    }
+  ],
+  "layers": [
+    {
+      "id": "warning-field",
+      "type": "decal",
+      "beats": [
+        "invoke",
+        "storm"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "shape": "warning_ring",
+        "radius_px": 280,
+        "opacity": 0.75,
+        "fade_in_ms": 250,
+        "grow_ms": 500,
+        "start_scale": 0.4,
+        "rotation_deg": 0,
+        "pulse_hz": 2,
+        "fade_ms": 400,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A wide red danger field burned onto the ground, its rim pulsing.",
+        "technique": "decal",
+        "noise": {
+          "type": "perlin",
+          "scale": 2,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "scorched-field",
+      "type": "decal",
+      "beats": [
+        "storm",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 300,
+        "opacity": 0.55,
+        "fade_in_ms": 1600,
+        "lifetime_ms": 6000,
+        "fade_ms": 3000,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "The whole field blackened by the storm.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "sky-glow",
+      "type": "glow",
+      "beats": [
+        "invoke",
+        "storm"
+      ],
+      "anchor": "sky",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "radius_px": 200,
+        "softness": 1.0,
+        "pulse_hz": 0.6
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "The underside of the sky burning red where the meteors come through.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "cloud-deck",
+      "type": "smoke",
+      "beats": [
+        "invoke",
+        "storm",
+        "aftermath"
+      ],
+      "anchor": "sky",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 4,
+      "params": {
+        "count": 22,
+        "rise_speed": 4,
+        "size_px": {
+          "min": 110,
+          "max": 140
+        },
+        "lifetime_ms": 3800,
+        "opacity": 0.6,
+        "spread_px": 260
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A low, dark, churning cloud lit red from inside.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 1.5,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.2
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "meteor-1",
+      "type": "orb",
+      "beats": [
+        "fall-1"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "look": "meteor",
+        "radius_px": {
+          "min": 13,
+          "max": 17
+        },
+        "approach_deg": {
+          "min": 27,
+          "max": 33
+        },
+        "approach_yaw_deg": {
+          "min": -15,
+          "max": 15
+        },
+        "scatter_px": {
+          "min": 150,
+          "max": 240
+        },
+        "travel_ease": "ease_in",
+        "trail_ms": 280,
+        "smoke_trail_ms": 1000,
+        "smoke_opacity": 0.35,
+        "pulse_hz": 0,
+        "wobble": 0,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A burning rock with molten seams and a white-hot leading face, shedding flame that cools to red and grey smoke.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 1.5,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "impact-1",
+      "type": "sparks",
+      "beats": [
+        "hit-1"
+      ],
+      "attach_to": "meteor-1",
+      "color": "gradient_core_to_primary",
+      "z": 16,
+      "params": {
+        "count": 26,
+        "speed": 520,
+        "speed_spread": 0.5,
+        "gravity": 700,
+        "lifetime_ms": 420,
+        "size_px": 3,
+        "spread_deg": 150,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A fan of white-hot sparks thrown off the impact.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rubble-1",
+      "type": "sparks",
+      "beats": [
+        "hit-1"
+      ],
+      "attach_to": "meteor-1",
+      "color": "shadow",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 7,
+        "speed": 330,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 1500,
+        "size_px": {
+          "min": 6,
+          "max": 9
+        },
+        "spread_deg": 110,
+        "drag": 0.12,
+        "glow": 0.85,
+        "streak_ms": 40
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of burning rock that land and cool to dark stone.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0.2,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crater-1",
+      "type": "decal",
+      "beats": [
+        "hit-1"
+      ],
+      "attach_to": "meteor-1",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 42,
+        "opacity": 0.9,
+        "fade_in_ms": 40,
+        "grow_ms": 150,
+        "start_scale": 0.5,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A scorched dent where the meteor hit, with soot sprayed outward.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burn-1",
+      "type": "decal",
+      "beats": [
+        "hit-1"
+      ],
+      "attach_to": "meteor-1",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": 34,
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 400,
+        "fade_ms": 700,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The hot glow of the hit, cooling fast.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.4,
+          "contrast": 0.7
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "meteor-2",
+      "type": "orb",
+      "beats": [
+        "fall-2"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "look": "meteor",
+        "radius_px": {
+          "min": 13,
+          "max": 17
+        },
+        "approach_deg": {
+          "min": 22,
+          "max": 28
+        },
+        "approach_yaw_deg": {
+          "min": 125,
+          "max": 155
+        },
+        "scatter_px": {
+          "min": 150,
+          "max": 240
+        },
+        "travel_ease": "ease_in",
+        "trail_ms": 280,
+        "smoke_trail_ms": 1000,
+        "smoke_opacity": 0.35,
+        "pulse_hz": 0,
+        "wobble": 0,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A burning rock with molten seams and a white-hot leading face, shedding flame that cools to red and grey smoke.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 1.5,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "impact-2",
+      "type": "sparks",
+      "beats": [
+        "hit-2"
+      ],
+      "attach_to": "meteor-2",
+      "color": "gradient_core_to_primary",
+      "z": 16,
+      "params": {
+        "count": 26,
+        "speed": 520,
+        "speed_spread": 0.5,
+        "gravity": 700,
+        "lifetime_ms": 420,
+        "size_px": 3,
+        "spread_deg": 150,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A fan of white-hot sparks thrown off the impact.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rubble-2",
+      "type": "sparks",
+      "beats": [
+        "hit-2"
+      ],
+      "attach_to": "meteor-2",
+      "color": "shadow",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 7,
+        "speed": 330,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 1500,
+        "size_px": {
+          "min": 6,
+          "max": 9
+        },
+        "spread_deg": 110,
+        "drag": 0.12,
+        "glow": 0.85,
+        "streak_ms": 40
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of burning rock that land and cool to dark stone.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0.2,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crater-2",
+      "type": "decal",
+      "beats": [
+        "hit-2"
+      ],
+      "attach_to": "meteor-2",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 42,
+        "opacity": 0.9,
+        "fade_in_ms": 40,
+        "grow_ms": 150,
+        "start_scale": 0.5,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A scorched dent where the meteor hit, with soot sprayed outward.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burn-2",
+      "type": "decal",
+      "beats": [
+        "hit-2"
+      ],
+      "attach_to": "meteor-2",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": 34,
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 400,
+        "fade_ms": 700,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The hot glow of the hit, cooling fast.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.4,
+          "contrast": 0.7
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "meteor-3",
+      "type": "orb",
+      "beats": [
+        "fall-3"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "look": "meteor",
+        "radius_px": {
+          "min": 22,
+          "max": 26
+        },
+        "approach_deg": {
+          "min": 32,
+          "max": 38
+        },
+        "approach_yaw_deg": {
+          "min": 245,
+          "max": 275
+        },
+        "scatter_px": {
+          "min": 60,
+          "max": 90
+        },
+        "travel_ease": "ease_in",
+        "trail_ms": 280,
+        "smoke_trail_ms": 1000,
+        "smoke_opacity": 0.35,
+        "pulse_hz": 0,
+        "wobble": 0,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A burning rock with molten seams and a white-hot leading face, shedding flame that cools to red and grey smoke.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 1.5,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "impact-3",
+      "type": "sparks",
+      "beats": [
+        "hit-3"
+      ],
+      "attach_to": "meteor-3",
+      "color": "gradient_core_to_primary",
+      "z": 16,
+      "params": {
+        "count": 40,
+        "speed": 520,
+        "speed_spread": 0.5,
+        "gravity": 700,
+        "lifetime_ms": 420,
+        "size_px": 3,
+        "spread_deg": 150,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A fan of white-hot sparks thrown off the impact.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rubble-3",
+      "type": "sparks",
+      "beats": [
+        "hit-3"
+      ],
+      "attach_to": "meteor-3",
+      "color": "shadow",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 12,
+        "speed": 330,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 1500,
+        "size_px": {
+          "min": 6,
+          "max": 9
+        },
+        "spread_deg": 110,
+        "drag": 0.12,
+        "glow": 0.85,
+        "streak_ms": 40
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of burning rock that land and cool to dark stone.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0.2,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crater-3",
+      "type": "decal",
+      "beats": [
+        "hit-3"
+      ],
+      "attach_to": "meteor-3",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "crater",
+        "radius_px": 60,
+        "opacity": 0.9,
+        "fade_in_ms": 40,
+        "grow_ms": 150,
+        "start_scale": 0.5,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A scorched dent where the meteor hit, with soot sprayed outward.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burn-3",
+      "type": "decal",
+      "beats": [
+        "hit-3"
+      ],
+      "attach_to": "meteor-3",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": 50,
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 400,
+        "fade_ms": 700,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The hot glow of the hit, cooling fast.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.4,
+          "contrast": 0.7
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "meteor-4",
+      "type": "orb",
+      "beats": [
+        "fall-4"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "look": "meteor",
+        "radius_px": {
+          "min": 13,
+          "max": 17
+        },
+        "approach_deg": {
+          "min": 27,
+          "max": 33
+        },
+        "approach_yaw_deg": {
+          "min": 45,
+          "max": 75
+        },
+        "scatter_px": {
+          "min": 150,
+          "max": 240
+        },
+        "travel_ease": "ease_in",
+        "trail_ms": 280,
+        "smoke_trail_ms": 1000,
+        "smoke_opacity": 0.35,
+        "pulse_hz": 0,
+        "wobble": 0,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A burning rock with molten seams and a white-hot leading face, shedding flame that cools to red and grey smoke.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 1.5,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "impact-4",
+      "type": "sparks",
+      "beats": [
+        "hit-4"
+      ],
+      "attach_to": "meteor-4",
+      "color": "gradient_core_to_primary",
+      "z": 16,
+      "params": {
+        "count": 26,
+        "speed": 520,
+        "speed_spread": 0.5,
+        "gravity": 700,
+        "lifetime_ms": 420,
+        "size_px": 3,
+        "spread_deg": 150,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A fan of white-hot sparks thrown off the impact.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rubble-4",
+      "type": "sparks",
+      "beats": [
+        "hit-4"
+      ],
+      "attach_to": "meteor-4",
+      "color": "shadow",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 7,
+        "speed": 330,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 1500,
+        "size_px": {
+          "min": 6,
+          "max": 9
+        },
+        "spread_deg": 110,
+        "drag": 0.12,
+        "glow": 0.85,
+        "streak_ms": 40
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of burning rock that land and cool to dark stone.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0.2,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crater-4",
+      "type": "decal",
+      "beats": [
+        "hit-4"
+      ],
+      "attach_to": "meteor-4",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 42,
+        "opacity": 0.9,
+        "fade_in_ms": 40,
+        "grow_ms": 150,
+        "start_scale": 0.5,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A scorched dent where the meteor hit, with soot sprayed outward.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burn-4",
+      "type": "decal",
+      "beats": [
+        "hit-4"
+      ],
+      "attach_to": "meteor-4",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": 34,
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 400,
+        "fade_ms": 700,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The hot glow of the hit, cooling fast.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.4,
+          "contrast": 0.7
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "meteor-5",
+      "type": "orb",
+      "beats": [
+        "fall-5"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "look": "meteor",
+        "radius_px": {
+          "min": 13,
+          "max": 17
+        },
+        "approach_deg": {
+          "min": 25,
+          "max": 31
+        },
+        "approach_yaw_deg": {
+          "min": 185,
+          "max": 215
+        },
+        "scatter_px": {
+          "min": 150,
+          "max": 240
+        },
+        "travel_ease": "ease_in",
+        "trail_ms": 280,
+        "smoke_trail_ms": 1000,
+        "smoke_opacity": 0.35,
+        "pulse_hz": 0,
+        "wobble": 0,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A burning rock with molten seams and a white-hot leading face, shedding flame that cools to red and grey smoke.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 1.5,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "impact-5",
+      "type": "sparks",
+      "beats": [
+        "hit-5"
+      ],
+      "attach_to": "meteor-5",
+      "color": "gradient_core_to_primary",
+      "z": 16,
+      "params": {
+        "count": 26,
+        "speed": 520,
+        "speed_spread": 0.5,
+        "gravity": 700,
+        "lifetime_ms": 420,
+        "size_px": 3,
+        "spread_deg": 150,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A fan of white-hot sparks thrown off the impact.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rubble-5",
+      "type": "sparks",
+      "beats": [
+        "hit-5"
+      ],
+      "attach_to": "meteor-5",
+      "color": "shadow",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 7,
+        "speed": 330,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 1500,
+        "size_px": {
+          "min": 6,
+          "max": 9
+        },
+        "spread_deg": 110,
+        "drag": 0.12,
+        "glow": 0.85,
+        "streak_ms": 40
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of burning rock that land and cool to dark stone.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0.2,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crater-5",
+      "type": "decal",
+      "beats": [
+        "hit-5"
+      ],
+      "attach_to": "meteor-5",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 42,
+        "opacity": 0.9,
+        "fade_in_ms": 40,
+        "grow_ms": 150,
+        "start_scale": 0.5,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A scorched dent where the meteor hit, with soot sprayed outward.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burn-5",
+      "type": "decal",
+      "beats": [
+        "hit-5"
+      ],
+      "attach_to": "meteor-5",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": 34,
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 400,
+        "fade_ms": 700,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The hot glow of the hit, cooling fast.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.4,
+          "contrast": 0.7
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "meteor-6",
+      "type": "orb",
+      "beats": [
+        "fall-6"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "look": "meteor",
+        "radius_px": {
+          "min": 22,
+          "max": 26
+        },
+        "approach_deg": {
+          "min": 29,
+          "max": 35
+        },
+        "approach_yaw_deg": {
+          "min": 305,
+          "max": 335
+        },
+        "scatter_px": {
+          "min": 60,
+          "max": 90
+        },
+        "travel_ease": "ease_in",
+        "trail_ms": 280,
+        "smoke_trail_ms": 1000,
+        "smoke_opacity": 0.35,
+        "pulse_hz": 0,
+        "wobble": 0,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A burning rock with molten seams and a white-hot leading face, shedding flame that cools to red and grey smoke.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 1.5,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "impact-6",
+      "type": "sparks",
+      "beats": [
+        "hit-6"
+      ],
+      "attach_to": "meteor-6",
+      "color": "gradient_core_to_primary",
+      "z": 16,
+      "params": {
+        "count": 40,
+        "speed": 520,
+        "speed_spread": 0.5,
+        "gravity": 700,
+        "lifetime_ms": 420,
+        "size_px": 3,
+        "spread_deg": 150,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A fan of white-hot sparks thrown off the impact.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rubble-6",
+      "type": "sparks",
+      "beats": [
+        "hit-6"
+      ],
+      "attach_to": "meteor-6",
+      "color": "shadow",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 12,
+        "speed": 330,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 1500,
+        "size_px": {
+          "min": 6,
+          "max": 9
+        },
+        "spread_deg": 110,
+        "drag": 0.12,
+        "glow": 0.85,
+        "streak_ms": 40
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of burning rock that land and cool to dark stone.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0.2,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crater-6",
+      "type": "decal",
+      "beats": [
+        "hit-6"
+      ],
+      "attach_to": "meteor-6",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "crater",
+        "radius_px": 60,
+        "opacity": 0.9,
+        "fade_in_ms": 40,
+        "grow_ms": 150,
+        "start_scale": 0.5,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A scorched dent where the meteor hit, with soot sprayed outward.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burn-6",
+      "type": "decal",
+      "beats": [
+        "hit-6"
+      ],
+      "attach_to": "meteor-6",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": 50,
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 400,
+        "fade_ms": 700,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The hot glow of the hit, cooling fast.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.4,
+          "contrast": 0.7
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "meteor-7",
+      "type": "orb",
+      "beats": [
+        "fall-7"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "look": "meteor",
+        "radius_px": {
+          "min": 13,
+          "max": 17
+        },
+        "approach_deg": {
+          "min": 23,
+          "max": 29
+        },
+        "approach_yaw_deg": {
+          "min": 85,
+          "max": 115
+        },
+        "scatter_px": {
+          "min": 150,
+          "max": 240
+        },
+        "travel_ease": "ease_in",
+        "trail_ms": 280,
+        "smoke_trail_ms": 1000,
+        "smoke_opacity": 0.35,
+        "pulse_hz": 0,
+        "wobble": 0,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A burning rock with molten seams and a white-hot leading face, shedding flame that cools to red and grey smoke.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 1.5,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "impact-7",
+      "type": "sparks",
+      "beats": [
+        "hit-7"
+      ],
+      "attach_to": "meteor-7",
+      "color": "gradient_core_to_primary",
+      "z": 16,
+      "params": {
+        "count": 26,
+        "speed": 520,
+        "speed_spread": 0.5,
+        "gravity": 700,
+        "lifetime_ms": 420,
+        "size_px": 3,
+        "spread_deg": 150,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A fan of white-hot sparks thrown off the impact.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rubble-7",
+      "type": "sparks",
+      "beats": [
+        "hit-7"
+      ],
+      "attach_to": "meteor-7",
+      "color": "shadow",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 7,
+        "speed": 330,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 1500,
+        "size_px": {
+          "min": 6,
+          "max": 9
+        },
+        "spread_deg": 110,
+        "drag": 0.12,
+        "glow": 0.85,
+        "streak_ms": 40
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of burning rock that land and cool to dark stone.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 6,
+          "speed": 0.2,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crater-7",
+      "type": "decal",
+      "beats": [
+        "hit-7"
+      ],
+      "attach_to": "meteor-7",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 42,
+        "opacity": 0.9,
+        "fade_in_ms": 40,
+        "grow_ms": 150,
+        "start_scale": 0.5,
+        "lifetime_ms": 6000,
+        "fade_ms": 2500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A scorched dent where the meteor hit, with soot sprayed outward.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "burn-7",
+      "type": "decal",
+      "beats": [
+        "hit-7"
+      ],
+      "attach_to": "meteor-7",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": 34,
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 400,
+        "fade_ms": 700,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "The hot glow of the hit, cooling fast.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0.4,
+          "contrast": 0.7
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fire-field",
+      "type": "smoke",
+      "beats": [
+        "storm",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 14,
+      "params": {
+        "count": 26,
+        "rise_speed": 60,
+        "size_px": {
+          "min": 40,
+          "max": 55
+        },
+        "lifetime_ms": 800,
+        "opacity": 0.5,
+        "spread_px": 230
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Fires licking up all over the field between the craters.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "embers",
+      "type": "sparks",
+      "beats": [
+        "storm",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 15,
+      "params": {
+        "look": "ember",
+        "count": 110,
+        "speed": 80,
+        "speed_spread": 0.6,
+        "gravity": -90,
+        "lifetime_ms": 1300,
+        "size_px": 2.4,
+        "spread_deg": 120,
+        "drag": 0.6,
+        "emit_ms": 3400,
+        "emit_radius_px": 260,
+        "streak_ms": 25
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers swirling up off the burning field.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "smoke-columns",
+      "type": "smoke",
+      "beats": [
+        "aftermath"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 8,
+      "params": {
+        "count": 18,
+        "rise_speed": 70,
+        "size_px": {
+          "min": 50,
+          "max": 65
+        },
+        "lifetime_ms": 1400,
+        "opacity": 0.6,
+        "spread_px": 220
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Grey-black smoke rising off the craters.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.6,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "fire-light",
+      "type": "light",
+      "beats": [
+        "invoke",
+        "storm",
+        "aftermath"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 8,
+        "energy": 2.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "An orange light over the field, flaring with each hit.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "caster-glow",
+      "type": "glow",
+      "beats": [
+        "invoke",
+        "storm"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "radius_px": 50,
+        "softness": 0.8,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Fire held in the sorcerer's raised hands.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "storm-tremor",
+      "type": "camera_shake",
+      "beats": [
+        "storm"
+      ],
+      "params": {
+        "amplitude_px": 1.5,
+        "frequency_hz": 16,
+        "decay": 0.1
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "hit-1",
+        "hit-2",
+        "hit-3",
+        "hit-4",
+        "hit-5",
+        "hit-6",
+        "hit-7"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 5,
+          "max": 7
+        },
+        "frequency_hz": 22,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "invoke-sound",
+      "type": "sound_cue",
+      "beats": [
+        "invoke"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.5,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "storm-sound",
+      "type": "sound_cue",
+      "beats": [
+        "storm"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.4,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "fall-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fall-1",
+        "fall-2",
+        "fall-3",
+        "fall-4",
+        "fall-5",
+        "fall-6",
+        "fall-7"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.5,
+        "pitch": {
+          "min": 0.6,
+          "max": 0.8
+        },
+        "offset_ms": 250
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit-1",
+        "hit-2",
+        "hit-3",
+        "hit-4",
+        "hit-5",
+        "hit-6",
+        "hit-7"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.8,
+        "pitch": {
+          "min": 0.8,
+          "max": 1.1
+        }
+      }
+    },
+    {
+      "id": "rubble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit-1",
+        "hit-2",
+        "hit-3",
+        "hit-4",
+        "hit-5",
+        "hit-6",
+        "hit-7"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.45,
+        "offset_ms": 60
+      }
+    },
+    {
+      "id": "aftermath-sound",
+      "type": "sound_cue",
+      "beats": [
+        "aftermath"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.3,
+        "pitch": 0.75
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Every meteor's size, approach and landing spot (scatter_px) change per cast, so the storm never lands the same way twice; the two big meteors always land near the centre. The rhythm of the falls is fixed: seven rocks over about two seconds."
+  },
+  "director_notes": "From Lisa's spells01 image, Sorcerer - Meteor Storm: 'fire falls from the heavens'. The existing Meteor Strike is one rock; this is the area version. Seven orb meteors on staggered travel beats, each with scatter_px (new) so it lands somewhere on the field, and the impact sparks, rubble, crater and burn of each are attach_to that meteor (new for sparks and decals) so they appear where it lands. Two bigger meteors land near the centre for weight. A dark cloud deck and a red sky glow sit at the sky anchor; a fire field and embers cover the footprint."
+}

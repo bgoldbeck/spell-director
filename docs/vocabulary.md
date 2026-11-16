@@ -268,6 +268,20 @@ Water has weight: it arcs, falls back and leaves the ground wet. Ice is water th
 | whiteout, freezing fog | `smoke` alpha in pale colors | Cold mist that hides the ground. |
 | frozen ground, rime | `decal` `frost`, `grow_ms` | Ice crystals spreading out from the hit. |
 
+### Blood, shadow, death and song
+
+| Request words | Build with | Notes |
+|---|---|---|
+| drain, siphon, life steal, leech | `sparks` anchored at the target with `home_to: caster_hand` (`look: droplet` for blood, plain sparks for life-light), a thin `beam` tether, a growing `orb` in the hand | The flow must read as coming back to the caster. End with a flash and ring at the caster (the stolen life arriving). |
+| bats, bat swarm | `sparks` `look: bat` with `home_to: target`; around the target, bats attached to a faint `vortex` (low `opacity`) | Dark flapping silhouettes. On a dark background give them a lighter color. |
+| bones, skeletons, bone storm | `sparks` `look: bone`, attached to a `vortex` to orbit it | Pale bones tumbling end over end. |
+| blood thorns, blood spikes | `eruption` `shape: spikes` in the blood color, glassy shader | One row with equal start and end radius and negative `tilt_deg` makes a crown leaning in on a target. |
+| shadow claws, tendrils, grasp | `eruption` spikes in a dark color with negative `tilt_deg`, over a dark `puddle` decal; violet additive glyphs, beam and crackle carry the magic | Dark can't glow: use alpha smoke and lit meshes for the dark and an additive accent for the light. |
+| void, black hole, implosion | black alpha `smoke` packed tight and keyframed up, a `bubble` orb rim, `sparks` `gather_px` + `swirl`, an inward billboard `ring`, then flash and outward rings | Pull in, collapse, blow out. |
+| song, anthem, dirge, chord | `ring`s timed as downbeats (ground rings for a buff, `arc_deg` fronts toward a target for a debuff), small billboard ripples at the hand, `rune_circle` decals for staves and glyphs | Keep the ring rhythm regular so an engine can retime it to the music. |
+| meteor storm, rain of fire | several `orb` `look: meteor` on staggered `travel` beats with `scatter_px`; impact sparks, rubble and decals `attach_to` each meteor | Each rock lands somewhere different on the field. |
+| plague, pestilence, rot field | `rune_circle` + `puddle` + glowing `cracks` decals, low alpha `smoke` mist, rising `ember` spores, `droplet` sludge spits | A ground-first area; loop the middle beat for its duration. |
+
 ## 9. How the director uses this
 
 1. Hear the request (text) or read a GIF breakdown.

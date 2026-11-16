@@ -1,0 +1,578 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "sound-lingering-refrain",
+  "name": "Lingering Refrain",
+  "description": "The bard's last notes stream into an ally as ribbons of golden light; the song ends, but a soft golden shell and a slow-turning glyph ring stay on them, pulsing with faint echoes of the music.",
+  "element": "sound",
+  "line": "Bard",
+  "archetype": "aura",
+  "tags": [
+    "bard",
+    "song",
+    "buff",
+    "lingering",
+    "aura",
+    "shield",
+    "ally",
+    "echo"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Lingering anthem: the song fades but its power remains (fading golden rings, a lingering buff aura)"
+  },
+  "timing": {
+    "duration_ms": 4600,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.1,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the bard: notes of light stream across to the ally, a golden glyph ring opens at their feet and a soft shell of light settles over them, pulsing with slow rings.",
+      "side": "The note stream arcs from hand to ally; the shell is a glowing outline around the ally's body, with motes rising through it.",
+      "top": "A turning glyph ring around the ally with slow echo rings spreading from it; the stream is a dotted line from the bard.",
+      "three_quarter": "Hero view. The stream lands, the shell and ring settle, and slow echoes keep breathing out from the ally after the music stops."
+    }
+  },
+  "palette": {
+    "core": "#FFF6DA",
+    "primary": "#FFC23D",
+    "secondary": "#B9781A",
+    "accent": "#FFE38A",
+    "shadow": "#4E3A1C"
+  },
+  "beats": [
+    {
+      "id": "final-note",
+      "phase": "release",
+      "start_ms": 0,
+      "end_ms": 800,
+      "intensity": {
+        "shape": "ease_in_out",
+        "from": 0.5,
+        "to": 1.0
+      },
+      "intent": "The bard plays the closing phrase; notes of golden light stream off the instrument into the ally."
+    },
+    {
+      "id": "bind",
+      "phase": "impact",
+      "start_ms": 700,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.5
+      },
+      "intent": "The song lands: a soft flash and the glyph ring opens under the ally."
+    },
+    {
+      "id": "linger",
+      "phase": "dissipation",
+      "start_ms": 900,
+      "end_ms": 4600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.9,
+        "to": 0.35
+      },
+      "intent": "The music is gone but its power stays: a calm golden shell and a turning ring around the ally."
+    },
+    {
+      "id": "echo-1",
+      "phase": "dissipation",
+      "start_ms": 1300,
+      "end_ms": 2600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "Echo 1: a slow, fainter ring breathes out from the ally, the song's memory."
+    },
+    {
+      "id": "echo-2",
+      "phase": "dissipation",
+      "start_ms": 2300,
+      "end_ms": 3600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6000000000000001,
+        "to": 0.0
+      },
+      "intent": "Echo 2: a slow, fainter ring breathes out from the ally, the song's memory."
+    },
+    {
+      "id": "echo-3",
+      "phase": "dissipation",
+      "start_ms": 3200,
+      "end_ms": 4500,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.4,
+        "to": 0.0
+      },
+      "intent": "Echo 3: a slow, fainter ring breathes out from the ally, the song's memory."
+    }
+  ],
+  "layers": [
+    {
+      "id": "note-stream",
+      "type": "sparks",
+      "beats": [
+        "final-note"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 10,
+      "params": {
+        "look": "ember",
+        "count": 45,
+        "speed": 120,
+        "speed_spread": 0.5,
+        "gravity": 0,
+        "lifetime_ms": 700,
+        "size_px": 3,
+        "spread_deg": 120,
+        "drag": 0.3,
+        "emit_ms": 650,
+        "streak_ms": 60,
+        "home_to": "target"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Notes of golden light curling out of the instrument and flowing into the ally.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "instrument-glow",
+      "type": "glow",
+      "beats": [
+        "final-note"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 9,
+      "params": {
+        "radius_px": 40,
+        "softness": 0.8,
+        "pulse_hz": 2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The instrument's last glow.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bind-flash",
+      "type": "flash",
+      "beats": [
+        "bind"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 20,
+      "params": {
+        "scope": "local",
+        "radius_px": 110,
+        "peak": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft golden flash as the song binds to the ally.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ward-ring",
+      "type": "decal",
+      "beats": [
+        "bind",
+        "linger"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 100,
+        "opacity": 0.8,
+        "fade_in_ms": 200,
+        "grow_ms": 300,
+        "start_scale": 0.5,
+        "spin_deg_per_s": 9,
+        "lifetime_ms": 3200,
+        "fade_ms": 1200,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A slow-turning ring of golden staves around the ally's feet, fading over seconds.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ward-shell",
+      "type": "orb",
+      "beats": [
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "bubble": true,
+        "radius_px": 70,
+        "height_px": 55,
+        "pulse_hz": 0.8,
+        "wobble": 0.05,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A barely-there shell of golden light hugging the ally, glowing only at its rim.",
+        "technique": "mesh",
+        "noise": {
+          "type": "perlin",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.2
+        },
+        "fresnel": 0.9,
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ward-glow",
+      "type": "glow",
+      "beats": [
+        "bind",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "radius_px": 90,
+        "softness": 0.95,
+        "pulse_hz": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A calm warm glow on the ally.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "echo-1-ring",
+      "type": "ring",
+      "beats": [
+        "echo-1"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 70,
+        "end_radius_px": 200,
+        "thickness_px": 8,
+        "softness": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A slow, soft ring breathing out from the ally, fainter each time.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "echo-2-ring",
+      "type": "ring",
+      "beats": [
+        "echo-2"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 70,
+        "end_radius_px": 200,
+        "thickness_px": 8,
+        "softness": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A slow, soft ring breathing out from the ally, fainter each time.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "echo-3-ring",
+      "type": "ring",
+      "beats": [
+        "echo-3"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 70,
+        "end_radius_px": 200,
+        "thickness_px": 8,
+        "softness": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A slow, soft ring breathing out from the ally, fainter each time.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "lingering-motes",
+      "type": "sparks",
+      "beats": [
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 50,
+        "speed": 25,
+        "speed_spread": 0.6,
+        "gravity": -45,
+        "lifetime_ms": 1600,
+        "size_px": 2.2,
+        "spread_deg": 60,
+        "drag": 0.5,
+        "emit_ms": 3400,
+        "emit_radius_px": 70,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A few golden motes still drifting up off the ally.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ward-light",
+      "type": "light",
+      "beats": [
+        "bind",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 3.5,
+        "energy": 1.2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A small warm light on the ally.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "phrase-sound",
+      "type": "sound_cue",
+      "beats": [
+        "final-note"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.55,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "bind-sound",
+      "type": "sound_cue",
+      "beats": [
+        "bind"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.4,
+        "pitch": 1.6
+      }
+    },
+    {
+      "id": "linger-sound",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.25,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "echo-sound",
+      "type": "sound_cue",
+      "beats": [
+        "echo-1",
+        "echo-2",
+        "echo-3"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.25,
+        "pitch": 0.8
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The note stream's paths, the ring glyphs and the motes change per cast. The echoes slow down and fade (1 s, then 0.9 s apart) every time."
+  },
+  "director_notes": "From Lisa's spells01 image, Lingering Anthem: 'the song fades, but its power remains'. Made it the after-effect of a song on one ally, so it pairs with Rallying Anthem. The notes travel with sparks home_to: target (new): they burst off the instrument and curve into the ally. The shell is an orb bubble around the body. Echo rings get slower and fainter to say the music is gone while the buff stays. In an engine, loop the linger beat for the buff's real duration."
+}

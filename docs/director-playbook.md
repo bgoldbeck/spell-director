@@ -34,7 +34,7 @@ Pull these out of what the user said, and note which are missing:
 
 | Decide | Words that tell you | If missing |
 |---|---|---|
-| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash", "wave", "tide"; "ice", "frost", "freeze", "snow", "blizzard"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "sun", "solar", "holy", "radiant" (light); "raw power", "hyper", "cannon", "annihilate" (energy); "psychic", "mind", "telekinetic" (psychic); "earth", "rock", "stone", "ground", "quake", "slam", "boulder" | ask (it's rarely missing) |
+| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash", "wave", "tide"; "ice", "frost", "freeze", "snow", "blizzard"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "sun", "solar", "holy", "radiant" (light); "raw power", "hyper", "cannon", "annihilate" (energy); "psychic", "mind", "telekinetic" (psychic); "earth", "rock", "stone", "ground", "quake", "slam", "boulder"; "blood", "vampire", "bleed", "siphon" (blood); "song", "bard", "anthem", "dirge" (sound); "shadow", "dark", "void", "death", "necro" (shadow); "plague", "rot", "toxic", "disease" (poison) | ask (it's rarely missing) |
 | `archetype` | strike (from above / one hit), projectile (thrown), chain (jumps), beam (continuous), aura (around the caster), nova (bursts outward) | infer, or ask as a choice |
 | weight | heavy, boss, big, ultimate → long anticipation, hold frames, shake. quick, light, basic → snappy | default to medium |
 | camera / hero view | top-down, isometric, side-scroller, fighting game, over-the-shoulder (see vocabulary §7) | **ask** |
