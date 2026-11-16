@@ -14,14 +14,23 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-TEMPLATES = ROOT / "templates"
-DOCS = ROOT / "docs"
-SCHEMAS = ROOT / "schemas"
-BREAKDOWNS = ROOT / "breakdowns"
+# The app's own files (in the packaged exe, PyInstaller's unpack folder).
+BUNDLE = Path(__file__).resolve().parent.parent
 
-if str(ROOT / "tools") not in sys.path:
-    sys.path.insert(0, str(ROOT / "tools"))
+if str(BUNDLE / "tools") not in sys.path:
+    sys.path.insert(0, str(BUNDLE / "tools"))
+
+import app_paths  # noqa: E402
+
+# The user's files: the repo root from source, a folder next to the exe when
+# packaged (see tools/app_paths.py). Saved templates and outputs go here.
+ROOT = app_paths.library_root()
+TEMPLATES = ROOT / "templates"
+BREAKDOWNS = ROOT / "breakdowns"
+# Read-only templates shipped with the exe; None when they are TEMPLATES itself.
+BUILTIN_TEMPLATES = None if app_paths.builtin_templates().resolve() == TEMPLATES.resolve() else app_paths.builtin_templates()
+DOCS = BUNDLE / "docs"
+SCHEMAS = BUNDLE / "schemas"
 
 import breakdown as _breakdown  # noqa: E402
 import build_index as _build_index  # noqa: E402
@@ -47,8 +56,40 @@ class LibraryError(ValueError):
 # ---------------------------------------------------------------- reading
 
 
+def _template_dirs() -> list[Path]:
+    return [TEMPLATES] + ([BUILTIN_TEMPLATES] if BUILTIN_TEMPLATES else [])
+
+
 def _template_files() -> list[Path]:
-    return sorted(p for p in TEMPLATES.rglob("*.json") if p.name != "index.json")
+    """Every template file, the user's first; a user file hides a built-in one at the same path."""
+    seen: set[str] = set()
+    out = []
+    for folder in _template_dirs():
+        if not folder.is_dir():
+            continue
+        for p in sorted(p for p in folder.rglob("*.json") if p.name != "index.json"):
+            rel = p.relative_to(folder).as_posix()
+            if rel not in seen:
+                seen.add(rel)
+                out.append(p)
+    return out
+
+
+def _relative(path: Path, folder: Path) -> Path | None:
+    """path relative to folder (resolved or not), or None if it is not inside it."""
+    for base in (folder, folder.resolve()):
+        if base in path.parents:
+            return path.relative_to(base)
+    return None
+
+
+def _display_path(path: Path) -> str:
+    """templates/<element>/<name>.json, wherever the file lives."""
+    for folder in _template_dirs():
+        rel = _relative(path, folder)
+        if rel is not None:
+            return "templates/" + rel.as_posix()
+    return path.as_posix()
 
 
 def _load(path: Path) -> dict:
@@ -86,7 +127,7 @@ def list_templates(element: str | None = None, archetype: str | None = None) -> 
             "duration_ms": doc.get("timing", {}).get("duration_ms"),
             "tags": doc.get("tags", []),
             "description": doc.get("description", ""),
-            "path": path.relative_to(ROOT).as_posix(),
+            "path": _display_path(path),
         })
     return out
 
@@ -149,9 +190,14 @@ def validate_template(template: dict) -> dict:
 
 
 def viewer_url() -> str:
-    """Base URL of the local viewer (tools/serve.py, same port setting)."""
+    """Base URL of the local viewer: the running one if there is one (it may
+    have moved to another port), else tools/serve.py's port setting."""
     import serve  # tools/serve.py
 
+    running = serve.InstanceLock().running_url()
+    # Check it at 127.0.0.1: on Windows, "localhost" can take seconds while IPv6 is tried first.
+    if running and serve.is_viewer(running.replace("://localhost:", "://127.0.0.1:"), timeout=0.5):
+        return running if running.endswith("/") else running + "/"
     port = os.environ.get("SPELLDIRECTOR_PORT") or serve.DEFAULT_PORT
     return f"http://localhost:{port}/"
 
@@ -188,10 +234,15 @@ def save_template(template: dict, overwrite: bool = False) -> dict:
 
     existing = _find(template["id"])
     path = existing or _target_path(template)
-    if path.exists():
-        current = _load(path)
+    if BUILTIN_TEMPLATES and _relative(path, BUILTIN_TEMPLATES):
+        # Built-in templates are read-only: a revision goes to the user's library and hides the built-in one.
+        path = TEMPLATES / _relative(path, BUILTIN_TEMPLATES)
+    builtin = BUILTIN_TEMPLATES / _relative(path, TEMPLATES) if BUILTIN_TEMPLATES else None
+    occupant = path if path.exists() else builtin if builtin and builtin.exists() else None
+    if occupant is not None:
+        current = _load(occupant)
         if current.get("id") != template["id"]:
-            raise LibraryError(f"{path.relative_to(ROOT).as_posix()} already holds template {current.get('id')!r}")
+            raise LibraryError(f"{_display_path(occupant)} already holds template {current.get('id')!r}")
         if not overwrite:
             raise LibraryError(f"template {template['id']!r} already exists; pass overwrite=true to revise it")
 
@@ -202,7 +253,8 @@ def save_template(template: dict, overwrite: bool = False) -> dict:
     return {
         "saved": True,
         "id": template["id"],
-        "path": path.relative_to(ROOT).as_posix(),
+        "path": _display_path(path),
+        "file": str(path),
         "replaced": existing is not None,
         "warnings": result["warnings"],
         "preview_url": preview_url(template["id"], template.get("views", {}).get("hero")),

@@ -42,14 +42,29 @@
     <section id="setup" class="panel">
       <h2>2. Connect the director</h2>
       <p>The director is an MCP server that any MCP client can use. Claude Code is the easiest.</p>
-      <h3>Claude Code</h3>
+      <h3>With the Windows app (.exe), no Python needed</h3>
+      <p>The app is the director too: run it with <code>--mcp</code>. Add this to your client's MCP settings (for Claude Desktop, <code>claude_desktop_config.json</code>), with the path to your copy of the app:</p>
+      <div class="code-wrap">
+        <pre id="mcp-config-exe">{
+  "mcpServers": {
+    "spelldirector": {
+      "command": "C:\\path\\to\\SpellDirector-vX.Y.Z-windows.exe",
+      "args": ["--mcp"]
+    }
+  }
+}</pre>
+        <button class="btn copy" data-copy="mcp-config-exe" type="button">Copy</button>
+      </div>
+      <p>For Claude Code, run this once in a terminal: <code>claude mcp add --scope user spelldirector -- "C:\path\to\SpellDirector-vX.Y.Z-windows.exe" --mcp</code></p>
+      <p class="muted small">Restart the client after changing its settings. The spells the director saves, its sprite exports and GIF breakdowns go to a <b>SpellDirector Library</b> folder next to the app, and the app shows those spells next to the built-in ones. To keep them somewhere else, add <code>"--library", "D:\\My Spells"</code> to <code>args</code>. While the client runs, the director also serves this viewer, so its links open straight away. When you download a new version, update the path in the settings.</p>
+      <h3>Claude Code, from the source folder</h3>
       <ol>
         <li>Get the source folder: <code>git clone https://github.com/bgoldbeck/spell-director</code></li>
         <li>Install the packages once: <code>python -m pip install -r requirements-dev.txt</code></li>
         <li>Open Claude Code <strong>in that folder</strong>. It finds the <code>spelldirector</code> server in <code>.mcp.json</code> and asks you to allow it. Say yes.</li>
         <li>Check it with <code>/mcp</code>: <code>spelldirector</code> should show as connected.</li>
       </ol>
-      <h3>Claude Desktop or another client</h3>
+      <h3>Claude Desktop or another client, from the source folder</h3>
       <p>Add a stdio server to the client's MCP settings (for Claude Desktop, <code>claude_desktop_config.json</code>):</p>
       <div class="code-wrap">
         <pre id="mcp-config">{
@@ -64,7 +79,7 @@
         <button class="btn copy" data-copy="mcp-config" type="button">Copy</button>
       </div>
       <p class="muted small">Change the <code>PYTHONPATH</code> path to where you cloned the folder, then restart the client.</p>
-      <p class="note"><b>Using the Windows app (.exe)?</b> The app is the viewer on its own. The director needs the source folder and Python, as above. Templates the director saves land in that folder, so open them with <code>run.bat</code> there, or with <b>Open JSON…</b> in the app.</p>
+      <p class="note">From the source folder, templates the director saves land in that folder's <code>templates/</code>, so open them with <code>run.bat</code> there.</p>
     </section>
 
     <section id="ask" class="panel">

@@ -91,7 +91,7 @@ def save_template(template: dict[str, Any], overwrite: bool = False) -> dict[str
     """Validate and save a template to templates/<element>/, and rebuild the
     viewer's index. Refuses invalid templates. Refuses to replace an existing
     template unless overwrite is true (use it only to revise that same template).
-    Returns the saved path and preview URLs for the viewer (python tools/serve.py)."""
+    Returns the saved path and preview URLs for the viewer."""
     return _call(library.save_template, template, overwrite)
 
 

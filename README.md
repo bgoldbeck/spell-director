@@ -47,11 +47,26 @@ python -m director.mcp_server        # stdio MCP server; run from the repo root
 
 Claude Code picks it up from [`.mcp.json`](.mcp.json) when opened in this repo. For Claude Desktop or another client, add a stdio server with command `python`, args `["-m", "director.mcp_server"]` and the repo as the working directory.
 
+**Without Python:** the Windows app is the MCP server too. Point the client at the exe with the `--mcp` argument:
+
+```json
+{
+  "mcpServers": {
+    "spelldirector": {
+      "command": "C:\\path\\to\\SpellDirector-vX.Y.Z-windows.exe",
+      "args": ["--mcp"]
+    }
+  }
+}
+```
+
+(Claude Code: `claude mcp add --scope user spelldirector -- "C:\path\to\SpellDirector-vX.Y.Z-windows.exe" --mcp`.) In this mode the saved templates, exports and breakdowns go to a `SpellDirector Library` folder next to the exe (or `--library <folder>`), the viewer shows them next to the built-in templates, and the exe also serves the viewer in the background so the preview links work. Sprite export uses an installed Edge or Chrome instead of Playwright.
+
 | Tools | Resources | Prompts |
 |---|---|---|
 | `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif`, `export_sprites`, `look_at_sprite_sheet` | `spelldirector://docs/{vocabulary, template-format, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
 
-`save_template` validates, writes `templates/<element>/<name>.json`, rebuilds the index, and won't replace an existing template unless asked to. Run `python tools/serve.py` to open the links it returns. The director follows [docs/director-playbook.md](docs/director-playbook.md).
+`save_template` validates, writes `templates/<element>/<name>.json`, rebuilds the index, and won't replace an existing template unless asked to. Run `python tools/serve.py` (or the app) to open the links it returns. The director follows [docs/director-playbook.md](docs/director-playbook.md).
 
 ## Viewer
 

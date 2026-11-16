@@ -12,9 +12,11 @@ the views front, side, top, 3/4), <id>.spritesheet.json, <id>.guide.md and
 button: it starts the viewer server, opens it in headless Chromium and saves
 the files.
 
-Needs Playwright (`pip install -r requirements-export.txt`) and a browser:
+Uses Playwright (`pip install -r requirements-export.txt`) and a browser:
 `python -m playwright install chromium`, or an installed Chrome or Edge
 (used automatically), or a Chromium path in SPELLDIRECTOR_CHROMIUM.
+Without Playwright (as in the packaged exe), it runs an installed Edge or
+Chrome headless itself, and the page posts the sheets back to the server.
 """
 
 from __future__ import annotations
@@ -23,17 +25,22 @@ import argparse
 import base64
 import json
 import os
+import shutil
+import subprocess
 import sys
+import tempfile
 import threading
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+# In the packaged exe, bundled files live under sys._MEIPASS.
+ROOT = Path(getattr(sys, "_MEIPASS", None) or Path(__file__).resolve().parent.parent)
 sys.path.insert(0, str(ROOT / "tools"))
 
+import app_paths  # noqa: E402
 import serve  # noqa: E402
 
 VIEWS = ("front", "side", "top", "three_quarter")
-EXPORTS = ROOT / "exports"
+EXPORTS = app_paths.library_root() / "exports"
 
 
 class ExportError(RuntimeError):
@@ -74,8 +81,8 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
     """
     try:
         from playwright.sync_api import sync_playwright
-    except ImportError as exc:
-        raise ExportError("Playwright is not installed: pip install -r requirements-export.txt") from exc
+    except ImportError:
+        sync_playwright = None
 
     tpl_obj = None
     tpl_id = None
@@ -95,34 +102,18 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
     port = server.server_address[1]
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
+    opts = {"seed": seed, "frame": frame, "views": views, "layers": layers, "bloom": bloom, "version": _version()}
+    if fps:
+        opts["fps"] = fps
+    if tpl_obj is not None:
+        opts["template"] = tpl_obj
+    else:
+        opts["id"] = tpl_id
     try:
-        with sync_playwright() as p:
-            browser = _launch(p)
-            try:
-                page = browser.new_page()
-                page_errors = []
-                page.on("pageerror", lambda e: page_errors.append(str(e)))
-                page.goto(f"http://127.0.0.1:{port}/?sound=off&t=0")
-                page.wait_for_function("window.spellDirector && window.spellDirector.templates.length > 0 "
-                                       "&& typeof window.spellDirectorExport === 'function'", timeout=30000)
-                opts = {"seed": seed, "frame": frame, "views": views, "layers": layers, "bloom": bloom,
-                        "version": _version()}
-                if fps:
-                    opts["fps"] = fps
-                if tpl_obj is not None:
-                    opts["template"] = tpl_obj
-                else:
-                    ids = page.evaluate("window.spellDirector.templates.map(t => t.id)")
-                    if tpl_id not in ids:
-                        raise ExportError(f"no template with id {tpl_id!r}; known: {', '.join(ids)}")
-                    opts["id"] = tpl_id
-                page.set_default_timeout(timeout_s * 1000)
-                try:
-                    result = page.evaluate("opts => window.spellDirectorExport(opts)", opts)
-                except Exception as exc:  # noqa: BLE001
-                    raise ExportError(f"export failed in the page: {exc}; {' | '.join(page_errors)}") from exc
-            finally:
-                browser.close()
+        if sync_playwright is None:
+            result = _export_headless(port, opts, timeout_s)
+        else:
+            result = _export_playwright(sync_playwright, port, opts, timeout_s)
     finally:
         server.shutdown()
         server.server_close()
@@ -136,6 +127,102 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
         path.write_bytes(base64.b64decode(f["base64"]))
         written.append(str(path))
     return {"out": str(folder), "files": written, "manifest": manifest}
+
+
+def _export_playwright(sync_playwright, port: int, opts: dict, timeout_s: float) -> dict:
+    with sync_playwright() as p:
+        browser = _launch(p)
+        try:
+            page = browser.new_page()
+            page_errors = []
+            page.on("pageerror", lambda e: page_errors.append(str(e)))
+            page.goto(f"http://127.0.0.1:{port}/?sound=off&t=0")
+            page.wait_for_function("window.spellDirector && window.spellDirector.templates.length > 0 "
+                                   "&& typeof window.spellDirectorExport === 'function'", timeout=30000)
+            if "id" in opts:
+                ids = page.evaluate("window.spellDirector.templates.map(t => t.id)")
+                if opts["id"] not in ids:
+                    raise ExportError(f"no template with id {opts['id']!r}; known: {', '.join(ids)}")
+            page.set_default_timeout(timeout_s * 1000)
+            try:
+                result = page.evaluate("opts => window.spellDirectorExport(opts)", opts)
+            except Exception as exc:  # noqa: BLE001
+                raise ExportError(f"export failed in the page: {exc}; {' | '.join(page_errors)}") from exc
+        finally:
+            browser.close()
+    return result
+
+
+def find_browser() -> str | None:
+    """An installed Chromium-family browser for headless export: SPELLDIRECTOR_CHROMIUM,
+    else Edge or Chrome in their usual places, else one on PATH."""
+    env = os.environ.get("SPELLDIRECTOR_CHROMIUM")
+    if env:
+        return env
+    candidates: list[Path] = []
+    if sys.platform == "win32":
+        # MCP clients may start the exe with a trimmed environment, so fall back to the usual folders.
+        for base in (os.environ.get("ProgramFiles(x86)") or r"C:\Program Files (x86)",
+                     os.environ.get("ProgramFiles") or r"C:\Program Files", os.environ.get("LOCALAPPDATA")):
+            if base:
+                candidates += [Path(base) / "Microsoft" / "Edge" / "Application" / "msedge.exe",
+                               Path(base) / "Google" / "Chrome" / "Application" / "chrome.exe"]
+    elif sys.platform == "darwin":
+        candidates += [Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
+                       Path("/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"),
+                       Path("/Applications/Chromium.app/Contents/MacOS/Chromium")]
+    for c in candidates:
+        if c.is_file():
+            return str(c)
+    for name in ("msedge", "microsoft-edge", "google-chrome", "chrome", "chromium", "chromium-browser"):
+        found = shutil.which(name)
+        if found:
+            return found
+    if Path("/opt/pw-browsers/chromium").exists():
+        return "/opt/pw-browsers/chromium"
+    return None
+
+
+def _export_headless(port: int, opts: dict, timeout_s: float) -> dict:
+    """Run the export in a headless Edge or Chrome started directly, with no Playwright."""
+    exe = find_browser()
+    if exe is None:
+        raise ExportError("no browser found for the export. Install Microsoft Edge or Google Chrome, "
+                          "or set SPELLDIRECTOR_CHROMIUM to a Chromium-family browser.")
+    token, done, job = serve.add_export_job(opts)
+    profile = tempfile.mkdtemp(prefix="spelldirector-export-")
+    url = f"http://127.0.0.1:{port}/?sound=off&t=0&export_job={token}"
+    args = [exe, "--headless=new", f"--user-data-dir={profile}", "--no-first-run", "--no-default-browser-check",
+            "--disable-extensions", "--mute-audio", "--enable-unsafe-swiftshader", "--window-size=1280,800"]
+    if sys.platform != "win32":
+        # No GPU in most Linux containers; on Windows let Edge or Chrome use the GPU (much faster).
+        args.append("--use-angle=swiftshader")
+    args.append(url)
+    if hasattr(os, "geteuid") and os.geteuid() == 0:
+        args.insert(1, "--no-sandbox")
+    flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    try:
+        # stdout must stay clean: it is the MCP channel when the director runs this.
+        proc = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL, creationflags=flags)
+    except OSError as exc:
+        serve.drop_export_job(token)
+        shutil.rmtree(profile, ignore_errors=True)
+        raise ExportError(f"could not start the browser {exe}: {exc}") from exc
+    try:
+        if not done.wait(timeout_s):
+            raise ExportError(f"the export did not finish within {timeout_s:.0f} s ({exe})")
+    finally:
+        proc.kill()
+        try:
+            proc.wait(10)
+        except subprocess.TimeoutExpired:
+            pass
+        serve.drop_export_job(token)
+        shutil.rmtree(profile, ignore_errors=True)
+    if "error" in job:
+        raise ExportError(f"export failed in the page: {job['error']}")
+    return job["result"]
 
 
 def main(argv: list[str]) -> int:
