@@ -1,0 +1,785 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "sound-sorrow-dirge",
+  "name": "Sorrow Dirge",
+  "description": "The bard draws a mournful note and waves of violet sound roll out across the field at the enemies; where they land, a curse sigil opens and a cold purple mist drains the strength out of them.",
+  "element": "sound",
+  "line": "Bard",
+  "archetype": "beam",
+  "tags": [
+    "bard",
+    "song",
+    "debuff",
+    "curse",
+    "waves",
+    "cone",
+    "violet",
+    "weaken"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Bard dirge: violet/purple sound waves weakening enemies"
+  },
+  "timing": {
+    "duration_ms": 3200,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "cone",
+      "length": 4.2,
+      "angle_deg": 70,
+      "distribution": "edge_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the bard: violet arcs roll away across the ground toward the enemy, streaks of sound rush along the cone and the target sinks into a purple haze over its sigil.",
+      "side": "The sound cone is a streaky violet wedge from the hand to the target with upright ripples riding it; the mist hangs low and heavy at the target.",
+      "top": "The arcs read as a fan of curved wavefronts marching to the target, which ends up in a turning violet sigil with dripping motes.",
+      "three_quarter": "Hero view. Arcs march across the ground in rhythm, the cone streams over them and the target is wrapped in mist and sinking light."
+    }
+  },
+  "palette": {
+    "core": "#F2DEFF",
+    "primary": "#A54BFF",
+    "secondary": "#5A1C9C",
+    "accent": "#D58BFF",
+    "shadow": "#1C0A30"
+  },
+  "beats": [
+    {
+      "id": "draw-note",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 0.8
+      },
+      "intent": "The bard draws the bow: violet light pools at the instrument and a dark ring opens under them."
+    },
+    {
+      "id": "lament",
+      "phase": "release",
+      "start_ms": 400,
+      "end_ms": 2500,
+      "intensity": {
+        "shape": "ease_in_out",
+        "from": 0.9,
+        "to": 0.9
+      },
+      "intent": "The dirge plays: a cone of streaming violet sound runs from the instrument to the enemies."
+    },
+    {
+      "id": "wave-1",
+      "phase": "travel",
+      "start_ms": 450,
+      "end_ms": 1350,
+      "intensity": {
+        "shape": "linear",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Wave 1: a curved front of sound rolls across the ground to the target."
+    },
+    {
+      "id": "wave-2",
+      "phase": "travel",
+      "start_ms": 850,
+      "end_ms": 1750,
+      "intensity": {
+        "shape": "linear",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Wave 2: a curved front of sound rolls across the ground to the target."
+    },
+    {
+      "id": "wave-3",
+      "phase": "travel",
+      "start_ms": 1250,
+      "end_ms": 2150,
+      "intensity": {
+        "shape": "linear",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Wave 3: a curved front of sound rolls across the ground to the target."
+    },
+    {
+      "id": "wither",
+      "phase": "impact",
+      "start_ms": 1150,
+      "end_ms": 2700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.4
+      },
+      "intent": "The waves land: a curse sigil opens under the target, sorrow ripples through it and a cold mist drags it down."
+    },
+    {
+      "id": "silence",
+      "phase": "dissipation",
+      "start_ms": 2500,
+      "end_ms": 3200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The note dies. The mist settles and the sigil fades, leaving the enemy dimmed."
+    }
+  ],
+  "layers": [
+    {
+      "id": "bard-ring",
+      "type": "decal",
+      "beats": [
+        "draw-note",
+        "lament",
+        "silence"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 70,
+        "opacity": 0.7,
+        "spin_deg_per_s": -20,
+        "lifetime_ms": 2600,
+        "fade_ms": 500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A small violet stave circle under the bard.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "curse-sigil",
+      "type": "decal",
+      "beats": [
+        "wither",
+        "silence"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 105,
+        "opacity": 0.85,
+        "fade_in_ms": 150,
+        "grow_ms": 250,
+        "start_scale": 0.4,
+        "spin_deg_per_s": 18,
+        "lifetime_ms": 1600,
+        "fade_ms": 500,
+        "detail": 0.8
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A violet curse sigil of broken staves opening under the enemy.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.4
+        },
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sound-cone",
+      "type": "beam",
+      "beats": [
+        "lament"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "style": "wind",
+        "width_px": 40,
+        "spread": 2.8,
+        "flow_speed": 4,
+        "turbulence": 0.5,
+        "line_count": 22,
+        "line_length": 0.22,
+        "grow_ms": 300
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A faint wedge of violet sound with pale streaks rushing through it toward the enemy.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 5,
+          "speed": 4,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "toward_target",
+          "speed": 4
+        },
+        "distortion": 0.3,
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "wavefront-1",
+      "type": "ring",
+      "beats": [
+        "wave-1"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 420,
+        "thickness_px": 14,
+        "softness": 0.6,
+        "arc_deg": 75,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A curved front of violet sound marching across the ground.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "wavefront-2",
+      "type": "ring",
+      "beats": [
+        "wave-2"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 420,
+        "thickness_px": 14,
+        "softness": 0.6,
+        "arc_deg": 75,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A curved front of violet sound marching across the ground.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "wavefront-3",
+      "type": "ring",
+      "beats": [
+        "wave-3"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 420,
+        "thickness_px": 14,
+        "softness": 0.6,
+        "arc_deg": 75,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A curved front of violet sound marching across the ground.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "air-ripple-1",
+      "type": "ring",
+      "beats": [
+        "wave-1"
+      ],
+      "anchor": "caster_hand",
+      "plane": "vertical",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 55,
+        "thickness_px": 4,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "An upright ripple of sound leaving the instrument on each wave.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "air-ripple-2",
+      "type": "ring",
+      "beats": [
+        "wave-2"
+      ],
+      "anchor": "caster_hand",
+      "plane": "vertical",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 55,
+        "thickness_px": 4,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "An upright ripple of sound leaving the instrument on each wave.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "air-ripple-3",
+      "type": "ring",
+      "beats": [
+        "wave-3"
+      ],
+      "anchor": "caster_hand",
+      "plane": "vertical",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 55,
+        "thickness_px": 4,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "An upright ripple of sound leaving the instrument on each wave.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sorrow-ripples",
+      "type": "ring",
+      "beats": [
+        "wither"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 85,
+        "thickness_px": 5,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Ripples shuddering through the enemy as the dirge lands.",
+        "technique": "procedural",
+        "noise": {
+          "type": "streaks",
+          "scale": 6,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "dissolve": {
+          "pattern": "perlin",
+          "edge_width": 0.25,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sorrow-mist",
+      "type": "smoke",
+      "beats": [
+        "wither",
+        "silence"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "count": 18,
+        "rise_speed": -8,
+        "size_px": {
+          "min": 55,
+          "max": 70
+        },
+        "lifetime_ms": 1500,
+        "opacity": 0.55,
+        "spread_px": 50,
+        "spread_speed": 30
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A cold, heavy violet mist pooling around the enemy's legs.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.4,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "downward",
+          "speed": 0.3
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2,
+          "edge_color": "primary"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "sorrow-glow",
+      "type": "glow",
+      "beats": [
+        "wither"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "radius_px": 80,
+        "softness": 0.9,
+        "pulse_hz": 1.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A sickly violet glow on the enemy.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "draining-motes",
+      "type": "sparks",
+      "beats": [
+        "wither"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 10,
+      "params": {
+        "look": "ember",
+        "count": 50,
+        "speed": 40,
+        "speed_spread": 0.5,
+        "gravity": 120,
+        "lifetime_ms": 900,
+        "size_px": 2.4,
+        "spread_deg": 360,
+        "drag": 0.6,
+        "emit_ms": 1300,
+        "emit_radius_px": 40,
+        "streak_ms": 40
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Violet motes sinking off the enemy like tears: strength draining out of it.",
+        "technique": "particles",
+        "noise": {
+          "type": "perlin",
+          "scale": 5,
+          "speed": 1,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "instrument-glow",
+      "type": "glow",
+      "beats": [
+        "draw-note",
+        "lament"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "radius_px": 40,
+        "softness": 0.8,
+        "pulse_hz": 1
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A dim violet glow at the instrument.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "violet-light",
+      "type": "light",
+      "beats": [
+        "lament",
+        "wither"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 4,
+        "energy": 1.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cold violet light over the enemy.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "draw-sound",
+      "type": "sound_cue",
+      "beats": [
+        "draw-note"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.5,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "dirge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lament"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.4,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "wave-sound",
+      "type": "sound_cue",
+      "beats": [
+        "wave-1",
+        "wave-2",
+        "wave-3"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.45,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "wither-sound",
+      "type": "sound_cue",
+      "beats": [
+        "wither"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.4,
+        "pitch": 0.5
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The sigil and mist shapes, the cone's streaks and the sinking motes change per cast. The waves stay 400 ms apart."
+  },
+  "director_notes": "From Lisa's spells01 image, Bard - Dirge: violet sound waves that weaken enemies. The dark twin of Rallying Anthem: the same downbeat waves, aimed. Arcs (ring arc_deg) carry the sound across the ground toward the target, a wind-style beam gives the streaming cone, and upright rings show the sound in the side view. On the target, mist that sinks (negative rise_speed) and motes that fall (positive gravity) read as being weakened, the opposite of the anthem's rising motes."
+}

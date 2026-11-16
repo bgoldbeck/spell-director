@@ -48,8 +48,15 @@
         "nature",
         "poison",
         "energy",
-        "psychic"
+        "psychic",
+        "blood",
+        "sound"
       ]
+    },
+    "line": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional spell line (class, school or skill line) the spell belongs to, e.g. \"Bard\", \"Necromancer\". The viewer can group spells by it."
     },
     "archetype": {
       "enum": [
