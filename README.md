@@ -21,6 +21,7 @@ The current version is in [`VERSION`](VERSION); what changed is in [`CHANGELOG.m
 
 | Path | What |
 |---|---|
+| [`docs/sound-design.md`](docs/sound-design.md) | Sound vocabulary: sound roles per phase, words for texture, pitch and envelope, timing and levels, and how to make real sounds (text-to-SFX prompts, AI-written synths, libraries). |
 | [`docs/vocabulary.md`](docs/vocabulary.md) | Terms the director uses: phases, timing, shape, color, layers, space, lightning terms. |
 | [`docs/template-format.md`](docs/template-format.md) | The template format, field by field. |
 | [`schemas/`](schemas/) | JSON Schema for templates. |
@@ -64,7 +65,7 @@ Claude Code picks it up from [`.mcp.json`](.mcp.json) when opened in this repo. 
 
 | Tools | Resources | Prompts |
 |---|---|---|
-| `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif`, `export_sprites`, `look_at_sprite_sheet` | `spelldirector://docs/{vocabulary, template-format, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
+| `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif`, `export_sprites`, `look_at_sprite_sheet` | `spelldirector://docs/{vocabulary, template-format, sound-design, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
 
 `save_template` validates, writes `templates/<element>/<name>.json`, rebuilds the index, and won't replace an existing template unless asked to. Run `python tools/serve.py` (or the app) to open the links it returns. The director follows [docs/director-playbook.md](docs/director-playbook.md).
 
@@ -78,7 +79,7 @@ To get the latest version, double-click `update.bat` (Windows) or run `./update.
 
 Use another port with `run.bat 50123` / `./run.sh 50123`, or set `SPELLDIRECTOR_PORT`. If the port is busy, the next free one is used. Without the scripts: `python tools/serve.py --open`.
 
-Sound cues play in time with the beats (placeholder sounds for now). Sound starts **off**: click **Sound off** or press M to turn it on, and the viewer remembers your choice.
+Sound cues play in time with the beats. The sounds are procedural placeholders; exports include them as WAV files plus a sound brief per cue (text-to-SFX prompts, synthesis recipes, search terms) for making the real ones, see [docs/sound-design.md](docs/sound-design.md). Sound starts **off**: click **Sound off** or press M to turn it on, and the viewer remembers your choice.
 
 **Analyze GIF/MP4…** opens a page where you drop a reference clip and see its breakdown (camera shots, phase timeline, palette, footprint and view hints) next to the clip, then save it or copy a prompt for the director. It runs on your computer through the local server; from a source checkout it needs `pip install -r requirements-dev.txt`.
 

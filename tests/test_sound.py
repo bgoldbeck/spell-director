@@ -9,7 +9,7 @@ import validate
 
 ROOT = Path(__file__).resolve().parent.parent
 CUES = json.loads((ROOT / "web" / "sounds" / "cues.json").read_text(encoding="utf-8"))["cues"]
-FIELDS = {"label", "category", "kind", "duration_ms", "describes", "words", "phases", "sfx_prompt", "samples"}
+FIELDS = {"label", "category", "kind", "duration_ms", "describes", "words", "phases", "character", "sfx_prompt", "synth", "search", "samples"}
 PHASES = {"anticipation", "release", "travel", "impact", "dissipation"}
 
 
@@ -26,7 +26,7 @@ def test_cue_library_entries_are_complete():
 
 
 def test_generic_categories_are_covered():
-    for cue in ("buzz", "crackle", "fire", "crash", "whoosh", "boom", "impact"):
+    for cue in ("buzz", "crackle", "fire", "crash", "whoosh", "boom", "impact", "splash", "stream", "squelch", "drain", "whisper", "drone"):
         assert cue in CUES
 
 
@@ -73,5 +73,8 @@ def test_get_sound_cues():
     assert "electric" in out["categories"] and "fire" in out["categories"]
     assert {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms"} == set(out["params"])
     assert set(out["params"]) == validate.KNOWN_PARAMS["sound_cue"]
+    assert out["cues"]["splash"]["character"]["envelope"]
+    assert "blood" in out["flavors"] and "dark" in out["flavors"]
+    assert "Sound design vocabulary" in library.get_doc("sound-design")
     fire = library.get_sound_cues("fire")["cues"]
     assert set(fire) == {"ignite", "fire"}

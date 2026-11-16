@@ -73,9 +73,12 @@ def get_template_format() -> str:
 def get_sound_cues(category: str | None = None) -> dict[str, Any]:
     """The sound cue vocabulary for `sound_cue` layers: generic cues such as
     charge, buzz, crackle, zap, crack, boom, rumble, ignite, fire, whoosh, impact,
-    crash, shatter, wind and shimmer, each with what it sounds like, one_shot or
-    sustained, plain words that map to it, and the phases it suits. Also lists the
-    sound_cue params. Optionally filter by category (electric, fire, impact, ...)."""
+    crash, shatter, wind, shimmer, splash, stream, freeze, squelch, heartbeat,
+    whisper, drain and drone, each with what it sounds like (and its character:
+    texture, pitch, envelope, layers, tail), one_shot or sustained, plain words
+    that map to it, and the phases it suits. Also lists the sound_cue params and
+    per-element flavor words (resource spelldirector://docs/sound-design has the
+    full sound vocabulary). Optionally filter by category (electric, fire, impact, ...)."""
     return _call(library.get_sound_cues, category)
 
 
@@ -153,6 +156,7 @@ def _doc_resource(name: str, title: str) -> None:
 
 _doc_resource("vocabulary", "Director vocabulary")
 _doc_resource("template-format", "Template format")
+_doc_resource("sound-design", "Sound design vocabulary")
 _doc_resource("director-playbook", "Director playbook")
 _doc_resource("gif-breakdown-playbook", "GIF breakdown playbook")
 

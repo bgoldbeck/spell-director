@@ -98,7 +98,7 @@ test("manifest lists every sheet, layer timing and view row", () => {
 test("guide documents layers, timings, views, sounds and engine steps", () => {
   const m = fakeManifest(boss);
   const md = guideMarkdown(m, { files: [{ name: "x.json", about: "data" }] });
-  for (const s of ["## How the sheets are laid out", "## Timeline (beats)", "## Layers", "### Sound cues",
+  for (const s of ["## How the sheets are laid out", "## Timeline (beats)", "## Layers", "## Sound", "Text-to-SFX prompt", "sound-crack.wav", "Copy-paste prompt for Claude or GPT",
     "### Camera shake", "## Rebuild it in Unity", "## How to use this export", "## Build it one layer at a time", "Shader intent", "- Unity: ", "- Godot 4: ", "## Reading the sheets as an AI model", "tools/sheet_cells.py", "## Rebuild it in Godot 4", "all.png", "layer-main-bolt.png", "x.json"]) {
     assert.ok(md.includes(s), `guide mentions ${s}`);
   }

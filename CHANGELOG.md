@@ -6,6 +6,16 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Added
+
+- **Sound in exports.** Every sprite export now has the spell's sounds too: `<id>.preview.wav` (the whole spell's mix, a timing reference), one `sound-<cue>.wav` per cue, and `<id>.sounds.json`, a cue sheet with every sound's time, frame, beat, role, volume and pitch. The guide has a new **Sound** section: a beat-by-beat summary, what each sound should be (texture, pitch, envelope, layers, tail), a ready text-to-SFX prompt with duration and loop settings, a synthesis recipe, library search terms, a copy-paste prompt for Claude or GPT, and Unity/Godot steps.
+- **Sound design vocabulary** ([docs/sound-design.md](docs/sound-design.md)): sound roles per phase, how to stack a hit, words for texture, pitch, envelope and space, element flavors, timing and level rules, and how to make the real sounds with a text-to-SFX generator, an AI-written synthesizer or a sound library.
+- Eight new sound cues: `splash`, `stream` and `freeze` for water and ice, and `squelch`, `heartbeat`, `whisper`, `drain` and `drone` for blood and dark magic. The water and ice spells now use them.
+
+### Changed
+
+- Better placeholder sounds in the viewer: a shared reverb and compressor, pink and brown noise for rumbles, fire, wind and water, a slight stereo spread, and richer cracks, booms, buzzes and charges.
+
 ## [0.7.0] - 2026-11-16
 
 ### Added
