@@ -745,9 +745,9 @@
         "lament"
       ],
       "params": {
-        "cue": "wind",
+        "cue": "drone",
         "gain": 0.4,
-        "pitch": 0.6
+        "pitch": 1.0
       }
     },
     {
@@ -771,9 +771,9 @@
         "wither"
       ],
       "params": {
-        "cue": "hum",
-        "gain": 0.4,
-        "pitch": 0.5
+        "cue": "whisper",
+        "gain": 0.35,
+        "pitch": 0.8
       }
     }
   ],

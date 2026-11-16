@@ -586,9 +586,9 @@
         "summon"
       ],
       "params": {
-        "cue": "charge",
+        "cue": "drone",
         "gain": 0.45,
-        "pitch": 0.5
+        "pitch": 1.0
       }
     },
     {
@@ -611,9 +611,9 @@
         "tempest"
       ],
       "params": {
-        "cue": "hum",
-        "gain": 0.3,
-        "pitch": 1.8
+        "cue": "whisper",
+        "gain": 0.35,
+        "pitch": 0.9
       }
     },
     {

@@ -643,9 +643,9 @@
         "drain"
       ],
       "params": {
-        "cue": "hum",
-        "gain": 0.45,
-        "pitch": 0.5
+        "cue": "drain",
+        "gain": 0.5,
+        "pitch": 1.0
       }
     },
     {
@@ -655,9 +655,9 @@
         "drain"
       ],
       "params": {
-        "cue": "sizzle",
-        "gain": 0.25,
-        "pitch": 0.5
+        "cue": "heartbeat",
+        "gain": 0.4,
+        "pitch": 1.1
       }
     },
     {
