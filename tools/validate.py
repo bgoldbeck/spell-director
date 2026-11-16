@@ -60,6 +60,7 @@ KNOWN_PARAMS = {
     "decal": {
         "radius_px", "shape", "opacity", "fade_in_ms", "lifetime_ms", "fade_ms", "grow_ms", "start_scale",
         "rotation_deg", "spin_deg_per_s", "stretch", "pulse_hz", "detail", "arc_deg", "reveal_ms",
+        "depth", "fill", "fill_color", "fill_flow", "fill_in_ms",
     },
     "smoke": {"count", "rise_speed", "size_px", "lifetime_ms", "opacity", "spread_speed", "spread_px"},
     "light": {"radius", "energy"},

@@ -14,7 +14,8 @@ import * as THREE from "three";
 import { Effect } from "./engine/effect.js";
 import { viewCamera } from "./engine/stage.js";
 import { Post } from "./engine/post.js";
-import { tintDecal } from "./engine/decaltex.js";
+import { decalDepthMaps, decalExportMaps, tintDecal } from "./engine/decaltex.js";
+import { resolveStyle, styleCell } from "./engine/style.js";
 import {
   ALL_ID, DEFAULTS, SHEET_VIEWS, buildManifest, buildTracks, cellRect, framePlan, guideMarkdown, layoutSheet,
   sheetFileName, spriteLayers, visibleRange,
@@ -161,7 +162,7 @@ function toPng(canvas) {
 
 /**
  * Export sprite sheets.
- * opts: {seed, frame, fps, views, layers (true = layer rows), bloom (default true), maxWidth, cueLibrary, version, onProgress}
+ * opts: {seed, frame, fps, views, layers (true = layer rows), bloom (default true), style (stylized, realistic, toon, pixel; default the template's), maxWidth, cueLibrary, version, onProgress}
  * Returns {manifest, files: [{name, data: Uint8Array | string}]}.
  */
 export async function exportSpriteSheets(template, opts = {}) {
@@ -173,11 +174,20 @@ export async function exportSpriteSheets(template, opts = {}) {
   const plan = framePlan(template, { fps: opts.fps });
   const progress = opts.onProgress || (() => {});
 
-  const effect = new Effect(template, seed);
+  const style = resolveStyle(template, opts.style);
+  const effect = new Effect(template, seed, { style });
   const scene = makeScene(effect);
   const renderer = makeRenderer(size);
   const post = new Post(renderer, { bloom });
+  post.setStyle(style.view);
   post.setSize(size, size);
+  // Toon and pixel art looks are applied to each matted cell (the 3D render
+  // can't posterize or ink without breaking the black/white matte).
+  const restyle = style.view.posterize > 0 || style.view.outline > 0 || style.view.pixel > 0;
+  const ink = (() => {
+    const c = new THREE.Color(template.palette?.shadow || "#0c0a10").multiplyScalar(0.5);
+    return [Math.round(c.r * 255), Math.round(c.g * 255), Math.round(c.b * 255)];
+  })();
   const scratch = document.createElement("canvas");
   scratch.width = scratch.height = size;
   const sctx = scratch.getContext("2d", { willReadFrequently: true });
@@ -262,6 +272,7 @@ export async function exportSpriteSheets(template, opts = {}) {
           }
           undo();
           matte(lit, w, cellImg.data);
+          if (restyle) styleCell(cellImg.data, size, style.view, ink);
           const r = cellRect(sh.layout, row, k);
           sh.ctx.putImageData(cellImg, r.x, r.y);
         }
@@ -272,7 +283,7 @@ export async function exportSpriteSheets(template, opts = {}) {
 
     const viewMeta = Object.fromEntries(views.map((v) => [v, viewInfo(effect.stage, cams[v], size)]));
     const tracks = buildTracks(template, seed, plan, opts.cueLibrary);
-    const manifest = buildManifest({ template, seed, plan, sheets, visible, views: viewMeta, tracks, version: opts.version, frame: size, bloom });
+    const manifest = buildManifest({ template, seed, plan, sheets, visible, views: viewMeta, tracks, version: opts.version, frame: size, bloom, style });
     const base = template.id;
     const extra = [
       { name: `${base}.spritesheet.json`, about: "The same data as this guide, machine-readable" },
@@ -289,6 +300,13 @@ export async function exportSpriteSheets(template, opts = {}) {
       const layer = effect.layers.find((l) => l.def.id === d.layer && l.instance === 0);
       if (!layer?.canvas) continue;
       files.push({ name: d.texture, data: new Uint8Array(await (await toPng(tintDecal(layer.canvas, d.color))).arrayBuffer()) });
+      // Depth and fill maps for depth decals (parallax) and lava/glow fills.
+      if (d.height_map || d.emissive_mask) {
+        const maps = decalExportMaps(layer.maps || decalDepthMaps(layer.canvas, layer.plan.shape), { raised: d.depth < 0 });
+        if (d.height_map) files.push({ name: d.height_map, data: new Uint8Array(await (await toPng(maps.height)).arrayBuffer()) });
+        if (d.emissive_mask) files.push({ name: d.emissive_mask, data: new Uint8Array(await (await toPng(maps.emissive)).arrayBuffer()) });
+        if (d.flow_map) files.push({ name: d.flow_map, data: new Uint8Array(await (await toPng(maps.flow)).arrayBuffer()) });
+      }
     }
     files.push({ name: extra[0].name, data: `${JSON.stringify(manifest, null, 2)}\n` });
     files.push({ name: extra[1].name, data: guideMarkdown(manifest, { files: extra }) });

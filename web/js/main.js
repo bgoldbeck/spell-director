@@ -7,6 +7,7 @@ import { SoundPlayer } from "./audio.js";
 import { VIEWS, VIEW_LABELS, viewCamera } from "./engine/stage.js";
 import { beatsAt, phaseColor } from "./engine/timeline.js";
 import { exportSpriteSheets } from "./exporter.js";
+import { STYLE_IDS, resolveStyle } from "./engine/style.js";
 import { makeZip } from "./zip.js";
 import { ALL, groupByType, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
 
@@ -20,7 +21,7 @@ const ui = {
   palette: $("palette"), notes: $("notes"), layers: $("layers"), focus: $("focus"), file: $("file"),
   exportBtn: $("export"), exportDialog: $("export-dialog"), exportGo: $("export-go"), exportStatus: $("export-status"),
   exportForm: $("export-form"),
-  bloom: $("bloom"),
+  bloom: $("bloom"), styleSelect: $("style-select"),
   mute: $("mute"), flash: $("flash"), dim: $("dim"), quadLabels: $("quad-labels"), viewRead: $("view-read"), error: $("error"),
 };
 
@@ -38,6 +39,7 @@ const state = {
   last: performance.now(),
   hidden: new Set(),
   chosenView: null, // the view the user picked; null means "open each spell in its hero view"
+  style: null, // the art style the user picked; null means "the template's own"
 };
 
 // ------------------------------------------------------------ sound
@@ -228,7 +230,25 @@ function bloomPref() {
   }
 }
 
-const post = new Post(renderer, { bloom: bloomPref() });
+const post = new Post(renderer, { bloom: bloomPref(), toneMap: true });
+
+// The art style: ?style= wins for this visit; otherwise the user's last pick
+// (remembered per browser), otherwise each template's own style.
+const STYLE_KEY = "spelldirector.style";
+function stylePref() {
+  const q = new URLSearchParams(location.search).get("style");
+  if (STYLE_IDS.includes(q)) return q;
+  try {
+    const v = localStorage.getItem(STYLE_KEY);
+    return STYLE_IDS.includes(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+function currentStyle() {
+  return resolveStyle(state.template, state.style);
+}
 
 // Shake offsets the camera for this frame only.
 function shaken(cam) {
@@ -277,7 +297,9 @@ function loadEffect() {
     scene.remove(state.effect.group);
     state.effect.dispose();
   }
-  state.effect = new Effect(state.template, state.seed);
+  const style = currentStyle();
+  state.effect = new Effect(state.template, state.seed, { style });
+  post.setStyle(style.view);
   for (const id of state.hidden) state.effect.setHidden(id, true);
   scene.add(state.effect.group);
   rebuildProps(state.effect.stage);
@@ -546,6 +568,22 @@ ui.bloom.onchange = () => {
     /* private mode: just don't remember */
   }
 };
+state.style = stylePref();
+ui.styleSelect.value = state.style || "";
+function setStyle(id, save = true) {
+  state.style = STYLE_IDS.includes(id) ? id : null;
+  ui.styleSelect.value = state.style || "";
+  if (save) {
+    try {
+      if (state.style) localStorage.setItem(STYLE_KEY, state.style);
+      else localStorage.removeItem(STYLE_KEY);
+    } catch {
+      /* private mode: just don't remember */
+    }
+  }
+  if (state.template) loadEffect();
+}
+ui.styleSelect.onchange = () => setStyle(ui.styleSelect.value);
 ui.speed.onchange = () => (state.speed = Number(ui.speed.value));
 ui.scrubber.oninput = () => {
   state.t = Number(ui.scrubber.value);
@@ -580,6 +618,7 @@ window.addEventListener("keydown", (e) => {
     ui.play.click();
   } else if (e.key === "m" || e.key === "M") ui.mute.click();
   else if (e.key === "b" || e.key === "B") ui.bloom.click();
+  else if (e.key === "s" || e.key === "S") setStyle(STYLE_IDS[(STYLE_IDS.indexOf(currentStyle().id) + 1) % STYLE_IDS.length]);
   else if (e.key === "[") ui.prevSpell.click();
   else if (e.key === "]") ui.nextSpell.click();
   else if (["1", "2", "3", "4", "5"].includes(e.key)) {
@@ -615,6 +654,7 @@ function exportOptions(form) {
     fps: form.elements.fps.value ? Number(form.elements.fps.value) : undefined,
     layers: form.elements.layers.checked,
     bloom: form.elements.bloom.checked,
+    style: form.elements.style.value || currentStyle().id,
   };
 }
 
@@ -630,7 +670,7 @@ function download(name, bytes, type) {
 }
 
 ui.exportBtn.onclick = () => {
-  ui.exportStatus.textContent = state.template ? `${state.template.name}, seed ${state.seed}.` : "";
+  ui.exportStatus.textContent = state.template ? `${state.template.name}, seed ${state.seed}, ${currentStyle().label} style.` : "";
   ui.exportDialog.showModal();
 };
 ui.exportGo.onclick = async () => {
@@ -651,7 +691,7 @@ ui.exportGo.onclick = async () => {
         if (p.total) ui.exportStatus.textContent = `${p.stage === "scan" ? "Finding each layer's frames" : "Drawing sheets"}… ${Math.round((p.done / p.total) * 100)}%`;
       },
     });
-    const folder = `${tpl.id}-seed${state.seed}`;
+    const folder = `${tpl.id}-seed${state.seed}${manifest.style.id === "stylized" ? "" : `-${manifest.style.id}`}`;
     const zip = makeZip(files.map((f) => ({ name: `${folder}/${f.name}`, data: f.data })));
     download(`${folder}-sprites.zip`, zip, "application/zip");
     ui.exportStatus.textContent = `Done: ${manifest.sheets.length} sheets (the whole spell plus one per layer), ${manifest.frame_count} frames, ${manifest.view_rows.length} views each.`;

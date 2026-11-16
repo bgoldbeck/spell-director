@@ -11,8 +11,9 @@
 
 import { layerIntensity, layerWindow, paramAtFrom, resolveParams } from "./timeline.js";
 import { soundEvents } from "./sound.js";
-import { decalBlend, decalPlan, decalState } from "./decal.js";
+import { decalBlend, decalFillState, decalPlan, decalState } from "./decal.js";
 import { HOW_TO_USE, describeShader, engineRecipe, shaderFor } from "./shader.js";
+import { DECAL_FILLS, STYLES, decalRender, resolveStyle, shaderForStyle, styleGuideLines, styleRecipe } from "./style.js";
 
 export const FORMAT = "spelldirector.spritesheet/1";
 export const SHEET_VIEWS = ["front", "side", "top", "three_quarter"];
@@ -101,14 +102,21 @@ export function decalFileName(id) {
 
 export const DECAL_TEXTURE_PX = 512;
 
+export function decalMapName(id, kind) {
+  return `decal-${id}-${kind}.png`;
+}
+
 // Decals for an engine's decal projector: a top-down texture per decal layer
 // plus its timing and per-frame curves (opacity 0-1, scale x full size,
 // rotation in degrees). Viewer and export share decalPlan/decalState.
-export function buildDecals(template, seed, plan) {
+export function buildDecals(template, seed, plan, style = resolveStyle(template)) {
   const chain = template.space?.travel === "chain";
   return (template.layers || []).filter((l) => l.type === "decal").map((l) => {
     const d = decalPlan(template, l, seed, 0);
     const states = plan.times.map((t) => decalState(d, t));
+    const look = decalRender(d.shape, d.blend, d.look, style, l.color);
+    const fill = look.fill !== "none";
+    const fillStates = fill ? plan.times.map((t) => decalFillState(d, t, look.fill_in_ms)) : null;
     return {
       layer: l.id,
       shape: d.shape,
@@ -137,11 +145,22 @@ export function buildDecals(template, seed, plan) {
       // long the mark takes to spread out from its centre (0 = appears whole).
       arc_deg: r1(d.arc_deg),
       reveal_ms: r1(d.reveal_ms),
+      // Depth (parallax; negative = raised) and what fills the bottom of the
+      // mark (lava, glow, liquid, void), with their textures.
+      depth: r3(look.depth),
+      fill: look.fill,
+      fill_colors: fill ? colorHexes(template, look.fill_color || l.color) : null,
+      fill_in_ms: fill ? r1(look.fill_in_ms) : null,
+      fill_flow: fill ? r3(look.fill_flow) : null,
+      height_map: look.depth !== 0 ? decalMapName(l.id, "height") : null,
+      emissive_mask: fill ? decalMapName(l.id, "emissive") : null,
+      flow_map: fill && DECAL_FILLS[look.fill].flow ? decalMapName(l.id, "flow") : null,
       curves: {
         opacity: states.map((x) => r3(x.opacity)),
         scale: states.map((x) => r3(x.scale)),
         rotation_deg: states.map((x) => r1(x.rotation_deg)),
         reveal: states.map((x) => r3(x.reveal)),
+        ...(fill ? { fill: fillStates.map((x) => r3(x.amount)), heat: fillStates.map((x) => r3(x.heat)) } : {}),
       },
     };
   });
@@ -275,14 +294,19 @@ export function buildOrder(template, layers) {
   return steps;
 }
 
-function shaderInfo(l, blend) {
+function shaderInfo(l, blend, style, params) {
   const sh = shaderFor(l);
   if (!sh) return { shader: null, engine_hints: null };
-  const { from_template: fromTemplate, ...shader } = sh;
-  return { shader, shader_source: fromTemplate ? "template" : "default for this layer type", engine_hints: engineRecipe(l, shader, blend) };
+  const { from_template: fromTemplate, ...base } = sh;
+  const shader = shaderForStyle(base, style.id);
+  const hints = engineRecipe(l, shader, blend);
+  const extra = styleRecipe(style.id, l, params);
+  if (extra.unity.length) hints.unity.push(...extra.unity.map((x) => `${STYLES[style.id].label}: ${x}`));
+  if (extra.godot.length) hints.godot.push(...extra.godot.map((x) => `${STYLES[style.id].label}: ${x}`));
+  return { shader, shader_source: fromTemplate ? (l.shader?.styles?.[style.id] ? `template, with its ${style.id} refinement` : "template") : "default for this layer type", engine_hints: hints };
 }
 
-export function buildManifest({ template, seed, plan, sheets, visible, views, tracks, version = "", frame, bloom = true }) {
+export function buildManifest({ template, seed, plan, sheets, visible, views, tracks, version = "", frame, bloom = true, style = resolveStyle(template) }) {
   const loop = !!template.timing?.loop;
   const ms = (f) => r1(f * plan.frameMs);
   const viewOrder = Object.keys(views);
@@ -324,14 +348,16 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       params: resolveParams(l.params, seed, `${l.id}#0`),
       keyframes: l.keyframes || [],
       empty: !visible[l.id],
-      ...shaderInfo(l, l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" || l.type === "eruption" ? "alpha" : "add")),
+      ...shaderInfo(l, l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" || l.type === "eruption" ? "alpha" : "add"), style, resolveParams(l.params, seed, `${l.id}#0`)),
     };
   });
   const tracksOut = tracks || { screen_flashes: [], camera_shake: [], lights: [], sounds: [] };
-  const decals = buildDecals(template, seed, plan);
+  const decals = buildDecals(template, seed, plan, style);
+  const st = STYLES[style.id];
   return {
     format: FORMAT,
     how_to_use: HOW_TO_USE.join(" "),
+    style: { id: style.id, label: st.label, about: st.about, look: st.look, source: style.from, notes: style.notes, unity: st.unity, godot: st.godot },
     build_order: buildOrder(template, layers),
     generator: `SpellDirector ${version}`.trim(),
     template: { id: template.id, name: template.name, element: template.element, archetype: template.archetype, description: template.description || "" },
@@ -408,6 +434,7 @@ export function guideMarkdown(m, { files } = {}) {
 
   add("## How to use this export (read this first)", "");
   add(...HOW_TO_USE.map((x) => `> ${x}`).flatMap((x) => [x, ">"]).slice(0, -1), "");
+  if (m.style) add(...styleGuideLines({ id: m.style.id, from: m.style.source, notes: m.style.notes }));
   add("## Build it one layer at a time", "");
   add(
     "Don't build the whole spell in one go. Build one layer, check it, then add the next. This works far better for a person and for an AI (Claude, GPT, ...), because each step is small enough to get right and to compare against the reference.",
@@ -449,7 +476,12 @@ export function guideMarkdown(m, { files } = {}) {
   add("## Files", "");
   const fileRows = m.sheets.map((sh) => [`\`${sh.image}\``, sh.id === ALL_ID ? "The whole spell, every layer together" : `Layer \`${sh.id}\``]);
   for (const f of files || []) fileRows.push([`\`${f.name}\``, f.about]);
-  for (const d of m.decals || []) fileRows.push([`\`${d.texture}\``, `Top-down texture of decal \`${d.layer}\` for a decal projector`]);
+  for (const d of m.decals || []) {
+    fileRows.push([`\`${d.texture}\``, `Top-down texture of decal \`${d.layer}\` for a decal projector`]);
+    if (d.height_map) fileRows.push([`\`${d.height_map}\``, `Height map of decal \`${d.layer}\` for parallax (${d.depth < 0 ? "black = ground, white = highest" : "white = ground, black = deepest"})`]);
+    if (d.emissive_mask) fileRows.push([`\`${d.emissive_mask}\``, `Where decal \`${d.layer}\`'s ${d.fill} fill sits (white = fill)`]);
+    if (d.flow_map) fileRows.push([`\`${d.flow_map}\``, `Flow map for decal \`${d.layer}\`'s ${d.fill} (RG = direction, outward from the centre)`]);
+  }
   add(table(["File", "What it is"], fileRows), "");
 
   add("## How the sheets are laid out", "");
@@ -509,7 +541,7 @@ export function guideMarkdown(m, { files } = {}) {
     if (params.length) add(`- Settings for this seed: ${params.map(([k, v]) => `${k} ${typeof v === "number" ? r3(v) : v}`).join(", ")}.`);
     if (l.keyframes?.length) add(`- Keyframes (already baked into the frames): ${l.keyframes.map((k) => `${k.param} → ${k.value} at ${k.t_ms} ms`).join("; ")}.`);
     if (l.shader) {
-      add(`- **Shader intent**${l.shader_source === "template" ? "" : " (a default for this layer type; the template didn't say)"}: ${describeShader(l.shader)}.`);
+      add(`- **Shader intent**${l.shader_source.startsWith("template") ? "" : " (a default for this layer type; the template didn't say)"}: ${describeShader(l.shader)}.`);
       if (l.shader.look) add(`- Look: ${l.shader.look}`);
       if (l.shader.notes) add(`- Notes: ${l.shader.notes}`);
       if (l.engine_hints) {
@@ -545,6 +577,27 @@ export function guideMarkdown(m, { files } = {}) {
       "- **Per target**: a decal marked `per_target` repeats on every chain target, delayed by each hop.",
       "- **Blend**: `alpha` decals paint the ground (scorch darkens it, puddles tint it). `add` decals are light on the ground (glowing cracks, rune circles, warning rings): use emission, not albedo.",
       "",
+    );
+    const deep = m.decals.filter((d) => d.height_map || d.fill !== "none");
+    if (deep.length) {
+      add("### Depth and fills", "");
+      add(table(
+        ["Decal", "Depth", "Fill", "Fill colors", "Maps"],
+        deep.map((d) => [
+          d.layer,
+          d.depth ? `${d.depth < 0 ? "raised" : "carved"} ${Math.abs(d.depth)}` : "flat",
+          d.fill === "none" ? "none" : `${d.fill}: ${DECAL_FILLS[d.fill].about}${d.fill_in_ms ? `; rises over ${d.fill_in_ms} ms` : ""}`,
+          d.fill_colors ? d.fill_colors.join(" → ") : "",
+          [d.height_map, d.emissive_mask, d.flow_map].filter(Boolean).map((x) => `\`${x}\``).join(", "),
+        ]),
+      ), "");
+      add(
+        "- **Depth** makes the mark look cut into the ground (cracks that open up, a crater with a real dent) instead of painted on. Use the height map with parallax occlusion mapping (Unity: Parallax Occlusion Mapping node in a decal Shader Graph; Godot: a ground quad with Heightmap / Deep Parallax) and derive a normal from it so the walls catch the light. The viewer's Realistic style shows the effect.",
+        "- **Fill** is what sits in the bottom of the mark. Multiply the emissive mask by a flowing noise (scroll it along the flow map for lava) and drive it from the `fill` curve (0–1: how far it has risen) and the `heat` curve (1 = fresh, 0 = cooled: lerp lava to a dark crust, fade glow out).",
+        "",
+      );
+    }
+    add(
       "**Unity (URP or HDRP Decal Projector).** URP: add the **Decal** renderer feature to your URP Renderer asset first.",
       "",
       "1. Import the decal PNG with **Alpha Is Transparency** on, **Wrap Mode: Clamp**.",

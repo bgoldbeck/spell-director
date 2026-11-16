@@ -86,8 +86,21 @@ export function decalPlan(template, layer, seed, instance = 0) {
     detail: clamp01(p("detail")),
     arc_deg: arc,
     reveal_ms: Math.max(0, p("reveal_ms")),
+    // Depth and fill (engine/style.js decalLook gives their defaults per style).
+    look: { fill: base.fill, fill_color: base.fill_color, fill_flow: base.fill_flow, fill_in_ms: base.fill_in_ms, depth: base.depth },
     end_ms: start + Math.max(0, lifetime) + Math.max(0, p("fade_ms")),
   };
+}
+
+// How much of a decal's fill has risen (0-1) and how hot it still is (1 =
+// fresh, 0 = cooled to a crust): the fill rises over fill_in_ms from the
+// decal's start and cools while the decal fades out.
+export function decalFillState(plan, t, fillInMs = 200) {
+  const d = t - plan.start_ms;
+  if (d < 0) return { amount: 0, heat: 1 };
+  const amount = fillInMs > 0 ? clamp01(d / fillInMs) : 1;
+  const cool = t > plan.hold_until_ms && plan.fade_out_ms > 0 ? clamp01((t - plan.hold_until_ms) / plan.fade_out_ms) : t > plan.hold_until_ms ? 1 : 0;
+  return { amount, heat: (1 - cool) * (1 - cool) };
 }
 
 // Opacity (0-1), scale (multiplier of the full size), rotation (degrees,
