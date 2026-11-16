@@ -6,6 +6,8 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-16
+
 ### Added
 
 - **Art styles**: every spell can now be drawn **Stylized** (the old look), **Realistic**, **Toon** or **Pixel art** from the new **Style** menu (or `S`, or `?style=`). Realistic gives ground marks real depth (cracks and craters you can see into, lit walls), filmic color and softer bloom; Toon gives flat color bands and ink outlines; Pixel art gives chunky pixels. Exports take a style too: the guide gets whole-effect and per-layer Unity and Godot steps for it (parallax depth decals, flow-mapped lava, lit smoke, cel ramps and outlines, pixel-perfect flipbooks), and the sheets show it.
