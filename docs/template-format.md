@@ -180,7 +180,8 @@ Rules for a clean loop (the validator warns about each):
 - start repeating rings early enough that all `count` of them are rolling when the loop starts, and pick a `repeat_ms` that divides the loop;
 - one-shots must be gone before the loop starts;
 - put the loop's ends on frames (at 30 fps, multiples of 100 ms are safe);
-- avoid decal `fill` in looping marks (its flow doesn't loop) and `flicker` beats across the loop.
+- give spinning rune circles `depth: 0`: in the realistic style a carved mark is lit from a fixed side, so turning it by a symmetry step changes its shading;
+- avoid `flicker` beats across the loop. (A looping mark's `fill` flows forward for half the loop and back for the other half, so it loops too, but slow `fill_flow` reads best.)
 
 Sound cues in the loop beat repeat with it: use `repeat_ms` that divides the loop (sustained cues take `repeat_ms` too) and an `offset_ms` that lines the first one up with a ring or pulse. Exports mark all of this: see [exporting.md](exporting.md#auras-looping).
 

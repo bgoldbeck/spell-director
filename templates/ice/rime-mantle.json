@@ -148,6 +148,7 @@
       "z": 0,
       "params": {
         "shape": "rune_circle",
+        "depth": 0,
         "radius_px": 150,
         "opacity": 0.7,
         "fade_in_ms": 600,

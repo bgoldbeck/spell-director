@@ -1913,7 +1913,15 @@ class DecalLayer extends Layer {
       u.reveal.value = st.reveal;
       u.fillAmt.value = f.amount;
       u.heat.value = f.heat;
-      u.time.value = Math.max(0, t - this.plan.start_ms) / 1000;
+      // In a looping aura the fill's flow runs forward for half the loop and
+      // back for the other half, so it is continuous and repeats each loop.
+      const lp = this.plan.loop;
+      if (lp) {
+        const ph = (((t - lp.start) % lp.len) + lp.len) % lp.len;
+        u.time.value = (lp.len / 2 - Math.abs(ph - lp.len / 2)) / 1000;
+      } else {
+        u.time.value = Math.max(0, t - this.plan.start_ms) / 1000;
+      }
     } else {
       this.material.opacity = st.opacity;
     }

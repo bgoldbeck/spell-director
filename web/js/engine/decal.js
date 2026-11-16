@@ -93,6 +93,7 @@ export function decalPlan(template, layer, seed, instance = 0) {
     stretch: p("stretch"),
     pulse_hz: pulse,
     symmetry,
+    loop,
     detail: clamp01(p("detail")),
     arc_deg: arc,
     reveal_ms: Math.max(0, p("reveal_ms")),
