@@ -113,3 +113,16 @@ def test_release_refuses_existing_release_before_building(monkeypatch):
 def test_exe_name_has_version():
     import build_exe
     assert build_exe.exe_name("0.2.0").startswith("SpellDirector-v0.2.0-")
+
+
+def test_find_gh_looks_in_the_default_windows_folder(tmp_path, monkeypatch):
+    import release
+
+    monkeypatch.setattr(release.shutil, "which", lambda name: None)
+    monkeypatch.setenv("ProgramFiles", str(tmp_path))
+    monkeypatch.delenv("ProgramFiles(x86)", raising=False)
+    monkeypatch.delenv("LOCALAPPDATA", raising=False)
+    assert release.find_gh() is None
+    (tmp_path / "GitHub CLI").mkdir()
+    (tmp_path / "GitHub CLI" / "gh.exe").write_text("")
+    assert release.find_gh() == str(tmp_path / "GitHub CLI" / "gh.exe")
