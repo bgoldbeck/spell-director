@@ -6,6 +6,8 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+## [0.11.2] - 2026-11-17
+
 ### Fixed
 
 - The Windows app keeps your spells and exports in a folder that works for whoever runs it: `SpellDirector Library` next to the exe as before, or `SpellDirector Library` in your own Documents folder when the exe sits somewhere it can't write (such as Program Files or a read-only share). No path from the computer the app was built on is ever used.
