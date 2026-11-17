@@ -6,6 +6,11 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Added
+
+- Three new holy spells in the Light type and the Paladin line: **Sanctified Bolt** (a fast bolt of holy light with a long radiant tail that bursts in a halo on the target), **Radiant Verdict** (a pillar of light called straight down from the sky onto the target after a ring of holy script marks the spot) and **Aegis of Dawn** (a shield made only of holy light, held up in the caster's hand with a bright rim, strong bloom and sunrays; it loops for as long as it is held).
+- Beams anchored in the sky come straight down onto the target, orbs take `squash` (flatten a bubble into a lens-shaped shield) and rings take `steady` (a held rim that doesn't roll out).
+
 ## [0.11.2] - 2026-11-17
 
 ### Fixed

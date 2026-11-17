@@ -1,0 +1,604 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "light-aegis-of-dawn",
+  "name": "Aegis of Dawn",
+  "line": "Paladin",
+  "description": "A shield made only of holy light. It unfolds from the paladin's raised hand: a curved lens of white-gold energy with a bright rim, a turning sigil on its face and a hot glowing heart, wrapped in bloom and throwing sunrays out in every direction. It holds as long as the paladin keeps it raised, then folds back into the hand.",
+  "element": "light",
+  "archetype": "aura",
+  "tags": [
+    "holy",
+    "radiant",
+    "shield",
+    "defensive",
+    "held",
+    "sustained",
+    "loop",
+    "paladin"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A holy shield the character holds: a magical shield made only of holy energy, with strong bloom, glow and sunrays around it. Original."
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1000,
+      "end_ms": 4000
+    }
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.2,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster the shield is a full disc of light with a bright rim and a turning sigil, rays fanning out around its edge.",
+      "side": "The shield is a thin curved lens standing in front of the caster, its rim brightest at the edges, with rays shooting out of it and a big bloom around it.",
+      "top": "A bright curved sliver in front of the caster with light pooled on the ground below it and rays spreading out.",
+      "three_quarter": "Hero view. The lens shape, the sigil face, the bloom and the sunrays all read together."
+    }
+  },
+  "palette": {
+    "core": "#FFFFF4",
+    "primary": "#FFD45C",
+    "secondary": "#FFF2B8",
+    "accent": "#FFE9A0",
+    "shadow": "#4A4030"
+  },
+  "beats": [
+    {
+      "id": "raise",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Light pours out of the raised hand and unfolds into the shield: a flash, the rim snapping out, the face filling with light and the sigil appearing."
+    },
+    {
+      "id": "unfold",
+      "phase": "release",
+      "start_ms": 350,
+      "end_ms": 650,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.4
+      },
+      "intent": "The moment the shield snaps open: a flash and a ring of light bursting out from it."
+    },
+    {
+      "id": "hold",
+      "phase": "release",
+      "start_ms": 1000,
+      "end_ms": 4000,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The shield holds: a steady, breathing glow, the sigil turning on its face, sunrays shooting out all round it and motes drifting off it. Seamless loop."
+    },
+    {
+      "id": "lower",
+      "phase": "dissipation",
+      "start_ms": 4000,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The shield folds back into the hand and the light fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "shield-lens",
+      "type": "orb",
+      "beats": [
+        "raise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 6
+        },
+        {
+          "t_ms": 550,
+          "param": "radius_px",
+          "value": 62,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "radius_px": 62,
+        "bubble": true,
+        "squash": 0.28,
+        "pulse_hz": 1,
+        "wobble": 0,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A curved lens of solid holy light: clear and pale at its centre, burning white-gold toward its rim.",
+        "technique": "procedural",
+        "fresnel": 0.9,
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.6,
+          "contrast": 0.25
+        },
+        "notes": "A flattened sphere or shallow dome mesh facing outward, additive, with a strong fresnel rim and slow scrolling fBm. No physical shield under it: it is all light.",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shield-rim",
+      "type": "ring",
+      "beats": [
+        "raise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster_hand",
+      "plane": "vertical",
+      "color": "core",
+      "z": 12,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "end_radius_px",
+          "value": 6
+        },
+        {
+          "t_ms": 550,
+          "param": "end_radius_px",
+          "value": 62,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "start_radius_px": 6,
+        "end_radius_px": 62,
+        "thickness_px": 6,
+        "softness": 0.5,
+        "steady": true
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A hard white-gold rim around the shield's edge.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "hard"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sigil-ring",
+      "type": "ring",
+      "beats": [
+        "raise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster_hand",
+      "plane": "vertical",
+      "color": "primary",
+      "z": 11,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "end_radius_px",
+          "value": 4
+        },
+        {
+          "t_ms": 550,
+          "param": "end_radius_px",
+          "value": 34,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "start_radius_px": 4,
+        "end_radius_px": 34,
+        "thickness_px": 4,
+        "softness": 0.4,
+        "steady": true
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A ring of holy script on the shield's face, turning slowly.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.5
+        },
+        "notes": "In the engine, put a rune-circle texture on the shield face and spin it a whole number of symmetry steps per loop.",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shield-heart",
+      "type": "orb",
+      "beats": [
+        "raise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "radius_px": 8,
+        "pulse_hz": 1,
+        "wobble": 0.05,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A small sun burning at the centre of the shield.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 7,
+          "falloff": "soft",
+          "core_ratio": 0.5
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bloom",
+      "type": "glow",
+      "beats": [
+        "raise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 95,
+        "softness": 0.95,
+        "pulse_hz": 1
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A big soft bloom of warm light wrapping the shield and the caster.",
+        "technique": "procedural",
+        "notes": "Push the HDR above the bloom threshold in the engine; this layer stands in for that bloom.",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "inner-bloom",
+      "type": "glow",
+      "beats": [
+        "raise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 7,
+      "params": {
+        "radius_px": 40,
+        "softness": 0.85,
+        "pulse_hz": 1
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A tighter white glow over the shield's face.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "sunrays",
+      "type": "sparks",
+      "beats": [
+        "raise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": 60,
+        "speed": 380,
+        "speed_spread": 0.35,
+        "gravity": 0,
+        "lifetime_ms": 480,
+        "size_px": 3.4,
+        "spread_deg": 360,
+        "drag": 0.4,
+        "emit_radius_px": 40,
+        "streak_ms": 220
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Long thin rays of sunlight shooting out from the shield in every direction.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "notes": "In the engine these work best as god rays: a radial-blur light-shaft pass centred on the shield, or a ring of long stretched additive quads that rotate slowly.",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "drift-motes",
+      "type": "sparks",
+      "beats": [
+        "raise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "count": 30,
+        "speed": 40,
+        "speed_spread": 0.6,
+        "gravity": -60,
+        "lifetime_ms": 750,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_radius_px": 60,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Motes of light drifting off the shield's face and floating up.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ground-sigil",
+      "type": "decal",
+      "beats": [
+        "raise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 70,
+        "opacity": 0.45,
+        "fade_in_ms": 500,
+        "grow_ms": 500,
+        "start_scale": 0.5,
+        "spin_deg_per_s": 15,
+        "symmetry": 8,
+        "lifetime_ms": 4000,
+        "fade_ms": 600,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A faint ring of holy script under the caster's feet, lit by the shield and turning slowly.",
+        "technique": "decal",
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.3
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "unfold-flash",
+      "type": "flash",
+      "beats": [
+        "unfold"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 150,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A white flash as the shield snaps open.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "unfold-ring",
+      "type": "ring",
+      "beats": [
+        "unfold"
+      ],
+      "anchor": "caster_hand",
+      "plane": "vertical",
+      "color": "accent",
+      "z": 15,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 170,
+        "thickness_px": 8,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A ring of light bursting out from the shield's rim as it opens.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shield-light",
+      "type": "light",
+      "beats": [
+        "raise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 2.4,
+        "height_px": 70,
+        "forward_px": 40
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Warm light from the shield on the caster and the ground.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "raise-sound",
+      "type": "sound_cue",
+      "beats": [
+        "raise"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.6,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "unfold-sound",
+      "type": "sound_cue",
+      "beats": [
+        "unfold"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.4,
+        "pitch": 1.6
+      }
+    },
+    {
+      "id": "hold-hum",
+      "type": "sound_cue",
+      "beats": [
+        "hold"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.35,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "hold-chime",
+      "type": "sound_cue",
+      "beats": [
+        "hold"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.25,
+        "pitch": 1.4,
+        "repeat_ms": 1500
+      }
+    },
+    {
+      "id": "lower-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lower"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.4,
+        "pitch": 0.85
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Ray directions and mote paths vary per cast. The shield's size and the loop stay fixed."
+  },
+  "director_notes": "An original held holy shield for the Paladin line, built as an aura so it can be held as long as needed: start-up 0-1000 ms, seamless loop 1000-4000 ms, lower after. The shield is pure light: a `bubble` orb at the caster's hand with `squash` 0.28 makes a lens that faces the target, a hard white rim (a `steady` vertical ring), a smaller sigil ring and a little sun at its heart. Strong bloom (a wide glow and a tighter white one), sunrays as long streaking sparks shot out in every direction and motes drifting up. Sound: shimmer as it opens, a bright tap when it snaps open, a soft hum and a slow chime while held."
+}

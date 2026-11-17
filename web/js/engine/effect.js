@@ -1818,6 +1818,12 @@ class RingLayer extends Layer {
       });
       return;
     }
+    // steady: the ring doesn't roll out; it sits at end_radius_px (which
+    // keyframes can grow) at the layer's intensity: a held disc or rim.
+    if (this.base.steady) {
+      this.place(this.mesh, this.material, t, 1, Math.min(1, I));
+      return;
+    }
     const u = Math.min(1, Math.max(0, this.local(t) / Math.max(1, w.end - w.start)));
     this.place(this.mesh, this.material, t, u, Math.min(1, I * (1 - u * 0.7) * 1.3));
   }
@@ -2243,6 +2249,15 @@ class OrbLayer extends Layer {
     this.shell.position.copy(at);
     this.core.scale.set(r * 0.6 * (1 + wob * n.range(-0.3, 0.3)), r * 0.6 * (1 + wob * n.range(-0.3, 0.3)), r * 0.6);
     this.shell.scale.set(r * (1 + wob * n.range(-0.5, 0.5)), r * (1 + wob * n.range(-0.5, 0.5)), r * (1 + wob * n.range(-0.5, 0.5)));
+    // squash (0-1): flatten the orb along the cast direction, so a bubble
+    // becomes a lens-shaped shield facing the target (1 = round).
+    const squash = this.p("squash", t, 1);
+    if (squash < 1) {
+      const k = Math.max(0.05, squash);
+      this.shell.scale.x *= k;
+      this.core.scale.x *= k;
+      this.shell.rotation.y = this.core.rotation.y = -castHeading(this.effect.stage);
+    }
     this.core.visible = !this.bubble;
     this.coreMat.opacity = Math.min(1, I * 1.2);
     // opacity: a fainter orb or bubble (a barely-there dome), default 1.
@@ -2470,6 +2485,9 @@ class BeamLayer extends Layer {
 
   endpoints() {
     const st = this.effect.stage;
+    // A beam anchored in the sky comes straight down onto the target's feet:
+    // a pillar of light called down from above.
+    if (this.def.anchor === "sky") return [[st.sky, st.anchor("target")]];
     // A beam in a spell that isn't a beam spell (a link that holds a target)
     // ends on the target's chest rather than at its feet.
     if (this.effect.template.space?.travel !== "beam" && st.targets.length) return [[st.hand, st.chest(0)]];

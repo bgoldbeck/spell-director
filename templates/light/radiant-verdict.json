@@ -1,0 +1,784 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "light-radiant-verdict",
+  "name": "Radiant Verdict",
+  "line": "Paladin",
+  "description": "The paladin raises a hand to the heavens. A ring of holy script opens on the ground under the target and a point of light gathers high above it; then a pillar of white-gold light slams straight down onto the target, wound with spiralling threads, pours down for a long moment with light rising off the ground, and narrows away to nothing, leaving the sigil glowing.",
+  "element": "light",
+  "archetype": "strike",
+  "tags": [
+    "holy",
+    "radiant",
+    "beam",
+    "from-sky",
+    "sustained",
+    "telegraphed",
+    "paladin"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A holy beam attack that shoots down from the sky onto the target. Original."
+  },
+  "timing": {
+    "duration_ms": 2500,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 4.5,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.9,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A tall bright column drops in front of the camera onto the target, with the sigil a flat ellipse at its foot and motes rising round it.",
+      "side": "The best read of the pillar: a full-height column of light from the top of the frame to the ground, spirals winding down it, a shockwave ring on the ground.",
+      "top": "The pillar collapses to a blinding disc, so the ground carries it: the sigil opening, the shockwave ring and the halo rings pulsing out under the column.",
+      "three_quarter": "Hero view. The light gathering in the sky, the column dropping, the spirals and the sigil all read together."
+    }
+  },
+  "palette": {
+    "core": "#FFFFF4",
+    "primary": "#FFD45C",
+    "secondary": "#FFF2B8",
+    "accent": "#FFE9A0",
+    "shadow": "#4A4030"
+  },
+  "beats": [
+    {
+      "id": "invoke",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.15,
+        "to": 0.9
+      },
+      "intent": "The caster raises a hand; a ring of holy script opens and turns under the target (the telegraph), and a point of light gathers high above it while the scene brightens."
+    },
+    {
+      "id": "descend",
+      "phase": "release",
+      "start_ms": 700,
+      "end_ms": 780,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.9
+      },
+      "intent": "The pillar slams down from the sky in a blink: a white flash, a shockwave ring on the ground, a jolt."
+    },
+    {
+      "id": "judgment",
+      "phase": "impact",
+      "start_ms": 740,
+      "end_ms": 1750,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.85,
+        "to": 1.0,
+        "flicker_hz": 5
+      },
+      "intent": "The column pours down onto the target, steady and radiant, three threads of light spiralling down it, halo rings pulsing out over the ground and motes rising inside it."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1700,
+      "end_ms": 2500,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The column narrows to a thread and goes out from the top down; motes keep rising and the sigil fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "verdict-sigil",
+      "type": "decal",
+      "beats": [
+        "invoke",
+        "descend",
+        "judgment",
+        "fade"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 95,
+        "opacity": 0.85,
+        "fade_in_ms": 300,
+        "grow_ms": 550,
+        "start_scale": 0.3,
+        "spin_deg_per_s": 35,
+        "symmetry": 8,
+        "lifetime_ms": 1900,
+        "fade_ms": 550,
+        "detail": 0.85
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A ring of golden holy script opening and turning under the target: the warning before the strike, and the foot of the pillar after.",
+        "technique": "decal",
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.5
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sky-light",
+      "type": "orb",
+      "beats": [
+        "invoke",
+        "descend",
+        "judgment"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 4
+        },
+        {
+          "t_ms": 700,
+          "param": "radius_px",
+          "value": 26,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "radius_px": 26,
+        "pulse_hz": 4,
+        "wobble": 0.06,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A point of light swelling high in the sky, as if the clouds were opening.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "soft",
+          "core_ratio": 0.4
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sky-glow",
+      "type": "glow",
+      "beats": [
+        "invoke",
+        "descend",
+        "judgment"
+      ],
+      "attach_to": "sky-light",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 110,
+        "softness": 0.95,
+        "pulse_hz": 4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A broad halo of light around the opening in the sky.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "invoke",
+        "descend"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Light gathering in the caster's raised hand.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "inflow-ring",
+      "type": "ring",
+      "beats": [
+        "invoke"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 200,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.9,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft ring of light closing in on the target as the strike is called.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "inward",
+          "speed": 1.5
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "sky-brighten",
+      "type": "flash",
+      "beats": [
+        "invoke"
+      ],
+      "anchor": "screen",
+      "color": "accent",
+      "z": 0,
+      "params": {
+        "scope": "screen",
+        "peak": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The scene brightens as the heavens open.",
+        "technique": "procedural",
+        "notes": "A post-process exposure lift, not a sprite.",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pillar",
+      "type": "beam",
+      "beats": [
+        "descend",
+        "judgment",
+        "fade"
+      ],
+      "anchor": "sky",
+      "plane": "volume",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "keyframes": [
+        {
+          "t_ms": 1700,
+          "param": "width_px",
+          "value": 64
+        },
+        {
+          "t_ms": 2050,
+          "param": "width_px",
+          "value": 0,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "width_px": {
+          "min": 62,
+          "max": 66
+        },
+        "wobble": 0.05,
+        "wobble_hz": 3,
+        "jaggedness": 0.02,
+        "regen_ms": 90,
+        "grow_ms": 70,
+        "spiral_count": 3,
+        "spiral_pitch_px": 170,
+        "spiral_speed": -1.4,
+        "spiral_radius": 0.7,
+        "spiral_width_px": 2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A column of holy light falling from the sky: a white-hot heart in a golden sheath with soft glowing edges and three thin threads of light spiralling down it.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 3,
+          "contrast": 0.3
+        },
+        "flow": {
+          "direction": "downward",
+          "speed": 5
+        },
+        "fresnel": 0.4,
+        "notes": "A vertical cylinder (or camera-facing quad) with a soft radial falloff and fBm scrolling downward; the spirals are thin trails orbiting the axis. Bloom does most of the work.",
+        "emissive": {
+          "hdr": 7,
+          "falloff": "gaussian",
+          "core_ratio": 0.35
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "pillar-glow",
+      "type": "glow",
+      "beats": [
+        "judgment"
+      ],
+      "attach_to": "pillar",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "radius_px": 60,
+        "softness": 0.95
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Golden light hanging around the column.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "descend-flash",
+      "type": "flash",
+      "beats": [
+        "descend"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 17,
+      "params": {
+        "scope": "screen",
+        "peak": {
+          "min": 0.5,
+          "max": 0.6
+        }
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A white screen flash as the pillar lands.",
+        "technique": "procedural",
+        "notes": "A post-process flash.",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "impact-flash",
+      "type": "flash",
+      "beats": [
+        "descend",
+        "judgment"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 16,
+      "keyframes": [
+        {
+          "t_ms": 700,
+          "param": "peak",
+          "value": 0.95
+        },
+        {
+          "t_ms": 950,
+          "param": "peak",
+          "value": 0.5,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "scope": "local",
+        "radius_px": 140,
+        "peak": 0.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Blinding light where the pillar meets the ground.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 7,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "descend",
+        "judgment"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "core",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 260,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A wide ring of light blasting out across the ground as the pillar lands.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "distortion": 0.3,
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "halo-rings",
+      "type": "ring",
+      "beats": [
+        "judgment"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 150,
+        "thickness_px": 7,
+        "softness": 0.6,
+        "repeat_ms": 330,
+        "count": 2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Rings of light pulsing out from the foot of the pillar while it pours down.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "column-motes",
+      "type": "sparks",
+      "beats": [
+        "judgment",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 60,
+          "max": 70
+        },
+        "speed": 120,
+        "speed_spread": 0.5,
+        "gravity": -260,
+        "lifetime_ms": 800,
+        "size_px": 2.6,
+        "spread_deg": 30,
+        "drag": 0.3,
+        "emit_ms": 1100,
+        "emit_radius_px": 45,
+        "streak_ms": 60,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Motes of light streaming up inside the column like dust in a sunbeam.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-motes",
+      "type": "sparks",
+      "beats": [
+        "descend"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 15,
+      "params": {
+        "count": {
+          "min": 36,
+          "max": 44
+        },
+        "speed": 360,
+        "speed_spread": 0.5,
+        "gravity": 200,
+        "lifetime_ms": 550,
+        "size_px": 2.6,
+        "spread_deg": 200,
+        "drag": 0.5,
+        "emit_ms": 60,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Light splashing off the ground where the pillar lands.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "light-mark",
+      "type": "decal",
+      "beats": [
+        "descend",
+        "judgment",
+        "fade"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 56,
+          "max": 62
+        },
+        "opacity": 0.8,
+        "fade_in_ms": 60,
+        "grow_ms": 200,
+        "start_scale": 0.5,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A pool of light soaked into the ground at the pillar's foot.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 0.3,
+          "contrast": 0.4
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "descend"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 6,
+          "max": 8
+        },
+        "frequency_hz": 24,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "hum-shake",
+      "type": "camera_shake",
+      "beats": [
+        "judgment"
+      ],
+      "params": {
+        "amplitude_px": 1.5,
+        "frequency_hz": 18,
+        "decay": 0.2
+      }
+    },
+    {
+      "id": "pillar-light",
+      "type": "light",
+      "beats": [
+        "invoke",
+        "descend",
+        "judgment",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 3.2,
+        "height_px": 180
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Strong warm light from above flooding the target and the ground around it.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "invoke-sound",
+      "type": "sound_cue",
+      "beats": [
+        "invoke"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.6,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "invoke"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.35,
+        "pitch": 0.7,
+        "offset_ms": 200
+      }
+    },
+    {
+      "id": "descend-sound",
+      "type": "sound_cue",
+      "beats": [
+        "descend"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.85,
+        "pitch": {
+          "min": 1.1,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "pillar-sound",
+      "type": "sound_cue",
+      "beats": [
+        "judgment"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.6,
+        "pitch": 1.15
+      }
+    },
+    {
+      "id": "choir-sound",
+      "type": "sound_cue",
+      "beats": [
+        "judgment"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.4,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "tail-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.35,
+        "pitch": 1.3
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The sigil's script, the spiral phase, the mote paths and the shake vary per cast. The 0.7 s telegraph and the landing frame stay fixed so players can learn to step out of the circle."
+  },
+  "director_notes": "An original holy pillar for the Paladin line, called down from the sky. Built like Sky Strike (origin sky, travel instant) but with a sustained beam: a beam layer anchored at `sky` runs straight down onto the target's feet. Choices: (1) a readable 0.7 s telegraph: a ring of holy script opens under the target and a point of light swells in the sky, so the strike can be dodged; (2) the landing is sudden (grow 70 ms) with a screen flash, a wide shockwave and a jolt; (3) the column then pours down for a second, steady rather than crackling, with three threads spiralling down it, halo rings pulsing and motes rising inside it like dust in a sunbeam; (4) it narrows to nothing rather than cutting off. Pure white-gold palette, no scorch. Sound: shimmer and a low charge, a bright boom, a hum and a choral shimmer, a shimmer tail."
+}

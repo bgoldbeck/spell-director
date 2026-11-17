@@ -35,7 +35,7 @@ KNOWN_PARAMS = {
     "orb": {
         "radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease", "look", "height_px", "bubble",
         "approach_deg", "approach_yaw_deg", "smoke_trail_ms", "smoke_opacity", "crescent_deg", "tilt_deg",
-        "side_offset_px", "scatter_px", "opacity",
+        "side_offset_px", "scatter_px", "opacity", "squash",
     },
     "beam": {
         "width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms", "style", "flow_speed", "turbulence",
@@ -51,7 +51,7 @@ KNOWN_PARAMS = {
         "width_px", "height_px", "travel_ms", "crash_ms", "curl", "flow_speed", "turbulence", "foam",
         "shed_count", "shed_speed", "shed_size_px", "shed_life_ms",
     },
-    "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness", "arc_deg", "ease", "repeat_ms", "count"},
+    "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness", "arc_deg", "ease", "repeat_ms", "count", "steady"},
     "eruption": {
         "shape", "arc_deg", "rows", "start_radius_px", "end_radius_px", "row_delay_ms", "delay_growth", "growth",
         "height_px", "width_px", "spacing_px", "tilt_deg", "jitter", "rise_ms", "hold_ms", "sink_ms", "debris_count",
