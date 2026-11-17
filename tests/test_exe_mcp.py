@@ -173,3 +173,30 @@ def test_export_job_round_trip():
         serve.drop_export_job(token)
         server.shutdown()
         server.server_close()
+
+
+def test_frozen_library_falls_back_to_documents_when_exe_folder_is_read_only(tmp_path, monkeypatch):
+    monkeypatch.delenv(app_paths.LIBRARY_ENV, raising=False)
+    monkeypatch.setattr(app_paths, "FROZEN", True)
+    exe_dir, docs = tmp_path / "Program Files" / "SpellDirector", tmp_path / "someone" / "Documents"
+    monkeypatch.setattr(sys, "executable", str(exe_dir / "SpellDirector.exe"))
+    monkeypatch.setattr(app_paths, "documents_dir", lambda: docs)
+    monkeypatch.setattr(app_paths, "_WRITABLE", {(exe_dir.resolve() / "SpellDirector Library"): False})
+    assert app_paths.library_root() == docs / "SpellDirector Library"
+
+
+def test_writable_creates_the_folder_and_reports_failures(tmp_path, monkeypatch):
+    monkeypatch.setattr(app_paths, "_WRITABLE", {})
+    assert app_paths._writable(tmp_path / "lib") and (tmp_path / "lib").is_dir()
+    assert list((tmp_path / "lib").iterdir()) == []  # the probe file is cleaned up
+    blocker = tmp_path / "file"
+    blocker.write_text("x")
+    assert not app_paths._writable(blocker / "lib")  # can't make a folder under a file
+
+
+def test_documents_dir_belongs_to_whoever_runs_it(tmp_path, monkeypatch):
+    monkeypatch.setattr(app_paths.sys, "platform", "linux")
+    monkeypatch.setattr(app_paths.Path, "home", classmethod(lambda cls: tmp_path))
+    assert app_paths.documents_dir() == tmp_path
+    (tmp_path / "Documents").mkdir()
+    assert app_paths.documents_dir() == tmp_path / "Documents"

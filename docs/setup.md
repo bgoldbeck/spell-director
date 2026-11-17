@@ -14,7 +14,7 @@ The ChatGPT **website** (and ordinary ChatGPT chats) can't run programs on your 
 
 ## Five steps
 
-1. **Put the app in its own folder.** Make a folder such as `Documents\SpellDirector` and move the downloaded `.exe` into it. The spells you make are saved in a `SpellDirector Library` folder that appears next to it.
+1. **Put the app in its own folder.** Make a folder such as `Documents\SpellDirector` and move the downloaded `.exe` into it. The spells you make are saved in a `SpellDirector Library` folder that appears next to it. (If that folder can't be written, for example under `Program Files`, it goes in your `Documents` instead. The black window prints which one, after "Your library:".) Exports you download from the viewer go wherever your browser saves downloads.
 2. **Double-click the app.** If Windows says *"Windows protected your PC"*, click **More info**, then **Run anyway** (the app isn't signed with a paid certificate). A black window opens, then the viewer opens in your browser. Keep the black window open while you use the viewer; closing it stops the viewer.
 3. **Connect your AI app.** In the viewer, click **? Help**. Under *Connect your AI*, click **Connect** next to Claude Desktop (or Claude Code, or Codex). It adds SpellDirector to that app's settings for you and keeps anything else that was there.
 4. **Restart the AI app.** For Claude Desktop, quitting the window isn't enough: right-click the Claude icon in the taskbar's system tray (by the clock) and choose **Quit**, then open Claude again. For Codex, restart the ChatGPT desktop app. For Claude Code, start a new session.

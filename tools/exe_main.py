@@ -9,7 +9,8 @@
                                        and Codex on this computer (tools/client_setup.py)
 
 Without --library, the user's files go to a "SpellDirector Library" folder next
-to the exe (tools/app_paths.py). The viewer, started either way, shows those
+to the exe, or in the user's Documents if that folder can't be written
+(tools/app_paths.py). The viewer, started either way, shows those
 templates next to the built-in ones.
 """
 
@@ -72,7 +73,8 @@ def run_mcp(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(prog="SpellDirector", description="Run the SpellDirector MCP server on stdio.")
     ap.add_argument("--mcp", action="store_true", required=True, help="run the MCP server (this mode)")
     ap.add_argument("--library", help='folder for saved templates, exports and breakdowns '
-                                      '(default: "SpellDirector Library" next to the exe)')
+                                      '(default: "SpellDirector Library" next to the exe, '
+                                      'or in Documents if that is read-only)')
     ap.add_argument("--no-viewer", action="store_true",
                     help="don't start the viewer in the background for the preview links")
     with contextlib.redirect_stdout(sys.stderr):  # --help and errors must not hit the MCP channel
