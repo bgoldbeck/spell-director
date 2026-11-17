@@ -54,6 +54,7 @@ function fill(info) {
     for (const el of document.querySelectorAll(sel)) el.textContent = text;
   }
   for (const el of document.querySelectorAll(".fill-library")) el.textContent = info.library;
+  for (const el of document.querySelectorAll(".paths-local")) el.hidden = false;
 }
 
 function renderClients(info) {
