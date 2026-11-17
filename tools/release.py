@@ -49,11 +49,26 @@ def build_release(version: str, changelog: str, target: str = "main") -> dict:
             "body": notes, "draft": False, "prerelease": False}
 
 
+def find_gh() -> str | None:
+    """The GitHub CLI: on PATH, or in its default Windows install folder (the
+    installer adds it to PATH only for new windows and apps)."""
+    found = shutil.which("gh")
+    if found:
+        return found
+    for base in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)"), os.environ.get("LOCALAPPDATA")):
+        if base:
+            for sub in ("GitHub CLI", "Programs/GitHub CLI"):
+                exe = Path(base) / sub / "gh.exe"
+                if exe.is_file():
+                    return str(exe)
+    return None
+
+
 def find_token() -> str | None:
     for name in ("GH_TOKEN", "GITHUB_TOKEN"):
         if os.environ.get(name):
             return os.environ[name].strip()
-    gh = shutil.which("gh")
+    gh = find_gh()
     if gh:
         out = subprocess.run([gh, "auth", "token"], capture_output=True, text=True)
         if out.returncode == 0 and out.stdout.strip():
