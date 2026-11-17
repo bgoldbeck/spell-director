@@ -71,7 +71,7 @@ Claude Code picks it up from [`.mcp.json`](.mcp.json) when opened in this repo. 
 }
 ```
 
-(Claude Code: `claude mcp add --scope user spelldirector -- "C:\path\to\SpellDirector-vX.Y.Z-windows.exe" --mcp`.) In this mode the saved templates, exports and breakdowns go to a `SpellDirector Library` folder next to the exe (or `--library <folder>`), the viewer shows them next to the built-in templates, and the exe also serves the viewer in the background so the preview links work. Sprite export uses an installed Edge or Chrome instead of Playwright.
+(Claude Code: `claude mcp add --scope user spelldirector -- "C:\path\to\SpellDirector-vX.Y.Z-windows.exe" --mcp`.) In this mode the saved templates, exports and breakdowns go to a `SpellDirector Library` folder next to the exe (or in your Documents if the exe sits somewhere read-only, or `--library <folder>`), the viewer shows them next to the built-in templates, and the exe also serves the viewer in the background so the preview links work. Sprite export uses an installed Edge or Chrome instead of Playwright.
 
 | Tools | Resources | Prompts |
 |---|---|---|
