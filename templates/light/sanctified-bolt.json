@@ -1,0 +1,634 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "light-sanctified-bolt",
+  "name": "Sanctified Bolt",
+  "line": "Paladin",
+  "description": "The paladin pulls a point of holy light into an open hand, a small sigil flaring under their feet, then hurls it: a white-gold bolt with a long radiant tail streaks to the target and bursts in a cross of light, a halo ring and a fountain of golden motes, leaving a glowing sigil branded on the ground.",
+  "element": "light",
+  "archetype": "projectile",
+  "tags": [
+    "holy",
+    "radiant",
+    "projectile",
+    "fast",
+    "single-target",
+    "paladin"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A holy bolt attack: a fast projectile of holy light. Original."
+  },
+  "timing": {
+    "duration_ms": 1400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 4,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From over the caster's shoulder the light swells in the hand, then the bolt shoots away down the middle of the frame and blooms as a starburst on the target.",
+      "side": "The clearest read of the flight: a bright head with a long golden tail crossing the frame in a shallow arc, then a halo ring standing up at the target and motes rising.",
+      "top": "A small sigil flares under the caster, the bolt draws a straight bright line to the target, and a ring of light spreads over a glowing branded sigil.",
+      "three_quarter": "Hero view. The gather, the streaking tail and the starburst all read, and the branded sigil sits as an ellipse under the target."
+    }
+  },
+  "palette": {
+    "core": "#FFFFF4",
+    "primary": "#FFD45C",
+    "secondary": "#FFF2B8",
+    "accent": "#FFE9A0",
+    "shadow": "#4A4030"
+  },
+  "beats": [
+    {
+      "id": "invoke",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 340,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 0.9
+      },
+      "intent": "Light is drawn into the open hand: motes spiral in, a small sigil flares underfoot and the hand glows white-gold. Short and crisp."
+    },
+    {
+      "id": "loose",
+      "phase": "release",
+      "start_ms": 340,
+      "end_ms": 390,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "A bright flash at the hand as the bolt is thrown."
+    },
+    {
+      "id": "flight",
+      "phase": "travel",
+      "start_ms": 370,
+      "end_ms": 680,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.9,
+        "to": 1.0,
+        "flicker_hz": 8
+      },
+      "intent": "A white-hot head with a long, tapering golden tail streaks to the target in a slight arc."
+    },
+    {
+      "id": "smite",
+      "phase": "impact",
+      "start_ms": 680,
+      "end_ms": 860,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "Holy light bursts on the target: a starburst flash, a halo ring standing up around it, a ring across the ground and golden motes thrown out."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 820,
+      "end_ms": 1400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "Motes float up off the target and the branded sigil turns slowly and fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-sigil",
+      "type": "decal",
+      "beats": [
+        "invoke",
+        "loose",
+        "flight"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 40,
+        "opacity": 0.7,
+        "fade_in_ms": 120,
+        "grow_ms": 250,
+        "start_scale": 0.4,
+        "spin_deg_per_s": 90,
+        "symmetry": 4,
+        "fade_ms": 300,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A small holy sigil flaring under the caster's feet as the light is called.",
+        "technique": "decal",
+        "flow": {
+          "direction": "swirl",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "gather-motes",
+      "type": "sparks",
+      "beats": [
+        "invoke"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 30,
+          "max": 36
+        },
+        "speed": 0,
+        "lifetime_ms": 300,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "emit_ms": 280,
+        "streak_ms": 30,
+        "gather_px": 80,
+        "swirl": 0.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Motes of white-gold light spiralling into the open hand.",
+        "technique": "particles",
+        "flow": {
+          "direction": "inward",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "bolt",
+      "type": "orb",
+      "beats": [
+        "invoke",
+        "loose",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 3
+        },
+        {
+          "t_ms": 340,
+          "param": "radius_px",
+          "value": 9,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "radius_px": 9,
+        "pulse_hz": 7,
+        "wobble": 0.08,
+        "crackle_count": 0,
+        "trail_ms": 200,
+        "arc_height_px": {
+          "min": 14,
+          "max": 24
+        }
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A white-hot spark of holy light in a golden shell, dragging a long tapering tail of radiance.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.3
+        },
+        "fresnel": 0.5,
+        "notes": "Head: a soft sphere sprite; tail: a camera-facing ribbon that fades from white to gold to nothing along its length.",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "soft",
+          "core_ratio": 0.5
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bolt-glow",
+      "type": "glow",
+      "beats": [
+        "invoke",
+        "loose",
+        "flight"
+      ],
+      "attach_to": "bolt",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 34,
+        "softness": 0.9,
+        "pulse_hz": 7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A wide warm bloom around the bolt's head.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "loose-flash",
+      "type": "flash",
+      "beats": [
+        "loose"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 70,
+        "peak": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A white flash at the hand as the bolt is thrown.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "smite-flash",
+      "type": "flash",
+      "beats": [
+        "smite"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 110,
+        "peak": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A white starburst swallowing the target as the bolt breaks on it.",
+        "technique": "procedural",
+        "notes": "A four- or eight-pointed star sprite reads as holy; scale it up fast and fade it.",
+        "emissive": {
+          "hdr": 7,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "halo-ring",
+      "type": "ring",
+      "beats": [
+        "smite"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "start_radius_px": 12,
+        "end_radius_px": 95,
+        "thickness_px": 7,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A halo of light standing up around the target and spreading out.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ground-ring",
+      "type": "ring",
+      "beats": [
+        "smite"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 110,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A ring of light running out across the ground from the target.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "smite-motes",
+      "type": "sparks",
+      "beats": [
+        "smite"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 15,
+      "params": {
+        "count": {
+          "min": 28,
+          "max": 36
+        },
+        "speed": 260,
+        "speed_spread": 0.5,
+        "gravity": -80,
+        "lifetime_ms": 500,
+        "size_px": 2.6,
+        "spread_deg": 220,
+        "drag": 0.6,
+        "emit_ms": 80,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Golden motes thrown off the target where the bolt breaks.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "rising-motes",
+      "type": "sparks",
+      "beats": [
+        "smite",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "count": {
+          "min": 22,
+          "max": 28
+        },
+        "speed": 50,
+        "speed_spread": 0.6,
+        "gravity": -150,
+        "lifetime_ms": 650,
+        "size_px": 2.1,
+        "spread_deg": 70,
+        "drag": 0.5,
+        "emit_ms": 500,
+        "emit_radius_px": 30,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A slow drift of light motes rising off the target.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "brand-sigil",
+      "type": "decal",
+      "beats": [
+        "smite",
+        "fade"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": {
+          "min": 46,
+          "max": 52
+        },
+        "opacity": 0.8,
+        "fade_in_ms": 60,
+        "grow_ms": 180,
+        "start_scale": 0.5,
+        "spin_deg_per_s": -40,
+        "symmetry": 4,
+        "lifetime_ms": 250,
+        "fade_ms": 450,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A holy sigil branded in light on the ground under the target, turning slowly as it fades.",
+        "technique": "decal",
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "smite"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 2,
+          "max": 3
+        },
+        "frequency_hz": 22,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "bolt-light",
+      "type": "light",
+      "beats": [
+        "invoke",
+        "loose",
+        "flight",
+        "smite",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 2.2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Warm holy light flaring on the target.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "invoke"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.5,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "loose-sound",
+      "type": "sound_cue",
+      "beats": [
+        "loose"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.6,
+        "pitch": {
+          "min": 1.15,
+          "max": 1.3
+        }
+      }
+    },
+    {
+      "id": "flight-sound",
+      "type": "sound_cue",
+      "beats": [
+        "flight"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.35,
+        "pitch": 1.5
+      }
+    },
+    {
+      "id": "smite-sound",
+      "type": "sound_cue",
+      "beats": [
+        "smite"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.7,
+        "pitch": {
+          "min": 1.05,
+          "max": 1.2
+        }
+      }
+    },
+    {
+      "id": "tail-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.35,
+        "pitch": 1.5
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The arc height, the mote paths and the sigil's texture vary per cast. The 0.34 s wind-up and 0.31 s flight stay fixed so the hit lands on the same frame every time."
+  },
+  "director_notes": "An original holy bolt for the Paladin line: quick and clean rather than heavy. The wind-up is short (motes spiral into the hand, a small sigil underfoot). The bolt is an energy orb with a long trail so it reads as a streak of light from every view. The impact is radiant, not explosive: a starburst flash, a halo ring standing up around the target (billboard ring) plus one across the ground, motes thrown out and rising, and a sigil branded in light that turns and fades. No scorch: holy light purifies rather than burns. Sound: a shimmer, a high whoosh, a light hum in flight and a bright impact with a shimmer tail."
+}
