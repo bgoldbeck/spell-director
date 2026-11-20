@@ -126,7 +126,7 @@ export function buildDecals(template, seed, plan, style = resolveStyle(template)
       texture_px: DECAL_TEXTURE_PX,
       color: colorHexes(template, l.color)[0],
       anchor: l.anchor || "target",
-      per_target: chain && (l.anchor || "target") === "target",
+      per_target: (chain && (l.anchor || "target") === "target") || l.anchor === "splash",
       // The texture's full width on the ground at scale 1, in world units (1 = one character height).
       size_units: r3((d.radius_px * 2.2) / 100),
       stretch: r3(d.stretch),
@@ -676,7 +676,7 @@ export function guideMarkdown(m, { files } = {}) {
       "- **Timing**: it fades in from its start, stays until *full until*, then fades out. A mark that outlives the spell is meant to stay on the ground: keep the projector alive until its end time. `pulse_hz` (warning rings) makes its opacity throb.",
       "- **Curves** in the JSON (`decals[].curves`) give opacity (0–1), scale (× full size) and rotation (degrees) for every spell frame, already including fades, growth, spin and pulse. Read them, or rebuild them from the timing fields.",
       "- **Arc and reveal**: a decal with `arc_deg` under 360 is only the sector facing the cast direction (already cut out in the texture). One with `reveal_ms` spreads out from its centre, like cracks running across the ground: the `reveal` curve (0–1) is how far out it has spread, as a fraction of the texture's half-width. In a shader, hide pixels whose distance from the texture centre (0 at the centre, 1 at the edge's midpoint) is beyond `reveal`, with a soft edge.",
-      "- **Per target**: a decal marked `per_target` repeats on every chain target, delayed by each hop.",
+      "- **Per target**: a decal marked `per_target` repeats on every chain target, delayed by each hop, or (anchor `splash`) on every enemy around the primary target, delayed as the splash ripples out.",
       "- **Blend**: `alpha` decals paint the ground (scorch darkens it, puddles tint it). `add` decals are light on the ground (glowing cracks, rune circles, warning rings): use emission, not albedo.",
       "",
     );

@@ -3,6 +3,7 @@
 
 import * as THREE from "three";
 import { resolveValue, rng, seedFor } from "./timeline.js";
+import { isSplash, splashLayout } from "./splash.js";
 
 export const PX = 0.01; // template pixel sizes -> world units
 
@@ -15,7 +16,19 @@ export function buildStage(template, seed) {
   const scale = resolveValue(space.scale, seed, "space.scale") ?? 1;
 
   let targets = [];
-  if (space.travel === "chain" || space.destination === "targets") {
+  // Splash: one primary target picked by the caster, and more enemies
+  // standing around it (engine/splash.js). targets[0] is the primary; the
+  // rest are its splash targets (anchor "splash").
+  const splash = isSplash(space);
+  let splashOrder = [];
+  let splashDelays = [];
+  if (splash) {
+    const lay = splashLayout(space, seed);
+    targets.push(new THREE.Vector3(lay.primary.x, 0, lay.primary.z));
+    splashOrder = lay.others.map((p) => new THREE.Vector3(p.x, 0, p.z));
+    targets.push(...splashOrder);
+    splashDelays = lay.delays;
+  } else if (space.travel === "chain" || space.destination === "targets") {
     const t = space.targets || {};
     const count = Math.round(resolveValue(t.count, seed, "targets.count") ?? 3);
     const angle = resolveValue(fp.angle_deg, seed, "footprint.angle") ?? 60;
@@ -35,7 +48,7 @@ export function buildStage(template, seed) {
   const primaryTarget = targets[0] || point.clone().setY(0);
   const sky = primaryTarget.clone().setY(Math.max(3, scale));
   const hop = space.targets?.hop_delay_ms;
-
+  const splashRadius = splash ? splashOrder.reduce((m, p) => Math.max(m, p.distanceTo(targets[0])), 0) : 0;
   // Spells centred on the caster (a quake around them) frame the caster.
   const aroundCaster = space.destination === "caster";
   const far = aroundCaster ? 0 : targets.reduce((m, p) => Math.max(m, p.length()), point.x);
@@ -44,7 +57,9 @@ export function buildStage(template, seed) {
   const arcAngle = fp.shape === "arc" ? Math.min(180, resolveValue(fp.angle_deg, seed, "footprint.angle") ?? 90) : 0;
   const arcHalfWidth = arcAngle ? length * Math.sin(THREE.MathUtils.degToRad(arcAngle / 2)) + 0.7 : 0;
   const aroundRadius = aroundCaster ? (resolveValue(fp.radius ?? fp.length, seed, "footprint.radius") ?? 3) + 0.8 : 0;
-  const radius = Math.max(2.2, far / 2 + 1.2, space.origin === "sky" ? sky.y / 1.6 : 0, arcHalfWidth, aroundRadius);
+  // A splash spreads sideways round the primary target: frame its width too.
+  const splashHalfWidth = splash ? targets.reduce((m, p) => Math.max(m, Math.abs(p.z)), 0) + 1 : 0;
+  const radius = Math.max(2.2, far / 2 + 1.2, space.origin === "sky" ? sky.y / 1.6 : 0, arcHalfWidth, aroundRadius, splashHalfWidth);
 
   return {
     caster,
@@ -54,6 +69,23 @@ export function buildStage(template, seed) {
     sky,
     scale,
     hopDelay: (k) => k * (resolveValue(hop, seed, "hop", k) ?? 80),
+    splash,
+    splashFromSky: splash && space.origin === "sky",
+    splashTargets: splashOrder,
+    splashRadius,
+    splashDelay: (k) => splashDelays[k] ?? 0,
+    // Where a splash layer (instance k) comes from: the primary target, the
+    // splash target before it (the primary for the first; with wrap, the
+    // last), or the sky above it.
+    splashFrom(k, from = "primary", wrap = false, height = 0.55) {
+      const n = splashOrder.length;
+      if (from === "sky") return (splashOrder[k] || targets[0]).clone().setY(Math.max(3, scale));
+      if (from === "previous") {
+        const prev = k > 0 ? splashOrder[k - 1] : wrap && n > 1 ? splashOrder[n - 1] : targets[0];
+        return prev.clone().setY(height);
+      }
+      return targets[0].clone().setY(height);
+    },
     center,
     radius,
     showPointMarker: space.destination === "point",
@@ -67,7 +99,9 @@ export function buildStage(template, seed) {
           return sky.clone();
         case "ground":
         case "target":
-          return (targets[k] || primaryTarget).clone();
+          return (splash ? primaryTarget : targets[k] || primaryTarget).clone();
+        case "splash":
+          return (splashOrder[k] || primaryTarget).clone();
         case "point":
           return space.travel === "beam" ? point.clone() : (targets[k] || point).clone();
         default:
@@ -78,6 +112,10 @@ export function buildStage(template, seed) {
     chest(k = 0) {
       return (targets[k] || primaryTarget).clone().setY(0.55);
     },
+    // Chest height on splash target k.
+    splashChest(k = 0) {
+      return (splashOrder[k] || primaryTarget).clone().setY(0.55);
+    },
   };
 }
 
@@ -85,7 +123,8 @@ export function buildStage(template, seed) {
 export function viewCamera(view, stage, aspect) {
   const c = stage.center.clone();
   const tall = Math.min(stage.sky.y, 6);
-  const strike = tall > 2.5 && stage.targets.length <= 1;
+  // Sky strikes frame their height too; so do splash spells dropped from the sky.
+  const strike = tall > 2.5 && (stage.targets.length <= 1 || stage.splashFromSky);
   // Frame the whole effect: its width (caster to furthest target) and, for
   // sky strikes, its height.
   const halfH = Math.max(stage.radius * 0.62, strike ? tall * 0.62 : 1.3);

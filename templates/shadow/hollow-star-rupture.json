@@ -1,0 +1,743 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "shadow-hollow-star-rupture",
+  "name": "Hollow Star Rupture",
+  "description": "A black star flies to the chosen enemy and tears a rift open under it. The rift drags at everyone around it, ripping wisps off each enemy, and then it collapses and ruptures outward in a violet shockwave that strikes them all.",
+  "element": "shadow",
+  "archetype": "projectile",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "void",
+    "rift",
+    "pull",
+    "implode",
+    "shockwave"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2700,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 70
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The star flies off; wisps stream in from every enemy toward the rift, then the shockwave rolls back out.",
+      "side": "The pull is a stream of wisps at chest height converging on the target; the rupture is flat and wide.",
+      "top": "Hero for the pull: rings closing in, wisps converging on the centre from each enemy, then the outward rupture ring.",
+      "three_quarter": "Hero view. The rift's glowing cracks, the inward drag and the outward burst."
+    }
+  },
+  "palette": {
+    "core": "#F3E6FF",
+    "primary": "#9B4DFF",
+    "secondary": "#3B0F7A",
+    "accent": "#E055FF",
+    "shadow": "#0A0612"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Wisp paths, rift cracks and the enemy layout change per cast."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 450,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "Darkness folds in round the caster's hand."
+    },
+    {
+      "id": "flight",
+      "phase": "travel",
+      "start_ms": 450,
+      "end_ms": 800,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "A black star with a violet rim flies to the target."
+    },
+    {
+      "id": "open",
+      "phase": "impact",
+      "start_ms": 800,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "The star tears open a rift under the target."
+    },
+    {
+      "id": "pull",
+      "phase": "anticipation",
+      "start_ms": 800,
+      "end_ms": 1400,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.4,
+        "to": 1.0
+      },
+      "intent": "The rift drags at everyone nearby: wisps are torn off each enemy and sucked in."
+    },
+    {
+      "id": "rupture",
+      "phase": "impact",
+      "start_ms": 1400,
+      "end_ms": 1650,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The rift collapses and ruptures outward in a violet shockwave."
+    },
+    {
+      "id": "hit",
+      "phase": "impact",
+      "start_ms": 1430,
+      "end_ms": 1650,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy is struck by the rupture."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1650,
+      "end_ms": 2700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "The rift's scar seethes and closes."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "count": 26,
+        "speed": 40,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 420,
+        "size_px": 2.5,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 380,
+        "gather_px": 120,
+        "swirl": 0.35
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Motes drawn in from the air, spiralling into the hand.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "void-star",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "radius_px": {
+          "min": 15,
+          "max": 17
+        },
+        "pulse_hz": 3,
+        "wobble": 0.3,
+        "crackle_count": 2,
+        "trail_ms": 220
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A ball of black with a burning violet rim that drinks the light round it.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rift",
+      "type": "decal",
+      "beats": [
+        "open",
+        "pull",
+        "rupture",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": 150,
+        "opacity": 0.95,
+        "fade_in_ms": 60,
+        "grow_ms": 300,
+        "start_scale": 0.2,
+        "lifetime_ms": 1900,
+        "fade_ms": 700,
+        "detail": 0.7,
+        "fill": "void",
+        "reveal_ms": 300
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A rift torn in the ground, darkness welling up through the cracks.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pull-ring",
+      "type": "ring",
+      "beats": [
+        "pull"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 300,
+        "end_radius_px": 20,
+        "thickness_px": 10,
+        "softness": 0.7,
+        "repeat_ms": 300,
+        "count": 3
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Rings drawing inward over the area toward the rift.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "inward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "torn-wisps",
+      "type": "sparks",
+      "beats": [
+        "pull"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "count": 26,
+        "speed": 60,
+        "speed_spread": 0.5,
+        "gravity": 0,
+        "lifetime_ms": 520,
+        "size_px": 4.5,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 420,
+        "home_to": "target"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Wisps of violet torn off each enemy and sucked into the rift.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "collapse",
+      "type": "glow",
+      "beats": [
+        "pull"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "radius_px": 90,
+        "softness": 0.8,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A dark violet throb building at the rift's heart.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pull-sound",
+      "type": "sound_cue",
+      "beats": [
+        "pull"
+      ],
+      "params": {
+        "cue": "drain",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "open-sound",
+      "type": "sound_cue",
+      "beats": [
+        "open"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 0.5
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "rupture"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "rupture"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "rupture",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 340,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "rupture"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "rupture",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "rupture"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 12,
+          "max": 14
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "rupture"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "hit-light",
+      "type": "light",
+      "beats": [
+        "rupture",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 2.6
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "The blast lights up every enemy standing round the target.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "impact",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design. Torn wisps are splash sparks with home_to: target (the primary, in a splash spell). The pull is a reversed repeating ring."
+}

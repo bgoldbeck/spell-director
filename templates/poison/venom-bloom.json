@@ -1,0 +1,775 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "poison-venom-bloom",
+  "name": "Venom Bloom",
+  "description": "A bubbling glob of venom is lobbed onto the chosen enemy and bursts, spattering gobbets onto every enemy around it. A toxic pool spreads over the whole area under a hanging green cloud while the enemies steam.",
+  "element": "poison",
+  "archetype": "projectile",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "venom",
+    "lob",
+    "split",
+    "pool",
+    "cloud",
+    "lingering",
+    "dot"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 3600,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 50
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The glob arcs away and bursts; gobbets arc out to the group and the cloud hangs over them.",
+      "side": "The lobs read best here; the cloud is a low bank over the pool.",
+      "top": "Hero for the lingering area: the pool spreading to cover every enemy, puddles under each, gobbet arcs from the centre.",
+      "three_quarter": "Hero view. The burst, the spatter and the lingering toxic field."
+    }
+  },
+  "palette": {
+    "core": "#F2FFD9",
+    "primary": "#9BE33A",
+    "secondary": "#4F8F1A",
+    "accent": "#D9FF6B",
+    "shadow": "#1F2A14"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Gobbet arcs, spray, cloud puffs and the enemy layout change per cast."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 450,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A bubbling glob of venom swells in the caster's hand."
+    },
+    {
+      "id": "lob",
+      "phase": "travel",
+      "start_ms": 450,
+      "end_ms": 850,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "The glob is lobbed onto the target."
+    },
+    {
+      "id": "splat",
+      "phase": "impact",
+      "start_ms": 850,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "It bursts, splashing venom everywhere."
+    },
+    {
+      "id": "spatter",
+      "phase": "travel",
+      "start_ms": 850,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "Gobbets of venom arc onto every enemy around."
+    },
+    {
+      "id": "coat",
+      "phase": "impact",
+      "start_ms": 1150,
+      "end_ms": 1400,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Each enemy is splashed and starts to steam."
+    },
+    {
+      "id": "linger",
+      "phase": "dissipation",
+      "start_ms": 1100,
+      "end_ms": 3200,
+      "intensity": {
+        "shape": "hold",
+        "from": 0.8,
+        "to": 0.8
+      },
+      "intent": "A toxic pool spreads and a green cloud hangs over the whole area."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 3200,
+      "end_ms": 3600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "The cloud thins."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "count": 26,
+        "speed": 40,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 420,
+        "size_px": 2.5,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 380,
+        "gather_px": 120,
+        "swirl": 0.35
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Motes drawn in from the air, spiralling into the hand.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "glob",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "lob"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "radius_px": {
+          "min": 14,
+          "max": 16
+        },
+        "pulse_hz": 5,
+        "wobble": 0.5,
+        "crackle_count": 0,
+        "trail_ms": 180,
+        "arc_height_px": 140
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A wobbling glob of glowing green venom.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "gobbets",
+      "type": "orb",
+      "beats": [
+        "spatter"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "from": "primary",
+        "radius_px": {
+          "min": 6,
+          "max": 8
+        },
+        "wobble": 0.5,
+        "crackle_count": 0,
+        "trail_ms": 140,
+        "arc_height_px": {
+          "min": 80,
+          "max": 120
+        }
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Small gobbets of venom lobbed from the splash onto each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pool",
+      "type": "decal",
+      "beats": [
+        "splat",
+        "linger",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 250,
+        "opacity": 0.8,
+        "fade_in_ms": 60,
+        "grow_ms": 900,
+        "start_scale": 0.2,
+        "lifetime_ms": 2600,
+        "fade_ms": 1200,
+        "detail": 0.6,
+        "fill": "liquid"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A glossy pool of venom spreading over the whole area.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splat-spray",
+      "type": "sparks",
+      "beats": [
+        "splat"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "look": "droplet",
+        "count": 50,
+        "speed": 420,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 700,
+        "size_px": 4,
+        "spread_deg": 120,
+        "drag": 0.2,
+        "streak_ms": 20
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Venom droplets splashed out of the burst.",
+        "technique": "particles",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "cloud",
+      "type": "smoke",
+      "beats": [
+        "linger",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "count": 30,
+        "rise_speed": 15,
+        "size_px": {
+          "min": 70,
+          "max": 85
+        },
+        "lifetime_ms": 1800,
+        "opacity": 0.45,
+        "spread_px": 220
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A sickly green cloud hanging low over the area.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "steam",
+      "type": "smoke",
+      "beats": [
+        "coat",
+        "linger"
+      ],
+      "anchor": "splash",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 8,
+        "rise_speed": 70,
+        "size_px": {
+          "min": 18,
+          "max": 22
+        },
+        "lifetime_ms": 900,
+        "opacity": 0.4,
+        "spread_px": 14
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Fumes steaming off each splashed enemy.",
+        "technique": "flipbook",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "bubbles",
+      "type": "glow",
+      "beats": [
+        "linger"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 28,
+        "softness": 0.85,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A sick glow on each poisoned enemy, throbbing.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splat-sound",
+      "type": "sound_cue",
+      "beats": [
+        "splat"
+      ],
+      "params": {
+        "cue": "splash",
+        "gain": 0.9,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "linger-sound",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.4,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "splat"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "splat"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "splat",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 260,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "splat"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3,
+        "look": "droplet"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "splat",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "splash",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "splat"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 4,
+          "max": 6
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "splat"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "coat"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "coat"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "look": "droplet"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "coat"
+      ],
+      "anchor": "splash",
+      "color": "secondary",
+      "z": 1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "coat"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "splash",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "coat"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design. A long hold beat keeps the pool and cloud up as a lingering ground effect; gobbets are splash orbs from the primary."
+}

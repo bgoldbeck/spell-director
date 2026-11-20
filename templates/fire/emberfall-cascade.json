@@ -1,0 +1,849 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-emberfall-cascade",
+  "name": "Emberfall Cascade",
+  "description": "A fireball lobbed high at the chosen enemy detonates in a fireball and a ring of flame, flinging burning fragments that rain onto every enemy around it and set each one alight. Lava wells up in the cracks and smoke rises over the burning area.",
+  "element": "fire",
+  "archetype": "projectile",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "fireball",
+    "lob",
+    "split",
+    "burn",
+    "lingering",
+    "dot"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2800,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 60
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The fireball arcs up and away; fragments arc outward from the blast and drop onto each enemy.",
+      "side": "Best read of the lobs: one high arc in, then little arcs out.",
+      "top": "A starburst: fragments fly out from the blast to each enemy; lava cracks and a burn mark under the target, burn marks under each enemy.",
+      "three_quarter": "Hero view. The fireball, the detonation, the scatter of fragments and flames on every enemy."
+    }
+  },
+  "palette": {
+    "core": "#FFF4D6",
+    "primary": "#FF7A1A",
+    "secondary": "#C42A12",
+    "accent": "#FFC045",
+    "shadow": "#3A2C26"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Fragment arcs, flame and smoke puffs, the lava cracks and the enemy layout change per cast."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 480,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A fireball swells in the caster's hand."
+    },
+    {
+      "id": "lob",
+      "phase": "travel",
+      "start_ms": 480,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "The fireball arcs high toward the target, trailing flame."
+    },
+    {
+      "id": "blast",
+      "phase": "impact",
+      "start_ms": 900,
+      "end_ms": 1180,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "It detonates into a fireball and a ring of flame."
+    },
+    {
+      "id": "scatter",
+      "phase": "travel",
+      "start_ms": 900,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "Burning fragments are flung out and rain onto the enemies around."
+    },
+    {
+      "id": "ignite",
+      "phase": "impact",
+      "start_ms": 1200,
+      "end_ms": 1500,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Each enemy bursts into flame as a fragment lands."
+    },
+    {
+      "id": "burn",
+      "phase": "dissipation",
+      "start_ms": 1180,
+      "end_ms": 2800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "Fire burns on in the cracks and on the enemies, then smoulders out."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "count": 26,
+        "speed": 40,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 420,
+        "size_px": 2.5,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 380,
+        "gather_px": 120,
+        "swirl": 0.35
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Motes drawn in from the air, spiralling into the hand.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "ignite",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "fireball",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "lob"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "look": "meteor",
+        "radius_px": {
+          "min": 18,
+          "max": 20
+        },
+        "arc_height_px": 160,
+        "trail_ms": 280,
+        "smoke_trail_ms": 400,
+        "smoke_opacity": 0.35
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A rolling ball of fire with a white-hot heart and a flame trail.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 3,
+          "contrast": 0.6
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fireball-burst",
+      "type": "smoke",
+      "beats": [
+        "blast"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 12,
+      "params": {
+        "count": 22,
+        "rise_speed": 90,
+        "size_px": {
+          "min": 60,
+          "max": 70
+        },
+        "lifetime_ms": 650,
+        "opacity": 0.8,
+        "spread_speed": 120
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Billowing flame puffs of the detonation.",
+        "technique": "flipbook",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fragments",
+      "type": "orb",
+      "beats": [
+        "scatter"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "look": "meteor",
+        "from": "primary",
+        "radius_px": {
+          "min": 8,
+          "max": 10
+        },
+        "arc_height_px": 120,
+        "trail_ms": 200
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Burning fragments lobbed from the blast onto each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "lava",
+      "type": "decal",
+      "beats": [
+        "blast",
+        "burn"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": 130,
+        "opacity": 0.95,
+        "fade_in_ms": 40,
+        "grow_ms": 200,
+        "start_scale": 0.3,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.7,
+        "fill": "lava",
+        "reveal_ms": 200
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Lava welling up through cracks under the target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "enemy-flames",
+      "type": "smoke",
+      "beats": [
+        "ignite",
+        "burn"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "count": 12,
+        "rise_speed": 120,
+        "size_px": {
+          "min": 24,
+          "max": 30
+        },
+        "lifetime_ms": 500,
+        "opacity": 0.7,
+        "spread_px": 18
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Flames licking up each enemy hit by a fragment.",
+        "technique": "flipbook",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "smoke-column",
+      "type": "smoke",
+      "beats": [
+        "burn"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 5,
+      "params": {
+        "count": 16,
+        "rise_speed": 70,
+        "size_px": {
+          "min": 50,
+          "max": 60
+        },
+        "lifetime_ms": 1300,
+        "opacity": 0.55,
+        "spread_px": 60
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Dark smoke rising from the blast site.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "embers",
+      "type": "sparks",
+      "beats": [
+        "burn"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 40,
+        "speed": 90,
+        "speed_spread": 0.6,
+        "gravity": -80,
+        "lifetime_ms": 1100,
+        "size_px": 2.5,
+        "spread_deg": 200,
+        "drag": 0.6,
+        "emit_ms": 1200,
+        "emit_radius_px": 200
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers drifting up over the whole burning area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "lob-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lob"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.5
+      }
+    },
+    {
+      "id": "ignite-sound",
+      "type": "sound_cue",
+      "beats": [
+        "ignite"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "ignite",
+        "gain": 0.4,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.2
+        }
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "blast"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "blast"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "blast",
+        "burn"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 320,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "blast"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "blast",
+        "burn"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "blast"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 10,
+          "max": 12
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "blast"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "blast",
+        "burn"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 120,
+          "max": 135
+        },
+        "opacity": 0.75,
+        "fade_in_ms": 60,
+        "grow_ms": 260,
+        "start_scale": 0.4,
+        "lifetime_ms": 4000,
+        "fade_ms": 2000,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A broad dark burn left where the spell landed.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hit-light",
+      "type": "light",
+      "beats": [
+        "blast",
+        "burn"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 2.6
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "The blast lights up every enemy standing round the target.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "ignite"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "ignite"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "ignite"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "ignite"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "fire",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "ignite"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design. The fragments are meteor-look orbs anchored at splash flying from the primary target (from: primary) with an arc, so the blast visibly 'throws' fire onto the group."
+}

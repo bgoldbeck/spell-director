@@ -50,7 +50,8 @@
         "energy",
         "psychic",
         "blood",
-        "sound"
+        "sound",
+        "spirit"
       ]
     },
     "line": {
@@ -228,6 +229,28 @@
             },
             "max_hop_distance": {
               "$ref": "#/$defs/number_or_range"
+            },
+            "layout": {
+              "enum": [
+                "chain",
+                "splash"
+              ],
+              "description": "chain (default): targets strung out in the footprint, hit in turn. splash: one primary target the caster picks, with the rest standing round it within radius; layers anchored at \"splash\" repeat on each of them."
+            },
+            "radius": {
+              "$ref": "#/$defs/number_or_range",
+              "description": "splash: how far round the primary target the other enemies stand, in world units (1 = one character height)."
+            },
+            "ripple_ms": {
+              "$ref": "#/$defs/number_or_range",
+              "description": "splash: a splash target's layers start this many ms later per world unit of distance from the primary target (default 120; 0 = all at once)."
+            },
+            "order": {
+              "enum": [
+                "ripple",
+                "sequence"
+              ],
+              "description": "splash: ripple (default) delays each splash target by its distance from the primary; sequence hits them one after another, hop_delay_ms apart, going round the primary (a ricochet)."
             }
           }
         }
@@ -899,6 +922,7 @@
         "ground",
         "target",
         "point",
+        "splash",
         "screen"
       ]
     },

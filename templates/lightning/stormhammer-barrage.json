@@ -1,0 +1,896 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-stormhammer-barrage",
+  "name": "Stormhammer Barrage",
+  "description": "Three spinning war hammers crackling with lightning fan out from the caster, curve back in and slam into one chosen enemy together. A thunderclap shockwave rolls out and lightning forks from the struck enemy to everyone standing round it.",
+  "element": "lightning",
+  "archetype": "projectile",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "hammer",
+    "thrown-weapon",
+    "spinning",
+    "fork",
+    "shockwave",
+    "heavy"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2300,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 120
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From behind the caster: three hammers spin beside them, then fan out left, centre and right and converge on the target. The fork spreads across the group like a cracked windscreen.",
+      "side": "The hammers lob slightly and tumble end over end; the slam flash and the shockwave are flat on the ground with forks at chest height.",
+      "top": "Hero for the splash: the hammers' paths make a closing fan; the shockwave ring and the forks radiating to every enemy show the area plainly, with a glowing crack under each.",
+      "three_quarter": "Hero view. Spinning hammer silhouettes with streaks behind, a big ground ring and forks to each enemy at different depths."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#8FD3FF",
+    "secondary": "#3D6BFF",
+    "accent": "#DDF3FF",
+    "shadow": "#1A2233"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Each hammer's spin speed and start angle, the fork shapes, the enemy layout and every spark burst change per cast. The slam time stays fixed."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 520,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "Three hammers spin up beside the caster, crackling louder as they gather speed."
+    },
+    {
+      "id": "throw",
+      "phase": "release",
+      "start_ms": 520,
+      "end_ms": 580,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "The hammers leave the caster all at once with a crack."
+    },
+    {
+      "id": "flight",
+      "phase": "travel",
+      "start_ms": 560,
+      "end_ms": 940,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "The hammers fan out and curve back in, tumbling end over end, to meet on the target."
+    },
+    {
+      "id": "slam",
+      "phase": "impact",
+      "start_ms": 940,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "All three hammers hit together: thunderclap, flash, shockwave."
+    },
+    {
+      "id": "fork",
+      "phase": "impact",
+      "start_ms": 960,
+      "end_ms": 1260,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.7,
+        "to": 1.0,
+        "flicker_hz": 18
+      },
+      "intent": "Lightning forks off the struck target to every enemy around it."
+    },
+    {
+      "id": "splash-hit",
+      "phase": "impact",
+      "start_ms": 980,
+      "end_ms": 1240,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy the fork reaches is jolted."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1200,
+      "end_ms": 2300,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "Static crawls on the scorched ground and fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "charge",
+        "throw"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hand-crackle",
+      "type": "crackle",
+      "beats": [
+        "charge",
+        "throw"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": 5,
+        "length_px": 16,
+        "jaggedness": 0.9,
+        "regen_ms": 40,
+        "radius_px": 22
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Energy crawling over the hand and forearm before the throw.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "charge",
+        "throw"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "count": 26,
+        "speed": 40,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 420,
+        "size_px": 2.5,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 380,
+        "gather_px": 120,
+        "swirl": 0.35
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Motes drawn in from the air, spiralling into the hand.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "hammer-1",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "look": "weapon",
+        "shape": "hammer",
+        "radius_px": {
+          "min": 28,
+          "max": 32
+        },
+        "spin_hz": {
+          "min": 2.6,
+          "max": 3.2
+        },
+        "crackle_count": 4,
+        "trail_ms": 160,
+        "side_offset_px": 110,
+        "arc_height_px": 40
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A heavy war hammer of dark iron wrapped in blue-white lightning, whirling end over end.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hammer-2",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "look": "weapon",
+        "shape": "hammer",
+        "radius_px": {
+          "min": 28,
+          "max": 32
+        },
+        "spin_hz": {
+          "min": 2.6,
+          "max": 3.2
+        },
+        "crackle_count": 4,
+        "trail_ms": 160,
+        "arc_height_px": 40
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A heavy war hammer of dark iron wrapped in blue-white lightning, whirling end over end.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hammer-3",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 12,
+      "params": {
+        "look": "weapon",
+        "shape": "hammer",
+        "radius_px": {
+          "min": 28,
+          "max": 32
+        },
+        "spin_hz": {
+          "min": 2.6,
+          "max": 3.2
+        },
+        "crackle_count": 4,
+        "trail_ms": 160,
+        "side_offset_px": -110,
+        "arc_height_px": 40
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A heavy war hammer of dark iron wrapped in blue-white lightning, whirling end over end.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fork",
+      "type": "bolt",
+      "beats": [
+        "fork"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "segments": {
+          "min": 10,
+          "max": 13
+        },
+        "jaggedness": {
+          "min": 0.6,
+          "max": 0.8
+        },
+        "width_px": {
+          "min": 4,
+          "max": 6
+        },
+        "taper": 0.3,
+        "branch_chance": 0.2,
+        "branch_depth": 1,
+        "branch_length_ratio": 0.3,
+        "regen_ms": {
+          "min": 40,
+          "max": 55
+        },
+        "afterimage_ms": 90,
+        "glow_px": 12
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Wiry forks of lightning leaping from the struck target to each enemy round it.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 12
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ground-crackle",
+      "type": "crackle",
+      "beats": [
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "count": 6,
+        "length_px": 40,
+        "jaggedness": 0.9,
+        "regen_ms": 60,
+        "radius_px": 110
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Static still snapping over the ground where the hammers landed.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "throw-sound",
+      "type": "sound_cue",
+      "beats": [
+        "throw"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.7,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "fork-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fork"
+      ],
+      "params": {
+        "cue": "zap",
+        "gain": 0.7,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.1
+        }
+      }
+    },
+    {
+      "id": "crack-sound",
+      "type": "sound_cue",
+      "beats": [
+        "slam"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.9,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "slam"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "slam"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "slam",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 300,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "slam"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "slam",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7,
+        "reveal_ms": 160
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "slam"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 11,
+          "max": 13
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "slam"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "slam",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 120,
+          "max": 135
+        },
+        "opacity": 0.75,
+        "fade_in_ms": 60,
+        "grow_ms": 260,
+        "start_scale": 0.4,
+        "lifetime_ms": 4000,
+        "fade_ms": 2000,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A broad dark burn left where the spell landed.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hit-light",
+      "type": "light",
+      "beats": [
+        "slam",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 2.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The blast lights up every enemy standing round the target.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "splash-hit"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "splash-hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "splash-hit"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "splash-hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "zap",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "splash-hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design on the 'spinning thunder hammers' pattern: thrown weapon (orb look weapon, shape hammer), three side offsets so they fan and converge, then a splash fork (bolt anchored at splash, from the primary). Ripple delay makes the forks reach far enemies a beat later."
+}

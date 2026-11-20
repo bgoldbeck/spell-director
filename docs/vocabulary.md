@@ -125,6 +125,23 @@ Space is described the same way in a front view and an overhead view, so a rende
 | `distribution` | How sub-elements spread inside the footprint: `even`, `random`, `center_weighted`, `edge_weighted`, `spiral`. |
 | `scale` | Size in world units (1 unit ≈ a character's height). |
 
+### Targeted area (splash) terms
+
+Big area spells that still need a target: the caster picks one enemy and the spell slams everyone standing round it. Set `space.targets.layout: "splash"`; the viewer stands the other enemies round the primary target and marks the primary with a red ring.
+
+| Word | Means | Template |
+|---|---|---|
+| primary target | the enemy the caster picked | anchor `target` (once, on the primary) |
+| splash, area hit | everyone round the primary | anchor `splash`: the layer repeats on each of them |
+| splash radius | how far the area reaches | `space.targets.radius` (world units) |
+| ripple | the hit spreads outward, far enemies a beat later | `space.targets.ripple_ms` per unit of distance (0 = all at once) |
+| fork | lightning splitting off the primary to everyone round it | `bolt` anchored at `splash` (from the primary by default) |
+| chain round the group, ricochet | one enemy after another | `targets.order: "sequence"` + `hop_delay_ms`; `bolt` or `orb` with `from: "previous"` |
+| cage, fence | arcs joining each enemy to the next, closing the loop | `bolt` at `splash`, `from: "previous"`, `wrap: true` |
+| rain down on each | strikes falling on every enemy | `bolt` or `orb` at `splash` with `from: "sky"` |
+| split, scatter | the projectile bursts and pieces fly to each enemy | `orb` at `splash` with a `travel` beat, `arc_height_px` for lobs |
+| thrown weapon | a spinning hammer, axe, anvil, disc, spear, trident or rune-stone | `orb` `look: weapon`, `shape`, `spin_hz`; `stick: true` to pin the target |
+
 ## 7. Camera views
 
 Every effect must read from four standard cameras. Templates are authored in 3D so all four render from the same data. The director writes down what each view should show (`views.reads`) and which one the effect is designed around (`views.hero`).
@@ -294,6 +311,8 @@ Water has weight: it arcs, falls back and leaves the ground wet. Ice is water th
 | cadence | a song you can see | `look: note` orbiting, rings on the beat |
 | miasma | a dark, draining cloud | alpha smoke, souls rising, inward drain rings |
 | mantle | a cold field that hangs round the caster | frost decal, ice spikes, swirling flakes |
+
+Examples of targeted area spells: `templates/lightning/stormhammer-barrage.json` (hammers then a fork), `cleaving-squall.json` (a chain round the group), `ricochet-stormdiscs.json` (a ricochet), `stormcage-javelin.json` (a cage), `runefall-cairn.json` and `thunderhead-verdict.json` (from the sky), plus `ice/glacial-shatterpoint.json`, `fire/emberfall-cascade.json`, `earth/faultline-crush.json` and `poison/venom-bloom.json`.
 
 ## 9. How the director uses this
 

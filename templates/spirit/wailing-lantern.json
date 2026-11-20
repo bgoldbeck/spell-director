@@ -1,0 +1,709 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "spirit-wailing-lantern",
+  "name": "Wailing Lantern",
+  "description": "A pale lantern of spirit light drifts to the chosen enemy and breaks with a wail. Spirits pour out of it and streak along curving paths to every enemy nearby, flaring as they strike and leaving wisps rising off them.",
+  "element": "spirit",
+  "archetype": "projectile",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "spirit",
+    "ghost",
+    "split",
+    "seeking",
+    "haunt"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2700,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 40
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The lantern floats away; spirits peel off it along curving paths to each enemy.",
+      "side": "The spirits' lobbed curves and the rising wisps read well here.",
+      "top": "A burst of curving trails from the centre out to every enemy.",
+      "three_quarter": "Hero view. The wail ripple, then spirits streaking to each enemy."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#9FFFE8",
+    "secondary": "#3FB5C9",
+    "accent": "#E8FFF9",
+    "shadow": "#16252A"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Each spirit's curve and height, wisps and the enemy layout change per cast."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A pale lantern of spirit light kindles in the caster's hand."
+    },
+    {
+      "id": "flight",
+      "phase": "travel",
+      "start_ms": 500,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "The lantern drifts quickly to the target, leaving a ghostly trail."
+    },
+    {
+      "id": "shatter",
+      "phase": "impact",
+      "start_ms": 900,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The lantern breaks with a wail; spirits pour out."
+    },
+    {
+      "id": "seek",
+      "phase": "travel",
+      "start_ms": 950,
+      "end_ms": 1350,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "A wailing spirit streaks from the broken lantern to each enemy nearby."
+    },
+    {
+      "id": "haunt",
+      "phase": "impact",
+      "start_ms": 1350,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Each spirit strikes its enemy and flares."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1150,
+      "end_ms": 2700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "Wisps rise off the enemies and fade."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "count": 26,
+        "speed": 40,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 420,
+        "size_px": 2.5,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 380,
+        "gather_px": 120,
+        "swirl": 0.35
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Motes drawn in from the air, spiralling into the hand.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "lantern",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "radius_px": {
+          "min": 16,
+          "max": 18
+        },
+        "bubble": true,
+        "pulse_hz": 4,
+        "wobble": 0.15,
+        "crackle_count": 0,
+        "trail_ms": 260
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A hollow lantern of pale green spirit light, brightest at its rim.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "spirits",
+      "type": "orb",
+      "beats": [
+        "seek"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "from": "primary",
+        "radius_px": {
+          "min": 9,
+          "max": 11
+        },
+        "pulse_hz": 6,
+        "wobble": 0.3,
+        "crackle_count": 0,
+        "trail_ms": 300,
+        "arc_height_px": {
+          "min": 60,
+          "max": 120
+        },
+        "side_offset_px": {
+          "min": -60,
+          "max": 60
+        },
+        "travel_ease": "ease_in"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Wailing spirits streaking from the lantern to each enemy along curving paths.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "wail-ring",
+      "type": "ring",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 220,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A ripple in the air as the lantern breaks: the wail.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "rising-wisps",
+      "type": "smoke",
+      "beats": [
+        "haunt",
+        "fade"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "count": 8,
+        "rise_speed": 110,
+        "size_px": {
+          "min": 20,
+          "max": 26
+        },
+        "lifetime_ms": 900,
+        "opacity": 0.5,
+        "spread_px": 14
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Pale wisps rising off each haunted enemy.",
+        "technique": "flipbook",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "flight-sound",
+      "type": "sound_cue",
+      "beats": [
+        "flight"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.5
+      }
+    },
+    {
+      "id": "shatter-sound",
+      "type": "sound_cue",
+      "beats": [
+        "shatter"
+      ],
+      "params": {
+        "cue": "shatter",
+        "gain": 0.6,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "shatter",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 240,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "shatter",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "shatter"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 4,
+          "max": 6
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "shatter"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "hit-light",
+      "type": "light",
+      "beats": [
+        "shatter",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 2.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The blast lights up every enemy standing round the target.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "haunt"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "haunt"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "haunt"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "haunt"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "whisper",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "haunt"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design, new element spirit. The spirits are splash orbs from the primary with seeded arc and side offsets so every path curves differently."
+}

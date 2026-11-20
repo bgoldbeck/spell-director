@@ -1,0 +1,762 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-cleaving-squall",
+  "name": "Cleaving Squall",
+  "description": "Two lightning-edged axes are hurled crosswise, whirling, and bite into the chosen enemy. Where they strike they burst into a chain of lightning that runs round every enemy nearby, one after another.",
+  "element": "lightning",
+  "archetype": "chain",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "axe",
+    "thrown-weapon",
+    "spinning",
+    "chain",
+    "ricochet"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2200,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 120,
+      "order": "sequence",
+      "hop_delay_ms": {
+        "min": 80,
+        "max": 100
+      }
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The axes cross in front of the camera on the way in; the chain then runs round the group left to right and back, link by link.",
+      "side": "The axes' end-over-end spin reads best here. The chain links sit at chest height between enemies at different depths.",
+      "top": "Hero for the chain: the links go round the target in order, like a fuse burning round a ring, with a flash on each enemy as it arrives.",
+      "three_quarter": "Hero view. Two spinning axes cross, slash marks under the target, then the chain circles the group."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#8FD3FF",
+    "secondary": "#3D6BFF",
+    "accent": "#DDF3FF",
+    "shadow": "#1A2233"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Axe spin speeds, chain link shapes and hop delays, and the enemy layout change per cast."
+  },
+  "beats": [
+    {
+      "id": "wind-up",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 420,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "Two axes spin up in the caster's hands, sparking."
+    },
+    {
+      "id": "throw",
+      "phase": "release",
+      "start_ms": 420,
+      "end_ms": 480,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "Both axes are hurled at once."
+    },
+    {
+      "id": "flight",
+      "phase": "travel",
+      "start_ms": 460,
+      "end_ms": 820,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "The axes cross paths in the air, whirling, and bite into the target."
+    },
+    {
+      "id": "bite",
+      "phase": "impact",
+      "start_ms": 820,
+      "end_ms": 1060,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The axes strike and burst into lightning."
+    },
+    {
+      "id": "chain",
+      "phase": "travel",
+      "start_ms": 820,
+      "end_ms": 1500,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.7,
+        "to": 1.0,
+        "flicker_hz": 20
+      },
+      "intent": "A chain of lightning runs from enemy to enemy round the target, one after another."
+    },
+    {
+      "id": "chain-hit",
+      "phase": "impact",
+      "start_ms": 860,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy flashes as the chain reaches it."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1060,
+      "end_ms": 2200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "The chain's afterimage fades; static clings to the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "wind-up",
+        "throw"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hand-crackle",
+      "type": "crackle",
+      "beats": [
+        "wind-up",
+        "throw"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": 5,
+        "length_px": 16,
+        "jaggedness": 0.9,
+        "regen_ms": 40,
+        "radius_px": 22
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Energy crawling over the hand and forearm before the throw.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "wind-up"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "axe-left",
+      "type": "orb",
+      "beats": [
+        "wind-up",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "look": "weapon",
+        "shape": "axe",
+        "radius_px": {
+          "min": 26,
+          "max": 29
+        },
+        "spin_hz": {
+          "min": 3.2,
+          "max": 3.8
+        },
+        "crackle_count": 4,
+        "trail_ms": 160,
+        "side_offset_px": -90,
+        "arc_height_px": 20
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A bearded axe of blackened steel, its edge glowing white with lightning, whirling end over end.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "axe-right",
+      "type": "orb",
+      "beats": [
+        "wind-up",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "look": "weapon",
+        "shape": "axe",
+        "radius_px": {
+          "min": 26,
+          "max": 29
+        },
+        "spin_hz": {
+          "min": 3.2,
+          "max": 3.8
+        },
+        "crackle_count": 4,
+        "trail_ms": 160,
+        "side_offset_px": 90,
+        "arc_height_px": 20
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A bearded axe of blackened steel, its edge glowing white with lightning, whirling end over end.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "chain",
+      "type": "bolt",
+      "beats": [
+        "chain"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "from": "previous",
+        "segments": {
+          "min": 9,
+          "max": 12
+        },
+        "jaggedness": {
+          "min": 0.65,
+          "max": 0.8
+        },
+        "width_px": {
+          "min": 3,
+          "max": 5
+        },
+        "taper": 0.25,
+        "branch_chance": 0.15,
+        "branch_depth": 1,
+        "branch_length_ratio": 0.25,
+        "regen_ms": {
+          "min": 40,
+          "max": 55
+        },
+        "afterimage_ms": 120,
+        "glow_px": 10
+      },
+      "keyframes": [
+        {
+          "t_ms": 820,
+          "param": "width_px",
+          "value": 5
+        },
+        {
+          "t_ms": 1500,
+          "param": "width_px",
+          "value": 2,
+          "ease": "linear"
+        }
+      ],
+      "shader": {
+        "material": "ionized",
+        "look": "A chain of lightning hopping round the group, each link from the last enemy to the next.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "flow": {
+          "direction": "along_path",
+          "speed": 14
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "throw-sound",
+      "type": "sound_cue",
+      "beats": [
+        "throw"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.7,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "chain-sound",
+      "type": "sound_cue",
+      "beats": [
+        "chain"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "bite"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "bite"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "bite",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 240,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "bite"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "bite",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "slash",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "bite"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 7,
+          "max": 9
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "bite"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "bite",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 120,
+          "max": 135
+        },
+        "opacity": 0.75,
+        "fade_in_ms": 60,
+        "grow_ms": 260,
+        "start_scale": 0.4,
+        "lifetime_ms": 4000,
+        "fade_ms": 2000,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A broad dark burn left where the spell landed.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hit-light",
+      "type": "light",
+      "beats": [
+        "bite",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 2.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The blast lights up every enemy standing round the target.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "chain-hit"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "chain-hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "chain-hit"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "chain-hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "zap",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    }
+  ],
+  "director_notes": "Original design: thrown axes (weapon shape axe) crossing via opposite side offsets; the 'split into chains' is a splash bolt with from: previous and targets order: sequence, so it hops round the group like a ricochet."
+}

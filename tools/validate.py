@@ -23,7 +23,7 @@ KNOWN_PARAMS = {
     "bolt": {
         "segments", "jaggedness", "width_px", "taper", "branch_chance", "branch_depth",
         "branch_length_ratio", "regen_ms", "restrikes", "restrike_gap_ms", "leader_ms",
-        "afterimage_ms", "glow_px",
+        "afterimage_ms", "glow_px", "from", "wrap",
     },
     "glow": {"radius_px", "softness", "pulse_hz"},
     "flash": {"scope", "radius_px", "peak"},
@@ -35,7 +35,7 @@ KNOWN_PARAMS = {
     "orb": {
         "radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease", "look", "height_px", "bubble",
         "approach_deg", "approach_yaw_deg", "smoke_trail_ms", "smoke_opacity", "crescent_deg", "tilt_deg",
-        "side_offset_px", "scatter_px", "opacity", "squash",
+        "side_offset_px", "scatter_px", "opacity", "squash", "shape", "spin_hz", "spin_axis", "stick", "from", "wrap",
     },
     "beam": {
         "width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms", "style", "flow_speed", "turbulence",
@@ -127,8 +127,12 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
             errors.append(f"duplicate layer id {layer['id']!r}")
         layer_ids.add(layer["id"])
 
+    splash = (doc["space"].get("targets") or {}).get("layout") == "splash"
     for layer in doc["layers"]:
         lid = layer["id"]
+        if layer.get("anchor") == "splash" and not splash:
+            warnings.append(f"layer {lid!r}: anchored at 'splash', but space.targets.layout isn't 'splash', "
+                            "so there are no splash targets and it sits on the primary target once")
         for b in layer["beats"]:
             if b not in beats:
                 errors.append(f"layer {lid!r}: unknown beat {b!r}")

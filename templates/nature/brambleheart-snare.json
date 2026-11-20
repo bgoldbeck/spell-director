@@ -1,0 +1,734 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "nature-brambleheart-snare",
+  "name": "Brambleheart Snare",
+  "description": "A thorned seed lobbed onto the chosen enemy bursts into rings of thorns. Roots tear through the ground and thorns burst up round every enemy nearby, snaring them where they stand.",
+  "element": "nature",
+  "archetype": "projectile",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "thorns",
+    "roots",
+    "snare",
+    "root",
+    "eruption",
+    "lob"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2700,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 200
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The seed arcs away; thorns rise in rings and then round each enemy across the frame.",
+      "side": "Thorn heights read here; leaves drift down.",
+      "top": "Hero for the spread: roots racing out from the target and thorn rings forming round each enemy as the roots reach them.",
+      "three_quarter": "Hero view. A thicket round the target and snared enemies around it."
+    }
+  },
+  "palette": {
+    "core": "#F4FFE0",
+    "primary": "#6FD34A",
+    "secondary": "#2E7D32",
+    "accent": "#C8F57A",
+    "shadow": "#2B2418"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Thorn layout, leaves and the enemy layout change per cast."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 450,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A thorned seed swells in the caster's hand."
+    },
+    {
+      "id": "lob",
+      "phase": "travel",
+      "start_ms": 450,
+      "end_ms": 850,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "The seed is lobbed onto the target."
+    },
+    {
+      "id": "burst",
+      "phase": "impact",
+      "start_ms": 850,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "It bursts: a ring of thorns erupts round the target."
+    },
+    {
+      "id": "snare",
+      "phase": "impact",
+      "start_ms": 900,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.4
+      },
+      "intent": "Thorns burst out of the ground round each enemy, snaring them."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1700,
+      "end_ms": 2700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "Leaves drift as the brambles sink back."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "count": 26,
+        "speed": 40,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 420,
+        "size_px": 2.5,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 380,
+        "gather_px": 120,
+        "swirl": 0.35
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Motes drawn in from the air, spiralling into the hand.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "seed",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "lob"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "radius_px": {
+          "min": 12,
+          "max": 14
+        },
+        "pulse_hz": 3,
+        "wobble": 0.2,
+        "crackle_count": 0,
+        "trail_ms": 160,
+        "arc_height_px": 150
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A glowing green seed pod with a spiral of light.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bramble-ring",
+      "type": "eruption",
+      "beats": [
+        "burst",
+        "snare",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 3,
+        "start_radius_px": 40,
+        "end_radius_px": 140,
+        "row_delay_ms": 60,
+        "growth": 1.15,
+        "height_px": {
+          "min": 70,
+          "max": 90
+        },
+        "width_px": 18,
+        "spacing_px": 34,
+        "tilt_deg": 30,
+        "jitter": 0.5,
+        "rise_ms": 90,
+        "hold_ms": 800,
+        "sink_ms": 500,
+        "debris_count": 1,
+        "dust": 0.25
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Twisted green thorns, curved and sharp, bursting up in rings.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "snare-thorns",
+      "type": "eruption",
+      "beats": [
+        "snare",
+        "fade"
+      ],
+      "anchor": "splash",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 1,
+        "start_radius_px": 26,
+        "end_radius_px": 26,
+        "height_px": {
+          "min": 60,
+          "max": 75
+        },
+        "width_px": 14,
+        "spacing_px": 22,
+        "tilt_deg": -20,
+        "jitter": 0.4,
+        "rise_ms": 90,
+        "hold_ms": 700,
+        "sink_ms": 450,
+        "debris_count": 1,
+        "dust": 0.2
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A tight cage of thorns curling in round each enemy's legs.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "roots",
+      "type": "decal",
+      "beats": [
+        "burst",
+        "snare",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 1,
+      "params": {
+        "shape": "fissures",
+        "radius_px": 260,
+        "opacity": 0.8,
+        "fade_in_ms": 60,
+        "lifetime_ms": 2000,
+        "fade_ms": 800,
+        "detail": 0.6,
+        "reveal_ms": 400
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Roots tearing through the ground out to every enemy.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "leaves",
+      "type": "sparks",
+      "beats": [
+        "burst",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "leaf",
+        "count": 50,
+        "speed": 260,
+        "speed_spread": 0.6,
+        "gravity": 120,
+        "lifetime_ms": 1600,
+        "size_px": 5,
+        "spread_deg": 160,
+        "drag": 0.7,
+        "emit_radius_px": 160
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Torn leaves fluttering down over the area.",
+        "technique": "particles",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "lob-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lob"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.4,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "burst-sound",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.7,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "snare-sound",
+      "type": "sound_cue",
+      "beats": [
+        "snare"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "crack",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.2,
+          "max": 1.5
+        }
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "burst",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 280,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3,
+        "look": "leaf"
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "burst",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7,
+        "reveal_ms": 160
+      },
+      "shader": {
+        "material": "organic",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 6,
+          "max": 8
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "snare"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "snare"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "look": "leaf"
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "snare"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "snare"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "impact",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "snare"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design. Splash eruptions with start=end radius make a small ring of thorns round each enemy; ripple 200 ms per unit matches the roots' reveal."
+}

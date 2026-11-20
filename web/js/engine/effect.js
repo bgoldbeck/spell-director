@@ -863,6 +863,140 @@ class MeteorParts {
   }
 }
 
+// look "weapon": a thrown weapon of solid metal wrapped in the spell's energy
+// (a hammer, axe, anvil, disc, spear, trident or rune-stone) that spins as it
+// flies. Built from simple solids, sized by the orb's radius_px.
+const WEAPON_SHAPES = ["hammer", "axe", "anvil", "disc", "spear", "trident", "stone"];
+
+function weaponParts(shape, seed) {
+  // [geometry, [x, y, z], [rx, ry, rz]] in units of the orb's radius. Local
+  // +X points along the flight; hammers and axes swing about their middle
+  // with the handle along +Y; spears and tridents fly point first along +X.
+  const box = (x, y, z) => new THREE.BoxGeometry(x, y, z);
+  const rod = (rad, len) => new THREE.CylinderGeometry(rad, rad, len, 10);
+  const H = Math.PI / 2;
+  switch (shape) {
+    case "axe": {
+      const blade = new THREE.Shape();
+      blade.moveTo(0, -0.12);
+      blade.quadraticCurveTo(0.45, -0.2, 0.62, -0.55);
+      blade.quadraticCurveTo(0.95, 0, 0.62, 0.55);
+      blade.quadraticCurveTo(0.45, 0.2, 0, 0.12);
+      blade.lineTo(0, -0.12);
+      const g = new THREE.ExtrudeGeometry(blade, { depth: 0.07, bevelEnabled: false, curveSegments: 10 });
+      g.translate(0, 0, -0.035);
+      return [
+        [rod(0.07, 1.9), [0, 0, 0], [0, 0, 0]],
+        [g, [0.05, 0.62, 0], [0, 0, 0]],
+        [box(0.18, 0.2, 0.14), [0, 0.62, 0], [0, 0, 0]],
+      ];
+    }
+    case "anvil":
+      return [
+        [box(1.3, 0.32, 0.6), [0, 0.3, 0], [0, 0, 0]],
+        [box(0.55, 0.38, 0.42), [0, 0, 0], [0, 0, 0]],
+        [box(1.0, 0.18, 0.7), [0, -0.27, 0], [0, 0, 0]],
+        [new THREE.ConeGeometry(0.16, 0.6, 10), [0.92, 0.32, 0], [0, 0, -H]],
+      ];
+    case "disc": {
+      const parts = [[new THREE.TorusGeometry(0.85, 0.11, 8, 32), [0, 0, 0], [H, 0, 0]]];
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        parts.push([new THREE.ConeGeometry(0.11, 0.42, 6), [Math.cos(a) * 1.1, 0, Math.sin(a) * 1.1], [0, -a, -H]]);
+      }
+      parts.push([new THREE.CylinderGeometry(0.22, 0.22, 0.08, 16), [0, 0, 0], [0, 0, 0]]);
+      return parts;
+    }
+    case "spear":
+      return [
+        [rod(0.05, 2.8), [-0.2, 0, 0], [0, 0, H]],
+        [new THREE.ConeGeometry(0.13, 0.75, 4), [1.55, 0, 0], [0, 0, -H]],
+        [box(0.12, 0.3, 0.06), [1.15, 0, 0], [0, 0, 0]],
+      ];
+    case "trident": {
+      const prong = () => new THREE.ConeGeometry(0.06, 0.6, 6);
+      return [
+        [rod(0.05, 2.4), [-0.3, 0, 0], [0, 0, H]],
+        [box(0.08, 0.06, 0.62), [0.9, 0, 0], [0, 0, 0]],
+        [rod(0.045, 0.35), [1.05, 0, 0.28], [0, 0, H]],
+        [rod(0.045, 0.35), [1.05, 0, -0.28], [0, 0, H]],
+        [prong(), [1.5, 0, 0.28], [0, 0, -H]],
+        [prong(), [1.5, 0, -0.28], [0, 0, -H]],
+        [new THREE.ConeGeometry(0.08, 0.95, 6), [1.37, 0, 0], [0, 0, -H]],
+      ];
+    }
+    case "stone": {
+      const g = rockGeometry(seed, 1, 0.18);
+      g.scale(0.85, 1.05, 0.6);
+      return [[g, [0, 0, 0], [0, 0, 0]]];
+    }
+    case "hammer":
+    default:
+      return [
+        [rod(0.075, 1.8), [0, -0.1, 0], [0, 0, 0]],
+        [box(1.15, 0.55, 0.55), [0, 0.78, 0], [0, 0, 0]],
+        [box(0.2, 0.62, 0.62), [0.5, 0.78, 0], [0, 0, 0]],
+        [box(0.2, 0.62, 0.62), [-0.5, 0.78, 0], [0, 0, 0]],
+      ];
+  }
+}
+
+class WeaponParts {
+  constructor(layer) {
+    const pal = layer.effect.template.palette || {};
+    const shape = WEAPON_SHAPES.includes(layer.base.shape) ? layer.base.shape : "hammer";
+    this.shape = shape;
+    const metal = new THREE.Color(pal.shadow || "#2b2f3a").lerp(new THREE.Color("#8a90a0"), 0.45);
+    this.body = new THREE.MeshStandardMaterial({
+      color: metal, metalness: 0.55, roughness: 0.35,
+      emissive: layer.colors[1].clone(), emissiveIntensity: 0.4, transparent: true,
+    });
+    this.halo = new THREE.MeshBasicMaterial({ color: layer.colors[1], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    this.edge = new THREE.MeshBasicMaterial({ color: layer.colors[0], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    this.group = new THREE.Group();
+    this.spinner = new THREE.Group();
+    this.group.add(this.spinner);
+    for (const [geo, pos, rot] of weaponParts(shape, seedFor(layer.effect.seed, layer.def.id, layer.instance, "weapon"))) {
+      const body = new THREE.Mesh(geo, this.body);
+      const halo = new THREE.Mesh(geo, this.halo);
+      const edge = new THREE.Mesh(geo, this.edge);
+      for (const m of [body, halo, edge]) {
+        m.position.set(...pos);
+        m.rotation.set(...rot);
+      }
+      halo.scale.setScalar(1.3);
+      edge.scale.setScalar(1.07);
+      this.spinner.add(body, edge, halo);
+    }
+    // Default spin per shape: hammers, axes, anvils and stones tumble end
+    // over end, discs spin flat, spears and tridents roll about their shaft.
+    this.axis = layer.base.spin_axis || ({ disc: "flat", spear: "roll", trident: "roll" }[shape] || "tumble");
+  }
+
+  // Place and turn the weapon at `at`, heading `dir`, spun by `angle`.
+  update(at, dir, r, angle, I, opacity) {
+    this.group.visible = I > 0.001;
+    if (!this.group.visible) return;
+    const f = dir.clone().normalize();
+    const side = new THREE.Vector3().crossVectors(f, UP);
+    if (side.lengthSq() < 1e-6) side.set(0, 0, 1);
+    side.normalize();
+    const up = new THREE.Vector3().crossVectors(side, f).normalize();
+    this.group.position.copy(at);
+    this.group.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(f, up, side));
+    this.group.scale.setScalar(r);
+    this.spinner.rotation.set(0, 0, 0);
+    if (this.axis === "flat") this.spinner.rotation.y = angle;
+    else if (this.axis === "roll") this.spinner.rotation.x = angle;
+    else this.spinner.rotation.z = -angle;
+    const k = Math.min(1, I) * opacity;
+    this.body.opacity = Math.min(1, k * 1.5);
+    this.body.emissiveIntensity = 0.15 + 0.3 * Math.min(1, I);
+    this.halo.opacity = 0.1 * k;
+    this.edge.opacity = 0.18 * k;
+  }
+}
+
 // ------------------------------------------------------------ layers
 
 class Layer {
@@ -947,6 +1081,14 @@ class BoltLayer extends Layer {
     switch (this.def.anchor) {
       case "sky":
         return [[st.sky, st.anchor("target")]];
+      case "splash": {
+        // A fork from the primary target (or the splash target before it, or
+        // straight down from the sky) to this splash target.
+        const from = this.p("from", 0, "primary");
+        const k = this.instance;
+        if (from === "sky") return [[st.splashFrom(k, "sky"), st.anchor("splash", k)]];
+        return [[st.splashFrom(k, from, !!this.base.wrap), st.splashChest(k)]];
+      }
       case "caster_hand":
         if (tp.space.travel === "chain") {
           const hops = [];
@@ -1390,7 +1532,7 @@ class SparksLayer extends Layer {
     // arriving as it dies (life drained into the caster's hand, a swarm
     // flying at the target). Ease-in, so the burst reads before the pull.
     const homeName = typeof this.base.home_to === "string" ? this.base.home_to : null;
-    const home = homeName ? (homeName === "target" ? this.effect.stage.chest(this.instance) : this.effect.stage.anchor(homeName, this.instance)) : null;
+    const home = homeName ? (homeName === "target" ? this.effect.stage.chest(this.effect.stage.splash ? 0 : this.instance) : this.effect.stage.anchor(homeName, this.instance)) : null;
     // orbit_hz: each spark also circles the anchor (turns per second around
     // the vertical axis, negative = clockwise seen from above): leaves, notes
     // or embers swirling around a caster.
@@ -2092,7 +2234,12 @@ class OrbLayer extends Layer {
     // its travel beat; an orb anchored in the sky falls onto the target.
     const tp = effect.template;
     this.fromSky = (def.anchor || "target") === "sky";
-    const flies = tp.space?.travel === "projectile" && ["caster_hand", "caster", "sky"].includes(def.anchor || "target");
+    // An orb anchored at "splash" with a travel beat flies to its splash
+    // target from the primary target (from: "previous": from the splash
+    // target before it, a ricochet; from: "sky": falls onto it).
+    this.splashFlight = def.anchor === "splash";
+    if (this.splashFlight && this.base.from === "sky") this.fromSky = true;
+    const flies = (tp.space?.travel === "projectile" || this.splashFlight) && ["caster_hand", "caster", "sky", "splash"].includes(def.anchor || "target");
     this.flight = flies ? (this.window?.beats || []).find((b) => b.phase === "travel") || null : null;
     // scatter_px: a falling orb lands at a seeded spot up to this far from
     // the target instead of on it (one meteor of a storm).
@@ -2106,6 +2253,11 @@ class OrbLayer extends Layer {
       this.meteor = new MeteorParts(this);
       this.core.visible = this.shell.visible = false;
       this.group.add(this.meteor.group);
+    }
+    if (this.base.look === "weapon") {
+      this.weapon = new WeaponParts(this);
+      this.core.visible = false;
+      this.group.add(this.weapon.group);
     }
     // look "crescent": a thin curved blade (a wind slash, a thrown sickle of
     // energy) flying edge-first, with fading after-images behind it.
@@ -2129,7 +2281,7 @@ class OrbLayer extends Layer {
   // direction.
   skyStart(t) {
     const st = this.effect.stage;
-    const to = st.anchor("target").add(this.landOffset);
+    const to = this.landPoint();
     const h = st.sky.y;
     const tilt = THREE.MathUtils.degToRad(Math.max(0, Math.min(75, this.p("approach_deg", t, 0))));
     const yaw = THREE.MathUtils.degToRad(this.p("approach_yaw_deg", t, 0));
@@ -2140,6 +2292,7 @@ class OrbLayer extends Layer {
   // Where a falling orb hits the ground (its anchor for anything else).
   landPoint() {
     if (!this.fromSky) return this.anchorPos();
+    if (this.splashFlight) return this.anchorPos().add(this.landOffset);
     return this.effect.stage.anchor("target").add(this.landOffset);
   }
 
@@ -2149,8 +2302,12 @@ class OrbLayer extends Layer {
     // height_px lifts a resting orb off its anchor (a field around a target's body).
     if (!f) return this.anchorPos().add(new THREE.Vector3(0, this.p("height_px", t, 0) * PX, 0));
     const st = this.effect.stage;
-    const from = this.fromSky ? this.skyStart(t) : st.hand.clone();
-    const to = this.fromSky ? this.landPoint() : st.chest(0);
+    let from = this.fromSky ? this.skyStart(t) : st.hand.clone();
+    let to = this.fromSky ? this.landPoint() : st.chest(0);
+    if (this.splashFlight && !this.fromSky) {
+      from = st.splashFrom(this.instance, this.p("from", 0, "primary"), !!this.base.wrap);
+      to = st.splashChest(this.instance);
+    }
     const u = Math.max(0, Math.min(1, (t - f.start_ms) / Math.max(1, f.end_ms - f.start_ms)));
     const e = this.p("travel_ease", t, "linear") === "ease_in" ? u * u : u;
     const arc = this.p("arc_height_px", t, 0) * PX * 4 * e * (1 - e);
@@ -2233,6 +2390,10 @@ class OrbLayer extends Layer {
       this.updateCrescent(t, I);
       return;
     }
+    if (this.weapon) {
+      this.updateWeapon(t, I);
+      return;
+    }
     this.group.visible = I > 0.001;
     if (!this.group.visible) {
       this.currentRadius = 0;
@@ -2275,6 +2436,55 @@ class OrbLayer extends Layer {
     this.arcs.set(segs, 0.009);
     this.arcs.opacity = I;
     this.updateTrail(t, r, I);
+  }
+
+  // A spinning thrown weapon: spin_hz turns per second, frozen where it
+  // lands when stick is true (a trident pinning its target). A faint glow
+  // shell and crackle_count arcs ride on it, and the trail streaks behind.
+  updateWeapon(t, I) {
+    this.group.visible = I > 0.001;
+    if (!this.group.visible) {
+      this.currentRadius = 0;
+      return;
+    }
+    const f = this.flight;
+    const at = this.posAt(t);
+    this.pos = at;
+    const r = this.p("radius_px", t, 20) * PX;
+    this.currentRadius = r;
+    const st = this.effect.stage;
+    let dir;
+    if (f) {
+      const ta = Math.min(t, f.end_ms - 1);
+      dir = this.posAt(ta + 10).sub(this.posAt(ta - 10));
+    }
+    if (!dir || dir.lengthSq() < 1e-8) dir = new THREE.Vector3().subVectors(st.anchor("target"), st.caster).setY(0);
+    if (dir.lengthSq() < 1e-8) dir.set(1, 0, 0);
+    const landed = f && t >= f.end_ms;
+    const spinT = landed && this.base.stick ? f.end_ms : t;
+    const angle = (spinT / 1000) * this.p("spin_hz", t, 3) * Math.PI * 2 + this.rng("spin")() * Math.PI * 2;
+    const op = Math.max(0, Math.min(1, this.p("opacity", t, 1)));
+    this.weapon.update(at, dir, r, angle, I, op);
+    // A faint glow round the weapon; most of its light is the crackle.
+    this.shell.visible = true;
+    this.shell.position.copy(at);
+    this.shell.scale.setScalar(r * 1.5);
+    this.shellMat.opacity = 0.035 * I * op;
+    const count = Math.round(this.p("crackle_count", t, 4));
+    const n = this.rng("wobble", Math.floor(t / 40));
+    let segs = [];
+    for (let i = 0; i < count; i++) {
+      const d = new THREE.Vector3(n.range(-1, 1), n.range(-1, 1), n.range(-1, 1)).normalize();
+      const a = at.clone().addScaledVector(d, r * 0.5);
+      const b = at.clone().addScaledVector(d, r * n.range(1.3, 2.4));
+      segs = segs.concat(boltSegments(a, b, { segments: 5, jaggedness: 0.9, taper: 0.5 }, n));
+    }
+    this.arcs.set(segs, 0.01);
+    this.arcs.opacity = I;
+    if (landed) {
+      this.trail.setPaths([], 0);
+      this.trailCore.setPaths([], 0);
+    } else this.updateTrail(t, r * 0.22, I * 0.6);
   }
 
   updateMeteor(t, I) {
@@ -3601,7 +3811,11 @@ export class Effect {
     const ordered = [...template.layers].sort((a, b) => (a.z ?? 0) - (b.z ?? 0));
     for (const def of ordered) {
       const Ctor = TYPES[def.type] || Layer;
-      const perTarget = isChain && def.anchor === "target" ? Math.max(1, this.stage.targets.length) : 1;
+      // Chain spells repeat target layers on every target; splash spells
+      // repeat "splash" layers on every enemy around the primary target.
+      const perTarget = def.anchor === "splash"
+        ? Math.max(1, this.stage.splashTargets.length)
+        : isChain && def.anchor === "target" ? Math.max(1, this.stage.targets.length) : 1;
       for (let k = 0; k < perTarget; k++) {
         const layer = new Ctor(this, def, k);
         // Ground marks draw first (decals, then rings), in z order, so
@@ -3616,6 +3830,7 @@ export class Effect {
   }
 
   chainOffset(def, instance) {
+    if (def.anchor === "splash") return this.stage.splashDelay(instance);
     if (this.template.space.travel !== "chain" || def.anchor !== "target") return 0;
     return this.stage.hopDelay(instance);
   }

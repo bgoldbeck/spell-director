@@ -1,0 +1,789 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-thunderhead-verdict",
+  "name": "Thunderhead Verdict",
+  "description": "A storm cloud boils up over the chosen enemy and the ground under it glows. A huge bolt drops onto the target, then bolts rain down on every enemy around it, rippling outward.",
+  "element": "lightning",
+  "archetype": "strike",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "sky",
+    "storm",
+    "cloud",
+    "barrage",
+    "telegraph",
+    "ripple"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2500,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 3.4,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 130
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A dark cloud over the group; the main bolt, then bolts landing farther out across the frame.",
+      "side": "Bolts of different lengths from the cloud base to each enemy, the main one thickest.",
+      "top": "The glowing telegraph disc, then a flash in the centre and flashes rippling out to each enemy.",
+      "three_quarter": "Hero view. Cloud, main strike and the outward barrage."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#B9C8FF",
+    "secondary": "#5B4DFF",
+    "accent": "#EAF0FF",
+    "shadow": "#171A26"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Bolt shapes, cloud puffs and the enemy layout change per cast."
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 800,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A storm cloud boils up over the chosen enemy; the ground under it glows."
+    },
+    {
+      "id": "strike",
+      "phase": "impact",
+      "start_ms": 800,
+      "end_ms": 1050,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "A huge bolt drops onto the target."
+    },
+    {
+      "id": "barrage",
+      "phase": "impact",
+      "start_ms": 850,
+      "end_ms": 1250,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.6,
+        "to": 1.0,
+        "flicker_hz": 18
+      },
+      "intent": "Bolts rain down on each enemy round it, rippling outward."
+    },
+    {
+      "id": "barrage-hit",
+      "phase": "impact",
+      "start_ms": 850,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy is struck."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1250,
+      "end_ms": 2500,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "The cloud thins; scorch marks smoke."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hand-crackle",
+      "type": "crackle",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": 5,
+        "length_px": 16,
+        "jaggedness": 0.9,
+        "regen_ms": 40,
+        "radius_px": 22
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Energy crawling over the hand and forearm before the throw.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "cloud",
+      "type": "smoke",
+      "beats": [
+        "gather",
+        "strike",
+        "barrage",
+        "fade"
+      ],
+      "anchor": "sky",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 3,
+      "params": {
+        "count": 30,
+        "rise_speed": 0,
+        "size_px": {
+          "min": 90,
+          "max": 110
+        },
+        "lifetime_ms": 1600,
+        "opacity": 0.6,
+        "spread_px": 200
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A dark storm cloud boiling over the target area.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "cloud-glow",
+      "type": "glow",
+      "beats": [
+        "barrage"
+      ],
+      "anchor": "sky",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 220,
+        "softness": 0.9,
+        "pulse_hz": 12
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The cloud lit from inside by the strikes.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ground-glow",
+      "type": "decal",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "secondary",
+      "z": 1,
+      "params": {
+        "shape": "warning_ring",
+        "radius_px": 260,
+        "opacity": 0.7,
+        "fade_in_ms": 200,
+        "grow_ms": 500,
+        "start_scale": 0.4,
+        "rotation_deg": 0,
+        "fade_ms": 80,
+        "pulse_hz": 4
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The telegraph: the whole area glowing under the cloud.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "main-bolt",
+      "type": "bolt",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "segments": 16,
+        "jaggedness": 0.65,
+        "width_px": 12,
+        "taper": 0.35,
+        "branch_chance": 0.35,
+        "branch_depth": 2,
+        "branch_length_ratio": 0.35,
+        "regen_ms": 40,
+        "restrikes": 2,
+        "restrike_gap_ms": 60,
+        "afterimage_ms": 140,
+        "glow_px": 22
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A massive branching bolt onto the target.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 7,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rain-bolts",
+      "type": "bolt",
+      "beats": [
+        "barrage"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "params": {
+        "from": "sky",
+        "segments": 12,
+        "jaggedness": 0.7,
+        "width_px": {
+          "min": 5,
+          "max": 7
+        },
+        "taper": 0.3,
+        "branch_chance": 0.25,
+        "branch_depth": 1,
+        "branch_length_ratio": 0.3,
+        "regen_ms": {
+          "min": 40,
+          "max": 60
+        },
+        "afterimage_ms": 100,
+        "glow_px": 14
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Bolts from the cloud onto each enemy round the target.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.5
+      }
+    },
+    {
+      "id": "strike-sound",
+      "type": "sound_cue",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 1.0,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "barrage-sound",
+      "type": "sound_cue",
+      "beats": [
+        "barrage-hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "zap",
+        "gain": 0.4,
+        "pitch": {
+          "min": 0.8,
+          "max": 1.1
+        }
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "strike",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 300,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "strike",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7,
+        "reveal_ms": 160
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 12,
+          "max": 14
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "strike",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 120,
+          "max": 135
+        },
+        "opacity": 0.75,
+        "fade_in_ms": 60,
+        "grow_ms": 260,
+        "start_scale": 0.4,
+        "lifetime_ms": 4000,
+        "fade_ms": 2000,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A broad dark burn left where the spell landed.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hit-light",
+      "type": "light",
+      "beats": [
+        "strike",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 2.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The blast lights up every enemy standing round the target.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "barrage-hit"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "barrage-hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "barrage-hit"
+      ],
+      "anchor": "splash",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "barrage-hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "crack",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "barrage-hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design. Bolts anchored at splash with from: sky drop on each enemy; ripple 130 ms per unit sends them outward."
+}
