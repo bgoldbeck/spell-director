@@ -84,7 +84,7 @@ The director is an AI agent following [director-playbook.md](director-playbook.m
 
 ## 6. Viewer
 
-`run.bat` (Windows) or `./run.sh` → http://localhost:47811 (default port; `--port` or `SPELLDIRECTOR_PORT` to change, next free port if busy). Only one viewer runs at a time: a second launch opens the browser on the running one and exits (OS lock in the temp folder; `--new-instance` skips it). The header shows the app version from `/version.json`. Laid out like the motion study:
+`run.bat` (Windows) or `./run.sh` → http://localhost:47811 (default port; `--port` or `SPELLDIRECTOR_PORT` to change, next free port if busy). Only one viewer runs at a time: a second launch opens the browser on the running one and exits (OS lock in the temp folder; `--new-instance` skips it). The launch scripts go through `tools/launch.py`, which first fast-forwards the checkout from GitHub when that's safe, then runs `serve.py --replace`: the running viewer is asked to stop (`POST /api/shutdown`, localhost-only header) or its process is ended, and a fresh one starts in its place. The header shows the app version from `/version.json`. Laid out like the motion study:
 
 - **Type** and **Spell** dropdowns: templates are grouped by their `element` (new types show up on their own), with "All types" listing every spell under its type; **‹ Prev / Next ›** (or `[` / `]`) step through the chosen type. Beat buttons (jump to a beat) with a **Clear** button; beat-intent captions on the stage; sound cues play in sync and show as captions, with a **Sound on/off** toggle (off by default; M; remembered per browser; `?sound=on` or `?sound=off` in the URL).
 - Scrubber with colored phase bands; Replay, Pause/Play, speed 0.1×–2×, Loop, Seed + **New cast**, **Focus view** (F) for recording.
