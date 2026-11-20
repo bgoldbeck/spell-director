@@ -1,0 +1,778 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "wind-galeheart-cyclone",
+  "name": "Galeheart Cyclone",
+  "description": "A pale cyclone spins up round the caster, faster and faster, sucking in dust, grit and leaves. Then it blasts outward in a gale that sweeps over every enemy round them, flinging debris and a wall of dust.",
+  "element": "wind",
+  "archetype": "nova",
+  "tags": [
+    "splash",
+    "multi-target",
+    "point-blank",
+    "pbae",
+    "nova",
+    "cyclone",
+    "vortex",
+    "gale",
+    "knockback"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Point-blank area spell: no target, blast every enemy in a radius round the caster."
+  },
+  "timing": {
+    "duration_ms": 2800,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 8,
+        "max": 9
+      },
+      "radius": {
+        "min": 2.6,
+        "max": 3.0
+      },
+      "ripple_ms": 120
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A cyclone round the caster, then a wall of dust and leaves blown at the camera.",
+      "side": "The cyclone's height; the gale is low and wide.",
+      "top": "Hero: the spiral grooves and the cyclone ring, then the dust ring hitting every enemy.",
+      "three_quarter": "Hero view. Spin-up then blast."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#CFE9E4",
+    "secondary": "#8FB8B0",
+    "accent": "#F2FFF9",
+    "shadow": "#4A5651"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Debris, leaves, dust and the enemy ring change per cast."
+  },
+  "beats": [
+    {
+      "id": "spin",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "A cyclone spins up round the caster, sucking in dust and leaves."
+    },
+    {
+      "id": "blast",
+      "phase": "impact",
+      "start_ms": 900,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "It blasts outward in a gale."
+    },
+    {
+      "id": "wave",
+      "phase": "impact",
+      "start_ms": 920,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The gale sweeps over everyone, flinging debris."
+    },
+    {
+      "id": "hit",
+      "phase": "impact",
+      "start_ms": 960,
+      "end_ms": 1250,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy is battered."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1150,
+      "end_ms": 2800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "Dust hangs and settles."
+    }
+  ],
+  "layers": [
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "spin"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Power welling up round the caster's body, brightening as the charge builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "spin"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 40,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 550,
+        "gather_px": 220,
+        "swirl": 0.5,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Motes pulled in from the whole blast area, spiralling into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-light",
+      "type": "light",
+      "beats": [
+        "spin"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "airy",
+        "look": "The caster lighting up the enemies round them as the charge builds.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "spin"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "pull-rings",
+      "type": "ring",
+      "beats": [
+        "spin"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 340,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.7,
+        "repeat_ms": 260,
+        "count": 3,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Rings sliding in over the ground toward the caster: the area being drawn in.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "cyclone",
+      "type": "vortex",
+      "beats": [
+        "spin",
+        "blast"
+      ],
+      "anchor": "caster",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "height_px": 260,
+        "base_radius_px": 60,
+        "top_radius_px": 200,
+        "flare": 1.4,
+        "spin_hz": 1.5,
+        "strands": 10,
+        "twist": 1.3,
+        "turbulence": 0.6,
+        "sway_px": 14,
+        "grow_ms": 600,
+        "opacity": 0.6
+      },
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "spin_hz",
+          "value": 0.6
+        },
+        {
+          "t_ms": 900,
+          "param": "spin_hz",
+          "value": 3.5,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "airy",
+        "look": "A pale cyclone round the caster, streaky and fast.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "swirl",
+          "speed": 4
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "debris",
+      "type": "sparks",
+      "beats": [
+        "spin",
+        "blast"
+      ],
+      "anchor": "caster",
+      "attach_to": "cyclone",
+      "color": "shadow",
+      "z": 8,
+      "params": {
+        "look": "debris",
+        "count": 30,
+        "speed": 160,
+        "gravity": 400,
+        "lifetime_ms": 900,
+        "size_px": 5,
+        "spread_deg": 360,
+        "drag": 0.2
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Grit and stones caught in the cyclone and flung out.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "leaves",
+      "type": "sparks",
+      "beats": [
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 9,
+      "params": {
+        "look": "leaf",
+        "count": 50,
+        "speed": 520,
+        "speed_spread": 0.5,
+        "gravity": 100,
+        "lifetime_ms": 1100,
+        "size_px": 5,
+        "spread_deg": 360,
+        "drag": 0.6
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Leaves blasted outward on the gale.",
+        "technique": "particles",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gust-dust",
+      "type": "smoke",
+      "beats": [
+        "blast",
+        "wave"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 4,
+      "params": {
+        "count": 40,
+        "rise_speed": 10,
+        "size_px": {
+          "min": 40,
+          "max": 48
+        },
+        "lifetime_ms": 1100,
+        "opacity": 0.55,
+        "spread_speed": 520
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A dust wall blown outward.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "swirl-mark",
+      "type": "decal",
+      "beats": [
+        "spin",
+        "blast",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "shape": "swirl",
+        "radius_px": 200,
+        "opacity": 0.8,
+        "fade_in_ms": 300,
+        "grow_ms": 800,
+        "start_scale": 0.3,
+        "lifetime_ms": 2400,
+        "fade_ms": 900,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Spiral grooves scoured round the caster.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "blast-sound",
+      "type": "sound_cue",
+      "beats": [
+        "blast"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 1.0,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "nova-flash",
+      "type": "flash",
+      "beats": [
+        "blast"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 280,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A blinding pop centred on the caster as the charge breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "blast"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A full-screen flash for the moment of release.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-1",
+      "type": "ring",
+      "beats": [
+        "blast",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 420,
+        "thickness_px": 26,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "airy",
+        "look": "The lead shockwave: a bright, thick ring racing out over the ground past every enemy.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-2",
+      "type": "ring",
+      "beats": [
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 360,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A second, softer wave a beat behind the first.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-shake",
+      "type": "camera_shake",
+      "beats": [
+        "blast"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 8,
+          "max": 10
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "nova-sound",
+      "type": "sound_cue",
+      "beats": [
+        "blast"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "nova-light",
+      "type": "light",
+      "beats": [
+        "blast",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 3.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A burst of light from the caster that throws every enemy into relief.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "air-ring",
+      "type": "ring",
+      "beats": [
+        "blast"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 6,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 300,
+        "thickness_px": 12,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A ring of warped air standing up round the caster, facing the camera.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-mark",
+      "type": "decal",
+      "beats": [
+        "blast",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "shape": "swirl",
+        "radius_px": {
+          "min": 300,
+          "max": 330
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.75
+      },
+      "shader": {
+        "material": "airy",
+        "look": "The ground torn open round the caster out to the edge of the blast.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "shadow",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "swept",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "impact",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original point-blank wind design: a vortex round the caster that spins up by keyframe, then an outward gale of dust, leaves and rings."
+}

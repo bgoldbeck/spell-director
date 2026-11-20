@@ -36,6 +36,7 @@ KNOWN_PARAMS = {
         "radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease", "look", "height_px", "bubble", "finish", "ripple",
         "approach_deg", "approach_yaw_deg", "smoke_trail_ms", "smoke_opacity", "crescent_deg", "tilt_deg",
         "side_offset_px", "scatter_px", "opacity", "squash", "shape", "spin_hz", "spin_axis", "stick", "from", "wrap",
+        "start_out_px",
     },
     "beam": {
         "width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms", "style", "flow_speed", "turbulence",
