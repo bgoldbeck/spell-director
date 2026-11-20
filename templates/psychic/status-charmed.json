@@ -97,7 +97,7 @@
     {
       "id": "expire",
       "phase": "dissipation",
-      "start_ms": 4200,
+      "start_ms": 4234,
       "end_ms": 5000,
       "intensity": {
         "shape": "ease_in",
@@ -190,7 +190,7 @@
         "count": 4,
         "speed": 35,
         "gravity": -15,
-        "lifetime_ms": 1000,
+        "lifetime_ms": 850,
         "size_px": 14,
         "spread_deg": 40,
         "drag": 0.3,

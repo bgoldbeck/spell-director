@@ -96,7 +96,7 @@
     {
       "id": "expire",
       "phase": "dissipation",
-      "start_ms": 4200,
+      "start_ms": 4234,
       "end_ms": 5000,
       "intensity": {
         "shape": "ease_in",
@@ -125,7 +125,7 @@
         "fade_in_ms": 600,
         "lifetime_ms": 4300,
         "fade_ms": 600,
-        "symmetry": 6,
+        "symmetry": 4,
         "spin_deg_per_s": 12,
         "depth": 0,
         "detail": 0.3
@@ -157,7 +157,7 @@
         "speed": 40,
         "speed_spread": 0.2,
         "gravity": -8,
-        "lifetime_ms": 1000,
+        "lifetime_ms": 850,
         "size_px": 20,
         "spread_deg": 20,
         "drag": 0.2,
@@ -216,7 +216,7 @@
         "count": 12,
         "speed": 12,
         "gravity": -25,
-        "lifetime_ms": 1000,
+        "lifetime_ms": 850,
         "size_px": 2,
         "spread_deg": 90,
         "drag": 0.5,

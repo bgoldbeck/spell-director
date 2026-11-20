@@ -95,7 +95,7 @@
     {
       "id": "expire",
       "phase": "dissipation",
-      "start_ms": 4200,
+      "start_ms": 4234,
       "end_ms": 5000,
       "intensity": {
         "shape": "ease_in",

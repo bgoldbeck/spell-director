@@ -96,7 +96,7 @@
     {
       "id": "expire",
       "phase": "dissipation",
-      "start_ms": 4200,
+      "start_ms": 4234,
       "end_ms": 5000,
       "intensity": {
         "shape": "ease_in",
@@ -159,8 +159,8 @@
         "tilt_deg": -30,
         "jitter": 0.6,
         "rise_ms": 250,
-        "hold_ms": 3700,
-        "sink_ms": 500,
+        "hold_ms": 4000,
+        "sink_ms": 450,
         "debris_count": 1,
         "debris_speed": 120,
         "debris_size_px": 3,
@@ -237,7 +237,7 @@
         "count": 10,
         "speed": 30,
         "gravity": -15,
-        "lifetime_ms": 1000,
+        "lifetime_ms": 850,
         "size_px": 4,
         "spread_deg": 120,
         "drag": 0.5,

@@ -244,6 +244,9 @@ def _check_loop(doc: dict, beats: dict, errors: list[str], warnings: list[str]) 
             if life > end - start:
                 warnings.append(f"layer {layer['id']!r} (smoke): lifetime_ms {life} is longer than the loop "
                                 f"({end - start} ms), so puffs pop when they are reborn")
+        if layer["type"] == "decal" and isinstance(params.get("grow_ms"), (int, float)) and w0 + params["grow_ms"] > start:
+            warnings.append(f"layer {layer['id']!r} (decal): still growing when the loop starts (grow_ms {params['grow_ms']}), "
+                            "so the loop is not seamless; let it reach full size before the loop")
         if layer["type"] == "ring" and isinstance(params.get("repeat_ms"), (int, float)) and params["repeat_ms"] > 0:
             n = max(1, min(8, round(params.get("count", 1))))
             lead = params["repeat_ms"] * (n - 1) / n

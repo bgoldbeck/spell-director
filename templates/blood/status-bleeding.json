@@ -96,7 +96,7 @@
     {
       "id": "expire",
       "phase": "dissipation",
-      "start_ms": 4200,
+      "start_ms": 4234,
       "end_ms": 5000,
       "intensity": {
         "shape": "ease_in",
@@ -123,7 +123,7 @@
         "radius_px": 55,
         "opacity": 0.9,
         "fade_in_ms": 400,
-        "grow_ms": 2400,
+        "grow_ms": 1100,
         "start_scale": 0.3,
         "lifetime_ms": 4600,
         "fade_ms": 400,
