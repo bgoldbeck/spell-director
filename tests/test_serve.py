@@ -1,7 +1,10 @@
 import json
+import os
 import socket
+import subprocess
 import sys
 import threading
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -93,6 +96,77 @@ def test_new_instance_flag_skips_the_lock(tmp_path, monkeypatch):
         assert ran == [None]
     finally:
         held.release()
+
+
+def _start_viewer(tmp_path, *flags):
+    env = {**os.environ, "SPELLDIRECTOR_INSTANCE_DIR": str(tmp_path), "PYTHONUNBUFFERED": "1"}
+    return subprocess.Popen([sys.executable, str(ROOT / "tools" / "serve.py"), "--port", "0", *flags],
+                            env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+
+def test_replace_stops_the_running_viewer_and_starts_fresh(tmp_path):
+    lock = serve.InstanceLock(tmp_path)
+    first = _start_viewer(tmp_path)
+    second = None
+    try:
+        old_url = serve.find_running(lock, wait=15)
+        assert old_url and serve.is_viewer(old_url)
+        second = _start_viewer(tmp_path, "--replace")
+        assert first.wait(timeout=15) == serve.REPLACED  # asked to stop, and it did
+        assert "Asked to stop" in first.stdout.read()
+        new_url = None
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            info = lock.running_info()
+            if info.get("pid") == second.pid and serve.is_viewer(info["url"]):
+                new_url = info["url"]
+                break
+            time.sleep(0.2)
+        assert new_url, "the fresh viewer did not start"
+        assert not serve.InstanceLock(tmp_path).acquire()  # and it holds the lock: only one runs
+    finally:
+        for proc in (first, second):
+            if proc and proc.poll() is None:
+                proc.kill()
+                proc.wait()
+
+
+def test_shutdown_needs_the_launcher_header(tmp_path, monkeypatch):
+    server, base = _serve(tmp_path, monkeypatch)
+    try:
+        status, body = _post(base, "/api/shutdown", b"")
+        assert status == 403
+        assert serve.is_viewer(base)  # still running
+        assert serve.request_shutdown(base)
+        deadline = time.monotonic() + 5
+        while serve.is_viewer(base, timeout=0.3) and time.monotonic() < deadline:
+            time.sleep(0.1)
+        assert not serve.is_viewer(base, timeout=0.3)
+    finally:
+        server.server_close()
+
+
+def test_stop_viewer_ends_a_process_that_does_not_answer():
+    proc = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+    try:
+        assert serve.stop_viewer(None, proc.pid, wait=10, gone=lambda: proc.poll() is not None)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+        proc.wait()
+
+
+def test_bind_waits_for_a_port_that_is_being_freed():
+    blocker = socket.socket()
+    blocker.bind(("127.0.0.1", 0))
+    blocker.listen(1)
+    port = blocker.getsockname()[1]
+    threading.Timer(0.5, blocker.close).start()
+    server = serve.bind("127.0.0.1", port, wait=5)
+    try:
+        assert server.server_address[1] == port
+    finally:
+        server.server_close()
 
 
 # ---------------------------------------------------------------- analyze
