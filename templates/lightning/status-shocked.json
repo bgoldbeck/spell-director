@@ -1,0 +1,395 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-status-shocked",
+  "name": "Shocked",
+  "description": "The victim is shocked: electricity crawls over their skin in jittering blue-white creases, arcs snap round their body, sparks spit off them and the ground under them is scorched.",
+  "element": "lightning",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "shocked",
+    "lightning",
+    "shock",
+    "electric",
+    "paralyze",
+    "damage-over-time"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Shocked status effect: electricity crawling over the body"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Blue-white creases flickering over the whole body, short arcs snapping round it and sparks spitting off.",
+      "side": "The same crawling static all round; arcs in depth.",
+      "top": "A scorch with glowing cracks under the victim, arcs crackling over the body.",
+      "three_quarter": "Hero view. A twitching figure crawling with electricity."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#8FD8FF",
+    "secondary": "#3A7BFF",
+    "accent": "#D8F2FF",
+    "shadow": "#0A1430"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A jolt of electricity: a flash and sparks."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "A jolt: a flash and a burst of sparks."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are shocked: static crawls, arcs snap, sparks spit. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The charge drains away."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": -2,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 35,
+        "opacity": 0.6,
+        "fade_in_ms": 200,
+        "lifetime_ms": 4600,
+        "fade_ms": 400
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A light scorch under the victim.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "charged-cracks",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": -1,
+      "blend": "add",
+      "params": {
+        "shape": "cracks",
+        "radius_px": 40,
+        "opacity": 0.7,
+        "fade_in_ms": 150,
+        "lifetime_ms": 4300,
+        "fade_ms": 400,
+        "pulse_hz": 2
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Glowing cracks of charge in the ground.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "static-skin",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "static",
+        "fill": 0.9,
+        "rim": 0.6,
+        "scale": 7,
+        "regen_ms": 70,
+        "opacity": 0.9
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Jittering blue-white electric creases crawling over the skin.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 7,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "notes": "Redraw the crease noise every few frames (stepped time) for a jittery look."
+      }
+    },
+    {
+      "id": "arcs",
+      "type": "crackle",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 8,
+      "params": {
+        "count": 4,
+        "length_px": 16,
+        "jaggedness": 0.9,
+        "regen_ms": 60,
+        "radius_px": 28,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Short arcs snapping round the body.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        }
+      }
+    },
+    {
+      "id": "spit-sparks",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "count": 24,
+        "speed": 260,
+        "gravity": 600,
+        "lifetime_ms": 300,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.3,
+        "emit_radius_px": 15,
+        "height_px": 55
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Sparks spitting off the body.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard"
+        }
+      }
+    },
+    {
+      "id": "shock-glow",
+      "type": "glow",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 55,
+        "softness": 0.9,
+        "height_px": 50,
+        "pulse_hz": 4
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A buzzing blue glow round the body.",
+        "technique": "light"
+      }
+    },
+    {
+      "id": "jolt-flash",
+      "type": "flash",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 10,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 1
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A white jolt flash.",
+        "technique": "procedural"
+      }
+    },
+    {
+      "id": "jolt-sparks",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "count": 40,
+        "speed": 380,
+        "gravity": 500,
+        "lifetime_ms": 380,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.3,
+        "height_px": 55
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A burst of sparks with the jolt.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "status-light",
+      "type": "light",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "radius": 4,
+        "energy": 1.4,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The affliction's own light on the victim and the ground.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "jolt",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "zap",
+        "gain": 0.7
+      }
+    },
+    {
+      "id": "static-buzz",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "buzz",
+        "gain": 0.3,
+        "repeat_ms": 1500
+      }
+    },
+    {
+      "id": "zaps",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.25,
+        "repeat_ms": 750,
+        "offset_ms": 100
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Crease patterns, arcs and sparks change per cast (and redraw every few frames)."
+  },
+  "director_notes": "Status effect: a static-patterned coat redrawn every 70 ms (ticks wrap with the loop), crackle lifted to chest height, a fast-pulsing glow. Loop 1200-4200 ms."
+}

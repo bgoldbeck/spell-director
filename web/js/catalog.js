@@ -45,12 +45,23 @@ export function groupByLine(templates) {
 // Kinds of spell that cut across elements and lines. "Auras": persistent
 // effects around the caster that loop while they last (templates with a
 // timing.loop_range), whatever their element or line. Type "kind:aura".
+// "Status effects": lingering afflictions on a target (archetype "status":
+// burning, frozen, poisoned, asleep...) that apply, loop while they last and
+// expire. Type "kind:status".
 // "Buffs": see isBuff.
 export const KIND_PREFIX = "kind:";
 
-export function isAura(tpl) {
+const loops = (tpl) => {
   const r = tpl?.timing?.loop_range;
   return !!r && typeof r.start_ms === "number" && typeof r.end_ms === "number" && r.end_ms > r.start_ms;
+};
+
+export function isStatusEffect(tpl) {
+  return tpl?.archetype === "status";
+}
+
+export function isAura(tpl) {
+  return loops(tpl) && !isStatusEffect(tpl);
 }
 
 // "Buffs": spells cast on a character to help them (tagged "buff"): a
@@ -66,6 +77,8 @@ export function groupByKind(templates) {
   if (auras.length) groups.push({ type: `${KIND_PREFIX}aura`, label: "Auras", kind: true, templates: auras });
   const buffs = templates.filter(isBuff).sort(byName);
   if (buffs.length) groups.push({ type: `${KIND_PREFIX}buff`, label: "Buffs", kind: true, templates: buffs });
+  const statuses = templates.filter(isStatusEffect).sort(byName);
+  if (statuses.length) groups.push({ type: `${KIND_PREFIX}status`, label: "Status effects", kind: true, templates: statuses });
   return groups;
 }
 

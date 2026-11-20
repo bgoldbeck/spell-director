@@ -113,3 +113,21 @@ def test_every_template_has_a_ground_mark():
     for path in TEMPLATES:
         doc = json.loads(path.read_text(encoding="utf-8"))
         assert any(layer["type"] == "decal" for layer in doc["layers"]), path.name
+
+
+def test_status_effects_validate_coats_and_steady_sparks():
+    doc = load(ROOT / "templates" / "ice" / "status-frozen.json")
+    assert doc["archetype"] == "status"
+    errors, warnings = check(doc)
+    assert not errors and not warnings
+    coat = next(layer for layer in doc["layers"] if layer["type"] == "coat")
+    coat["params"]["glitter"] = 1
+    errors, warnings = check(doc)
+    assert not errors
+    assert any("glitter" in w for w in warnings)
+    # Steady sparks never come and go, so they need no lead-in before the loop.
+    doc = load(ROOT / "templates" / "physical" / "status-dazed.json")
+    halo = next(layer for layer in doc["layers"] if layer["id"] == "star-halo")
+    halo["params"]["lifetime_ms"] = 5000
+    errors, warnings = check(doc)
+    assert not errors and not warnings

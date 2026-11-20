@@ -1,0 +1,391 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "water-status-bubbled",
+  "name": "Bubbled",
+  "description": "The victim is trapped in a floating bubble of water: a wobbling, glossy sphere closes round them, tiny bubbles rise inside it, light ripples on the ground, and it pops with a splash when the effect ends.",
+  "element": "water",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "bubbled",
+    "water",
+    "bubble",
+    "trap",
+    "crowd-control",
+    "prison"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Bubbled status effect: victim trapped in a floating bubble that pops"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A big clear sphere with a bright rim round the whole figure, small bubbles rising inside.",
+      "side": "The same sphere: round from every side.",
+      "top": "A round bubble over a pale water ring, the figure inside.",
+      "three_quarter": "Hero view. A person sealed in a wobbling bubble of water, bubbles rising inside; it pops in a splash."
+    }
+  },
+  "palette": {
+    "core": "#F2FDFF",
+    "primary": "#7FDBFF",
+    "secondary": "#2A86C8",
+    "accent": "#C9F3FF",
+    "shadow": "#0C2234"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A splash as the bubble closes."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The bubble wraps round them with a splash."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are trapped: the bubble wobbles, bubbles rise inside. Seamless loop."
+    },
+    {
+      "id": "finale",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 4600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The bubble pops: drops splash out."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Pop! The bubble bursts in a splash of drops."
+    }
+  ],
+  "layers": [
+    {
+      "id": "water-shadow",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 50,
+        "opacity": 0.35,
+        "fade_in_ms": 400,
+        "lifetime_ms": 4200,
+        "fade_ms": 300
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A pale wet ring of light under the bubble.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "bubble",
+      "type": "orb",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 8,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 20
+        },
+        {
+          "t_ms": 400,
+          "param": "radius_px",
+          "value": 64,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "bubble": true,
+        "radius_px": 64,
+        "height_px": 50,
+        "wobble": 0.04,
+        "pulse_hz": 0.67,
+        "crackle_count": 0,
+        "opacity": 0.9
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A glossy, wobbling sphere of water: clear in the middle, a bright rim, a moving highlight.",
+        "technique": "mesh",
+        "fresnel": 0.9,
+        "distortion": 0.4,
+        "noise": {
+          "type": "simplex",
+          "scale": 2,
+          "speed": 0.6,
+          "contrast": 0.3
+        },
+        "notes": "Refractive sphere with a fresnel rim; vertex wobble."
+      }
+    },
+    {
+      "id": "inner-bubbles",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 9,
+      "params": {
+        "look": "glyph",
+        "glyph": "bubble",
+        "count": 10,
+        "speed": 30,
+        "gravity": -40,
+        "lifetime_ms": 850,
+        "size_px": 9,
+        "spread_deg": 30,
+        "drag": 0.4,
+        "emit_radius_px": 24,
+        "height_px": 5,
+        "sway": 0.4
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Small air bubbles rising inside the big one.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "water-tint",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "glow",
+        "fill": 0.12,
+        "rim": 0.6,
+        "scale": 4,
+        "opacity": 0.5
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A watery blue tint on the trapped victim.",
+        "technique": "mesh",
+        "fresnel": 0.6
+      }
+    },
+    {
+      "id": "closing-splash",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "look": "droplet",
+        "count": 16,
+        "speed": 200,
+        "gravity": 700,
+        "lifetime_ms": 450,
+        "size_px": 3,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A splash as the bubble closes.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "pop-splash",
+      "type": "sparks",
+      "beats": [
+        "finale"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "look": "droplet",
+        "count": 34,
+        "speed": 300,
+        "gravity": 700,
+        "lifetime_ms": 380,
+        "size_px": 3,
+        "spread_deg": 360,
+        "drag": 0.3,
+        "height_px": 50,
+        "emit_radius_px": 40
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Drops flung out as the bubble pops.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "pop-ring",
+      "type": "ring",
+      "beats": [
+        "finale"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 9,
+      "plane": "billboard",
+      "params": {
+        "start_radius_px": 50,
+        "end_radius_px": 100,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The bubble's skin snapping outward as it pops.",
+        "technique": "procedural"
+      }
+    },
+    {
+      "id": "status-light",
+      "type": "light",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "radius": 4,
+        "energy": 0.8,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The affliction's own light on the victim and the ground.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bubble-close",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "splash",
+        "gain": 0.5,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "bubble-blub",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.2,
+        "pitch": 1.8,
+        "repeat_ms": 1000
+      }
+    },
+    {
+      "id": "bubble-pop",
+      "type": "sound_cue",
+      "beats": [
+        "finale"
+      ],
+      "params": {
+        "cue": "splash",
+        "gain": 0.6,
+        "pitch": 1.5
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The wobble and the inner bubbles change per cast."
+  },
+  "director_notes": "Status effect: the existing bubble orb (fresnel shell) held at chest height round the victim, inner bubble glyphs, and a pop finale. Loop 1200-4200 ms."
+}

@@ -1,0 +1,473 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "ice-status-frozen",
+  "name": "Frozen Solid",
+  "description": "The victim is frozen inside a block of ice: ice climbs up them as they are caught, they stand stiff in a clear, frosted crystal that glints, cold mist pools round it, and it shatters when the effect ends.",
+  "element": "ice",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "frozen",
+    "ice",
+    "freeze",
+    "stun",
+    "crowd-control"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Frozen status effect: victim trapped in a block of ice that shatters at the end"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A tall jagged block of clear ice with the frosted figure inside, white facet edges and glints, mist round its foot.",
+      "side": "The same block edge-on: it is a solid prism all round, not a flat card.",
+      "top": "A seven-sided ice block from above over a frost star on the ground, mist spreading out from it.",
+      "three_quarter": "Hero view. A person trapped in a block of ice, frost spreading round it; at the end it bursts into shards."
+    }
+  },
+  "palette": {
+    "core": "#F6FCFF",
+    "primary": "#9ADFFF",
+    "secondary": "#3C8FCF",
+    "accent": "#D9F4FF",
+    "shadow": "#14283A"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Frost shards burst out across the ground as the cold hits."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Ice climbs up the victim from the feet and closes over their head; frost shoots out across the ground."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are frozen solid: the block glints, frost glitters, cold mist creeps. Seamless loop."
+    },
+    {
+      "id": "finale",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 4600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The block shatters: shards and chunks of ice fly off."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The ice cracks and bursts apart into shards, and the frost thaws."
+    }
+  ],
+  "layers": [
+    {
+      "id": "frost",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": -1,
+      "params": {
+        "shape": "frost",
+        "radius_px": 70,
+        "opacity": 0.8,
+        "fade_in_ms": 400,
+        "reveal_ms": 500,
+        "lifetime_ms": 4500,
+        "fade_ms": 500,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Hoarfrost crystals spiking out from the frozen victim.",
+        "technique": "decal",
+        "fresnel": 0.4
+      }
+    },
+    {
+      "id": "frosted-skin",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 5,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "cover_px",
+          "value": 0
+        },
+        {
+          "t_ms": 600,
+          "param": "cover_px",
+          "value": 130,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "pattern": "frost",
+        "fill": 0.7,
+        "rim": 0.6,
+        "scale": 9,
+        "opacity": 0.85
+      },
+      "shader": {
+        "material": "icy",
+        "look": "The victim's skin crusted white with frost under the ice.",
+        "technique": "mesh",
+        "fresnel": 0.5,
+        "noise": {
+          "type": "voronoi",
+          "scale": 9,
+          "speed": 0,
+          "contrast": 0.6
+        }
+      }
+    },
+    {
+      "id": "ice-block",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 7,
+      "keyframes": [
+        {
+          "t_ms": 150,
+          "param": "cover_px",
+          "value": 0
+        },
+        {
+          "t_ms": 800,
+          "param": "cover_px",
+          "value": 135,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "pattern": "ice",
+        "shape": "crystal",
+        "fill": 0.55,
+        "rim": 0.9,
+        "scale": 5,
+        "opacity": 0.9,
+        "edge_glow": 0.6
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A clear, jagged block of ice with white facet edges, cracks inside and sharp glints.",
+        "technique": "mesh",
+        "fresnel": 0.8,
+        "distortion": 0.3,
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.5
+        },
+        "lighting": "lit",
+        "notes": "Refractive ice mesh round the character (screen-texture refraction), bright fresnel rim, a glint that crawls over the facets."
+      }
+    },
+    {
+      "id": "glints",
+      "type": "crackle",
+      "beats": [
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 8,
+      "params": {
+        "count": 3,
+        "length_px": 8,
+        "jaggedness": 0.3,
+        "regen_ms": 300,
+        "radius_px": 30,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "Sharp glints flashing over the ice.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        }
+      }
+    },
+    {
+      "id": "cold-mist",
+      "type": "smoke",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "count": 10,
+        "rise_speed": 5,
+        "size_px": 26,
+        "lifetime_ms": 950,
+        "opacity": 0.3,
+        "spread_px": 20,
+        "spread_speed": 60
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Freezing mist pooling round the foot of the block.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.3,
+          "contrast": 0.4
+        }
+      }
+    },
+    {
+      "id": "frost-burst",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "look": "shard",
+        "count": 14,
+        "speed": 260,
+        "gravity": 0,
+        "lifetime_ms": 500,
+        "size_px": 4,
+        "spread_deg": 200,
+        "drag": 0.9
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Ice needles shooting out across the ground as the cold hits.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "shatter-shards",
+      "type": "sparks",
+      "beats": [
+        "finale"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "look": "shard",
+        "count": 22,
+        "speed": 320,
+        "gravity": 300,
+        "lifetime_ms": 380,
+        "size_px": 4,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "height_px": 50,
+        "emit_radius_px": 18
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Shards of the block flying off as it bursts.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "shatter-chunks",
+      "type": "sparks",
+      "beats": [
+        "finale"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 14,
+        "speed": 220,
+        "gravity": 900,
+        "lifetime_ms": 650,
+        "size_px": 7,
+        "spread_deg": 150,
+        "drag": 0.2,
+        "height_px": 50,
+        "emit_radius_px": 20
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Chunks of ice tumbling down and skidding on the ground.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "ice-glow",
+      "type": "glow",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 60,
+        "softness": 0.95,
+        "height_px": 55,
+        "pulse_hz": 0.33
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A cold blue glow inside the ice.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "ice-light",
+      "type": "light",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "radius": 4,
+        "energy": 1.1,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Cold blue light from the ice.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "freeze-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "freeze",
+        "gain": 0.7
+      }
+    },
+    {
+      "id": "creak-sound",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "freeze",
+        "gain": 0.2,
+        "pitch": 0.6,
+        "repeat_ms": 1500,
+        "offset_ms": 400
+      }
+    },
+    {
+      "id": "shatter-sound",
+      "type": "sound_cue",
+      "beats": [
+        "finale"
+      ],
+      "params": {
+        "cue": "shatter",
+        "gain": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The block's facets and lean, the frost pattern and the shards change per cast."
+  },
+  "director_notes": "Status effect: two coats. A frost-patterned skin on the body (so the person still reads inside) and a faceted crystal around it that climbs up from the feet (cover_px keyframed). Debris sparks in the primary blue are the ice chunks of the shatter. Loop 1200-4200 ms."
+}

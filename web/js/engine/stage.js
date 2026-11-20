@@ -4,6 +4,9 @@
 import * as THREE from "three";
 import { resolveValue, rng, seedFor } from "./timeline.js";
 import { isSplash, splashLayout } from "./splash.js";
+import { isStatus } from "./status.js";
+
+export { isStatus };
 
 export const PX = 0.01; // template pixel sizes -> world units
 
@@ -16,6 +19,9 @@ export function buildStage(template, seed) {
   const scale = resolveValue(space.scale, seed, "space.scale") ?? 1;
 
   let targets = [];
+  // A status effect (archetype "status") afflicts one character: it stands
+  // alone at the origin, facing the front camera, with no caster.
+  const status = isStatus(template);
   // Splash: one primary target picked by the caster, and more enemies
   // standing around it (engine/splash.js). targets[0] is the primary; the
   // rest are its splash targets (anchor "splash"). Point-blank (centred on
@@ -25,7 +31,9 @@ export function buildStage(template, seed) {
   let splashDelays = [];
   let splashCentered = false;
   let splashCentre = null;
-  if (splash) {
+  if (status) {
+    targets = [new THREE.Vector3(0, 0, 0)];
+  } else if (splash) {
     const lay = splashLayout(space, seed);
     splashCentered = lay.centered;
     // Point-blank: no primary enemy, the caster is the centre. Ground-
@@ -59,7 +67,7 @@ export function buildStage(template, seed) {
   // Spells centred on the caster (a quake around them) frame the caster.
   const aroundCaster = space.destination === "caster";
   const far = aroundCaster ? 0 : targets.reduce((m, p) => Math.max(m, p.length()), point.x);
-  const center = new THREE.Vector3(far / 2, 0.6, 0);
+  const center = status ? new THREE.Vector3(0, 0.6, 0) : new THREE.Vector3(far / 2, 0.6, 0);
   // An arc footprint (a frontal wave) spreads sideways too: frame its width.
   const arcAngle = fp.shape === "arc" ? Math.min(180, resolveValue(fp.angle_deg, seed, "footprint.angle") ?? 90) : 0;
   const arcHalfWidth = arcAngle ? length * Math.sin(THREE.MathUtils.degToRad(arcAngle / 2)) + 0.7 : 0;
@@ -69,11 +77,12 @@ export function buildStage(template, seed) {
     : 0;
   // A splash spreads sideways round the primary target: frame its width too.
   const splashHalfWidth = splash ? targets.reduce((m, p) => Math.max(m, Math.abs(p.z)), 0) + 1 : 0;
-  const radius = Math.max(2.2, far / 2 + 1.2, space.origin === "sky" ? sky.y / 1.6 : 0, arcHalfWidth, aroundRadius, splashHalfWidth);
+  const radius = status ? 1.6 : Math.max(2.2, far / 2 + 1.2, space.origin === "sky" ? sky.y / 1.6 : 0, arcHalfWidth, aroundRadius, splashHalfWidth);
 
   return {
     caster,
     hand,
+    status,
     targets,
     point,
     sky,
@@ -138,20 +147,22 @@ export function viewCamera(view, stage, aspect) {
   const c = stage.center.clone();
   const tall = Math.min(stage.sky.y, 6);
   // Sky strikes frame their height too; so do splash spells dropped from the sky.
-  const strike = tall > 2.5 && (stage.targets.length <= 1 || stage.splashFromSky);
+  const strike = !stage.status && tall > 2.5 && (stage.targets.length <= 1 || stage.splashFromSky);
   // Frame the whole effect: its width (caster to furthest target) and, for
   // sky strikes, its height.
   // views.frame "close": a small effect on one character (a buff) fills the
   // frame: head to toe plus what floats just above the head.
   const close = !!stage.close;
   const halfH = close ? 1.3 : Math.max(stage.radius * 0.62, strike ? tall * 0.62 : 1.3);
-  const lookY = close ? 0.8 : strike ? tall * 0.42 : 0.55;
+  // A status effect frames the afflicted character with room above its
+  // head (stars, Zs, skulls float there).
+  const lookY = close ? 0.8 : strike ? tall * 0.42 : stage.status ? 0.72 : 0.55;
   const fov = 38;
   const dist = (halfH / Math.tan(THREE.MathUtils.degToRad(fov / 2))) * 1.1;
 
   if (view === "top") {
     // Orthographic plan view: vertical things collapse to points, footprints read true.
-    const h = close ? 1.25 : Math.max(stage.radius * 0.75, 1.6);
+    const h = close || stage.status ? 1.25 : Math.max(stage.radius * 0.75, 1.6);
     const cam = new THREE.OrthographicCamera(-h * aspect, h * aspect, h, -h, 0.1, 200);
     cam.userData.halfH = h;
     cam.position.set(c.x, 40, 0);
@@ -168,8 +179,9 @@ export function viewCamera(view, stage, aspect) {
       // Over the caster's shoulder, looking down the cast direction.
       // Behind the caster; with enemies all round a point-blank caster,
       // step back and up past the ring so none stands in front of the lens.
-      const back = close ? 3.4 : stage.splashCentered ? stage.splashRadius + 3.2 : Math.max(2.4, dist * 0.45);
-      cam.position.set(-back, close ? 1.05 : stage.splashCentered ? 3 : 1.25, 0.55);
+      // A status effect: face to face with the afflicted character.
+      const back = stage.status ? 3.3 : close ? 3.4 : stage.splashCentered ? stage.splashRadius + 3.2 : Math.max(2.4, dist * 0.45);
+      cam.position.set(-back, stage.status ? 1.15 : close ? 1.05 : stage.splashCentered ? 3 : 1.25, stage.status ? 0 : 0.55);
       look.set(c.x * 2, lookY, 0);
       cam.lookAt(look);
       break;

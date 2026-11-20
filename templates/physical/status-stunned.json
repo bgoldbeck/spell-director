@@ -1,0 +1,309 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "physical-status-stunned",
+  "name": "Stunned",
+  "description": "The victim is stunned stiff: spinning spirals whirl over their head, sparks crackle round it, a hard white rim outlines their body and a warning ring throbs on the ground.",
+  "element": "physical",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "stunned",
+    "stun",
+    "knockout",
+    "crowd-control",
+    "comic"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Stunned status effect: spirals over the head, sparks"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Two spinning spirals over the head, crackling sparks round it and a bright rim round the body.",
+      "side": "Spirals and sparks above the head edge-on; the rim outlines the body.",
+      "top": "A throbbing yellow ring on the ground round the victim, spirals in the middle.",
+      "three_quarter": "Hero view. A rigid figure with spirals whirling over its head."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#FFE14A",
+    "secondary": "#E08A10",
+    "accent": "#FFF3A0",
+    "shadow": "#2A2006"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A white flash and a startled ! pops up."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Wham: a flash, an exclamation mark pops up and they lock up."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are stunned: spirals whirl, sparks crackle, the ring throbs. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "They come round: everything fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "stun-ring",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "warning_ring",
+        "radius_px": 40,
+        "opacity": 0.6,
+        "fade_in_ms": 300,
+        "lifetime_ms": 4300,
+        "fade_ms": 500,
+        "pulse_hz": 1.33
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A throbbing yellow ring on the ground.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "spirals",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "swirl",
+        "steady": true,
+        "count": 2,
+        "emit_ring": true,
+        "emit_radius_px": 16,
+        "height_px": 120,
+        "orbit_hz": 0.67,
+        "spin_hz": 2,
+        "bob_px": 3,
+        "bob_hz": 2,
+        "size_px": 22,
+        "speed": 0,
+        "gravity": 0,
+        "tilt_deg": 0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Spinning spirals whirling over the head.",
+        "technique": "particles",
+        "notes": "Spiral sprites, fast spin, slow orbit."
+      }
+    },
+    {
+      "id": "head-sparks",
+      "type": "crackle",
+      "beats": [
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "count": 2,
+        "length_px": 9,
+        "jaggedness": 0.8,
+        "regen_ms": 100,
+        "radius_px": 22,
+        "height_px": 105
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Little sparks crackling round the head.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard"
+        }
+      }
+    },
+    {
+      "id": "stiff-rim",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "glow",
+        "fill": 0.05,
+        "rim": 1,
+        "scale": 3,
+        "opacity": 0.6,
+        "pulse_hz": 1.33,
+        "pulse": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A hard white-yellow rim round the rigid body.",
+        "technique": "mesh",
+        "fresnel": 1
+      }
+    },
+    {
+      "id": "startle",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 11,
+      "params": {
+        "look": "glyph",
+        "glyph": "exclaim",
+        "count": 1,
+        "speed": 50,
+        "gravity": 0,
+        "lifetime_ms": 300,
+        "size_px": 30,
+        "spread_deg": 0,
+        "drag": 0.8,
+        "height_px": 115,
+        "tilt_deg": 8,
+        "grow": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A startled ! popping up over the head.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "wham-flash",
+      "type": "flash",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 10,
+      "params": {
+        "scope": "local",
+        "radius_px": 45,
+        "peak": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A white flash.",
+        "technique": "procedural"
+      }
+    },
+    {
+      "id": "wham",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.6,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "stun-buzz",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "buzz",
+        "gain": 0.15,
+        "pitch": 1.4,
+        "repeat_ms": 1500
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The spirals' starting spots and the sparks change per cast."
+  },
+  "director_notes": "Status effect: steady spiral glyphs spinning fast on a slow orbit, a rim-only glow coat for the rigid look, a pulsing warning ring to read from the top. Loop 1200-4200 ms."
+}

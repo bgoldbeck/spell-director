@@ -1,0 +1,338 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "light-status-blinded",
+  "name": "Blinded",
+  "description": "The victim is blinded: a searing band of white light covers their eyes, sparkles swirl round their head and a soft halo of glare surrounds it.",
+  "element": "light",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "blinded",
+    "light",
+    "blind",
+    "dazzle",
+    "flash"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Blinded status effect: a band of light over the eyes"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A blazing white band across the eyes with glare round the head and sparkles twinkling.",
+      "side": "The band wraps round the head; glare and sparkles round it.",
+      "top": "A golden glare ring on the ground; the bright head in the middle.",
+      "three_quarter": "Hero view. A figure with its eyes blotted out by light."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#FFE89A",
+    "secondary": "#E0A73A",
+    "accent": "#FFF6CF",
+    "shadow": "#2A2010"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A blinding flash."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "A blinding flash right in their face."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are blinded: the light band blazes, sparkles twinkle. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Their sight comes back as the glare fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "glare-circle",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 40,
+        "opacity": 0.45,
+        "fade_in_ms": 300,
+        "lifetime_ms": 4300,
+        "fade_ms": 500,
+        "symmetry": 8,
+        "spin_deg_per_s": 15,
+        "depth": 0,
+        "detail": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft golden glare circle on the ground.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "eye-band",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 8,
+      "params": {
+        "pattern": "glow",
+        "fill": 1,
+        "rim": 0.6,
+        "scale": 5,
+        "cover_from_px": 83,
+        "cover_px": 94,
+        "opacity": 1,
+        "inflate_px": 3,
+        "pulse_hz": 1.33,
+        "pulse": 0.2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A searing band of white light over the eyes.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "glare",
+      "type": "glow",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 7,
+      "params": {
+        "radius_px": 38,
+        "softness": 0.9,
+        "height_px": 88,
+        "pulse_hz": 1.33
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Glare round the head.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        }
+      }
+    },
+    {
+      "id": "sparkles",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 9,
+      "params": {
+        "look": "glyph",
+        "glyph": "star",
+        "count": 6,
+        "speed": 15,
+        "gravity": 0,
+        "lifetime_ms": 700,
+        "size_px": 9,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_radius_px": 26,
+        "height_px": 92,
+        "orbit_hz": 0.5,
+        "spin_hz": 1
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Little sparkles twinkling round the head.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard"
+        }
+      }
+    },
+    {
+      "id": "glints",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 9,
+      "params": {
+        "count": 12,
+        "speed": 25,
+        "gravity": 0,
+        "lifetime_ms": 400,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_radius_px": 22,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Tiny glints of light.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "blind-flash",
+      "type": "flash",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 10,
+      "params": {
+        "scope": "local",
+        "radius_px": 80,
+        "peak": 1
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A blinding flash in their face.",
+        "technique": "procedural"
+      }
+    },
+    {
+      "id": "status-light",
+      "type": "light",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "radius": 3,
+        "energy": 1.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The affliction's own light on the victim and the ground.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "flash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.6,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "glare-hum",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.15,
+        "repeat_ms": 1500,
+        "pitch": 1.5
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Sparkle paths change per cast."
+  },
+  "director_notes": "Status effect: a full-strength glow coat clipped to an eye-height band (83-94 px) blots out the eyes; glare glow and star glyph sparkles round the head. Loop 1200-4200 ms."
+}

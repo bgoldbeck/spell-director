@@ -29,9 +29,10 @@ KNOWN_PARAMS = {
     "flash": {"scope", "radius_px", "peak"},
     "sparks": {
         "count", "speed", "speed_spread", "gravity", "lifetime_ms", "size_px", "spread_deg", "drag", "emit_ms", "streak_ms", "look", "glow",
-        "gather_px", "swirl", "emit_radius_px", "wind_px", "home_to", "orbit_hz", "height_px",
+        "gather_px", "swirl", "emit_radius_px", "wind_px", "home_to", "orbit_hz",
+        "height_px", "emit_ring", "steady", "glyph", "sway", "spin_hz", "tilt_deg", "grow", "bob_px", "bob_hz",
     },
-    "crackle": {"count", "length_px", "jaggedness", "regen_ms", "radius_px"},
+    "crackle": {"count", "length_px", "jaggedness", "regen_ms", "radius_px", "height_px"},
     "orb": {
         "radius_px", "pulse_hz", "wobble", "crackle_count", "trail_ms", "arc_height_px", "travel_ease", "look", "height_px", "bubble", "finish", "ripple",
         "approach_deg", "approach_yaw_deg", "smoke_trail_ms", "smoke_opacity", "crescent_deg", "tilt_deg",
@@ -51,6 +52,10 @@ KNOWN_PARAMS = {
     "wave": {
         "width_px", "height_px", "travel_ms", "crash_ms", "curl", "flow_speed", "turbulence", "foam",
         "shed_count", "shed_speed", "shed_size_px", "shed_life_ms",
+    },
+    "coat": {
+        "pattern", "shape", "inflate_px", "opacity", "rim", "fill", "scale", "flow_hz", "pulse_hz", "pulse",
+        "cover_px", "cover_from_px", "edge_glow", "regen_ms",
     },
     "ring": {"start_radius_px", "end_radius_px", "thickness_px", "softness", "arc_deg", "ease", "repeat_ms", "count", "steady", "height_px"},
     "eruption": {
@@ -232,13 +237,16 @@ def _check_loop(doc: dict, beats: dict, errors: list[str], warnings: list[str]) 
                                 "start (or starts inside the loop), so the loop is not seamless; end it a lifetime earlier")
             continue
         life = 0
-        if layer["type"] == "sparks" and not layer.get("attach_to"):
+        if layer["type"] == "sparks" and not layer.get("attach_to") and not params.get("steady"):
             life = _max(params.get("lifetime_ms"), 400) * 1.2
         elif layer["type"] == "smoke":
             life = _max(params.get("lifetime_ms"), 500)
             if life > end - start:
                 warnings.append(f"layer {layer['id']!r} (smoke): lifetime_ms {life} is longer than the loop "
                                 f"({end - start} ms), so puffs pop when they are reborn")
+        if layer["type"] == "decal" and isinstance(params.get("grow_ms"), (int, float)) and w0 + params["grow_ms"] > start:
+            warnings.append(f"layer {layer['id']!r} (decal): still growing when the loop starts (grow_ms {params['grow_ms']}), "
+                            "so the loop is not seamless; let it reach full size before the loop")
         if layer["type"] == "ring" and isinstance(params.get("repeat_ms"), (int, float)) and params["repeat_ms"] > 0:
             n = max(1, min(8, round(params.get("count", 1))))
             lead = params["repeat_ms"] * (n - 1) / n

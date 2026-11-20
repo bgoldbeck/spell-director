@@ -1,0 +1,310 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "physical-status-dazed",
+  "name": "Dazed",
+  "description": "The victim is dazed: a ring of cartoon stars spins round their head, twinkling as it goes, after a bonk that knocks a few stars loose.",
+  "element": "physical",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "dazed",
+    "daze",
+    "dizzy",
+    "stun",
+    "stars",
+    "crowd-control",
+    "comic"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Dazed status effect: cartoon stars circling the head"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Five yellow stars circling over the head, bobbing and spinning.",
+      "side": "The star ring tilts round the head in depth, passing in front of and behind it.",
+      "top": "A ring of stars round the head seen from above, a faint swirl on the ground.",
+      "three_quarter": "Hero view. The classic dizzy halo of stars round a dazed head."
+    }
+  },
+  "palette": {
+    "core": "#FFF8C8",
+    "primary": "#FFC530",
+    "secondary": "#E07B12",
+    "accent": "#FFE680",
+    "shadow": "#2A1E08"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A bonk: a flash and loose stars bursting out."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Bonk: a flash at the head and stars burst out, then settle into a ring."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are dazed: the stars circle the head and twinkle. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "They shake it off: the stars fade."
+    }
+  ],
+  "layers": [
+    {
+      "id": "daze-swirl",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "swirl",
+        "radius_px": 35,
+        "opacity": 0.35,
+        "fade_in_ms": 400,
+        "lifetime_ms": 4300,
+        "fade_ms": 500,
+        "spin_deg_per_s": 120,
+        "detail": 0.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A faint dizzy swirl on the ground.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "star-halo",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "star",
+        "steady": true,
+        "count": 5,
+        "emit_ring": true,
+        "emit_radius_px": 26,
+        "height_px": 112,
+        "orbit_hz": 1,
+        "spin_hz": 0.67,
+        "bob_px": 4,
+        "bob_hz": 2,
+        "size_px": 18,
+        "speed": 0,
+        "gravity": 0,
+        "tilt_deg": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Cartoon stars circling the head, spinning and bobbing.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard"
+        },
+        "notes": "Star sprites on an orbit, each spinning; slight bob."
+      }
+    },
+    {
+      "id": "twinkles",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 11,
+      "params": {
+        "count": 14,
+        "speed": 20,
+        "gravity": 0,
+        "lifetime_ms": 400,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_radius_px": 30,
+        "height_px": 110,
+        "orbit_hz": 1
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Tiny twinkles trailing the stars.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard"
+        }
+      }
+    },
+    {
+      "id": "head-glow",
+      "type": "glow",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 5,
+      "params": {
+        "radius_px": 35,
+        "softness": 0.95,
+        "height_px": 110
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft yellow glow round the star ring.",
+        "technique": "light"
+      }
+    },
+    {
+      "id": "bonk-flash",
+      "type": "flash",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 10,
+      "params": {
+        "scope": "local",
+        "radius_px": 35,
+        "peak": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A white bonk flash at the head.",
+        "technique": "procedural"
+      }
+    },
+    {
+      "id": "bonk-stars",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 11,
+      "params": {
+        "look": "glyph",
+        "glyph": "star",
+        "count": 6,
+        "speed": 170,
+        "gravity": 300,
+        "lifetime_ms": 450,
+        "size_px": 15,
+        "spread_deg": 120,
+        "drag": 0.4,
+        "height_px": 95,
+        "spin_hz": 2
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Loose stars knocked out of the head.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "bonk-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.6,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "tweet",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.25,
+        "repeat_ms": 1000,
+        "pitch": 1.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The ring's starting angle changes per cast."
+  },
+  "director_notes": "Status effect: steady star glyphs (they never come and go) on emit_ring at head height, orbit and spin snapped to the loop. Comic by design. Loop 1200-4200 ms."
+}

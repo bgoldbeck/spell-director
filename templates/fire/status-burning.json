@@ -1,0 +1,499 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-status-burning",
+  "name": "Burning",
+  "description": "The victim is on fire: flames lick up their whole body, embers stream off them, black smoke rolls off their head and the ground under them is scorched.",
+  "element": "fire",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "burning",
+    "fire",
+    "burn",
+    "damage-over-time",
+    "dot"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Burning status effect on a target: flames over the body, embers, smoke"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Flames cover the figure from feet to head with bright tongues climbing; embers rise past the face and dark smoke rolls up over the head.",
+      "side": "Same flames all round the body, so it still reads as a burning person edge-on; smoke trails up above.",
+      "top": "A scorched black patch with a glowing burn, the flaming head and shoulders in the middle and embers drifting out.",
+      "three_quarter": "Hero view. A person wrapped in fire, embers and smoke rising, the ground scorched under them."
+    }
+  },
+  "palette": {
+    "core": "#FFF4C2",
+    "primary": "#FF8A1F",
+    "secondary": "#D8380E",
+    "accent": "#FFD24A",
+    "shadow": "#1E1410"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A burst of flame as the fire catches."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Fire catches: a burst of flame and embers, then flames run up the body."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They burn: flames lick up the body, embers stream off and smoke rolls up. Seamless loop."
+    },
+    {
+      "id": "finale",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 4700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A last puff of smoke as the flames die."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The fire gutters out, leaving a puff of smoke."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": -2,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 45,
+        "opacity": 0.8,
+        "fade_in_ms": 500,
+        "lifetime_ms": 4600,
+        "fade_ms": 400,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A black scorch spreading under the burning feet.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "burn-glow-ground",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "burn",
+        "radius_px": 32,
+        "opacity": 0.7,
+        "fade_in_ms": 300,
+        "lifetime_ms": 4200,
+        "fade_ms": 600,
+        "pulse_hz": 1
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Embers glowing in the scorch under the victim.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "body-flames",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "cover_px",
+          "value": 10
+        },
+        {
+          "t_ms": 500,
+          "param": "cover_px",
+          "value": 130,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "pattern": "flame",
+        "fill": 0.85,
+        "rim": 0.7,
+        "scale": 7,
+        "flow_hz": 1.33,
+        "opacity": 0.9,
+        "cover_px": 130
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Flames licking up over the body, white-yellow where they are hottest, orange at the tips.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 7,
+          "speed": 2,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light",
+        "notes": "A second skin over the character: scrolling flame noise masked into tongues, with flame particles on top."
+      }
+    },
+    {
+      "id": "flame-billows",
+      "type": "smoke",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 7,
+      "blend": "add",
+      "params": {
+        "count": 16,
+        "rise_speed": 70,
+        "size_px": 18,
+        "lifetime_ms": 650,
+        "opacity": 0.55,
+        "spread_px": 16,
+        "height_px": 20
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Billows of flame rolling up off the body.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 2,
+          "contrast": 0.6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "embers",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "look": "ember",
+        "count": 24,
+        "speed": 70,
+        "speed_spread": 0.6,
+        "gravity": -160,
+        "lifetime_ms": 800,
+        "size_px": 3,
+        "spread_deg": 70,
+        "drag": 0.5,
+        "emit_radius_px": 18,
+        "height_px": 40
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers streaming up off the burning body.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard"
+        }
+      }
+    },
+    {
+      "id": "black-smoke",
+      "type": "smoke",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 8,
+      "params": {
+        "count": 10,
+        "rise_speed": 55,
+        "size_px": 26,
+        "lifetime_ms": 900,
+        "opacity": 0.45,
+        "spread_px": 12,
+        "height_px": 95
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Black smoke rolling up off the head.",
+        "technique": "flipbook",
+        "lighting": "six_way",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.6,
+          "contrast": 0.5
+        }
+      }
+    },
+    {
+      "id": "heat-glow",
+      "type": "glow",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 2,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Hot orange light round the body.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "catch-flash",
+      "type": "flash",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 10,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.8
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "The flash of fire catching.",
+        "technique": "procedural"
+      }
+    },
+    {
+      "id": "catch-burst",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "look": "ember",
+        "count": 30,
+        "speed": 260,
+        "gravity": -60,
+        "lifetime_ms": 450,
+        "size_px": 3,
+        "spread_deg": 360,
+        "drag": 0.4,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers bursting out as the fire catches.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard"
+        }
+      }
+    },
+    {
+      "id": "last-smoke",
+      "type": "smoke",
+      "beats": [
+        "finale"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 8,
+      "params": {
+        "count": 10,
+        "rise_speed": 45,
+        "size_px": 30,
+        "lifetime_ms": 700,
+        "opacity": 0.5,
+        "spread_px": 20,
+        "height_px": 40
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A last puff of smoke as the flames go out.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "fire-light",
+      "type": "light",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "radius": 4,
+        "energy": 1.6,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Firelight on the victim and the ground.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ignite-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "ignite",
+        "gain": 0.7
+      }
+    },
+    {
+      "id": "burn-sound",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.4,
+        "repeat_ms": 1500
+      }
+    },
+    {
+      "id": "snuff-sound",
+      "type": "sound_cue",
+      "beats": [
+        "finale"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.4
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Flame tongues, ember paths and smoke puffs change per cast."
+  },
+  "director_notes": "Status effect: a coat with the flame pattern carries the read (a burning person, not a campfire next to them); billowing add-blend smoke and embers break the silhouette so it reads from the top too. Loop 1200-4200 ms."
+}

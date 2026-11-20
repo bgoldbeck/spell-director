@@ -1,0 +1,348 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "ice-status-chilled",
+  "name": "Chilled",
+  "description": "The victim is chilled to the bone: frost creeps up their legs, a pale blue sheen sits on their skin, snow drifts down round them and their breath puffs out in little clouds.",
+  "element": "ice",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "chilled",
+    "ice",
+    "cold",
+    "slow",
+    "chill",
+    "snow"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Chilled status effect: frost on the legs, snow falling, cold breath"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Frost crusting the legs, a pale blue rim round the body, snowflakes drifting down past them and breath clouds at the face.",
+      "side": "Same frosty legs and sheen edge-on; the breath clouds puff out to the front.",
+      "top": "A small frost patch under the victim, snowflakes falling round them.",
+      "three_quarter": "Hero view. A person shivering in their own small snowfall, frost on their legs."
+    }
+  },
+  "palette": {
+    "core": "#F4FBFF",
+    "primary": "#A8E2FF",
+    "secondary": "#4C97D0",
+    "accent": "#E2F6FF",
+    "shadow": "#1A2C3C"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A gust of cold and a few ice flakes scatter."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "A chill sweeps over the victim: frost climbs their legs and snow starts to fall."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They stay chilled: snow drifts, frost glitters, breath puffs. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The chill lifts: the frost thaws and the snow stops."
+    }
+  ],
+  "layers": [
+    {
+      "id": "frost-patch",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": -1,
+      "params": {
+        "shape": "frost",
+        "radius_px": 40,
+        "opacity": 0.6,
+        "fade_in_ms": 500,
+        "reveal_ms": 400,
+        "lifetime_ms": 4500,
+        "fade_ms": 500,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A small patch of frost under the victim's feet.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "frosty-legs",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 5,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "cover_px",
+          "value": 0
+        },
+        {
+          "t_ms": 900,
+          "param": "cover_px",
+          "value": 45,
+          "ease": "ease_out"
+        }
+      ],
+      "params": {
+        "pattern": "frost",
+        "fill": 0.65,
+        "rim": 0.5,
+        "scale": 10,
+        "cover_px": 45
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Frost crusting the legs up to the knees.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 10,
+          "speed": 0,
+          "contrast": 0.6
+        }
+      }
+    },
+    {
+      "id": "cold-sheen",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "glow",
+        "fill": 0.12,
+        "rim": 0.85,
+        "scale": 4,
+        "opacity": 0.7,
+        "pulse_hz": 0.67,
+        "pulse": 0.2
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A pale blue fresnel sheen on the skin.",
+        "technique": "mesh",
+        "fresnel": 0.8,
+        "emissive": {
+          "hdr": 1,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "snowfall",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 9,
+      "params": {
+        "look": "flake",
+        "count": 26,
+        "speed": 10,
+        "gravity": 70,
+        "lifetime_ms": 850,
+        "size_px": 3,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_radius_px": 40,
+        "height_px": 125,
+        "wind_px": 8
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Snowflakes drifting down round the victim.",
+        "technique": "particles",
+        "flow": {
+          "direction": "downward",
+          "speed": 0.5
+        }
+      }
+    },
+    {
+      "id": "breath",
+      "type": "smoke",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "count": 3,
+        "rise_speed": 12,
+        "size_px": 9,
+        "lifetime_ms": 800,
+        "opacity": 0.45,
+        "spread_px": 3,
+        "height_px": 78
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Little clouds of frozen breath at the mouth.",
+        "technique": "flipbook"
+      }
+    },
+    {
+      "id": "chill-gust",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 8,
+      "params": {
+        "look": "flake",
+        "count": 18,
+        "speed": 140,
+        "gravity": 30,
+        "lifetime_ms": 300,
+        "size_px": 3,
+        "spread_deg": 360,
+        "drag": 0.6,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A gust of ice flakes as the chill hits.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "chill-glow",
+      "type": "glow",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 45,
+        "softness": 0.95,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A faint cold glow.",
+        "technique": "light"
+      }
+    },
+    {
+      "id": "chill-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "freeze",
+        "gain": 0.4,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "chill-wind",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.25,
+        "repeat_ms": 1500,
+        "pitch": 1.2
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Snowflake paths and the frost pattern change per cast."
+  },
+  "director_notes": "Status effect: a lighter cousin of Frozen Solid. Frost coat clipped to the legs (cover_px 45), a pale glow coat for the sheen, falling flakes and breath puffs at mouth height. Loop 1200-4200 ms."
+}

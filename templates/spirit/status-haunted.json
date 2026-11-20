@@ -1,0 +1,350 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "spirit-status-haunted",
+  "name": "Haunted",
+  "description": "The victim is haunted: little ghosts circle round them, a cold ghostly sheen clings to their skin, pale wisps drift up and a dark mist pools at their feet.",
+  "element": "spirit",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "haunted",
+    "spirit",
+    "ghost",
+    "haunt",
+    "fear",
+    "undead"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Haunted status effect: little ghosts circling the victim"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Three small ghosts circling the body at chest height, bobbing, a pale glowing rim on the victim and mist at their feet.",
+      "side": "The ghosts pass in front of and behind the body, so the circle reads in depth.",
+      "top": "Ghosts circling round the victim over a faint rune ring and dark mist.",
+      "three_quarter": "Hero view. A shivering figure with ghosts circling it in a cold mist."
+    }
+  },
+  "palette": {
+    "core": "#EFFFFC",
+    "primary": "#86F5DE",
+    "secondary": "#2E8C86",
+    "accent": "#C6FFF4",
+    "shadow": "#0A1A1E"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A cold gust of ghost light."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The spirits arrive: a cold gust and the ghosts swirl in."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are haunted: ghosts circle and bob, wisps rise. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The spirits fade away."
+    }
+  ],
+  "layers": [
+    {
+      "id": "ghost-ring",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 55,
+        "opacity": 0.45,
+        "fade_in_ms": 500,
+        "lifetime_ms": 4300,
+        "fade_ms": 600,
+        "symmetry": 5,
+        "spin_deg_per_s": 24,
+        "depth": 0,
+        "detail": 0.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A faint ghostly circle under the victim.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "ghost-sheen",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "glow",
+        "fill": 0.15,
+        "rim": 0.9,
+        "scale": 3,
+        "opacity": 0.65
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cold, pale fresnel sheen on the skin.",
+        "technique": "mesh",
+        "fresnel": 0.9
+      }
+    },
+    {
+      "id": "ghosts",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "ghost",
+        "steady": true,
+        "count": 3,
+        "emit_ring": true,
+        "emit_radius_px": 42,
+        "height_px": 65,
+        "orbit_hz": 0.67,
+        "bob_px": 10,
+        "bob_hz": 1,
+        "size_px": 27,
+        "speed": 0,
+        "gravity": 0,
+        "tilt_deg": 12
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Little ghosts circling the victim, bobbing as they go.",
+        "technique": "particles",
+        "notes": "Semi-transparent ghost sprites on an orbit, faint trail."
+      }
+    },
+    {
+      "id": "wisps",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 14,
+        "speed": 25,
+        "gravity": -50,
+        "lifetime_ms": 850,
+        "size_px": 2,
+        "spread_deg": 60,
+        "drag": 0.5,
+        "emit_radius_px": 25,
+        "height_px": 20
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Pale wisps drifting up.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "grave-mist",
+      "type": "smoke",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 4,
+      "params": {
+        "count": 10,
+        "rise_speed": 4,
+        "size_px": 30,
+        "lifetime_ms": 950,
+        "opacity": 0.35,
+        "spread_px": 28
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Dark mist pooling at the feet.",
+        "technique": "flipbook"
+      }
+    },
+    {
+      "id": "haunt-glow",
+      "type": "glow",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 55,
+        "softness": 0.95,
+        "height_px": 55
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cold ghost light round the victim.",
+        "technique": "light"
+      }
+    },
+    {
+      "id": "haunt-gust",
+      "type": "ring",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 90,
+        "thickness_px": 10,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cold ring of ghost light as the spirits arrive.",
+        "technique": "procedural"
+      }
+    },
+    {
+      "id": "status-light",
+      "type": "light",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "radius": 4,
+        "energy": 0.9,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The affliction's own light on the victim and the ground.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "haunt-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.5
+      }
+    },
+    {
+      "id": "whispers",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.25,
+        "repeat_ms": 1500,
+        "pitch": 0.9
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The ghosts' starting spots and the wisps change per cast."
+  },
+  "director_notes": "Status effect: steady ghost glyphs on a loop-snapped orbit (0.67 Hz = two laps per loop) with a bob, so they pass in front and behind the body in every side view. Loop 1200-4200 ms."
+}
