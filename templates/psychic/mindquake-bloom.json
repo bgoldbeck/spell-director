@@ -1,0 +1,731 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "psychic-mindquake-bloom",
+  "name": "Mindquake Bloom",
+  "description": "A shimmering bubble of force swells round the caster and stones float up off the ground all round, then it bursts outward with a psychic shriek: ripples of warped space roll out, the stones are hurled away and every enemy round the caster reels.",
+  "element": "psychic",
+  "archetype": "nova",
+  "tags": [
+    "splash",
+    "multi-target",
+    "point-blank",
+    "pbae",
+    "nova",
+    "force",
+    "bubble",
+    "telekinesis",
+    "knockback"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Point-blank area spell: no target, blast every enemy in a radius round the caster."
+  },
+  "timing": {
+    "duration_ms": 2600,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 8,
+        "max": 9
+      },
+      "radius": {
+        "min": 2.6,
+        "max": 3.0
+      },
+      "ripple_ms": 110
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The bubble swells, stones hang in the air, then everything blows outward at the camera.",
+      "side": "Stones float at different heights; the ripples stand up in the air.",
+      "top": "Hero for the burst: stones flung radially and rings reaching every enemy.",
+      "three_quarter": "Hero view. Swell, hang, burst."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#FF8AD8",
+    "secondary": "#9A4DFF",
+    "accent": "#FFD6F3",
+    "shadow": "#1E1428"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Stones, ripples and the enemy ring change per cast."
+  },
+  "beats": [
+    {
+      "id": "focus",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 800,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A bubble of force swells round the caster; stones float up off the ground."
+    },
+    {
+      "id": "release",
+      "phase": "impact",
+      "start_ms": 800,
+      "end_ms": 1050,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The bubble bursts outward with a psychic shriek."
+    },
+    {
+      "id": "wave",
+      "phase": "impact",
+      "start_ms": 820,
+      "end_ms": 1500,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Ripples of warped space roll out; the floating stones are hurled away."
+    },
+    {
+      "id": "hit",
+      "phase": "impact",
+      "start_ms": 860,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy reels."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1150,
+      "end_ms": 2600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "The air settles."
+    }
+  ],
+  "layers": [
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "focus"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Power welling up round the caster's body, brightening as the charge builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "focus"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 40,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 550,
+        "gather_px": 220,
+        "swirl": 0.5,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Motes pulled in from the whole blast area, spiralling into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-light",
+      "type": "light",
+      "beats": [
+        "focus"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The caster lighting up the enemies round them as the charge builds.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "focus"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "pull-rings",
+      "type": "ring",
+      "beats": [
+        "focus"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 340,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.7,
+        "repeat_ms": 260,
+        "count": 3,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Rings sliding in over the ground toward the caster: the area being drawn in.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "bubble",
+      "type": "orb",
+      "beats": [
+        "focus"
+      ],
+      "anchor": "caster",
+      "color": "gradient_core_to_primary",
+      "z": 8,
+      "params": {
+        "bubble": true,
+        "radius_px": 60,
+        "height_px": 50,
+        "opacity": 0.7,
+        "pulse_hz": 4,
+        "crackle_count": 0
+      },
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 30
+        },
+        {
+          "t_ms": 800,
+          "param": "radius_px",
+          "value": 130,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "ethereal",
+        "look": "A shimmering bubble of force swelling round the caster.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "floating",
+      "type": "sparks",
+      "beats": [
+        "focus"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 7,
+      "params": {
+        "look": "debris",
+        "count": 26,
+        "speed": 30,
+        "gravity": -50,
+        "lifetime_ms": 800,
+        "size_px": 6,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_ms": 600,
+        "emit_radius_px": 260
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Stones floating up off the ground all round.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hurled",
+      "type": "sparks",
+      "beats": [
+        "release"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 40,
+        "speed": 600,
+        "speed_spread": 0.4,
+        "gravity": 700,
+        "lifetime_ms": 900,
+        "size_px": 6,
+        "spread_deg": 360,
+        "drag": 0.1,
+        "emit_radius_px": 120
+      },
+      "shader": {
+        "material": "stone",
+        "look": "The floating stones hurled outward.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "warp-rings",
+      "type": "ring",
+      "beats": [
+        "release",
+        "wave"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 340,
+        "thickness_px": 20,
+        "softness": 0.9,
+        "repeat_ms": 220,
+        "count": 3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Ripples of warped space rolling outward.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "release-sound",
+      "type": "sound_cue",
+      "beats": [
+        "release"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 1.0,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "nova-flash",
+      "type": "flash",
+      "beats": [
+        "release"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 280,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A blinding pop centred on the caster as the charge breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "release"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A full-screen flash for the moment of release.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-1",
+      "type": "ring",
+      "beats": [
+        "release",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 420,
+        "thickness_px": 26,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The lead shockwave: a bright, thick ring racing out over the ground past every enemy.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-2",
+      "type": "ring",
+      "beats": [
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 360,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A second, softer wave a beat behind the first.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-shake",
+      "type": "camera_shake",
+      "beats": [
+        "release"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 10,
+          "max": 12
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "nova-sound",
+      "type": "sound_cue",
+      "beats": [
+        "release"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "nova-light",
+      "type": "light",
+      "beats": [
+        "release",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 3.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A burst of light from the caster that throws every enemy into relief.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-mark",
+      "type": "decal",
+      "beats": [
+        "release",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 300,
+          "max": 330
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.75,
+        "reveal_ms": 380
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The ground torn open round the caster out to the edge of the blast.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "secondary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "impact",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original point-blank psychic design. The bubble grows by keyframe; floating debris uses negative gravity, then a fast radial throw on the release."
+}

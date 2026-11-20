@@ -60,3 +60,17 @@ test("every splash template has splash layers, and only splash templates do", ()
     }
   }
 });
+
+test("a point-blank splash (destination caster) puts every enemy round the caster", () => {
+  const space = { origin: "caster", destination: "caster", travel: "instant", footprint: { shape: "circle", radius: 3 },
+    targets: { layout: "splash", count: 8, radius: 3, ripple_ms: 100 } };
+  const { primary, others, delays, centered } = splashLayout(space, 4);
+  assert.ok(centered);
+  assert.deepEqual(primary, { x: 0, z: 0 });
+  assert.equal(others.length, 8);
+  others.forEach((p, k) => {
+    const d = Math.hypot(p.x, p.z);
+    assert.ok(d >= 0.55 * 3 - 1e-6 && d <= 3 + 1e-6);
+    assert.ok(Math.abs(delays[k] - d * 100) < 1e-9);
+  });
+});

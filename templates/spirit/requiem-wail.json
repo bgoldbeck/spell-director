@@ -1,0 +1,746 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "spirit-requiem-wail",
+  "name": "Requiem Wail",
+  "description": "Pale spirits circle the caster faster and faster, then the caster wails: ripples roll out through the air and a spirit streaks out along a curving path to each enemy round them, flaring as it strikes and leaving wisps rising.",
+  "element": "spirit",
+  "archetype": "nova",
+  "tags": [
+    "splash",
+    "multi-target",
+    "point-blank",
+    "pbae",
+    "nova",
+    "spirit",
+    "ghost",
+    "wail",
+    "seeking"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Point-blank area spell: no target, blast every enemy in a radius round the caster."
+  },
+  "timing": {
+    "duration_ms": 2800,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 8,
+        "max": 9
+      },
+      "radius": {
+        "min": 2.6,
+        "max": 3.0
+      },
+      "ripple_ms": 0
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Ripples roll toward the camera; spirits curve out to every side.",
+      "side": "Spirits arc up and down to enemies at both depths.",
+      "top": "Hero: a starburst of curving trails from the caster to the ring of enemies.",
+      "three_quarter": "Hero view. The circling spirits, the wail and the haunting."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#9FFFE8",
+    "secondary": "#3FB5C9",
+    "accent": "#E8FFF9",
+    "shadow": "#16252A"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Spirit paths, wisps and the enemy ring change per cast."
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 800,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "Pale spirits circle the caster, faster and faster."
+    },
+    {
+      "id": "wail",
+      "phase": "impact",
+      "start_ms": 800,
+      "end_ms": 1050,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The caster wails; the air ripples outward."
+    },
+    {
+      "id": "seek",
+      "phase": "travel",
+      "start_ms": 800,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "A spirit streaks out to each enemy."
+    },
+    {
+      "id": "wave",
+      "phase": "impact",
+      "start_ms": 820,
+      "end_ms": 1500,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Ripples roll out."
+    },
+    {
+      "id": "haunt",
+      "phase": "impact",
+      "start_ms": 1150,
+      "end_ms": 1450,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Each spirit strikes its enemy."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1150,
+      "end_ms": 2800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "Wisps rise off the enemies."
+    }
+  ],
+  "layers": [
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Power welling up round the caster's body, brightening as the charge builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 40,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 550,
+        "gather_px": 220,
+        "swirl": 0.5,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Motes pulled in from the whole blast area, spiralling into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-light",
+      "type": "light",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The caster lighting up the enemies round them as the charge builds.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "pull-rings",
+      "type": "ring",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 340,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.7,
+        "repeat_ms": 260,
+        "count": 3,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Rings sliding in over the ground toward the caster: the area being drawn in.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "circling",
+      "type": "sparks",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "count": 24,
+        "speed": 20,
+        "gravity": -30,
+        "lifetime_ms": 800,
+        "size_px": 6,
+        "spread_deg": 360,
+        "drag": 0.3,
+        "emit_ms": 800,
+        "emit_radius_px": 120,
+        "orbit_hz": 1.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Pale spirit lights circling the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wail-rings",
+      "type": "ring",
+      "beats": [
+        "wail",
+        "wave"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 320,
+        "thickness_px": 14,
+        "softness": 0.8,
+        "repeat_ms": 230,
+        "count": 3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Ripples of the wail rolling outward in the air.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "spirits",
+      "type": "orb",
+      "beats": [
+        "seek"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "from": "primary",
+        "radius_px": {
+          "min": 10,
+          "max": 12
+        },
+        "pulse_hz": 6,
+        "wobble": 0.3,
+        "crackle_count": 0,
+        "trail_ms": 320,
+        "arc_height_px": {
+          "min": 40,
+          "max": 100
+        },
+        "side_offset_px": {
+          "min": -70,
+          "max": 70
+        },
+        "travel_ease": "ease_in"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Spirits streaking out from the caster to each enemy along curving paths.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rising-wisps",
+      "type": "smoke",
+      "beats": [
+        "haunt",
+        "fade"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "count": 8,
+        "rise_speed": 110,
+        "size_px": {
+          "min": 20,
+          "max": 26
+        },
+        "lifetime_ms": 900,
+        "opacity": 0.5,
+        "spread_px": 14
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Pale wisps rising off each haunted enemy.",
+        "technique": "flipbook",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wail-sound",
+      "type": "sound_cue",
+      "beats": [
+        "wail"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 1.0,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "nova-flash",
+      "type": "flash",
+      "beats": [
+        "wail"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 280,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A blinding pop centred on the caster as the charge breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "wail"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A full-screen flash for the moment of release.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-1",
+      "type": "ring",
+      "beats": [
+        "wail",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 420,
+        "thickness_px": 26,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The lead shockwave: a bright, thick ring racing out over the ground past every enemy.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-2",
+      "type": "ring",
+      "beats": [
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 360,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A second, softer wave a beat behind the first.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-shake",
+      "type": "camera_shake",
+      "beats": [
+        "wail"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 5,
+          "max": 7
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "nova-sound",
+      "type": "sound_cue",
+      "beats": [
+        "wail"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "nova-light",
+      "type": "light",
+      "beats": [
+        "wail",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 3.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A burst of light from the caster that throws every enemy into relief.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-mark",
+      "type": "decal",
+      "beats": [
+        "wail",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 300,
+          "max": 330
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.75
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The ground torn open round the caster out to the edge of the blast.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "haunt"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "haunt"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "haunt"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "haunt"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "whisper",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "haunt"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original point-blank spirit design. Spirits are splash orbs from the centre with seeded arcs and side offsets, so every path curves differently."
+}

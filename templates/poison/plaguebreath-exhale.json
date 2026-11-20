@@ -1,0 +1,806 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "poison-plaguebreath-exhale",
+  "name": "Plaguebreath Exhale",
+  "description": "The caster draws a long breath as green motes swirl in, then exhales a burst of plague: venom sprays out in every direction, a rolling green cloud spreads over every enemy round them and hangs there over a spreading pool while the enemies steam.",
+  "element": "poison",
+  "archetype": "nova",
+  "tags": [
+    "splash",
+    "multi-target",
+    "point-blank",
+    "pbae",
+    "nova",
+    "plague",
+    "cloud",
+    "pool",
+    "lingering",
+    "dot"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Point-blank area spell: no target, blast every enemy in a radius round the caster."
+  },
+  "timing": {
+    "duration_ms": 4000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 8,
+        "max": 9
+      },
+      "radius": {
+        "min": 2.6,
+        "max": 3.0
+      },
+      "ripple_ms": 160
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A green bank of cloud rolling out toward the camera and hanging.",
+      "side": "A low, wide cloud; droplets arc and fall.",
+      "top": "Hero for the lingering area: the pool spreading to cover every enemy under the cloud.",
+      "three_quarter": "Hero view. The exhale, the cloud and the steaming enemies."
+    }
+  },
+  "palette": {
+    "core": "#F2FFD9",
+    "primary": "#9BE33A",
+    "secondary": "#4F8F1A",
+    "accent": "#D9FF6B",
+    "shadow": "#1F2A14"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Cloud puffs, spray, pools and the enemy ring change per cast."
+  },
+  "beats": [
+    {
+      "id": "inhale",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "The caster draws a long breath; green motes swirl in."
+    },
+    {
+      "id": "exhale",
+      "phase": "impact",
+      "start_ms": 700,
+      "end_ms": 950,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.4
+      },
+      "intent": "They exhale a burst of plague."
+    },
+    {
+      "id": "wave",
+      "phase": "impact",
+      "start_ms": 720,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "A rolling green cloud spreads out over everyone."
+    },
+    {
+      "id": "hit",
+      "phase": "impact",
+      "start_ms": 900,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Each enemy is drenched and starts to steam."
+    },
+    {
+      "id": "linger",
+      "phase": "dissipation",
+      "start_ms": 1200,
+      "end_ms": 3600,
+      "intensity": {
+        "shape": "hold",
+        "from": 0.8,
+        "to": 0.8
+      },
+      "intent": "The cloud hangs and the ground pools with venom."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 3600,
+      "end_ms": 4000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "The cloud thins."
+    }
+  ],
+  "layers": [
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "inhale"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Power welling up round the caster's body, brightening as the charge builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "inhale"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 40,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 550,
+        "gather_px": 220,
+        "swirl": 0.5,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Motes pulled in from the whole blast area, spiralling into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-light",
+      "type": "light",
+      "beats": [
+        "inhale"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The caster lighting up the enemies round them as the charge builds.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "inhale"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "pull-rings",
+      "type": "ring",
+      "beats": [
+        "inhale"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 340,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.7,
+        "repeat_ms": 260,
+        "count": 3,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Rings sliding in over the ground toward the caster: the area being drawn in.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "plague-wave",
+      "type": "smoke",
+      "beats": [
+        "exhale",
+        "wave"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": 50,
+        "rise_speed": 15,
+        "size_px": {
+          "min": 60,
+          "max": 72
+        },
+        "lifetime_ms": 1500,
+        "opacity": 0.6,
+        "spread_speed": 380
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A rolling bank of sickly green cloud spreading outward.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "cloud",
+      "type": "smoke",
+      "beats": [
+        "linger",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "count": 34,
+        "rise_speed": 12,
+        "size_px": {
+          "min": 80,
+          "max": 95
+        },
+        "lifetime_ms": 1900,
+        "opacity": 0.45,
+        "spread_px": 300
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "The cloud hanging low over the area.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "spray",
+      "type": "sparks",
+      "beats": [
+        "exhale"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "look": "droplet",
+        "count": 80,
+        "speed": 480,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 700,
+        "size_px": 4,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "streak_ms": 20
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Venom droplets sprayed out in every direction.",
+        "technique": "particles",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pool",
+      "type": "decal",
+      "beats": [
+        "wave",
+        "linger",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 330,
+        "opacity": 0.75,
+        "fade_in_ms": 100,
+        "grow_ms": 1000,
+        "start_scale": 0.2,
+        "lifetime_ms": 3000,
+        "fade_ms": 1000,
+        "detail": 0.6,
+        "fill": "liquid"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A glossy pool of venom spreading round the caster.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "steam",
+      "type": "smoke",
+      "beats": [
+        "hit",
+        "linger"
+      ],
+      "anchor": "splash",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 8,
+        "rise_speed": 70,
+        "size_px": {
+          "min": 18,
+          "max": 22
+        },
+        "lifetime_ms": 900,
+        "opacity": 0.4,
+        "spread_px": 14
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Fumes steaming off each drenched enemy.",
+        "technique": "flipbook",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "sick-glow",
+      "type": "glow",
+      "beats": [
+        "linger"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 28,
+        "softness": 0.85,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A sick glow throbbing on each poisoned enemy.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "cloud-light",
+      "type": "light",
+      "beats": [
+        "linger"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 1.2,
+        "height_px": 60,
+        "tint": "#9BE33A"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A dim green light inside the cloud.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "exhale-sound",
+      "type": "sound_cue",
+      "beats": [
+        "exhale"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.8,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "linger-sound",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.4,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "nova-flash",
+      "type": "flash",
+      "beats": [
+        "exhale"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 280,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A blinding pop centred on the caster as the charge breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "exhale"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A full-screen flash for the moment of release.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-1",
+      "type": "ring",
+      "beats": [
+        "exhale",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 420,
+        "thickness_px": 26,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The lead shockwave: a bright, thick ring racing out over the ground past every enemy.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-2",
+      "type": "ring",
+      "beats": [
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 360,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A second, softer wave a beat behind the first.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-shake",
+      "type": "camera_shake",
+      "beats": [
+        "exhale"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 5,
+          "max": 7
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "nova-sound",
+      "type": "sound_cue",
+      "beats": [
+        "exhale"
+      ],
+      "params": {
+        "cue": "splash",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "nova-light",
+      "type": "light",
+      "beats": [
+        "exhale",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 3.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A burst of light from the caster that throws every enemy into relief.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-mark",
+      "type": "decal",
+      "beats": [
+        "exhale",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "splash",
+        "radius_px": {
+          "min": 300,
+          "max": 330
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.75
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The ground torn open round the caster out to the edge of the blast.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "look": "droplet"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "secondary",
+      "z": 1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "splash",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original point-blank poison design. Six-way lit cloud banks plus a long hold beat for the lingering field."
+}

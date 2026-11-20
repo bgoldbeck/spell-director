@@ -1,0 +1,749 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "light-dawnbreak-litany",
+  "name": "Dawnbreak Litany",
+  "description": "A great ring of holy script turns under the caster while light gathers, then a pillar of light crashes down on the caster and bursts outward in golden shockwaves, and a shaft of light strikes each enemy round them. Motes of light drift up afterwards.",
+  "element": "light",
+  "archetype": "nova",
+  "tags": [
+    "splash",
+    "multi-target",
+    "point-blank",
+    "pbae",
+    "nova",
+    "holy",
+    "pillar",
+    "rune",
+    "shockwave"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Point-blank area spell: no target, blast every enemy in a radius round the caster."
+  },
+  "timing": {
+    "duration_ms": 2800,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 3.4,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 8,
+        "max": 9
+      },
+      "radius": {
+        "min": 2.6,
+        "max": 3.0
+      },
+      "ripple_ms": 100
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A pillar over the caster and shafts across the frame like columns of a temple.",
+      "side": "Tall straight shafts; the golden waves are flat.",
+      "top": "The script circle spans the area; a flash in the middle, then a flash on each enemy.",
+      "three_quarter": "Hero view. Pillar, shafts and the turning script."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#FFE08A",
+    "secondary": "#FFB547",
+    "accent": "#FFF6D6",
+    "shadow": "#3A3020"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Shafts, motes and the enemy ring change per cast."
+  },
+  "beats": [
+    {
+      "id": "chant",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A great ring of holy script turns under the caster; light gathers."
+    },
+    {
+      "id": "judgement",
+      "phase": "impact",
+      "start_ms": 900,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "A pillar of light crashes down on the caster and bursts outward."
+    },
+    {
+      "id": "wave",
+      "phase": "impact",
+      "start_ms": 920,
+      "end_ms": 1600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Golden shockwaves roll out."
+    },
+    {
+      "id": "pillars",
+      "phase": "impact",
+      "start_ms": 960,
+      "end_ms": 1350,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "A shaft of light strikes each enemy."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1150,
+      "end_ms": 2800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "Motes of light drift upward."
+    }
+  ],
+  "layers": [
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "chant"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Power welling up round the caster's body, brightening as the charge builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "chant"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 40,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 550,
+        "gather_px": 220,
+        "swirl": 0.5,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Motes pulled in from the whole blast area, spiralling into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-light",
+      "type": "light",
+      "beats": [
+        "chant"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The caster lighting up the enemies round them as the charge builds.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "chant"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "pull-rings",
+      "type": "ring",
+      "beats": [
+        "chant"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 340,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.7,
+        "repeat_ms": 260,
+        "count": 3,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Rings sliding in over the ground toward the caster: the area being drawn in.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "script",
+      "type": "decal",
+      "beats": [
+        "chant",
+        "judgement",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 330,
+        "opacity": 0.9,
+        "fade_in_ms": 200,
+        "grow_ms": 600,
+        "start_scale": 0.3,
+        "spin_deg_per_s": 30,
+        "lifetime_ms": 2000,
+        "fade_ms": 700,
+        "detail": 0.6,
+        "symmetry": 12
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A wide circle of holy script turning under the caster.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pillar",
+      "type": "beam",
+      "beats": [
+        "judgement"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "width_px": 60,
+        "wobble": 0.05,
+        "grow_ms": 60
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A pillar of light crashing down onto the caster.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shafts",
+      "type": "bolt",
+      "beats": [
+        "pillars"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "params": {
+        "from": "sky",
+        "segments": 6,
+        "jaggedness": 0.05,
+        "width_px": 16,
+        "taper": 0.05,
+        "regen_ms": 0,
+        "afterimage_ms": 180,
+        "glow_px": 24
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A straight shaft of golden light onto each enemy.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "motes",
+      "type": "sparks",
+      "beats": [
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "count": 60,
+        "speed": 40,
+        "gravity": -60,
+        "lifetime_ms": 1400,
+        "size_px": 3,
+        "spread_deg": 360,
+        "drag": 0.4,
+        "emit_ms": 1200,
+        "emit_radius_px": 320
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Motes of light drifting up over the circle.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "judgement-sound",
+      "type": "sound_cue",
+      "beats": [
+        "judgement"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.9,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "nova-flash",
+      "type": "flash",
+      "beats": [
+        "judgement"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 280,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A blinding pop centred on the caster as the charge breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "judgement"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A full-screen flash for the moment of release.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-1",
+      "type": "ring",
+      "beats": [
+        "judgement",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 420,
+        "thickness_px": 26,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The lead shockwave: a bright, thick ring racing out over the ground past every enemy.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-2",
+      "type": "ring",
+      "beats": [
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 360,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A second, softer wave a beat behind the first.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-shake",
+      "type": "camera_shake",
+      "beats": [
+        "judgement"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 9,
+          "max": 11
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "nova-sound",
+      "type": "sound_cue",
+      "beats": [
+        "judgement"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "nova-light",
+      "type": "light",
+      "beats": [
+        "judgement",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 3.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A burst of light from the caster that throws every enemy into relief.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "air-ring",
+      "type": "ring",
+      "beats": [
+        "judgement"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 300,
+        "thickness_px": 12,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A ring of warped air standing up round the caster, facing the camera.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-mark",
+      "type": "decal",
+      "beats": [
+        "judgement",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 300,
+          "max": 330
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.75
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The ground torn open round the caster out to the edge of the blast.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "pillars"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "pillars"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "pillars"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "pillars"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "pillars"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original point-blank holy nova. Beam from sky lands on the caster (the centre); shafts are splash bolts from sky with almost no jaggedness."
+}

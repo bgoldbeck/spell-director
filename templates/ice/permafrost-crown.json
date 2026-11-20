@@ -1,0 +1,765 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "ice-permafrost-crown",
+  "name": "Permafrost Crown",
+  "description": "Frost creeps out from the caster's feet and the air glitters, then ice explodes outward in rings of spikes, each row taller than the last, until the enemies at the edge are each locked inside a spike of ice. Snow sifts down over the frozen circle.",
+  "element": "ice",
+  "archetype": "nova",
+  "tags": [
+    "splash",
+    "multi-target",
+    "point-blank",
+    "pbae",
+    "nova",
+    "frost",
+    "freeze",
+    "eruption",
+    "spikes",
+    "root"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Point-blank area spell: no target, blast every enemy in a radius round the caster."
+  },
+  "timing": {
+    "duration_ms": 3000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 8,
+        "max": 9
+      },
+      "radius": {
+        "min": 2.6,
+        "max": 3.0
+      },
+      "ripple_ms": 130
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Spike rows rise toward the camera in a widening crown; the enemies freeze one after another.",
+      "side": "The rows grow taller outward; snow falls.",
+      "top": "Hero for the rhythm: concentric rings of spikes racing outward over spreading frost.",
+      "three_quarter": "Hero view. The crown of ice round the caster and the frozen ring of enemies."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#9EE6FF",
+    "secondary": "#3C9BE0",
+    "accent": "#E6FBFF",
+    "shadow": "#22344A"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Spike layout, prisons, shards, snow and the enemy ring change per cast."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 750,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "Frost creeps out from the caster's feet; the air glitters."
+    },
+    {
+      "id": "burst",
+      "phase": "impact",
+      "start_ms": 750,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Ice explodes outward in rings of spikes."
+    },
+    {
+      "id": "spread",
+      "phase": "impact",
+      "start_ms": 780,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Row after row of spikes stab up, each taller than the last, out to the enemies."
+    },
+    {
+      "id": "hit",
+      "phase": "impact",
+      "start_ms": 850,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy is frozen in place."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1700,
+      "end_ms": 3000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The spikes crack and sink; snow drifts down."
+    }
+  ],
+  "layers": [
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Power welling up round the caster's body, brightening as the charge builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 40,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 550,
+        "gather_px": 220,
+        "swirl": 0.5,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Motes pulled in from the whole blast area, spiralling into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-light",
+      "type": "light",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "icy",
+        "look": "The caster lighting up the enemies round them as the charge builds.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "freeze",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "pull-rings",
+      "type": "ring",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 340,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.7,
+        "repeat_ms": 260,
+        "count": 3,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Rings sliding in over the ground toward the caster: the area being drawn in.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "spike-rows",
+      "type": "eruption",
+      "beats": [
+        "burst",
+        "spread",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 6,
+        "start_radius_px": 60,
+        "end_radius_px": 330,
+        "row_delay_ms": 70,
+        "delay_growth": 1.08,
+        "growth": 1.18,
+        "height_px": {
+          "min": 50,
+          "max": 60
+        },
+        "width_px": 22,
+        "spacing_px": 40,
+        "tilt_deg": 24,
+        "jitter": 0.35,
+        "rise_ms": 60,
+        "hold_ms": 900,
+        "sink_ms": 450,
+        "debris_count": 2,
+        "debris_speed": 280,
+        "debris_size_px": 4,
+        "gravity": 900,
+        "dust": 0.25
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "Rings of clear ice spikes bursting outward from the caster, each row taller.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "frost",
+      "type": "decal",
+      "beats": [
+        "charge",
+        "burst",
+        "spread",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 1,
+      "params": {
+        "shape": "frost",
+        "radius_px": 360,
+        "opacity": 0.85,
+        "fade_in_ms": 200,
+        "grow_ms": 900,
+        "start_scale": 0.1,
+        "lifetime_ms": 3000,
+        "fade_ms": 1200,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Frost spreading out over the ground from the caster.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "prison",
+      "type": "eruption",
+      "beats": [
+        "hit",
+        "fade"
+      ],
+      "anchor": "splash",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 1,
+        "start_radius_px": 0,
+        "end_radius_px": 0,
+        "height_px": {
+          "min": 110,
+          "max": 130
+        },
+        "width_px": 46,
+        "rise_ms": 60,
+        "hold_ms": 900,
+        "sink_ms": 400,
+        "debris_count": 3,
+        "debris_speed": 260,
+        "debris_size_px": 5,
+        "gravity": 900,
+        "dust": 0.25
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "A thick ice spike locking each enemy in place.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "snow",
+      "type": "sparks",
+      "beats": [
+        "spread",
+        "fade"
+      ],
+      "anchor": "sky",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "flake",
+        "count": 70,
+        "speed": 20,
+        "gravity": 120,
+        "lifetime_ms": 2200,
+        "size_px": 3.5,
+        "spread_deg": 360,
+        "emit_ms": 1600,
+        "emit_radius_px": 320
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Snow sifting down over the frozen circle.",
+        "technique": "particles",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "burst-sound",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "shatter",
+        "gain": 1.0,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "nova-flash",
+      "type": "flash",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 280,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A blinding pop centred on the caster as the charge breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A full-screen flash for the moment of release.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-1",
+      "type": "ring",
+      "beats": [
+        "burst",
+        "spread"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 400,
+        "thickness_px": 26,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "icy",
+        "look": "The lead shockwave: a bright, thick ring racing out over the ground past every enemy.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-2",
+      "type": "ring",
+      "beats": [
+        "spread"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 340,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A second, softer wave a beat behind the first.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-shake",
+      "type": "camera_shake",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 13,
+          "max": 15
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "nova-sound",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "nova-light",
+      "type": "light",
+      "beats": [
+        "burst",
+        "spread"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 3.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A burst of light from the caster that throws every enemy into relief.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "air-ring",
+      "type": "ring",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 300,
+        "thickness_px": 12,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A ring of warped air standing up round the caster, facing the camera.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-mark",
+      "type": "decal",
+      "beats": [
+        "burst",
+        "spread",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 300,
+          "max": 330
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.75,
+        "reveal_ms": 380
+      },
+      "shader": {
+        "material": "icy",
+        "look": "The ground torn open round the caster out to the edge of the blast.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "look": "shard"
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 1,
+      "params": {
+        "shape": "frost",
+        "radius_px": {
+          "min": 55,
+          "max": 65
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "freeze",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original point-blank ice nova. Eruption with arc 360, 6 rows and growth >1 so the outer rows are the tallest; enemy prisons are single-spike splash eruptions."
+}
