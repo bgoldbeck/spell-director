@@ -1,0 +1,782 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "nature-wildroot-bloom",
+  "name": "Wildroot Bloom",
+  "description": "Leaves swirl round the caster and green light pulses in the ground, then it bursts: glowing roots tear outward, a fairy ring of mushrooms pops up round the caster, rings of thorns burst further out and thorns curl round every enemy at the edge.",
+  "element": "nature",
+  "archetype": "nova",
+  "tags": [
+    "splash",
+    "multi-target",
+    "point-blank",
+    "pbae",
+    "nova",
+    "roots",
+    "thorns",
+    "mushrooms",
+    "snare",
+    "root"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Point-blank area spell: no target, blast every enemy in a radius round the caster."
+  },
+  "timing": {
+    "duration_ms": 3000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 8,
+        "max": 9
+      },
+      "radius": {
+        "min": 2.6,
+        "max": 3.0
+      },
+      "ripple_ms": 160
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Mushrooms and thorn rings rise outward toward the camera.",
+      "side": "Short glowing mushrooms near the caster, taller thorns further out.",
+      "top": "Hero: a target of rings, mushrooms inside, thorns outside, glowing roots between, snared enemies at the rim.",
+      "three_quarter": "Hero view. The living crown round the caster."
+    }
+  },
+  "palette": {
+    "core": "#F4FFE0",
+    "primary": "#6FD34A",
+    "secondary": "#2E7D32",
+    "accent": "#C8F57A",
+    "shadow": "#2B2418"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Mushroom and thorn layouts, leaves and the enemy ring change per cast."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "Leaves swirl round the caster; green light pulses in the ground."
+    },
+    {
+      "id": "bloom",
+      "phase": "impact",
+      "start_ms": 700,
+      "end_ms": 950,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The ground bursts: roots tear outward."
+    },
+    {
+      "id": "spread",
+      "phase": "impact",
+      "start_ms": 720,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "A ring of thorns and glowing mushrooms bursts up; thorns snare every enemy."
+    },
+    {
+      "id": "hit",
+      "phase": "impact",
+      "start_ms": 800,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy is snared."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1700,
+      "end_ms": 3000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "Leaves settle as the thicket sinks."
+    }
+  ],
+  "layers": [
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Power welling up round the caster's body, brightening as the charge builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 40,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 550,
+        "gather_px": 220,
+        "swirl": 0.5,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Motes pulled in from the whole blast area, spiralling into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-light",
+      "type": "light",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "organic",
+        "look": "The caster lighting up the enemies round them as the charge builds.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "pull-rings",
+      "type": "ring",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 340,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.7,
+        "repeat_ms": 260,
+        "count": 3,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Rings sliding in over the ground toward the caster: the area being drawn in.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "leaf-swirl",
+      "type": "sparks",
+      "beats": [
+        "charge",
+        "bloom"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "leaf",
+        "count": 40,
+        "speed": 40,
+        "gravity": -20,
+        "lifetime_ms": 900,
+        "size_px": 5,
+        "spread_deg": 360,
+        "drag": 0.5,
+        "emit_ms": 700,
+        "emit_radius_px": 140,
+        "orbit_hz": 0.8
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Leaves swirling round the caster as the bloom builds.",
+        "technique": "particles",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "mushrooms",
+      "type": "eruption",
+      "beats": [
+        "bloom",
+        "spread",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 6,
+      "params": {
+        "shape": "mushrooms",
+        "arc_deg": 360,
+        "rows": 2,
+        "start_radius_px": 90,
+        "end_radius_px": 150,
+        "row_delay_ms": 80,
+        "growth": 1.1,
+        "height_px": {
+          "min": 40,
+          "max": 50
+        },
+        "width_px": 26,
+        "spacing_px": 44,
+        "jitter": 0.4,
+        "rise_ms": 140,
+        "hold_ms": 900,
+        "sink_ms": 500,
+        "debris_count": 0,
+        "dust": 0.15
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A fairy ring of mushrooms with softly glowing caps.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "thorns",
+      "type": "eruption",
+      "beats": [
+        "spread",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 3,
+        "start_radius_px": 190,
+        "end_radius_px": 320,
+        "row_delay_ms": 70,
+        "growth": 1.15,
+        "height_px": {
+          "min": 60,
+          "max": 75
+        },
+        "width_px": 16,
+        "spacing_px": 32,
+        "tilt_deg": 30,
+        "jitter": 0.5,
+        "rise_ms": 90,
+        "hold_ms": 800,
+        "sink_ms": 500,
+        "debris_count": 1,
+        "dust": 0.2
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Rings of curved thorns further out.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "snare",
+      "type": "eruption",
+      "beats": [
+        "hit",
+        "fade"
+      ],
+      "anchor": "splash",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 1,
+        "start_radius_px": 26,
+        "end_radius_px": 26,
+        "height_px": {
+          "min": 60,
+          "max": 75
+        },
+        "width_px": 14,
+        "spacing_px": 22,
+        "tilt_deg": -20,
+        "jitter": 0.4,
+        "rise_ms": 90,
+        "hold_ms": 800,
+        "sink_ms": 450,
+        "debris_count": 1,
+        "dust": 0.2
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Thorns curling in round each enemy's legs.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "bloom-sound",
+      "type": "sound_cue",
+      "beats": [
+        "bloom"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.7,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "nova-flash",
+      "type": "flash",
+      "beats": [
+        "bloom"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 280,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A blinding pop centred on the caster as the charge breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "bloom"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A full-screen flash for the moment of release.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-1",
+      "type": "ring",
+      "beats": [
+        "bloom",
+        "spread"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 420,
+        "thickness_px": 26,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "organic",
+        "look": "The lead shockwave: a bright, thick ring racing out over the ground past every enemy.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-2",
+      "type": "ring",
+      "beats": [
+        "spread"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 360,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A second, softer wave a beat behind the first.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-shake",
+      "type": "camera_shake",
+      "beats": [
+        "bloom"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 7,
+          "max": 9
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "nova-sound",
+      "type": "sound_cue",
+      "beats": [
+        "bloom"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "nova-light",
+      "type": "light",
+      "beats": [
+        "bloom",
+        "spread"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 3.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A burst of light from the caster that throws every enemy into relief.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "air-ring",
+      "type": "ring",
+      "beats": [
+        "bloom"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 6,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 300,
+        "thickness_px": 12,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A ring of warped air standing up round the caster, facing the camera.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-mark",
+      "type": "decal",
+      "beats": [
+        "bloom",
+        "spread",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "fissures",
+        "radius_px": {
+          "min": 300,
+          "max": 330
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.75,
+        "reveal_ms": 380,
+        "fill": "glow"
+      },
+      "shader": {
+        "material": "organic",
+        "look": "The ground torn open round the caster out to the edge of the blast.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "look": "leaf"
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "impact",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original point-blank nature design: two eruption rings (mushrooms inside, thorns outside) with glowing root fissures."
+}

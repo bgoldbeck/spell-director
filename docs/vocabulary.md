@@ -141,6 +141,8 @@ Big area spells that still need a target: the caster picks one enemy and the spe
 | rain down on each | strikes falling on every enemy | `bolt` or `orb` at `splash` with `from: "sky"` |
 | split, scatter | the projectile bursts and pieces fly to each enemy | `orb` at `splash` with a `travel` beat, `arc_height_px` for lobs |
 | thrown weapon | a spinning hammer, axe, anvil, disc, spear, trident or rune-stone | `orb` `look: weapon`, `shape`, `spin_hz`; `stick: true` to pin the target |
+| point-blank, PBAE, nova | no target: blast every enemy in a radius round the caster | splash layout with `destination: "caster"`; the blast anchored at `caster`, the hits at `splash` |
+| ground-targeted, placed area | a spot on the ground the caster picks | splash layout with `destination: "point"`; the effect anchored at `target`/`sky` lands on the spot |
 
 ## 7. Camera views
 
@@ -312,7 +314,7 @@ Water has weight: it arcs, falls back and leaves the ground wet. Ice is water th
 | miasma | a dark, draining cloud | alpha smoke, souls rising, inward drain rings |
 | mantle | a cold field that hangs round the caster | frost decal, ice spikes, swirling flakes |
 
-Examples of targeted area spells: `templates/lightning/stormhammer-barrage.json` (hammers then a fork), `cleaving-squall.json` (a chain round the group), `ricochet-stormdiscs.json` (a ricochet), `stormcage-javelin.json` (a cage), `runefall-cairn.json` and `thunderhead-verdict.json` (from the sky), plus `ice/glacial-shatterpoint.json`, `fire/emberfall-cascade.json`, `earth/faultline-crush.json` and `poison/venom-bloom.json`.
+Examples of targeted area spells: `templates/lightning/stormhammer-barrage.json` (hammers then a fork), `cleaving-squall.json` (a chain round the group), `ricochet-stormdiscs.json` (a ricochet), `stormcage-javelin.json` (a cage), `runefall-cairn.json` and `thunderhead-verdict.json` (from the sky), plus `ice/glacial-shatterpoint.json`, `fire/emberfall-cascade.json`, `earth/faultline-crush.json` and `poison/venom-bloom.json`. Point-blank: `lightning/stormcrown-nova.json`, `shadow/abyssal-implosion.json` (pull in, then detonate), `ice/permafrost-crown.json`, `earth/tectonic-crown.json` and more. Ground-targeted: `poison/mire-splat.json`.
 
 ## 9. How the director uses this
 

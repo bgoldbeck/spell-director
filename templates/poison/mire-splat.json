@@ -1,0 +1,883 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "poison-mire-splat",
+  "name": "Mire Splat",
+  "description": "A ground-targeted splat. A huge wobbling glob of green ooze surges down onto a chosen spot and lands with a heavy SPLAT: a crown of goo thrown up, droplets slopped out in every direction and a surge sloshing outward, then the leftover blob jiggles flat. It leaves a stinking, bubbling, glossy green pool under rising fumes that hurts every enemy standing in it.",
+  "element": "poison",
+  "archetype": "strike",
+  "tags": [
+    "splash",
+    "multi-target",
+    "splat",
+    "ooze",
+    "ground-targeted",
+    "pool",
+    "stench",
+    "lingering",
+    "dot"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A splat: a targeted ground area spell that plops liquid green ooze on the ground, a surge of liquid, a stenchy green pool."
+  },
+  "timing": {
+    "duration_ms": 5200,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "point",
+    "travel": "projectile",
+    "scale": 3.2,
+    "footprint": {
+      "shape": "circle",
+      "length": 4.5,
+      "radius": 1.8,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 5,
+        "max": 6
+      },
+      "radius": {
+        "min": 1.4,
+        "max": 1.7
+      },
+      "ripple_ms": 150
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The glob drops in from high over the spot, then the goo crown and droplets fly up across the frame; fumes rise over the pool.",
+      "side": "Best read of the splat: the glob's fall, the tall crown of goo, the low slop, the blob sagging flat.",
+      "top": "The splat shape slaps onto the ground with drops past its rim, the slosh ring spreads, then the round glossy pool with ripples and fumes; enemies stand in it.",
+      "three_quarter": "Hero view. Fall, SPLAT, jiggle, then the festering pool with enemies glowing sick in it."
+    }
+  },
+  "palette": {
+    "core": "#F4FFD0",
+    "primary": "#8FE021",
+    "secondary": "#3E7A0E",
+    "accent": "#C9FF4A",
+    "shadow": "#1C2A0A"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Droplet bursts, the glob's wobble, bubbles, fumes and where the enemies stand change per cast; the splat time is fixed."
+  },
+  "beats": [
+    {
+      "id": "mark",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "A sickly ring glows on the chosen patch of ground; the caster heaves up a glob of ooze."
+    },
+    {
+      "id": "fall",
+      "phase": "travel",
+      "start_ms": 500,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "A huge wobbling glob of green ooze surges down onto the spot."
+    },
+    {
+      "id": "splat",
+      "phase": "impact",
+      "start_ms": 900,
+      "end_ms": 1150,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "SPLAT: it bursts flat, throwing a crown of goo up and slopping droplets out in every direction."
+    },
+    {
+      "id": "slosh",
+      "phase": "impact",
+      "start_ms": 960,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "The ooze slops outward and wobbles back, settling into a pool."
+    },
+    {
+      "id": "settle",
+      "phase": "impact",
+      "start_ms": 900,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The leftover blob in the middle jiggles and sags."
+    },
+    {
+      "id": "hit",
+      "phase": "impact",
+      "start_ms": 980,
+      "end_ms": 1250,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Each enemy standing in it is splattered."
+    },
+    {
+      "id": "fester",
+      "phase": "dissipation",
+      "start_ms": 1500,
+      "end_ms": 4600,
+      "intensity": {
+        "shape": "hold",
+        "from": 0.9,
+        "to": 0.9
+      },
+      "intent": "A stinking, bubbling, glossy green pool hurts everyone standing in it; fumes rise."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4600,
+      "end_ms": 5200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.9,
+        "to": 0.0
+      },
+      "intent": "The pool soaks away."
+    }
+  ],
+  "layers": [
+    {
+      "id": "mark",
+      "type": "decal",
+      "beats": [
+        "mark",
+        "fall"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "accent",
+      "z": 1,
+      "params": {
+        "shape": "warning_ring",
+        "radius_px": 170,
+        "opacity": 0.8,
+        "fade_in_ms": 150,
+        "grow_ms": 400,
+        "start_scale": 0.4,
+        "rotation_deg": 0,
+        "fade_ms": 60,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A sickly green ring marking where the splat will land.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hand-glob",
+      "type": "glow",
+      "beats": [
+        "mark"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 26,
+        "softness": 0.8,
+        "pulse_hz": 4
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A glob of ooze welling up in the caster's hand.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "glob",
+      "type": "orb",
+      "beats": [
+        "fall"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "radius_px": {
+          "min": 52,
+          "max": 58
+        },
+        "bubble": true,
+        "wobble": 0.7,
+        "pulse_hz": 6,
+        "crackle_count": 0,
+        "travel_ease": "ease_in",
+        "approach_deg": {
+          "min": 15,
+          "max": 25
+        },
+        "approach_yaw_deg": 180,
+        "trail_ms": 0
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A huge, wobbling, translucent glob of glossy green ooze with a bright highlight, sloshing as it falls.",
+        "technique": "mesh",
+        "noise": {
+          "type": "simplex",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "downward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "glob-core",
+      "type": "orb",
+      "beats": [
+        "fall"
+      ],
+      "anchor": "sky",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "radius_px": {
+          "min": 34,
+          "max": 38
+        },
+        "wobble": 0.8,
+        "pulse_hz": 6,
+        "crackle_count": 0,
+        "travel_ease": "ease_in",
+        "approach_deg": {
+          "min": 15,
+          "max": 25
+        },
+        "approach_yaw_deg": 180,
+        "trail_ms": 90,
+        "opacity": 0.7
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The thick green body of the glob inside its glossy skin.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "gaussian"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "settle-blob",
+      "type": "orb",
+      "beats": [
+        "settle"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "radius_px": 46,
+        "bubble": true,
+        "wobble": 0.8,
+        "pulse_hz": 7,
+        "crackle_count": 0,
+        "height_px": 8
+      },
+      "keyframes": [
+        {
+          "t_ms": 900,
+          "param": "radius_px",
+          "value": 60
+        },
+        {
+          "t_ms": 1050,
+          "param": "radius_px",
+          "value": 34,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 1200,
+          "param": "radius_px",
+          "value": 44,
+          "ease": "ease_in_out"
+        },
+        {
+          "t_ms": 1400,
+          "param": "radius_px",
+          "value": 28,
+          "ease": "ease_in_out"
+        },
+        {
+          "t_ms": 1700,
+          "param": "radius_px",
+          "value": 12,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "liquid",
+        "look": "The leftover blob in the middle, jiggling and sagging flat.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splat-flash",
+      "type": "flash",
+      "beats": [
+        "splat"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 140,
+        "peak": 0.7
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A wet bright pop as the glob bursts.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "crown",
+      "type": "sparks",
+      "beats": [
+        "splat"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 12,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 70,
+          "max": 80
+        },
+        "speed": 620,
+        "speed_spread": 0.45,
+        "gravity": 1400,
+        "lifetime_ms": 750,
+        "size_px": {
+          "min": 6,
+          "max": 8
+        },
+        "spread_deg": 55,
+        "drag": 0.15,
+        "streak_ms": 25,
+        "emit_ms": 60,
+        "emit_radius_px": 50
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A crown of goo thrown straight up out of the splat, falling back in fat drops.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "slop",
+      "type": "sparks",
+      "beats": [
+        "splat"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 11,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 90,
+          "max": 100
+        },
+        "speed": 480,
+        "speed_spread": 0.6,
+        "gravity": 1200,
+        "lifetime_ms": 650,
+        "size_px": {
+          "min": 4,
+          "max": 6
+        },
+        "spread_deg": 170,
+        "drag": 0.25,
+        "streak_ms": 25,
+        "emit_ms": 80
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Droplets slopped out low in every direction.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "slosh-ring",
+      "type": "ring",
+      "beats": [
+        "slosh"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 210,
+        "thickness_px": 30,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The surge of ooze sloshing outward across the ground.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splat-mark",
+      "type": "decal",
+      "beats": [
+        "splat",
+        "slosh"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "splash",
+        "radius_px": 210,
+        "opacity": 0.95,
+        "fade_in_ms": 0,
+        "grow_ms": 160,
+        "start_scale": 0.3,
+        "lifetime_ms": 700,
+        "fade_ms": 600,
+        "detail": 0.8
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The splat shape slapped onto the ground, droplets flung past its rim.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "pool",
+      "type": "decal",
+      "beats": [
+        "splat",
+        "slosh",
+        "fester",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 180,
+        "opacity": 0.9,
+        "fade_in_ms": 0,
+        "grow_ms": 500,
+        "start_scale": 0.5,
+        "lifetime_ms": 3800,
+        "fade_ms": 1200,
+        "detail": 0.7,
+        "fill": "liquid",
+        "fill_flow": 0.4,
+        "pulse_hz": 0.6
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A glossy, bubbling pool of green ooze, a bright rim and a sick sheen on its surface.",
+        "technique": "decal",
+        "noise": {
+          "type": "simplex",
+          "scale": 4,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "emissive": {
+          "hdr": 1,
+          "falloff": "gaussian"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "bubbles",
+      "type": "sparks",
+      "beats": [
+        "fester"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "look": "droplet",
+        "count": 60,
+        "speed": 70,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 260,
+        "size_px": 4,
+        "spread_deg": 40,
+        "drag": 0.3,
+        "streak_ms": 10,
+        "emit_ms": 3000,
+        "emit_radius_px": 160
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Bubbles popping all over the pool, flicking up tiny drops.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "pop-rings",
+      "type": "ring",
+      "beats": [
+        "fester"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 170,
+        "thickness_px": 5,
+        "softness": 0.7,
+        "repeat_ms": 700,
+        "count": 2
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Slow ripples crossing the pool.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 1,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "stench",
+      "type": "smoke",
+      "beats": [
+        "fester",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 7,
+      "params": {
+        "count": 34,
+        "rise_speed": 45,
+        "size_px": {
+          "min": 50,
+          "max": 62
+        },
+        "lifetime_ms": 1800,
+        "opacity": 0.5,
+        "spread_px": 160
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Thick green stink fumes rising off the pool and hanging over it.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.5
+        },
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "stench-wisps",
+      "type": "smoke",
+      "beats": [
+        "fester"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "count": 14,
+        "rise_speed": 80,
+        "size_px": {
+          "min": 22,
+          "max": 28
+        },
+        "lifetime_ms": 1100,
+        "opacity": 0.35,
+        "spread_px": 140
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Thin, brighter wisps of stench curling up out of the bubbles.",
+        "technique": "flipbook",
+        "emissive": {
+          "hdr": 1,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pool-light",
+      "type": "light",
+      "beats": [
+        "fester"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 1.1,
+        "height_px": 40,
+        "tint": "#8FE021"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A dim green glow off the pool lighting the fumes from below.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "enemy-goo",
+      "type": "sparks",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "look": "droplet",
+        "count": {
+          "min": 16,
+          "max": 20
+        },
+        "speed": 260,
+        "gravity": 1100,
+        "lifetime_ms": 500,
+        "size_px": 4,
+        "spread_deg": 120,
+        "drag": 0.2,
+        "streak_ms": 20
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Goo splattered up each enemy's legs.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "enemy-sick",
+      "type": "glow",
+      "beats": [
+        "fester"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 26,
+        "softness": 0.85,
+        "pulse_hz": 2
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A throbbing sick glow on every enemy standing in the pool: it's hurting them.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "enemy-fumes",
+      "type": "smoke",
+      "beats": [
+        "fester"
+      ],
+      "anchor": "splash",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 6,
+        "rise_speed": 70,
+        "size_px": {
+          "min": 16,
+          "max": 20
+        },
+        "lifetime_ms": 900,
+        "opacity": 0.35,
+        "spread_px": 10
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Fumes curling off each enemy in the pool.",
+        "technique": "flipbook",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splat-shake",
+      "type": "camera_shake",
+      "beats": [
+        "splat"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 7,
+          "max": 9
+        },
+        "frequency_hz": 16,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "fall-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fall"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.5,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "splat-sound",
+      "type": "sound_cue",
+      "beats": [
+        "splat"
+      ],
+      "params": {
+        "cue": "splash",
+        "gain": 1.0,
+        "pitch": 0.65
+      }
+    },
+    {
+      "id": "squelch-sound",
+      "type": "sound_cue",
+      "beats": [
+        "splat"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 1.0,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "slosh-sound",
+      "type": "sound_cue",
+      "beats": [
+        "slosh"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.5,
+        "pitch": 0.6,
+        "offset_ms": 200
+      }
+    },
+    {
+      "id": "bubble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fester"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.25,
+        "pitch": {
+          "min": 1.3,
+          "max": 1.6
+        },
+        "repeat_ms": 600
+      }
+    }
+  ],
+  "director_notes": "Ground-targeted (destination point with a splash layout, so enemies stand in the pool round the picked spot). The splat feel comes from timing contrast: a fast ease-in fall, a one-frame burst with a tall droplet crown and a low droplet slop, a keyframed jiggle on the settling blob, and a slosh ring. The pool is a liquid-filled puddle with popping bubbles, ripples and six-way lit fumes."
+}

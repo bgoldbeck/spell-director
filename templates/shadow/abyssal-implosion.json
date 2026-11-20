@@ -1,0 +1,782 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "shadow-abyssal-implosion",
+  "name": "Abyssal Implosion",
+  "description": "A black vortex opens round the caster and drags at every enemy nearby, tearing wisps off them and sucking them in as it spins faster. Then it collapses into the caster and detonates in a violet shockwave, black smoke and rifts torn in the ground.",
+  "element": "shadow",
+  "archetype": "nova",
+  "tags": [
+    "splash",
+    "multi-target",
+    "point-blank",
+    "pbae",
+    "nova",
+    "void",
+    "vortex",
+    "pull",
+    "implode",
+    "detonate"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Point-blank area spell: no target, blast every enemy in a radius round the caster."
+  },
+  "timing": {
+    "duration_ms": 3000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 8,
+        "max": 9
+      },
+      "radius": {
+        "min": 2.6,
+        "max": 3.0
+      },
+      "ripple_ms": 90
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The funnel towers over the caster; wisps stream in from every side; the blast rolls out at the camera.",
+      "side": "The funnel's height and the wisps converging; the blast is flat and wide.",
+      "top": "Hero for the pull: wisps spiralling in from the ring of enemies, then rifts and the outward ring.",
+      "three_quarter": "Hero view. Pull in, collapse, detonate."
+    }
+  },
+  "palette": {
+    "core": "#F3E6FF",
+    "primary": "#9B4DFF",
+    "secondary": "#3B0F7A",
+    "accent": "#E055FF",
+    "shadow": "#0A0612"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Wisp paths, the funnel's sway, rifts, smoke and the enemy ring change per cast."
+  },
+  "beats": [
+    {
+      "id": "open",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 0.8
+      },
+      "intent": "A black vortex opens round the caster."
+    },
+    {
+      "id": "pull",
+      "phase": "anticipation",
+      "start_ms": 300,
+      "end_ms": 1300,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.4,
+        "to": 1.0
+      },
+      "intent": "It drags at every enemy, tearing wisps off them and sucking them in."
+    },
+    {
+      "id": "detonate",
+      "phase": "impact",
+      "start_ms": 1300,
+      "end_ms": 1560,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "It collapses into the caster and detonates."
+    },
+    {
+      "id": "wave",
+      "phase": "impact",
+      "start_ms": 1340,
+      "end_ms": 2000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A violet shockwave rolls out."
+    },
+    {
+      "id": "hit",
+      "phase": "impact",
+      "start_ms": 1380,
+      "end_ms": 1650,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy is blasted."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1560,
+      "end_ms": 3000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "The scar seethes and closes."
+    }
+  ],
+  "layers": [
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "open",
+        "pull"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Power welling up round the caster's body, brightening as the charge builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "open",
+        "pull"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 40,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 550,
+        "gather_px": 220,
+        "swirl": 0.5,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Motes pulled in from the whole blast area, spiralling into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-light",
+      "type": "light",
+      "beats": [
+        "open",
+        "pull"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "The caster lighting up the enemies round them as the charge builds.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "open"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "pull-rings",
+      "type": "ring",
+      "beats": [
+        "open",
+        "pull"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 340,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.7,
+        "repeat_ms": 260,
+        "count": 3,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Rings sliding in over the ground toward the caster: the area being drawn in.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "vortex",
+      "type": "vortex",
+      "beats": [
+        "open",
+        "pull"
+      ],
+      "anchor": "caster",
+      "color": "gradient_primary_to_secondary",
+      "z": 5,
+      "params": {
+        "height_px": 220,
+        "base_radius_px": 50,
+        "top_radius_px": 260,
+        "flare": 1.6,
+        "spin_hz": 1.2,
+        "strands": 10,
+        "twist": 1.4,
+        "turbulence": 0.6,
+        "sway_px": 10,
+        "grow_ms": 500,
+        "opacity": 0.6
+      },
+      "keyframes": [
+        {
+          "t_ms": 300,
+          "param": "spin_hz",
+          "value": 1.2
+        },
+        {
+          "t_ms": 1300,
+          "param": "spin_hz",
+          "value": 4,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "shadowy",
+        "look": "A funnel of black and violet turning round the caster, wide at the top.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "swirl",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "torn-wisps",
+      "type": "sparks",
+      "beats": [
+        "pull"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "count": 30,
+        "speed": 60,
+        "speed_spread": 0.5,
+        "gravity": 0,
+        "lifetime_ms": 600,
+        "size_px": 4.5,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 800,
+        "home_to": "caster"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Wisps torn off every enemy and sucked into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "rift",
+      "type": "decal",
+      "beats": [
+        "detonate",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": 320,
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1800,
+        "fade_ms": 900,
+        "detail": 0.75,
+        "reveal_ms": 360,
+        "fill": "void"
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Rifts torn in the ground, darkness welling up.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "void-smoke",
+      "type": "smoke",
+      "beats": [
+        "detonate",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 6,
+      "params": {
+        "count": 30,
+        "rise_speed": 30,
+        "size_px": {
+          "min": 60,
+          "max": 70
+        },
+        "lifetime_ms": 1300,
+        "opacity": 0.6,
+        "spread_speed": 300
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Black smoke blown outward by the blast.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "pull-sound",
+      "type": "sound_cue",
+      "beats": [
+        "pull"
+      ],
+      "params": {
+        "cue": "drain",
+        "gain": 0.7
+      }
+    },
+    {
+      "id": "nova-flash",
+      "type": "flash",
+      "beats": [
+        "detonate"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 280,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A blinding pop centred on the caster as the charge breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "detonate"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A full-screen flash for the moment of release.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-1",
+      "type": "ring",
+      "beats": [
+        "detonate",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 440,
+        "thickness_px": 26,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "The lead shockwave: a bright, thick ring racing out over the ground past every enemy.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-2",
+      "type": "ring",
+      "beats": [
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 380,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A second, softer wave a beat behind the first.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-shake",
+      "type": "camera_shake",
+      "beats": [
+        "detonate"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 13,
+          "max": 15
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "nova-sound",
+      "type": "sound_cue",
+      "beats": [
+        "detonate"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "nova-light",
+      "type": "light",
+      "beats": [
+        "detonate",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 3.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A burst of light from the caster that throws every enemy into relief.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "air-ring",
+      "type": "ring",
+      "beats": [
+        "detonate"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 300,
+        "thickness_px": 12,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A ring of warped air standing up round the caster, facing the camera.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-mark",
+      "type": "decal",
+      "beats": [
+        "detonate",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 300,
+          "max": 330
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.75
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "The ground torn open round the caster out to the edge of the blast.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "impact",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original point-blank design: the vortex pull-then-detonate. Torn wisps are splash sparks with home_to caster; the vortex spins up by keyframe before the collapse."
+}

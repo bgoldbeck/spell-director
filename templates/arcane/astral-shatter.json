@@ -1,0 +1,796 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "arcane-astral-shatter",
+  "name": "Astral Shatter",
+  "description": "A star-chart circle spins under the caster as crystals form in the air, then space cracks like glass: violet crystal shards erupt outward in rings and straight lances of starlight spear every enemy round the caster.",
+  "element": "arcane",
+  "archetype": "nova",
+  "tags": [
+    "splash",
+    "multi-target",
+    "point-blank",
+    "pbae",
+    "nova",
+    "crystal",
+    "rune",
+    "lances",
+    "eruption"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Point-blank area spell: no target, blast every enemy in a radius round the caster."
+  },
+  "timing": {
+    "duration_ms": 2900,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 8,
+        "max": 9
+      },
+      "radius": {
+        "min": 2.6,
+        "max": 3.0
+      },
+      "ripple_ms": 70
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Crystal rings rise toward the camera; lances shoot out at chest height.",
+      "side": "Short crystals near the caster, taller further out; lances both ways.",
+      "top": "Hero: the star chart, rings of crystals and straight spokes of light to each enemy.",
+      "three_quarter": "Hero view. The whole shattered circle."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#C08CFF",
+    "secondary": "#6B3DFF",
+    "accent": "#FFD6F6",
+    "shadow": "#1C1530"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Crystal layout, lances and the enemy ring change per cast."
+  },
+  "beats": [
+    {
+      "id": "weave",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 850,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A star-chart circle spins under the caster; crystals form in the air."
+    },
+    {
+      "id": "shatter",
+      "phase": "impact",
+      "start_ms": 850,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Space cracks like glass round the caster."
+    },
+    {
+      "id": "wave",
+      "phase": "impact",
+      "start_ms": 870,
+      "end_ms": 1600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.1
+      },
+      "intent": "Crystal shards erupt outward; lances of starlight spear every enemy."
+    },
+    {
+      "id": "lances",
+      "phase": "impact",
+      "start_ms": 870,
+      "end_ms": 1180,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.7,
+        "to": 1.0,
+        "flicker_hz": 14
+      },
+      "intent": "Lances to each enemy."
+    },
+    {
+      "id": "hit",
+      "phase": "impact",
+      "start_ms": 900,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy is struck."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1600,
+      "end_ms": 2900,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "Shards dissolve into motes."
+    }
+  ],
+  "layers": [
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "weave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Power welling up round the caster's body, brightening as the charge builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "weave"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 40,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 550,
+        "gather_px": 220,
+        "swirl": 0.5,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Motes pulled in from the whole blast area, spiralling into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-light",
+      "type": "light",
+      "beats": [
+        "weave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "The caster lighting up the enemies round them as the charge builds.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "weave"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "pull-rings",
+      "type": "ring",
+      "beats": [
+        "weave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 340,
+        "end_radius_px": 30,
+        "thickness_px": 8,
+        "softness": 0.7,
+        "repeat_ms": 260,
+        "count": 3,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Rings sliding in over the ground toward the caster: the area being drawn in.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "star-chart",
+      "type": "decal",
+      "beats": [
+        "weave",
+        "shatter",
+        "wave"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 260,
+        "opacity": 0.9,
+        "fade_in_ms": 200,
+        "grow_ms": 600,
+        "start_scale": 0.3,
+        "spin_deg_per_s": -50,
+        "lifetime_ms": 1400,
+        "fade_ms": 500,
+        "detail": 0.8,
+        "symmetry": 7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A spinning star-chart circle under the caster.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "crystals",
+      "type": "eruption",
+      "beats": [
+        "shatter",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 4,
+        "start_radius_px": 80,
+        "end_radius_px": 300,
+        "row_delay_ms": 70,
+        "growth": 1.2,
+        "height_px": {
+          "min": 50,
+          "max": 60
+        },
+        "width_px": 22,
+        "spacing_px": 50,
+        "tilt_deg": 35,
+        "jitter": 0.5,
+        "rise_ms": 60,
+        "hold_ms": 700,
+        "sink_ms": 500,
+        "debris_count": 2,
+        "debris_speed": 300,
+        "debris_size_px": 4,
+        "gravity": 600,
+        "dust": 0.0
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "Violet crystal shards bursting out of the ground in rings.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "lances",
+      "type": "bolt",
+      "beats": [
+        "lances"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "params": {
+        "segments": 6,
+        "jaggedness": 0.06,
+        "width_px": 6,
+        "taper": 0.4,
+        "regen_ms": 0,
+        "afterimage_ms": 140,
+        "glow_px": 14
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Straight lances of starlight from the caster to each enemy.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "glass-cracks",
+      "type": "decal",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "shape": "cracks",
+        "radius_px": 200,
+        "opacity": 0.8,
+        "fade_in_ms": 0,
+        "lifetime_ms": 120,
+        "fade_ms": 300,
+        "detail": 0.8
+      },
+      "shader": {
+        "material": "glassy",
+        "look": "A glassy crack pattern in the air for an instant.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shatter-sound",
+      "type": "sound_cue",
+      "beats": [
+        "shatter"
+      ],
+      "params": {
+        "cue": "shatter",
+        "gain": 1.0,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "lance-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lances"
+      ],
+      "params": {
+        "cue": "zap",
+        "gain": 0.7,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "nova-flash",
+      "type": "flash",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 280,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A blinding pop centred on the caster as the charge breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A full-screen flash for the moment of release.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-1",
+      "type": "ring",
+      "beats": [
+        "shatter",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 420,
+        "thickness_px": 26,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "The lead shockwave: a bright, thick ring racing out over the ground past every enemy.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-2",
+      "type": "ring",
+      "beats": [
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 360,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A second, softer wave a beat behind the first.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-shake",
+      "type": "camera_shake",
+      "beats": [
+        "shatter"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 13,
+          "max": 15
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "nova-sound",
+      "type": "sound_cue",
+      "beats": [
+        "shatter"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "nova-light",
+      "type": "light",
+      "beats": [
+        "shatter",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 3.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A burst of light from the caster that throws every enemy into relief.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "air-ring",
+      "type": "ring",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 300,
+        "thickness_px": 12,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A ring of warped air standing up round the caster, facing the camera.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-mark",
+      "type": "decal",
+      "beats": [
+        "shatter",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 300,
+          "max": 330
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.75,
+        "reveal_ms": 380
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "The ground torn open round the caster out to the edge of the blast.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "look": "shard"
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "shatter",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original point-blank arcane nova. Lances are splash bolts from the centre with almost no jaggedness so they read as straight beams, unlike lightning."
+}

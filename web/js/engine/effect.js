@@ -1532,7 +1532,7 @@ class SparksLayer extends Layer {
     // arriving as it dies (life drained into the caster's hand, a swarm
     // flying at the target). Ease-in, so the burst reads before the pull.
     const homeName = typeof this.base.home_to === "string" ? this.base.home_to : null;
-    const home = homeName ? (homeName === "target" ? this.effect.stage.chest(this.effect.stage.splash ? 0 : this.instance) : this.effect.stage.anchor(homeName, this.instance)) : null;
+    const home = homeName ? (homeName === "target" ? (this.effect.stage.splash ? this.effect.stage.anchor("target").setY(0.55) : this.effect.stage.chest(this.instance)) : this.effect.stage.anchor(homeName, this.instance)) : null;
     // orbit_hz: each spark also circles the anchor (turns per second around
     // the vertical axis, negative = clockwise seen from above): leaves, notes
     // or embers swirling around a caster.
@@ -2307,6 +2307,11 @@ class OrbLayer extends Layer {
     if (this.splashFlight && !this.fromSky) {
       from = st.splashFrom(this.instance, this.p("from", 0, "primary"), !!this.base.wrap);
       to = st.splashChest(this.instance);
+      // start_out_px: start this far out from the centre toward its target,
+      // so a set of splash orbs waits in a ring before flying (hammers
+      // circling a caster).
+      const out = this.p("start_out_px", 0, 0) * PX;
+      if (out) from.add(new THREE.Vector3().subVectors(to, from).setY(0).normalize().multiplyScalar(out));
     }
     const u = Math.max(0, Math.min(1, (t - f.start_ms) / Math.max(1, f.end_ms - f.start_ms)));
     const e = this.p("travel_ease", t, "linear") === "ease_in" ? u * u : u;

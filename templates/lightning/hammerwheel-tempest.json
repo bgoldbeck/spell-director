@@ -1,0 +1,758 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-hammerwheel-tempest",
+  "name": "Hammerwheel Tempest",
+  "description": "Storm hammers form round the caster and spin up faster and faster. With a thunderclap they are flung out in every direction at once, one at each enemy, with the shockwave rolling out behind them, and they lie where they hit, crackling.",
+  "element": "lightning",
+  "archetype": "nova",
+  "tags": [
+    "splash",
+    "multi-target",
+    "point-blank",
+    "pbae",
+    "nova",
+    "hammer",
+    "thrown-weapon",
+    "spinning",
+    "shockwave"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Point-blank area spell: no target, blast every enemy in a radius round the caster."
+  },
+  "timing": {
+    "duration_ms": 2600,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 8,
+        "max": 9
+      },
+      "radius": {
+        "min": 2.6,
+        "max": 3.0
+      },
+      "ripple_ms": 0
+    }
+  },
+  "views": {
+    "hero": "top",
+    "reads": {
+      "front": "Hammers hang round the caster, then fly outward toward and away from the camera.",
+      "side": "Their lobbed, tumbling paths read best here.",
+      "top": "Hero view for the burst: a starburst of hammers from the centre, each landing on an enemy, inside the expanding rings.",
+      "three_quarter": "The ring of hammers, the burst and the craters round the group."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#8FD3FF",
+    "secondary": "#3D6BFF",
+    "accent": "#DDF3FF",
+    "shadow": "#1A2233"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Hammer spin and lob, crater marks and the enemy ring change per cast."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "Storm hammers form in a ring round the caster, spinning faster and faster."
+    },
+    {
+      "id": "clap",
+      "phase": "impact",
+      "start_ms": 700,
+      "end_ms": 950,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Thunderclap: the hammers are flung outward in every direction."
+    },
+    {
+      "id": "fling",
+      "phase": "travel",
+      "start_ms": 700,
+      "end_ms": 980,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "Each hammer tumbles out to an enemy."
+    },
+    {
+      "id": "wave",
+      "phase": "impact",
+      "start_ms": 760,
+      "end_ms": 1400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The shockwave rolls out behind them."
+    },
+    {
+      "id": "hit",
+      "phase": "impact",
+      "start_ms": 980,
+      "end_ms": 1250,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy is hammered."
+    },
+    {
+      "id": "held",
+      "phase": "impact",
+      "start_ms": 980,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "The hammers lie where they hit, crackling."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1250,
+      "end_ms": 2600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "The hammers' lightning bleeds away."
+    }
+  ],
+  "layers": [
+    {
+      "id": "core-glow",
+      "type": "glow",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 0.9,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Power welling up round the caster's body, brightening as the charge builds.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 40,
+        "speed": 30,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 650,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 550,
+        "gather_px": 220,
+        "swirl": 0.5,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Motes pulled in from the whole blast area, spiralling into the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-light",
+      "type": "light",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.8,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The caster lighting up the enemies round them as the charge builds.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "hammers",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "fling",
+        "held"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "look": "weapon",
+        "shape": "hammer",
+        "radius_px": {
+          "min": 28,
+          "max": 32
+        },
+        "spin_hz": {
+          "min": 2.6,
+          "max": 3.4
+        },
+        "crackle_count": 4,
+        "trail_ms": 160,
+        "arc_height_px": 60,
+        "from": "primary",
+        "stick": true,
+        "travel_ease": "ease_in",
+        "start_out_px": 75
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A ring of storm hammers flung out from the caster, one at each enemy, tumbling end over end.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hand-crackle",
+      "type": "crackle",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "count": 10,
+        "length_px": 40,
+        "jaggedness": 0.9,
+        "regen_ms": 40,
+        "radius_px": 70
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Lightning crawling round the caster as the hammers spin up.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-ring",
+      "type": "ring",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 60,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6,
+        "steady": true
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A tight ring of light on the ground under the spinning hammers.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fling-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fling"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.8,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "clap-sound",
+      "type": "sound_cue",
+      "beats": [
+        "clap"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 1.0,
+        "pitch": 0.65
+      }
+    },
+    {
+      "id": "nova-flash",
+      "type": "flash",
+      "beats": [
+        "clap"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 280,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A blinding pop centred on the caster as the charge breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "clap"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A full-screen flash for the moment of release.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-1",
+      "type": "ring",
+      "beats": [
+        "clap",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 4,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 380,
+        "thickness_px": 26,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The lead shockwave: a bright, thick ring racing out over the ground past every enemy.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "wave-2",
+      "type": "ring",
+      "beats": [
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 320,
+        "thickness_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A second, softer wave a beat behind the first.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-shake",
+      "type": "camera_shake",
+      "beats": [
+        "clap"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 13,
+          "max": 15
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "nova-sound",
+      "type": "sound_cue",
+      "beats": [
+        "clap"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "nova-light",
+      "type": "light",
+      "beats": [
+        "clap",
+        "wave"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 9,
+        "energy": 3.2,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A burst of light from the caster that throws every enemy into relief.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "air-ring",
+      "type": "ring",
+      "beats": [
+        "clap"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 40,
+        "end_radius_px": 300,
+        "thickness_px": 12,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A ring of warped air standing up round the caster, facing the camera.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "nova-mark",
+      "type": "decal",
+      "beats": [
+        "clap",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 300,
+          "max": 330
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1600,
+        "fade_ms": 900,
+        "detail": 0.75,
+        "reveal_ms": 380
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The ground torn open round the caster out to the edge of the blast.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "clap",
+        "wave",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 200,
+          "max": 220
+        },
+        "opacity": 0.7,
+        "fade_in_ms": 60,
+        "grow_ms": 300,
+        "start_scale": 0.3,
+        "lifetime_ms": 4000,
+        "fade_ms": 2000,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A broad burn left round the caster's feet.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "impact",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original point-blank take on spinning thunder hammers: weapon-look orbs anchored at splash, from the centre (the caster), so one hammer flies to each enemy. Ripple 0 so they all leave on the clap; their flights carry the timing."
+}
