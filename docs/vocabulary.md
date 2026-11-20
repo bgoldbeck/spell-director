@@ -89,6 +89,7 @@ An effect is a stack of layers. Each layer has one job.
 | `ring` | Expanding shockwave circle (overhead) or ripple. |
 | `decal` | Mark on the ground: scorch, burn, cracks, crater, puddle, splash, frost, rune circle, warning ring (telegraph), fissures. Fades in, stays, fades out; can outlive the spell. |
 | `smoke` | Soft alpha volume, slow drift. |
+| `motif` | A small modeled thing that acts out part of the story: a leaf, petal, feather, water drop, a blossom that opens, or a faceted gem. One or many, placed by hand (keyframed paths) or circling the anchor. |
 | `light` | Dynamic light cast on the environment. |
 | `camera_shake` | Screen shake. |
 | `sound_cue` | A named sound that plays in sync with its beats (see §10). |
@@ -314,6 +315,25 @@ Water has weight: it arcs, falls back and leaves the ground wet. Ice is water th
 | miasma | a dark, draining cloud | alpha smoke, souls rising, inward drain rings |
 | mantle | a cold field that hangs round the caster | frost decal, ice spikes, swirling flakes |
 
+### Buffs
+
+A buff is cast on one character to help them: a shield, haste, strength, regeneration, a resistance. The lovely ones tell a tiny story that resolves into something that lingers on the character. Tag them `buff`, make them auras, and frame them close (`views.frame: "close"`); the viewer lists them under **Type → Kinds → Buffs**.
+
+| Word | Means | Template |
+|---|---|---|
+| story beat | a short readable step before the aura settles: a leaf unfurls, a drop rolls, falls, splashes | `anticipation` / `travel` / `impact` beats before the loop, each 0.3–0.8 s |
+| leaf, petal, feather | a light thin thing that floats, rocks and drifts | `motif` `shape: leaf` / `petal` / `feather`; `sway_px` for a falling flutter |
+| dew drop, bead, drip | a drop that runs along something and falls | `motif` `shape: droplet`; keyframe `side_px`/`height_px` along the path, `ease_in` for the fall; `sparks` `look: droplet` `attach_to` it for the splash |
+| blossom, bud, opening | a flower opening | `motif` `shape: blossom`, keyframe `bloom` 0 → 1 |
+| bubble shield, soap bubble | a clear shell with rainbow film and window glints | `orb` `bubble: true`, `finish: soap`, keyframe `radius_px` up and `ripple` down to settle it |
+| glass dome, mirror veil | a clear tinted shell with a dark refracted edge | `orb` `bubble: true`, `finish: glass` |
+| gem orbit | gems that pop in one by one and circle the character, spinning and glinting | `motif` `shape: gem` (`cut`), `count`, `orbit_radius_px`, `orbit_hz`, `spin_hz`, `stagger_ms`, `sparkle`; `glow` `attach_to` it for halos; `light` layers with the same `orbit_hz` and `tint` for colored light on the body |
+| diamond, emerald, jade, sapphire, ruby | the gem's cut and color | `cut: brilliant`, `emerald`, `cabochon` (milky polished stones like jade), `marquise`, `heart`, `prism` (crystal points); the layer color or `tints` (one color per gem) |
+| cocoon, mantle of leaves | many items stacked up the body | `motif` `count` 12–20, `stack_px`, `face: out`, `stagger_ms` so it spirals up |
+| halo, crown | items circling above the head | `motif` at `height_px` 130–150, small `orbit_radius_px`; prisms with `tilt_deg: 90` and `face: out` make a snowflake |
+
+Examples: `templates/water/dewdrop-ward.json` (leaf, drop, soap bubble), `earth/diamond-aegis.json` and the other Gemwarden orbits, `nature/petalfall-mending.json`, `arcane/moonmirror-veil.json` (glass), `ice/snowflake-ward.json`.
+
 Examples of targeted area spells: `templates/lightning/stormhammer-barrage.json` (hammers then a fork), `cleaving-squall.json` (a chain round the group), `ricochet-stormdiscs.json` (a ricochet), `stormcage-javelin.json` (a cage), `runefall-cairn.json` and `thunderhead-verdict.json` (from the sky), plus `ice/glacial-shatterpoint.json`, `fire/emberfall-cascade.json`, `earth/faultline-crush.json` and `poison/venom-bloom.json`. Point-blank: `lightning/stormcrown-nova.json`, `shadow/abyssal-implosion.json` (pull in, then detonate), `ice/permafrost-crown.json`, `earth/tectonic-crown.json` and more. Ground-targeted: `poison/mire-splat.json`.
 
 ## 9. How the director uses this
@@ -394,6 +414,9 @@ Rendered frames show *when* and *where* things happen. They don't carry the magi
 | `organic` | roots, vines, living matter | lit, Voronoi, growth along a path |
 | `stone` | rock, earth | lit, Voronoi cracks, no emission |
 | `metallic` | blades, metal | lit, fresnel, sharp highlights |
+| `iridescent` | soap bubbles, nacre, oil sheen, beetle wings | thin-film rainbow bands by view angle, clear middle, window reflections |
+| `gemstone` | diamonds, emeralds, jade, sapphires | faceted (or polished dome) refraction, inner brilliance, rainbow fire, sharp glints |
+| `foliage` | leaves, petals, feathers | thin lit sheet, veins or barbs, light glowing through the edges, soft alpha edge |
 
 ### Surface behaviour
 

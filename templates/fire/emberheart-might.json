@@ -1,0 +1,403 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-emberheart-might",
+  "name": "Emberheart Might",
+  "description": "A strength buff: a bead of ember light forms above the head, sinks into the chest and catches, and a coal-bright heart beats there while embers rise and a sigil of strength turns underfoot.",
+  "element": "fire",
+  "line": "Warden",
+  "archetype": "aura",
+  "tags": [
+    "buff",
+    "aura",
+    "looping",
+    "strength",
+    "might",
+    "ember",
+    "heart",
+    "warrior"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Buff: an ember drops into the character's chest and becomes a beating heart of fire, strength"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1800,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "frame": "close",
+    "reads": {
+      "front": "A glowing bead sinks into the chest; a warm heart beats there with embers rising.",
+      "side": "The bead drops straight into the chest; the heart glows through from either side.",
+      "top": "A square sigil turning under the caster, embers and warm light round them.",
+      "three_quarter": "Hero view. The bead, the flare at the chest, then a beating heart of fire and rising embers."
+    }
+  },
+  "palette": {
+    "core": "#FFF3D6",
+    "primary": "#FF8A2A",
+    "secondary": "#C8321A",
+    "accent": "#FFD27A",
+    "shadow": "#2A0E06"
+  },
+  "style": {
+    "preset": "stylized",
+    "notes": "Delicate and lovely: small, clean shapes, gentle motion, nothing harsh. Bloom soft, not blown out."
+  },
+  "beats": [
+    {
+      "id": "kindle",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A bead of ember light forms above the head, glowing and turning."
+    },
+    {
+      "id": "sink",
+      "phase": "travel",
+      "start_ms": 900,
+      "end_ms": 1300,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "It sinks down through the head into the chest."
+    },
+    {
+      "id": "ignite",
+      "phase": "impact",
+      "start_ms": 1300,
+      "end_ms": 1800,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The heart catches: a warm flare at the chest and a ring of heat."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1800,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "A coal-bright heart beats in the chest, embers rise round the body and a sigil of strength turns underfoot. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The heart cools and dims; the last embers drift off."
+    }
+  ],
+  "layers": [
+    {
+      "id": "might-sigil",
+      "type": "decal",
+      "beats": [
+        "ignite",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 70,
+        "opacity": 0.3,
+        "fade_in_ms": 400,
+        "fade_ms": 500,
+        "spin_deg_per_s": 30,
+        "symmetry": 4,
+        "detail": 0.5,
+        "depth": 0
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A square sigil of strength glowing warm on the ground.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ember-bead",
+      "type": "motif",
+      "beats": [
+        "kindle",
+        "sink"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "shape": "gem",
+        "cut": "cabochon",
+        "size_px": 6,
+        "height_px": 150,
+        "spin_hz": 0.5,
+        "appear_ms": 450,
+        "clarity": 0.35,
+        "fire": 0
+      },
+      "keyframes": [
+        {
+          "t_ms": 1300,
+          "param": "height_px",
+          "value": 62,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 1300,
+          "param": "scale",
+          "value": 0.6
+        }
+      ],
+      "shader": {
+        "material": "molten",
+        "look": "A glowing bead of ember, bright orange inside a smooth dark-red skin.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bead-glow",
+      "type": "glow",
+      "beats": [
+        "kindle",
+        "sink"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "attach_to": "ember-bead",
+      "z": 3,
+      "params": {
+        "radius_px": 18,
+        "softness": 1
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Warm halo round the bead.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "heart",
+      "type": "orb",
+      "beats": [
+        "ignite",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "z": 5,
+      "params": {
+        "radius_px": 2,
+        "height_px": 62,
+        "pulse_hz": 1.25,
+        "wobble": 0.05,
+        "crackle_count": 0
+      },
+      "keyframes": [
+        {
+          "t_ms": 1800,
+          "param": "radius_px",
+          "value": 20,
+          "ease": "ease_out"
+        }
+      ],
+      "shader": {
+        "material": "plasma",
+        "look": "A coal-bright heart of fire glowing through the chest, beating.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian",
+          "core_ratio": 0.4
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "heart-glow",
+      "type": "glow",
+      "beats": [
+        "ignite",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "radius_px": 40,
+        "softness": 1,
+        "pulse_hz": 1.25,
+        "height_px": 62
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Warm light spreading from the chest, beating with the heart.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "flare-ring",
+      "type": "ring",
+      "beats": [
+        "ignite"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "plane": "billboard",
+      "z": 6,
+      "params": {
+        "start_radius_px": 8,
+        "end_radius_px": 70,
+        "thickness_px": 3,
+        "softness": 0.8,
+        "height_px": 62
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A ring of heat bursting from the chest.",
+        "technique": "procedural",
+        "distortion": 0.3,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "embers",
+      "type": "sparks",
+      "beats": [
+        "ignite",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 5,
+      "params": {
+        "look": "ember",
+        "count": 22,
+        "speed": 20,
+        "gravity": -70,
+        "lifetime_ms": 400,
+        "size_px": 1.6,
+        "spread_deg": 60,
+        "emit_ms": 3700,
+        "emit_radius_px": 35,
+        "orbit_hz": 0.417,
+        "height_px": 10
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers lifting up round the body.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "heart-light",
+      "type": "light",
+      "beats": [
+        "ignite",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "height_px": 62,
+        "forward_px": 20,
+        "energy": 1.2,
+        "radius": 3
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "kindle-sound",
+      "type": "sound_cue",
+      "beats": [
+        "kindle"
+      ],
+      "params": {
+        "cue": "ignite",
+        "gain": 0.25,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "ignite-sound",
+      "type": "sound_cue",
+      "beats": [
+        "ignite"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.3,
+        "pitch": 1.2,
+        "duration_ms": 500
+      }
+    },
+    {
+      "id": "heartbeat",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "heartbeat",
+        "gain": 0.3,
+        "repeat_ms": 800
+      }
+    }
+  ],
+  "variation": {
+    "notes": "Seed nudges sizes, timing of the motes and the sparkle phase; the story stays the same."
+  },
+  "director_notes": "Strength is inside the body, so the hero is a heart, not a shell. Three beats per loop (1.25 Hz) feel steady and determined."
+}

@@ -124,10 +124,11 @@ export function layerIntensity(template, layer, t, seed = 0) {
 export function paramAt(base, keyframes, param, t) {
   const kfs = (keyframes || []).filter((k) => k.param === param).sort((a, b) => a.t_ms - b.t_ms);
   if (!kfs.length) return base[param];
-  if (t <= kfs[0].t_ms) {
+  if (t < kfs[0].t_ms) {
     if (kfs[0].t_ms === 0 || base[param] === undefined) return kfs[0].value;
     return base[param];
   }
+  if (t === kfs[0].t_ms) return kfs[0].value;
   for (let i = 0; i < kfs.length - 1; i++) {
     const a = kfs[i];
     const b = kfs[i + 1];

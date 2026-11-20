@@ -24,6 +24,7 @@ export const DEFAULT_SHADER = {
   decal: { technique: "decal", material: "ashen", noise: { type: "fbm", scale: 4, speed: 0, contrast: 0.6 }, dissolve: { pattern: "fbm", edge_width: 0.15, edge_color: "primary" }, lighting: "lit" },
   smoke: { technique: "particles", material: "smoky", noise: { type: "curl", scale: 1.5, speed: 0.6, contrast: 0.5 }, flow: { direction: "upward", speed: 0.4 }, dissolve: { pattern: "fbm", edge_width: 0.3 }, lighting: "lit" },
   eruption: { technique: "mesh", material: "stone", noise: { type: "voronoi", scale: 4, speed: 0, contrast: 0.6 }, dissolve: { pattern: "voronoi", edge_width: 0.15 }, lighting: "lit" },
+  motif: { technique: "mesh", material: "foliage", fresnel: 0.4, lighting: "lit" },
   light: { technique: "light", lighting: "emits_light" },
 };
 

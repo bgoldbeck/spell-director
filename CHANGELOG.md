@@ -13,7 +13,14 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 - **Targeted area spells**: pick one enemy and slam everyone around it. Templates can ask for a splash layout (`space.targets.layout: "splash"`): the viewer stands a group of dummy enemies round the chosen one, marks it with a red ring, and plays layers anchored at `splash` on every enemy round it, rippling outward or one after another.
 - Sixteen new targeted area spells. Seven are spinning lightning throws: **Stormhammer Barrage**, **Cleaving Squall**, **Runefall Cairn**, **Stormpin Trident**, **Thunderanvil Drop**, **Ricochet Stormdiscs** and **Stormcage Javelin**. The other nine are **Glacial Shatterpoint** (ice), **Emberfall Cascade** (fire), **Hollow Star Rupture** (shadow), **Glyphbrand Judgement** (arcane), **Brambleheart Snare** (nature), **Thunderhead Verdict** (lightning from the sky), **Wailing Lantern** (spirit, a new type), **Faultline Crush** (earth) and **Venom Bloom** (poison).
+- **Buffs**: fourteen new buff spells that tell a tiny story and settle into a lingering aura on the character, listed together under **Type → Kinds → Buffs**. **Dewdrop Ward** (a leaf unfurls over the head, a dew drop rolls down it, falls and swells into a soap-bubble shield), six gem orbits in the new Gemwarden line (**Diamond Aegis**, **Jade Serenity**, **Emerald Fervor**, **Sapphire Tide**, **Ruby Ardor** and **Prismatic Crown**: faceted, reflective stones that pop in one by one and circle the character, glinting and casting colored light), plus **Petalfall Mending**, **Featherstep Haste**, **Emberheart Might**, **Moonmirror Veil**, **Thornleaf Mantle**, **Snowflake Ward** and **Sunseed Blessing**.
+- New `motif` layer: small modeled things for a spell's story (leaves, petals, feathers, water drops, a blossom that opens, faceted gems in six cuts) that follow keyframed paths or circle a character, with star glints and light trails.
+- Bubbles take `finish: soap` (clear film with swirling rainbow bands and window reflections) or `finish: glass` (a tinted glass dome), and `ripple`. Templates can ask to be framed close on the character (`views.frame: "close"`). Glows, rings and sparks take `height_px`.
 - Thrown weapons: orbs take `look: weapon`, a spinning hammer, axe, anvil, disc, spear, trident or rune-stone wrapped in the spell's energy. Bolts and orbs on splash targets can fork from the chosen enemy, chain from one enemy to the next (closing into a cage with `wrap`) or come down from the sky.
+
+### Fixed
+
+- A keyframed value no longer flickers back to its starting value for one frame exactly at its first keyframe.
 
 ## [0.12.0] - 2026-11-17
 
