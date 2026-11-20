@@ -45,6 +45,7 @@ export function groupByLine(templates) {
 // Kinds of spell that cut across elements and lines. "Auras": persistent
 // effects around the caster that loop while they last (templates with a
 // timing.loop_range), whatever their element or line. Type "kind:aura".
+// "Buffs": see isBuff.
 export const KIND_PREFIX = "kind:";
 
 export function isAura(tpl) {
@@ -52,10 +53,20 @@ export function isAura(tpl) {
   return !!r && typeof r.start_ms === "number" && typeof r.end_ms === "number" && r.end_ms > r.start_ms;
 }
 
+// "Buffs": spells cast on a character to help them (tagged "buff"): a
+// shield, haste, strength, a resistance. Type "kind:buff".
+export function isBuff(tpl) {
+  return Array.isArray(tpl?.tags) && tpl.tags.includes("buff");
+}
+
 export function groupByKind(templates) {
   const byName = (a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id));
+  const groups = [];
   const auras = templates.filter(isAura).sort(byName);
-  return auras.length ? [{ type: `${KIND_PREFIX}aura`, label: "Auras", kind: true, templates: auras }] : [];
+  if (auras.length) groups.push({ type: `${KIND_PREFIX}aura`, label: "Auras", kind: true, templates: auras });
+  const buffs = templates.filter(isBuff).sort(byName);
+  if (buffs.length) groups.push({ type: `${KIND_PREFIX}buff`, label: "Buffs", kind: true, templates: buffs });
+  return groups;
 }
 
 // Element groups, then spell-line groups, then kinds: what the Type dropdown lists.

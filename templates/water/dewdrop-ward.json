@@ -1,0 +1,690 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "water-dewdrop-ward",
+  "name": "Dewdrop Ward",
+  "description": "A protection buff told as a tiny story: a leaf unfurls over the head, a single drop of dew rolls down its spine and falls onto the crown, and the water swells into a clear soap-film bubble shield that wobbles, settles and holds.",
+  "element": "water",
+  "line": "Druid",
+  "archetype": "aura",
+  "tags": [
+    "buff",
+    "aura",
+    "looping",
+    "protection",
+    "shield",
+    "bubble",
+    "leaf",
+    "dew",
+    "droplet",
+    "druid",
+    "nature",
+    "absorb"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Buff: a leaf over the character, a water droplet runs down it, drops on them and expands into a reflective bubble"
+  },
+  "timing": {
+    "duration_ms": 6000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 2600,
+      "end_ms": 5000
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "frame": "close",
+    "reads": {
+      "front": "A leaf hangs over the head; the drop runs down it, falls and swells into a clear bubble around the whole body.",
+      "side": "Same story edge-on: the drop's fall is a clean vertical line onto the head; the bubble reads round from every side.",
+      "top": "The leaf from above with the drop rolling along its spine, then a round shell and a soft pool of light round the caster.",
+      "three_quarter": "Hero view. The leaf, the falling bead and the swelling soap-film bubble with rainbow bands and a window glint."
+    }
+  },
+  "palette": {
+    "core": "#F4FFFB",
+    "primary": "#8FDDF2",
+    "secondary": "#5DB86A",
+    "accent": "#D2F6FF",
+    "shadow": "#1E3A33"
+  },
+  "style": {
+    "preset": "stylized",
+    "notes": "Delicate and lovely: small, clean shapes, gentle motion, nothing harsh. Bloom soft, not blown out."
+  },
+  "beats": [
+    {
+      "id": "unfurl",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A broad leaf unfurls out of the air above the head and settles, swaying a touch."
+    },
+    {
+      "id": "roll",
+      "phase": "anticipation",
+      "start_ms": 700,
+      "end_ms": 1500,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "A single dew drop beads at the leaf's base, rolls down its spine and hangs at the tip, swelling."
+    },
+    {
+      "id": "fall",
+      "phase": "travel",
+      "start_ms": 1500,
+      "end_ms": 1780,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The drop lets go and falls onto the crown of the head; the leaf springs up as the weight leaves it."
+    },
+    {
+      "id": "splash",
+      "phase": "impact",
+      "start_ms": 1780,
+      "end_ms": 2100,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The drop splashes on the head: a little crown of droplets and a ripple."
+    },
+    {
+      "id": "bloom",
+      "phase": "release",
+      "start_ms": 1780,
+      "end_ms": 2600,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The water spreads into a clear bubble that swells down over the whole body, its film rippling, then settles."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 2600,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The shield holds: a soap-film bubble with drifting rainbow bands, window glints and dew motes circling inside. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 5000,
+      "end_ms": 6000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The bubble thins and pops into a spray of fine droplets."
+    }
+  ],
+  "layers": [
+    {
+      "id": "ground-glow",
+      "type": "ring",
+      "beats": [
+        "bloom",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "steady": true,
+        "end_radius_px": 72,
+        "thickness_px": 5,
+        "softness": 1
+      },
+      "keyframes": [
+        {
+          "t_ms": 1780,
+          "param": "end_radius_px",
+          "value": 10
+        },
+        {
+          "t_ms": 2350,
+          "param": "end_radius_px",
+          "value": 72,
+          "ease": "ease_out"
+        }
+      ],
+      "shader": {
+        "material": "liquid",
+        "look": "A soft pool of light on the ground where the bubble rests.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 1,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "dew-patch",
+      "type": "decal",
+      "beats": [
+        "bloom",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": -2,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 60,
+        "opacity": 0.3,
+        "grow_ms": 500,
+        "start_scale": 0.2,
+        "fade_in_ms": 300,
+        "fade_ms": 600,
+        "detail": 0.3
+      },
+      "shader": {
+        "material": "wet",
+        "look": "Dew-damp ground under the bubble, glossy and faint.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "leaf",
+      "type": "motif",
+      "beats": [
+        "unfurl",
+        "roll",
+        "fall",
+        "bloom"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "shape": "leaf",
+        "size_px": 48,
+        "height_px": 152,
+        "side_px": 38,
+        "tilt_deg": 105,
+        "roll_deg": 0,
+        "appear_ms": 600,
+        "glow": 0.5
+      },
+      "keyframes": [
+        {
+          "t_ms": 1500,
+          "param": "tilt_deg",
+          "value": 105
+        },
+        {
+          "t_ms": 1620,
+          "param": "tilt_deg",
+          "value": 96,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 1780,
+          "param": "tilt_deg",
+          "value": 104,
+          "ease": "ease_in_out"
+        },
+        {
+          "t_ms": 1780,
+          "param": "height_px",
+          "value": 152
+        },
+        {
+          "t_ms": 2600,
+          "param": "height_px",
+          "value": 176,
+          "ease": "ease_in_out"
+        },
+        {
+          "t_ms": 1780,
+          "param": "side_px",
+          "value": 38
+        },
+        {
+          "t_ms": 2600,
+          "param": "side_px",
+          "value": 78,
+          "ease": "ease_in_out"
+        },
+        {
+          "t_ms": 1780,
+          "param": "opacity",
+          "value": 1
+        },
+        {
+          "t_ms": 2600,
+          "param": "opacity",
+          "value": 0,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "foliage",
+        "look": "A fresh green leaf, glossy on top with pale veins; light glows through its thin edges.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "dew-drop",
+      "type": "motif",
+      "beats": [
+        "roll",
+        "fall"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "shape": "droplet",
+        "size_px": 4.5,
+        "height_px": 157,
+        "side_px": 29,
+        "appear_ms": 250,
+        "sparkle": 0.6,
+        "glint_hz": 1.5
+      },
+      "keyframes": [
+        {
+          "t_ms": 1000,
+          "param": "side_px",
+          "value": 15
+        },
+        {
+          "t_ms": 1200,
+          "param": "side_px",
+          "value": 1
+        },
+        {
+          "t_ms": 1350,
+          "param": "side_px",
+          "value": -7,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 1000,
+          "param": "height_px",
+          "value": 155.5
+        },
+        {
+          "t_ms": 1200,
+          "param": "height_px",
+          "value": 150
+        },
+        {
+          "t_ms": 1350,
+          "param": "height_px",
+          "value": 141
+        },
+        {
+          "t_ms": 1500,
+          "param": "height_px",
+          "value": 135,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 1780,
+          "param": "height_px",
+          "value": 106,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 1350,
+          "param": "scale",
+          "value": 1
+        },
+        {
+          "t_ms": 1500,
+          "param": "scale",
+          "value": 1.35,
+          "ease": "ease_out"
+        }
+      ],
+      "shader": {
+        "material": "liquid",
+        "look": "A perfectly clear bead of dew: bright rim, a window highlight on top, a caustic glint on its underside.",
+        "technique": "mesh",
+        "fresnel": 0.8,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-crown",
+      "type": "sparks",
+      "beats": [
+        "splash"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "attach_to": "dew-drop",
+      "z": 4,
+      "params": {
+        "look": "droplet",
+        "count": 16,
+        "speed": 150,
+        "speed_spread": 0.5,
+        "gravity": 650,
+        "lifetime_ms": 340,
+        "size_px": 1.8,
+        "spread_deg": 70,
+        "emit_ms": 40,
+        "streak_ms": 20
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Tiny clear droplets thrown up in a crown where the dew lands.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-ripple",
+      "type": "ring",
+      "beats": [
+        "splash"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "plane": "billboard",
+      "z": 4,
+      "params": {
+        "start_radius_px": 4,
+        "end_radius_px": 34,
+        "thickness_px": 2,
+        "softness": 0.6,
+        "height_px": 104
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A thin ring of light spreading from the splash.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "bubble",
+      "type": "orb",
+      "beats": [
+        "bloom",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "z": 5,
+      "params": {
+        "bubble": true,
+        "finish": "soap",
+        "radius_px": 4,
+        "height_px": 104,
+        "pulse_hz": 0.42,
+        "wobble": 0,
+        "crackle_count": 0,
+        "opacity": 0.95,
+        "ripple": 0
+      },
+      "keyframes": [
+        {
+          "t_ms": 2350,
+          "param": "radius_px",
+          "value": 80,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 2350,
+          "param": "height_px",
+          "value": 56,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 1900,
+          "param": "ripple",
+          "value": 0.1
+        },
+        {
+          "t_ms": 2600,
+          "param": "ripple",
+          "value": 0,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 5000,
+          "param": "radius_px",
+          "value": 80
+        },
+        {
+          "t_ms": 5250,
+          "param": "radius_px",
+          "value": 86,
+          "ease": "ease_out"
+        }
+      ],
+      "shader": {
+        "material": "iridescent",
+        "look": "A clear soap bubble: almost invisible in the middle, swirling thin-film rainbows toward the rim, a bright window reflection near the top.",
+        "technique": "mesh",
+        "fresnel": 0.9,
+        "noise": {
+          "type": "fbm",
+          "scale": 2,
+          "speed": 0.3,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.3
+        },
+        "distortion": 0.15,
+        "lighting": "lit",
+        "notes": "Refract the scene behind it a little; reflect the environment; thin-film iridescence by view angle and a slowly swirling thickness map."
+      }
+    },
+    {
+      "id": "dew-motes",
+      "type": "sparks",
+      "beats": [
+        "bloom",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 6,
+      "params": {
+        "count": 16,
+        "speed": 12,
+        "gravity": -18,
+        "lifetime_ms": 600,
+        "size_px": 1.6,
+        "spread_deg": 180,
+        "emit_ms": 4200,
+        "emit_radius_px": 55,
+        "orbit_hz": 0.25,
+        "height_px": 30
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Pinpoint motes of dew light drifting up and round inside the bubble.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "inner-glow",
+      "type": "glow",
+      "beats": [
+        "bloom",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "radius_px": 55,
+        "softness": 1,
+        "pulse_hz": 0.42,
+        "height_px": 55
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A faint cool glow filling the bubble.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pop-spray",
+      "type": "sparks",
+      "beats": [
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "look": "droplet",
+        "count": 34,
+        "speed": 110,
+        "speed_spread": 0.6,
+        "gravity": 300,
+        "lifetime_ms": 600,
+        "size_px": 1.6,
+        "spread_deg": 180,
+        "emit_ms": 60,
+        "emit_radius_px": 70,
+        "height_px": 56,
+        "streak_ms": 25
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "The bubble's film breaking into a mist of fine droplets.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "dew-light",
+      "type": "light",
+      "beats": [
+        "bloom",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "height_px": 120,
+        "energy": 1.1,
+        "radius": 4
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "unfurl-sound",
+      "type": "sound_cue",
+      "beats": [
+        "unfurl"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.35,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "drip-sound",
+      "type": "sound_cue",
+      "beats": [
+        "splash"
+      ],
+      "params": {
+        "cue": "splash",
+        "gain": 0.45,
+        "pitch": 1.8,
+        "duration_ms": 300
+      }
+    },
+    {
+      "id": "bloom-sound",
+      "type": "sound_cue",
+      "beats": [
+        "bloom"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.4,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "hold-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.15,
+        "pitch": 1.5,
+        "repeat_ms": 2400
+      }
+    },
+    {
+      "id": "pop-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "splash",
+        "gain": 0.35,
+        "pitch": 2.0,
+        "duration_ms": 250
+      }
+    }
+  ],
+  "variation": {
+    "notes": "Seed nudges sizes, timing of the motes and the sparkle phase; the story stays the same."
+  },
+  "director_notes": "The story beats are short and readable: unfurl, roll, hang, fall, bloom. The bubble ripples where the drop lands and settles before the loop, so the loop is calm. The soap finish keeps the middle clear so the character still reads."
+}

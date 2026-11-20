@@ -88,6 +88,7 @@ export function buildStage(template, seed) {
     },
     center,
     radius,
+    close: template.views?.frame === "close",
     showPointMarker: space.destination === "point",
     anchor(name, k = 0) {
       switch (name) {
@@ -127,14 +128,17 @@ export function viewCamera(view, stage, aspect) {
   const strike = tall > 2.5 && (stage.targets.length <= 1 || stage.splashFromSky);
   // Frame the whole effect: its width (caster to furthest target) and, for
   // sky strikes, its height.
-  const halfH = Math.max(stage.radius * 0.62, strike ? tall * 0.62 : 1.3);
-  const lookY = strike ? tall * 0.42 : 0.55;
+  // views.frame "close": a small effect on one character (a buff) fills the
+  // frame: head to toe plus what floats just above the head.
+  const close = !!stage.close;
+  const halfH = close ? 1.3 : Math.max(stage.radius * 0.62, strike ? tall * 0.62 : 1.3);
+  const lookY = close ? 0.8 : strike ? tall * 0.42 : 0.55;
   const fov = 38;
   const dist = (halfH / Math.tan(THREE.MathUtils.degToRad(fov / 2))) * 1.1;
 
   if (view === "top") {
     // Orthographic plan view: vertical things collapse to points, footprints read true.
-    const h = Math.max(stage.radius * 0.75, 1.6);
+    const h = close ? 1.25 : Math.max(stage.radius * 0.75, 1.6);
     const cam = new THREE.OrthographicCamera(-h * aspect, h * aspect, h, -h, 0.1, 200);
     cam.userData.halfH = h;
     cam.position.set(c.x, 40, 0);
@@ -149,8 +153,8 @@ export function viewCamera(view, stage, aspect) {
   switch (view) {
     case "front": {
       // Over the caster's shoulder, looking down the cast direction.
-      const back = Math.max(2.4, dist * 0.45);
-      cam.position.set(-back, 1.25, 0.55);
+      const back = close ? 3.4 : Math.max(2.4, dist * 0.45);
+      cam.position.set(-back, close ? 1.05 : 1.25, 0.55);
       look.set(c.x * 2, lookY, 0);
       cam.lookAt(look);
       break;
@@ -164,7 +168,7 @@ export function viewCamera(view, stage, aspect) {
       // 45 degrees around from behind the caster, 35 degrees down.
       const yaw = THREE.MathUtils.degToRad(45);
       const pitch = THREE.MathUtils.degToRad(35);
-      const r = dist * (strike ? 1.3 : 1.05);
+      const r = dist * (strike && !close ? 1.3 : 1.05);
       cam.position.set(
         look.x - Math.sin(yaw) * Math.cos(pitch) * r * 0.55,
         look.y + Math.sin(pitch) * r,

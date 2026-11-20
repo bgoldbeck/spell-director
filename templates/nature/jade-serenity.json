@@ -1,0 +1,394 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "nature-jade-serenity",
+  "name": "Jade Serenity",
+  "description": "An endurance and regeneration buff: four polished jade stones rise from the ground and drift round the character on a gently tilted orbit, glowing softly from within, while slow rings of green light breathe inward.",
+  "element": "nature",
+  "line": "Gemwarden",
+  "archetype": "aura",
+  "tags": [
+    "buff",
+    "aura",
+    "looping",
+    "gem",
+    "orbit",
+    "regeneration",
+    "endurance",
+    "jade",
+    "heal",
+    "calm"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Gem buff: jade stones circling the character, soft and reflective"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.2,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "frame": "close",
+    "reads": {
+      "front": "Smooth green stones passing in front of and behind the body on a tilted path; rings drawing in at the feet.",
+      "side": "The tilt reads clearly: stones high on one side, low on the other.",
+      "top": "Four stones round the caster and inward-pulling rings on the ground.",
+      "three_quarter": "Hero view. Glowing jade drifting on a tilted orbit, soft green light on the body."
+    }
+  },
+  "palette": {
+    "core": "#F1FFF4",
+    "primary": "#5FC98A",
+    "secondary": "#2E8B62",
+    "accent": "#C9F5D8",
+    "shadow": "#10261B"
+  },
+  "style": {
+    "preset": "stylized",
+    "notes": "Delicate and lovely: small, clean shapes, gentle motion, nothing harsh. Bloom soft, not blown out."
+  },
+  "beats": [
+    {
+      "id": "summon",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "Four jade stones rise out of the ground in turn and float up to chest height."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The stones drift round on a tilted orbit, bobbing gently; green rings breathe inward toward the body. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The stones float outward, shrink and fade like sinking into water."
+    }
+  ],
+  "layers": [
+    {
+      "id": "sigil",
+      "type": "decal",
+      "beats": [
+        "summon",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 82,
+        "opacity": 0.16,
+        "fade_in_ms": 600,
+        "fade_ms": 600,
+        "spin_deg_per_s": 30.0,
+        "symmetry": 4,
+        "detail": 0.4,
+        "depth": 0
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A faint circle of facets and glyphs on the ground, turning slowly with the stones.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gems",
+      "type": "motif",
+      "beats": [
+        "summon",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "shape": "gem",
+        "cut": "cabochon",
+        "count": 4,
+        "size_px": 10,
+        "orbit_radius_px": 52,
+        "orbit_hz": 0.333,
+        "height_px": 70,
+        "spin_hz": 0.33,
+        "bob_px": 6,
+        "bob_hz": 0.67,
+        "stagger_ms": 220,
+        "appear_ms": 320,
+        "sparkle": 1,
+        "glint_hz": 0.66,
+        "face": "out",
+        "tilt_deg": 18,
+        "orbit_tilt_deg": 22,
+        "clarity": 0.25,
+        "fire": 0
+      },
+      "keyframes": [
+        {
+          "t_ms": 4200,
+          "param": "orbit_radius_px",
+          "value": 52
+        },
+        {
+          "t_ms": 5000,
+          "param": "orbit_radius_px",
+          "value": 88.39999999999999,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 4200,
+          "param": "height_px",
+          "value": 70
+        },
+        {
+          "t_ms": 5000,
+          "param": "height_px",
+          "value": 110,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 4200,
+          "param": "scale",
+          "value": 1
+        },
+        {
+          "t_ms": 5000,
+          "param": "scale",
+          "value": 0.3,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "gemstone",
+        "look": "Polished jade: milky green glowing softly from inside, a smooth glossy dome with one clean window highlight.",
+        "technique": "mesh",
+        "fresnel": 0.7,
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "hard",
+          "core_ratio": 0.2
+        },
+        "lighting": "lit",
+        "notes": "Faceted mesh with flat normals; reflect an environment cube, refract a little, add per-facet brightness and dispersion (rainbow fire); a star glint billboard that twinkles."
+      }
+    },
+    {
+      "id": "gem-halos",
+      "type": "glow",
+      "beats": [
+        "summon",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "attach_to": "gems",
+      "z": 3,
+      "params": {
+        "radius_px": 5.0,
+        "softness": 1
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft colored halo round each stone.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "summon-flash",
+      "type": "glow",
+      "beats": [
+        "summon"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "radius_px": 50,
+        "softness": 1,
+        "height_px": 70
+      },
+      "keyframes": [
+        {
+          "t_ms": 500,
+          "param": "radius_px",
+          "value": 20,
+          "ease": "ease_out"
+        }
+      ],
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft flash of light where the stones are called out of the air.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "glitter",
+      "type": "sparks",
+      "beats": [
+        "summon",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 5,
+      "params": {
+        "count": 18,
+        "speed": 14,
+        "gravity": -12,
+        "lifetime_ms": 700,
+        "size_px": 1.4,
+        "spread_deg": 180,
+        "emit_ms": 5000,
+        "emit_radius_px": 52,
+        "orbit_hz": 0.333,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Glitter shed by the stones, drifting up and round with them.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "hard"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "stone-light-1",
+      "type": "light",
+      "beats": [
+        "summon",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "forward_px": 52.0,
+        "side_px": 0.0,
+        "height_px": 70,
+        "orbit_hz": 0.333,
+        "energy": 0.5,
+        "radius": 2,
+        "tint": "#7CE0A0"
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "breath-rings",
+      "type": "ring",
+      "beats": [
+        "summon",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "start_radius_px": 90,
+        "end_radius_px": 18,
+        "thickness_px": 2,
+        "softness": 1,
+        "repeat_ms": 1500,
+        "count": 2,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Calm rings of green light drawing in toward the feet, like a slow breath.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "summon-chimes",
+      "type": "sound_cue",
+      "beats": [
+        "summon"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.3,
+        "pitch": 1.6,
+        "repeat_ms": 440
+      }
+    },
+    {
+      "id": "orbit-hum",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.12,
+        "pitch": 1.7,
+        "repeat_ms": 1500
+      }
+    },
+    {
+      "id": "release-chime",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.35,
+        "pitch": 1.3
+      }
+    }
+  ],
+  "variation": {
+    "notes": "Seed nudges sizes, timing of the motes and the sparkle phase; the story stays the same."
+  },
+  "director_notes": "Jade is milky, so no rainbow fire: the stone glows from within and has one soft highlight. Slow everything down: this is the calm buff."
+}

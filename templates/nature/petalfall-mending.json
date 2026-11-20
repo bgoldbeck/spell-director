@@ -1,0 +1,395 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "nature-petalfall-mending",
+  "name": "Petalfall Mending",
+  "description": "A regeneration buff: a bud opens into a blossom above the head, lets its petals go, and they spiral down to circle the waist while rings of green light breathe inward.",
+  "element": "nature",
+  "line": "Druid",
+  "archetype": "aura",
+  "tags": [
+    "buff",
+    "aura",
+    "looping",
+    "regeneration",
+    "heal over time",
+    "blossom",
+    "petals",
+    "druid",
+    "pollen"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Buff: a flower opens above the character and its petals fall and circle them, healing"
+  },
+  "timing": {
+    "duration_ms": 6000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 2400,
+      "end_ms": 5400
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "frame": "close",
+    "reads": {
+      "front": "A blossom above the head, then petals spiralling down and circling the waist.",
+      "side": "The fall reads as a gentle spiral; the circling petals sway as they pass.",
+      "top": "The open flower from above, then a ring of petals round the caster over a leafy circle.",
+      "three_quarter": "Hero view. Blossom opens, petals rain down and settle into a lazy ring with golden pollen."
+    }
+  },
+  "palette": {
+    "core": "#FFF6FA",
+    "primary": "#FF9EC4",
+    "secondary": "#7CCB7A",
+    "accent": "#FFE6A8",
+    "shadow": "#2B1A22"
+  },
+  "style": {
+    "preset": "stylized",
+    "notes": "Delicate and lovely: small, clean shapes, gentle motion, nothing harsh. Bloom soft, not blown out."
+  },
+  "beats": [
+    {
+      "id": "bud",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A closed pink bud pops into being above the head."
+    },
+    {
+      "id": "open",
+      "phase": "anticipation",
+      "start_ms": 700,
+      "end_ms": 1400,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The bud opens petal by petal into a blossom, turning slowly."
+    },
+    {
+      "id": "shed",
+      "phase": "release",
+      "start_ms": 1400,
+      "end_ms": 2400,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The blossom lets go of its petals: they spiral down round the body and the empty flower fades."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 2400,
+      "end_ms": 5400,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "Petals circle the waist on a lazy, swaying orbit; rings of green light breathe inward and pollen drifts up. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 5400,
+      "end_ms": 6000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The petals settle to the ground and wilt away."
+    }
+  ],
+  "layers": [
+    {
+      "id": "grove-sigil",
+      "type": "decal",
+      "beats": [
+        "shed",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 80,
+        "opacity": 0.18,
+        "fade_in_ms": 600,
+        "fade_ms": 500,
+        "spin_deg_per_s": 20,
+        "symmetry": 6,
+        "detail": 0.3,
+        "depth": 0
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A faint leafy circle on the ground.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "blossom",
+      "type": "motif",
+      "beats": [
+        "bud",
+        "open",
+        "shed"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "shape": "blossom",
+        "petals": 6,
+        "size_px": 18,
+        "height_px": 150,
+        "appear_ms": 500,
+        "bloom": 0,
+        "spin_hz": 0.15
+      },
+      "keyframes": [
+        {
+          "t_ms": 1400,
+          "param": "bloom",
+          "value": 1,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 1400,
+          "param": "opacity",
+          "value": 1
+        },
+        {
+          "t_ms": 2000,
+          "param": "opacity",
+          "value": 0,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "foliage",
+        "look": "A soft pink blossom: pale at the heart, deeper pink at the petal tips, light glowing through.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "petals",
+      "type": "motif",
+      "beats": [
+        "shed",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "shape": "petal",
+        "count": 7,
+        "size_px": 14,
+        "height_px": 150,
+        "orbit_radius_px": 10,
+        "orbit_hz": 0.333,
+        "face": "orbit",
+        "tilt_deg": 70,
+        "sway_px": 4,
+        "sway_hz": 0.667,
+        "bob_px": 5,
+        "bob_hz": 0.333,
+        "stagger_ms": 60,
+        "appear_ms": 200
+      },
+      "keyframes": [
+        {
+          "t_ms": 2400,
+          "param": "height_px",
+          "value": 55,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 2400,
+          "param": "orbit_radius_px",
+          "value": 50,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 5400,
+          "param": "height_px",
+          "value": 55
+        },
+        {
+          "t_ms": 6000,
+          "param": "height_px",
+          "value": 2,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 5400,
+          "param": "opacity",
+          "value": 1
+        },
+        {
+          "t_ms": 6000,
+          "param": "opacity",
+          "value": 0,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "foliage",
+        "look": "Loose petals turning and swaying as they circle.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "heal-rings",
+      "type": "ring",
+      "beats": [
+        "shed",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "start_radius_px": 80,
+        "end_radius_px": 15,
+        "thickness_px": 1.5,
+        "softness": 1,
+        "repeat_ms": 1500,
+        "count": 2,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Soft green rings drawing in toward the feet: life gathering.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pollen",
+      "type": "sparks",
+      "beats": [
+        "shed",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 5,
+      "params": {
+        "look": "ember",
+        "count": 20,
+        "speed": 12,
+        "gravity": -40,
+        "lifetime_ms": 800,
+        "size_px": 1.3,
+        "spread_deg": 180,
+        "emit_ms": 4600,
+        "emit_radius_px": 50,
+        "orbit_hz": 0.2,
+        "height_px": 20
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Golden pollen motes floating up.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "bloom-light",
+      "type": "light",
+      "beats": [
+        "open",
+        "shed",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "height_px": 130,
+        "energy": 0.6,
+        "radius": 3
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bud-sound",
+      "type": "sound_cue",
+      "beats": [
+        "bud"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.3,
+        "pitch": 1.5
+      }
+    },
+    {
+      "id": "shed-sound",
+      "type": "sound_cue",
+      "beats": [
+        "shed"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.15,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "hold-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.12,
+        "pitch": 1.6,
+        "repeat_ms": 1500
+      }
+    }
+  ],
+  "variation": {
+    "notes": "Seed nudges sizes, timing of the motes and the sparkle phase; the story stays the same."
+  },
+  "director_notes": "The flower is the promise; the falling petals are the heal arriving. Everything sways and nothing snaps: this is the softest buff in the set."
+}

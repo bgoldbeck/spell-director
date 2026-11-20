@@ -1,0 +1,328 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "ice-snowflake-ward",
+  "name": "Snowflake Ward",
+  "description": "A cold-resistance buff: six ice crystals sweep down and lock together into a snowflake halo over the head, which turns slowly while snow drifts down round the caster.",
+  "element": "ice",
+  "line": "Enchanter",
+  "archetype": "aura",
+  "tags": [
+    "buff",
+    "aura",
+    "looping",
+    "cold resistance",
+    "resistance",
+    "snowflake",
+    "halo",
+    "crystal",
+    "frost"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Buff: ice crystals form a snowflake halo above the character"
+  },
+  "timing": {
+    "duration_ms": 5500,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1700,
+      "end_ms": 4700
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "frame": "close",
+    "reads": {
+      "front": "Crystals spiral down and lock into a flat star over the head; snow drifts down.",
+      "side": "The halo is a thin flat band above the head; snow falls past.",
+      "top": "A six-pointed star of crystals turning over the caster: the snowflake reads best from here.",
+      "three_quarter": "Hero view. The snowflake halo as an ellipse over the head, sparkling, with gentle snow."
+    }
+  },
+  "palette": {
+    "core": "#F6FCFF",
+    "primary": "#A8E2FF",
+    "secondary": "#4A9AD6",
+    "accent": "#DDF4FF",
+    "shadow": "#122436"
+  },
+  "style": {
+    "preset": "stylized",
+    "notes": "Delicate and lovely: small, clean shapes, gentle motion, nothing harsh. Bloom soft, not blown out."
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1300,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "Six ice crystals sweep in from high and wide and spiral down toward the head."
+    },
+    {
+      "id": "lock",
+      "phase": "impact",
+      "start_ms": 1300,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "They lock together into a six-pointed snowflake halo with a cold flash."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1700,
+      "end_ms": 4700,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The snowflake halo turns over the head while snow drifts down round the caster and frost glitters on the ground. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4700,
+      "end_ms": 5500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The halo breaks apart into drifting flakes."
+    }
+  ],
+  "layers": [
+    {
+      "id": "frost",
+      "type": "decal",
+      "beats": [
+        "lock",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": -1,
+      "params": {
+        "shape": "frost",
+        "radius_px": 70,
+        "opacity": 0.45,
+        "fade_in_ms": 300,
+        "fade_ms": 500,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "icy",
+        "look": "A light frost on the ground under the caster.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "halo",
+      "type": "motif",
+      "beats": [
+        "gather",
+        "sustain",
+        "fade",
+        "lock"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "shape": "gem",
+        "cut": "prism",
+        "count": 6,
+        "size_px": 10,
+        "height_px": 220,
+        "orbit_radius_px": 120,
+        "orbit_hz": 0.333,
+        "face": "out",
+        "tilt_deg": 90,
+        "spin_hz": 0,
+        "stagger_ms": 70,
+        "appear_ms": 300,
+        "sparkle": 1,
+        "glint_hz": 0.667
+      },
+      "keyframes": [
+        {
+          "t_ms": 1300,
+          "param": "orbit_radius_px",
+          "value": 24,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 1300,
+          "param": "height_px",
+          "value": 140,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 4700,
+          "param": "orbit_radius_px",
+          "value": 24
+        },
+        {
+          "t_ms": 5500,
+          "param": "orbit_radius_px",
+          "value": 70,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 4700,
+          "param": "opacity",
+          "value": 1
+        },
+        {
+          "t_ms": 5500,
+          "param": "opacity",
+          "value": 0,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "crystalline",
+        "look": "Clear ice crystals pointing outward like the arms of a snowflake, flashing pale blue.",
+        "technique": "mesh",
+        "fresnel": 0.8,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "lock-flash",
+      "type": "glow",
+      "beats": [
+        "lock"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 5,
+      "params": {
+        "radius_px": 40,
+        "softness": 1,
+        "height_px": 140
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cold white flash as the crystals lock.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "snow",
+      "type": "sparks",
+      "beats": [
+        "gather",
+        "lock",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 5,
+      "params": {
+        "look": "flake",
+        "count": 24,
+        "speed": 6,
+        "gravity": 60,
+        "lifetime_ms": 1100,
+        "size_px": 2,
+        "spread_deg": 180,
+        "emit_ms": 5500,
+        "emit_radius_px": 70,
+        "orbit_hz": 0.167,
+        "height_px": 150
+      },
+      "shader": {
+        "material": "icy",
+        "look": "Soft snowflakes drifting down round the caster.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "cold-light",
+      "type": "light",
+      "beats": [
+        "lock",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "height_px": 150,
+        "energy": 0.8,
+        "radius": 3
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.15,
+        "pitch": 1.5
+      }
+    },
+    {
+      "id": "lock-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lock"
+      ],
+      "params": {
+        "cue": "freeze",
+        "gain": 0.35,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "hold-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.1,
+        "pitch": 1.8,
+        "repeat_ms": 1500
+      }
+    }
+  ],
+  "variation": {
+    "notes": "Seed nudges sizes, timing of the motes and the sparkle phase; the story stays the same."
+  },
+  "director_notes": "The prism cut laid flat and pointing outward makes snowflake arms. The top view is the money shot; the 3/4 view still shows the star as an ellipse."
+}

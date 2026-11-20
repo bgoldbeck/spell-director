@@ -289,7 +289,7 @@ export function buildTracks(template, seed, plan, cueLibrary = { cues: {} }) {
 // layer first, then its support, then particles, then decals, then the
 // finishing tracks (lights, screen flashes, shake, sound) and the timing pass.
 export const BUILD_STAGES = [
-  { stage: "core", types: ["bolt", "beam", "orb", "eruption", "vortex", "wave"], about: "the hero shape that reads as the spell on its own" },
+  { stage: "core", types: ["bolt", "beam", "orb", "eruption", "vortex", "wave", "motif"], about: "the hero shape that reads as the spell on its own" },
   { stage: "secondary", types: ["glow", "crackle", "ring", "flash"], about: "glows, rings and crackle that support the core" },
   { stage: "particles", types: ["sparks", "smoke"], about: "sparks, spray and smoke" },
   { stage: "decals", types: ["decal"], about: "marks on the ground" },
@@ -397,7 +397,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       end_ms: sheet?.end_ms ?? null,
       beats: l.beats || [],
       beat_window_ms: win ? [win.start, win.end] : null,
-      blend: l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" || l.type === "eruption" ? "alpha" : "add"),
+      blend: l.type === "decal" ? decalBlend(l) : l.blend || (["smoke", "eruption", "motif"].includes(l.type) ? "alpha" : "add"),
       color_slot: l.color || "primary",
       colors: colorHexes(template, l.color),
       z: l.z ?? 0,
@@ -412,7 +412,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       params: resolveParams(l.params, seed, `${l.id}#0`),
       keyframes: l.keyframes || [],
       empty: !visible[l.id],
-      ...shaderInfo(l, l.type === "decal" ? decalBlend(l) : l.blend || (l.type === "smoke" || l.type === "eruption" ? "alpha" : "add"), style, resolveParams(l.params, seed, `${l.id}#0`)),
+      ...shaderInfo(l, l.type === "decal" ? decalBlend(l) : l.blend || (["smoke", "eruption", "motif"].includes(l.type) ? "alpha" : "add"), style, resolveParams(l.params, seed, `${l.id}#0`)),
     };
   });
   const tracksOut = tracks || { screen_flashes: [], camera_shake: [], lights: [], sounds: [], sound_cues: [], sound_story: [] };

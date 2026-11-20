@@ -24,6 +24,8 @@ import { shaderFor } from "./shader.js";
 import { smokeLighting, sixwayFrame } from "./sixway.js";
 import { makeSixWayMaterial } from "./sixwaymat.js";
 import { lightOffset } from "./lights.js";
+import { GEM_LOOKS, MOTIF_SHAPES, motifPlacement } from "./motifplace.js";
+import { bladeMaterial, dropletMaterial, jewelMaterial, motifGeometry, starTex } from "./motif.js";
 import { centerAt, radiusAt, shapeAt, spinTurns, wallPoint, vortexPlan } from "./vortex.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -1264,7 +1266,7 @@ class GlowLayer extends Layer {
     this.group.visible = I > 0.001;
     if (!this.group.visible) return;
     const attached = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
-    const pts = attached ? attached.points() : [this.anchorPos()];
+    const pts = attached ? attached.points() : [this.anchorPos().add(new THREE.Vector3(0, this.p("height_px", t, 0) * PX, 0))];
     let radius = this.p("radius_px", t, 30) * PX;
     if (attached instanceof OrbLayer) radius += attached.currentRadius * 1.5;
     const pulse = this.hz("pulse_hz", t, 0);
@@ -1491,7 +1493,10 @@ class SparksLayer extends Layer {
     const r = this.rng("burst");
     // Attached to a falling orb: burst where it lands (one meteor of a storm).
     const host = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
-    const origin = host instanceof OrbLayer ? host.landPoint() : this.anchorPos();
+    // Attached to a motif: burst where its first item is as the layer starts
+    // (a drop splashing on a head). height_px lifts the burst off its anchor.
+    const origin = host instanceof OrbLayer ? host.landPoint() : host instanceof MotifLayer ? host.worldPos(0, w.start) : this.anchorPos();
+    origin.y += this.p("height_px", 0, 0) * PX;
     const ground = origin.y < 0.05;
     if (ground) origin.y = 0.12;
     const speed = this.p("speed", 0, 300) * PX;
@@ -1984,6 +1989,7 @@ class RingLayer extends Layer {
     const outer = radius + thick / 2;
     const at = this.anchorPos();
     if (this.plane === "ground") at.y = 0.02;
+    else if (typeof this.p("height_px", t) === "number") at.y += this.p("height_px", t) * PX;
     else if (at.y < 0.05) at.y = 0.55;
     mesh.position.copy(at);
     mesh.scale.setScalar(outer);
@@ -2184,24 +2190,72 @@ class SmokeLayer extends Layer {
 // A hollow sphere that glows at its rim and is nearly clear in the middle
 // (fresnel), so whatever is inside shows through: a force field or shield.
 const BUBBLE_VERTEX = /* glsl */ `
+uniform float ripple;
+uniform float time;
 varying vec3 vNormal;
 varying vec3 vView;
+varying vec3 vObj;
 void main() {
-  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  // ripple: waves running down from the top of the shell (where a drop
+  // landed), fading toward the bottom.
+  float th = acos(clamp(normal.y, -1.0, 1.0));
+  float wave = ripple * sin(th * 9.0 - time * 16.0) * (0.35 + 0.65 * cos(th * 0.5));
+  vec3 p = position * (1.0 + wave);
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
   vNormal = normalize(normalMatrix * normal);
   vView = normalize(-mv.xyz);
+  vObj = position;
   gl_Position = projectionMatrix * mv;
 }`;
 
+// finish 0 "glow": a fresnel shell of light. 1 "soap": a clear film with
+// swirling thin-film rainbows and window reflections. 2 "glass": clear with
+// a tinted body, a dark refracted edge band, a bright rim and highlights.
 const BUBBLE_FRAGMENT = /* glsl */ `
 uniform vec3 inner;
 uniform vec3 rimColor;
 uniform float opacity;
+uniform float finish;
+uniform vec2 swirl;
 varying vec3 vNormal;
 varying vec3 vView;
+varying vec3 vObj;
+vec3 film(float h) { return 0.5 + 0.5 * cos(6.28318 * (h + vec3(0.0, 0.33, 0.67))); }
+float box(vec3 r, vec3 d, float sharp) { return pow(max(dot(r, normalize(d)), 0.0), sharp); }
 void main() {
-  float rim = pow(1.0 - abs(dot(normalize(vNormal), normalize(vView))), 2.2);
-  gl_FragColor = vec4(mix(inner, rimColor, rim), (0.06 + 0.94 * rim) * opacity);
+  vec3 n = normalize(vNormal);
+  vec3 v = normalize(vView);
+  float ndv = abs(dot(n, v));
+  if (finish < 0.5) {
+    float rim = pow(1.0 - ndv, 2.2);
+    gl_FragColor = vec4(mix(inner, rimColor, rim), (0.06 + 0.94 * rim) * opacity);
+  } else {
+    if (!gl_FrontFacing) n = -n;
+    vec3 r = reflect(-v, n);
+    float fres = pow(1.0 - ndv, finish < 1.5 ? 2.0 : 3.0);
+    // Reflected windows: a big soft overhead softbox and a thin side strip.
+    float spec = box(r, vec3(-0.35, 0.75, 0.55), 260.0) * 1.6 + box(r, vec3(0.7, 0.35, 0.6), 600.0) * 1.2;
+    // A soft window reflection: a rounded rectangle of light, upper left.
+    vec3 w = r - normalize(vec3(-0.45, 0.55, 0.7));
+    spec += smoothstep(0.16, 0.12, max(abs(w.x) * 1.4, abs(w.y))) * 0.45;
+    if (!gl_FrontFacing) spec *= 0.35;
+    float sky = smoothstep(-0.1, 0.9, r.y);
+    vec3 col;
+    float a;
+    if (finish < 1.5) {
+      // Film thickness swirls slowly and drains toward the bottom.
+      float th = 0.55 + 0.25 * sin(vObj.y * 3.2 + swirl.x + sin(vObj.x * 4.0 + swirl.y) * 1.4) + 0.2 * vObj.y;
+      vec3 bands = film(th * 2.2 + ndv * 0.9);
+      col = bands * mix(vec3(1.0), rimColor, 0.25) * (0.25 + 1.1 * fres) + inner * 0.08 + vec3(sky * fres * 0.25) + vec3(spec);
+      a = clamp(0.06 + 0.8 * fres + spec, 0.0, 1.0);
+    } else {
+      float edge = smoothstep(0.08, 0.22, ndv) * (1.0 - smoothstep(0.22, 0.45, ndv));
+      col = inner * (0.18 + 0.25 * ndv) + rimColor * fres * 1.1 + vec3(0.9, 0.95, 1.0) * sky * fres * 0.4 + vec3(spec);
+      col *= 1.0 - edge * 0.45;
+      a = clamp(0.14 + 0.75 * fres + spec + edge * 0.2, 0.0, 1.0);
+    }
+    gl_FragColor = vec4(col, a * opacity);
+  }
   #include <colorspace_fragment>
 }`;
 
@@ -2211,19 +2265,32 @@ class OrbLayer extends Layer {
     // bubble: a hollow fresnel shell (force field, shield) instead of a
     // glowing ball; the core is not drawn.
     this.bubble = !!this.base.bubble;
+    // finish: how a bubble's surface looks (glow, soap, glass).
+    this.finish = { soap: 1, glass: 2 }[this.base.finish] || 0;
     this.coreMat = new THREE.MeshBasicMaterial({ color: this.colors[0], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
     this.shellMat = this.bubble
       ? new THREE.ShaderMaterial({
         vertexShader: BUBBLE_VERTEX,
         fragmentShader: BUBBLE_FRAGMENT,
-        uniforms: { inner: { value: this.colors[0].clone() }, rimColor: { value: this.colors[1].clone() }, opacity: { value: 0 } },
+        uniforms: {
+          inner: { value: this.colors[0].clone() },
+          rimColor: { value: this.colors[1].clone() },
+          opacity: { value: 0 },
+          finish: { value: this.finish },
+          time: { value: 0 },
+          swirl: { value: new THREE.Vector2() },
+          ripple: { value: 0 },
+        },
         transparent: true,
-        blending: THREE.AdditiveBlending,
+        // Soap and glass are clear surfaces that reflect, not glowing light.
+        blending: this.finish ? THREE.NormalBlending : THREE.AdditiveBlending,
+        side: this.finish ? THREE.DoubleSide : THREE.FrontSide,
         depthWrite: false,
       })
       : new THREE.MeshBasicMaterial({ color: this.colors[1], transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
     this.core = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), this.coreMat);
-    this.shell = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), this.shellMat);
+    // Clear finishes show their outline and ripples: give them a smooth sphere.
+    this.shell = new THREE.Mesh(this.finish ? new THREE.SphereGeometry(1, 64, 40) : new THREE.SphereGeometry(1, 24, 16), this.shellMat);
     this.arcs = new RibbonMesh(200, this.colors[1].clone().lerp(new THREE.Color("#fff"), 0.4), 1, 0.6);
     this.trail = new RibbonMesh(64, this.colors[1], 0.7, 1.6);
     this.trailCore = new RibbonMesh(64, this.colors[0], 0.9, 0.6);
@@ -2406,10 +2473,19 @@ class OrbLayer extends Layer {
     const r = this.p("radius_px", t, 10) * PX * (1 + 0.08 * Math.sin((t / 1000) * pulse * Math.PI * 2));
     const n = this.rng("wobble", this.loop ? this.tick(t, 33) : Math.floor(t / 33));
     this.currentRadius = r;
+    // A soap or glass bubble doesn't jitter: it ripples smoothly (ripple).
+    const jit = this.bubble && this.finish ? 0 : wob;
     this.core.position.copy(at);
     this.shell.position.copy(at);
     this.core.scale.set(r * 0.6 * (1 + wob * n.range(-0.3, 0.3)), r * 0.6 * (1 + wob * n.range(-0.3, 0.3)), r * 0.6);
-    this.shell.scale.set(r * (1 + wob * n.range(-0.5, 0.5)), r * (1 + wob * n.range(-0.5, 0.5)), r * (1 + wob * n.range(-0.5, 0.5)));
+    this.shell.scale.set(r * (1 + jit * n.range(-0.5, 0.5)), r * (1 + jit * n.range(-0.5, 0.5)), r * (1 + jit * n.range(-0.5, 0.5)));
+    if (this.bubble) {
+      const sec = this.local(t) / 1000;
+      this.shellMat.uniforms.time.value = sec;
+      // The film's swirl turns a whole number of times per aura loop.
+      this.shellMat.uniforms.swirl.value.set(Math.PI * 2 * loopHz(0.11, this.loop) * sec, Math.PI * 2 * loopHz(0.17, this.loop) * sec);
+      this.shellMat.uniforms.ripple.value = Math.max(0, Math.min(0.3, this.p("ripple", t, 0)));
+    }
     // squash (0-1): flatten the orb along the cast direction, so a bubble
     // becomes a lens-shaped shield facing the target (1 = round).
     const squash = this.p("squash", t, 1);
@@ -3734,6 +3810,176 @@ class WaveLayer extends Layer {
   }
 }
 
+// Small modeled things that act out a spell's little story (motifplace.js
+// places them, motif.js builds them): a leaf that unfurls over a head, a dew
+// drop that runs down it and falls, petals, a feather, a blossom that opens
+// (bloom), faceted gems that pop in one by one and circle a character
+// (count, orbit_*), glinting (sparkle) and leaving light trails (trail_ms).
+// Any numeric param can be keyframed, which is how a motif follows a path.
+const MOTIF_NUMS = [
+  "height_px", "forward_px", "side_px", "orbit_radius_px", "orbit_hz", "orbit_tilt_deg", "orbit_phase_deg", "weave_px",
+  "bob_px", "bob_hz", "sway_px", "sway_hz", "stack_px", "stagger_ms", "appear_ms", "spin_hz", "yaw_deg", "tilt_deg", "roll_deg",
+];
+const HZ_PARAMS = new Set(["orbit_hz", "bob_hz", "sway_hz", "spin_hz"]);
+
+class MotifLayer extends Layer {
+  constructor(effect, def, instance) {
+    super(effect, def, instance);
+    const b = this.base;
+    this.shape = MOTIF_SHAPES.includes(b.shape) ? b.shape : "leaf";
+    this.count = Math.max(1, Math.min(32, Math.round(Number(b.count) || 1)));
+    const [core, outer] = this.colors;
+    const tints = (Array.isArray(b.tints) ? b.tints : [])
+      .filter((c) => typeof c === "string" && /^#[0-9a-fA-F]{6}$/.test(c))
+      .map((c) => new THREE.Color(c));
+    const rs = this.rng("motif");
+    this.items = [];
+    this.glints = [];
+    this.headings = castHeading(effect.stage);
+    for (let i = 0; i < this.count; i++) {
+      const tint = tints.length ? tints[i % tints.length] : outer;
+      const item = new THREE.Group();
+      const mats = [];
+      const petals = [];
+      if (this.shape === "gem") {
+        const cut = b.cut || "brilliant";
+        const look = { ...(GEM_LOOKS[cut] || GEM_LOOKS.brilliant) };
+        if (typeof b.clarity === "number") look.clarity = Math.max(0, Math.min(1, b.clarity));
+        if (typeof b.fire === "number") look.fire = Math.max(0, Math.min(1, b.fire));
+        const m = jewelMaterial(tint, core, look);
+        m.uniforms.seed.value = rs() * 100;
+        mats.push(m);
+        item.add(new THREE.Mesh(motifGeometry("gem", cut), m));
+      } else if (this.shape === "droplet") {
+        const m = dropletMaterial(tint, core);
+        mats.push(m);
+        item.add(new THREE.Mesh(motifGeometry("droplet"), m));
+      } else if (this.shape === "blossom") {
+        const n = Math.max(3, Math.min(12, Math.round(Number(b.petals) || 5)));
+        const m = bladeMaterial("petal", tint.clone().lerp(core, 0.55), tint, core);
+        mats.push(m);
+        for (let k = 0; k < n; k++) {
+          const pivot = new THREE.Group();
+          pivot.rotation.y = (Math.PI * 2 * k) / n;
+          const petal = new THREE.Mesh(motifGeometry("petal"), m);
+          pivot.add(petal);
+          petals.push(petal);
+          item.add(pivot);
+        }
+        const heart = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 8), new THREE.MeshBasicMaterial({ color: core, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+        heart.position.y = 0.05;
+        mats.push(heart.material);
+        item.add(heart);
+      } else {
+        const m = bladeMaterial(this.shape, tint.clone().multiplyScalar(0.55), tint, core);
+        if (typeof b.glow === "number") m.uniforms.glow.value = Math.max(0, b.glow);
+        mats.push(m);
+        item.add(new THREE.Mesh(motifGeometry(this.shape), m));
+      }
+      item.userData = { mats, petals, phase: rs() * Math.PI * 2 };
+      this.group.add(item);
+      this.items.push(item);
+      if ((Number(b.sparkle) || 0) > 0) {
+        const g = new THREE.Sprite(new THREE.SpriteMaterial({ map: starTex(), color: core, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false }));
+        this.glints.push(g);
+        this.group.add(g);
+      }
+    }
+    this.trail = (Number(b.trail_ms) || 0) > 0 ? new RibbonMesh(this.count * 20, outer, 0.6, 1.4) : null;
+    if (this.trail) this.group.add(this.trail.mesh);
+    this.pos = [];
+  }
+
+  // The layer's placement params at time t (rates snapped to the loop).
+  placeParams(t) {
+    const out = { face: this.base.face };
+    for (const k of MOTIF_NUMS) {
+      const v = HZ_PARAMS.has(k) ? this.hz(k, t, undefined) : this.p(k, t, undefined);
+      if (typeof v === "number") out[k] = v;
+    }
+    return out;
+  }
+
+  // Item i's place in the world at time t, with its pose.
+  placeAt(i, t) {
+    const pl = motifPlacement(this.placeParams(t), i, this.count, this.local(t));
+    const h = this.headings;
+    const fwd = new THREE.Vector3(Math.cos(h), 0, Math.sin(h));
+    const left = new THREE.Vector3(Math.sin(h), 0, -Math.cos(h));
+    const at = this.anchorPos().addScaledVector(fwd, pl.x * PX).addScaledVector(left, pl.z * PX);
+    at.y += pl.y * PX;
+    return { at, pl };
+  }
+
+  // Where item i is at time t (sparks attached to a motif burst from item 0).
+  worldPos(i, t) {
+    return this.placeAt(i, t).at;
+  }
+
+  update(t) {
+    const I = this.intensityAt(t);
+    this.group.visible = I > 0.001;
+    this.pos = [];
+    if (!this.group.visible) return;
+    const s = this.local(t) / 1000;
+    const size = this.p("size_px", t, 14) * PX * Math.max(0, this.p("scale", t, 1));
+    const op = Math.max(0, Math.min(1, this.p("opacity", t, 1)));
+    const bloom = Math.max(0, Math.min(1, this.p("bloom", t, 1)));
+    const sparkle = Math.max(0, this.p("sparkle", t, 0));
+    const glintHz = this.hz("glint_hz", t, 0.7);
+    const trailMs = this.p("trail_ms", t, 0);
+    const paths = [];
+    this.items.forEach((item, i) => {
+      const { at, pl } = this.placeAt(i, t);
+      const k = size * pl.appear;
+      item.visible = k > 1e-5;
+      const ud = item.userData;
+      for (const m of ud.mats) {
+        const a = I * op * Math.min(1, pl.appear * 1.5);
+        if (m.uniforms) {
+          m.uniforms.opacity.value = a;
+          if (m.uniforms.time) m.uniforms.time.value = Math.PI * 2 * loopHz(0.07, this.loop) * s;
+        } else m.opacity = a;
+      }
+      item.position.copy(at);
+      item.rotation.set(pl.pitch, pl.yaw - this.headings, pl.roll, "YXZ");
+      item.scale.setScalar(Math.max(1e-5, k));
+      // bloom: petals rise from a closed bud (0) to open and flat (1).
+      for (const petal of ud.petals) petal.rotation.x = 0.18 + 1.55 * bloom;
+      if (item.visible) this.pos.push(at.clone());
+      const g = this.glints[i];
+      if (g) {
+        const tw = Math.pow(Math.max(0, Math.sin(Math.PI * 2 * glintHz * s + ud.phase)), 14);
+        g.visible = item.visible && tw > 0.01;
+        g.position.copy(at);
+        g.scale.setScalar(k * 3.2 * (0.4 + 0.6 * tw));
+        g.material.opacity = Math.min(1, I * op * tw * sparkle);
+        g.material.rotation = ud.phase + s * 0.6;
+      }
+      if (this.trail && trailMs > 0) {
+        const pts = [];
+        const w = [];
+        const start = this.window?.start ?? 0;
+        for (let q = 0; q <= 12; q++) {
+          const tq = t - (trailMs * q) / 12;
+          if (tq < start) break;
+          pts.push(this.placeAt(i, tq).at);
+          w.push(1 - q / 12);
+        }
+        if (pts.length > 1) paths.push({ pts, w });
+      }
+    });
+    if (this.trail) {
+      this.trail.setPaths(paths, size * 0.35);
+      this.trail.opacity = 0.55 * I * op;
+    }
+  }
+
+  points() {
+    return this.pos.length ? this.pos.map((p) => p.clone()) : [this.anchorPos()];
+  }
+}
+
 class LightLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
@@ -3788,6 +4034,7 @@ const TYPES = {
   eruption: EruptionLayer,
   vortex: VortexLayer,
   wave: WaveLayer,
+  motif: MotifLayer,
   light: LightLayer,
   camera_shake: ShakeLayer,
   sound_cue: SoundLayer,

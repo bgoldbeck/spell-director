@@ -1,0 +1,389 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "wind-featherstep-haste",
+  "name": "Featherstep Haste",
+  "description": "A haste buff: a single feather drifts down and touches the ground at the caster's feet, and the gust it makes whirls feathers and wind streaks round their ankles.",
+  "element": "wind",
+  "line": "Bard",
+  "archetype": "aura",
+  "tags": [
+    "buff",
+    "aura",
+    "looping",
+    "haste",
+    "speed",
+    "movement",
+    "feather",
+    "bard",
+    "wind"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Buff: a feather floats down to the character's feet and whirls into a speed aura round the ankles"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1800,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "frame": "close",
+    "reads": {
+      "front": "A feather rocks down to the feet; then a fast whirl of feathers and streaks round the ankles.",
+      "side": "The feather's fall zig-zags; the whirl is a low band round the feet.",
+      "top": "A tight fast circle of feathers and streaks round the caster, rings pulsing out.",
+      "three_quarter": "Hero view. Falling feather, a gust ring, then feathers racing round the ankles."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#EEF6FF",
+    "secondary": "#8FB8D8",
+    "accent": "#CFE9FF",
+    "shadow": "#1A2533"
+  },
+  "style": {
+    "preset": "stylized",
+    "notes": "Delicate and lovely: small, clean shapes, gentle motion, nothing harsh. Bloom soft, not blown out."
+  },
+  "beats": [
+    {
+      "id": "drift",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "A single white feather drifts down from above, rocking side to side."
+    },
+    {
+      "id": "touch",
+      "phase": "impact",
+      "start_ms": 1200,
+      "end_ms": 1500,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "It touches the ground at the caster's feet and a gust ring kicks out."
+    },
+    {
+      "id": "kick",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 1800,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "Feathers whirl up round the ankles and catch speed."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1800,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "Feathers race round the ankles with wind streaks; quick rings pulse out from the feet. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The feathers fly wide and drift away."
+    }
+  ],
+  "layers": [
+    {
+      "id": "drift-feather",
+      "type": "motif",
+      "beats": [
+        "drift",
+        "touch"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "shape": "feather",
+        "size_px": 30,
+        "height_px": 200,
+        "forward_px": 20,
+        "tilt_deg": 75,
+        "spin_hz": 0.25,
+        "sway_px": 26,
+        "sway_hz": 0.9,
+        "appear_ms": 300
+      },
+      "keyframes": [
+        {
+          "t_ms": 1250,
+          "param": "height_px",
+          "value": 8,
+          "ease": "ease_in_out"
+        },
+        {
+          "t_ms": 1250,
+          "param": "opacity",
+          "value": 1
+        },
+        {
+          "t_ms": 1500,
+          "param": "opacity",
+          "value": 0
+        }
+      ],
+      "shader": {
+        "material": "foliage",
+        "look": "A soft white feather with fine barbs and a pale shaft, rocking as it falls.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "dust-swirl",
+      "type": "decal",
+      "beats": [
+        "touch",
+        "kick",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": -2,
+      "params": {
+        "shape": "swirl",
+        "radius_px": 55,
+        "opacity": 0.35,
+        "fade_in_ms": 200,
+        "fade_ms": 600,
+        "detail": 0.4
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Dust swept into a faint spiral round the feet by the whirling feathers.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gust-ring",
+      "type": "ring",
+      "beats": [
+        "touch"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": -1,
+      "params": {
+        "start_radius_px": 5,
+        "end_radius_px": 95,
+        "thickness_px": 4,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A ring of pushed air rolling out across the ground.",
+        "technique": "procedural",
+        "distortion": 0.3,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ankle-feathers",
+      "type": "motif",
+      "beats": [
+        "kick",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "shape": "feather",
+        "count": 4,
+        "size_px": 18,
+        "height_px": 10,
+        "orbit_radius_px": 10,
+        "orbit_hz": 1.25,
+        "face": "orbit",
+        "tilt_deg": -80,
+        "bob_px": 6,
+        "bob_hz": 1.25,
+        "stagger_ms": 80,
+        "appear_ms": 200,
+        "trail_ms": 200
+      },
+      "keyframes": [
+        {
+          "t_ms": 1800,
+          "param": "orbit_radius_px",
+          "value": 38,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 1800,
+          "param": "height_px",
+          "value": 18,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 4200,
+          "param": "orbit_radius_px",
+          "value": 38
+        },
+        {
+          "t_ms": 5000,
+          "param": "orbit_radius_px",
+          "value": 110,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 4200,
+          "param": "opacity",
+          "value": 1
+        },
+        {
+          "t_ms": 5000,
+          "param": "opacity",
+          "value": 0,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "foliage",
+        "look": "White feathers flying edge-first round the ankles.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "wind-streaks",
+      "type": "sparks",
+      "beats": [
+        "kick",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 5,
+      "params": {
+        "count": 16,
+        "speed": 10,
+        "gravity": 0,
+        "lifetime_ms": 400,
+        "size_px": 1.2,
+        "spread_deg": 30,
+        "emit_ms": 3800,
+        "emit_radius_px": 42,
+        "orbit_hz": 1.25,
+        "height_px": 22,
+        "streak_ms": 120
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Thin white wind streaks whipping round with the feathers.",
+        "technique": "particles",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "stride-rings",
+      "type": "ring",
+      "beats": [
+        "kick",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": -1,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 62,
+        "thickness_px": 2,
+        "softness": 1,
+        "repeat_ms": 600,
+        "count": 2
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Quick pale rings pulsing out from the feet like footfalls.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "drift-sound",
+      "type": "sound_cue",
+      "beats": [
+        "drift"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.12,
+        "pitch": 1.6
+      }
+    },
+    {
+      "id": "touch-sound",
+      "type": "sound_cue",
+      "beats": [
+        "touch"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.4,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "hold-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.12,
+        "pitch": 1.8,
+        "repeat_ms": 1200
+      }
+    }
+  ],
+  "variation": {
+    "notes": "Seed nudges sizes, timing of the motes and the sparkle phase; the story stays the same."
+  },
+  "director_notes": "Haste lives at the feet. The slow feather fall makes the fast whirl feel faster by contrast. Three whirl turns per loop."
+}

@@ -1,0 +1,357 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "light-sunseed-blessing",
+  "name": "Sunseed Blessing",
+  "description": "An all-stats blessing: a golden seed of light floats down, stops over the head and a golden blossom opens round it into a turning halo, with sun motes circling the body.",
+  "element": "light",
+  "line": "Cleric",
+  "archetype": "aura",
+  "tags": [
+    "buff",
+    "aura",
+    "looping",
+    "blessing",
+    "all stats",
+    "halo",
+    "blossom",
+    "cleric",
+    "sun"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Buff: a seed of light floats down and blooms into a golden flower halo above the character"
+  },
+  "timing": {
+    "duration_ms": 5500,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1700,
+      "end_ms": 4700
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.4,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "frame": "close",
+    "reads": {
+      "front": "A golden seed drifts down and blooms over the head into a flat golden flower; motes circle the body.",
+      "side": "The open flower is a thin golden disc over the head.",
+      "top": "An eight-petalled golden flower turning over the caster, sunburst circle below.",
+      "three_quarter": "Hero view. The seed, the blossom opening into a halo, warm motes and light."
+    }
+  },
+  "palette": {
+    "core": "#FFFBEA",
+    "primary": "#FFD45C",
+    "secondary": "#E09A1A",
+    "accent": "#FFF0B8",
+    "shadow": "#2A1C06"
+  },
+  "style": {
+    "preset": "stylized",
+    "notes": "Delicate and lovely: small, clean shapes, gentle motion, nothing harsh. Bloom soft, not blown out."
+  },
+  "beats": [
+    {
+      "id": "descend",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "A golden seed of light floats down from above, turning."
+    },
+    {
+      "id": "sprout",
+      "phase": "anticipation",
+      "start_ms": 1000,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "It stops above the head and a golden blossom opens round it."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 1700,
+      "end_ms": 4700,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The blossom rests over the head like a halo, turning; sun motes circle the body and warm light falls on it. Seamless loop."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 4700,
+      "end_ms": 5500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The petals close and the seed fades into the light."
+    }
+  ],
+  "layers": [
+    {
+      "id": "sun-sigil",
+      "type": "decal",
+      "beats": [
+        "sprout",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 75,
+        "opacity": 0.12,
+        "fade_in_ms": 500,
+        "fade_ms": 500,
+        "spin_deg_per_s": 15,
+        "symmetry": 8,
+        "detail": 0.4,
+        "depth": 0
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A faint sunburst circle on the ground.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "seed",
+      "type": "motif",
+      "beats": [
+        "descend",
+        "sprout",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "shape": "gem",
+        "cut": "cabochon",
+        "size_px": 5,
+        "height_px": 230,
+        "spin_hz": 0.333,
+        "appear_ms": 400,
+        "clarity": 0.45,
+        "fire": 0.2
+      },
+      "keyframes": [
+        {
+          "t_ms": 1000,
+          "param": "height_px",
+          "value": 148,
+          "ease": "ease_out"
+        }
+      ],
+      "shader": {
+        "material": "ethereal",
+        "look": "A smooth golden seed of light.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "seed-glow",
+      "type": "glow",
+      "beats": [
+        "descend",
+        "sprout",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "attach_to": "seed",
+      "z": 4,
+      "params": {
+        "radius_px": 22,
+        "softness": 1,
+        "pulse_hz": 0.667
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Warm halo round the seed.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "halo-blossom",
+      "type": "motif",
+      "beats": [
+        "sprout",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "shape": "blossom",
+        "petals": 8,
+        "size_px": 20,
+        "height_px": 145,
+        "spin_hz": 0.333,
+        "bloom": 0,
+        "appear_ms": 300,
+        "glow": 0.6
+      },
+      "keyframes": [
+        {
+          "t_ms": 1700,
+          "param": "bloom",
+          "value": 1.05,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 4700,
+          "param": "bloom",
+          "value": 1.05
+        },
+        {
+          "t_ms": 5500,
+          "param": "bloom",
+          "value": 0.2,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "foliage",
+        "look": "Golden petals lit from within, open flat like a halo.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "sun-motes",
+      "type": "sparks",
+      "beats": [
+        "sprout",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 6,
+      "params": {
+        "look": "ember",
+        "count": 18,
+        "speed": 10,
+        "gravity": -18,
+        "lifetime_ms": 550,
+        "size_px": 1.5,
+        "spread_deg": 180,
+        "emit_ms": 4500,
+        "emit_radius_px": 45,
+        "orbit_hz": 0.333,
+        "height_px": 40
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Little motes of sunlight circling and rising.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "sun-light",
+      "type": "light",
+      "beats": [
+        "sprout",
+        "sustain",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "height_px": 160,
+        "energy": 1.1,
+        "radius": 3
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "descend-sound",
+      "type": "sound_cue",
+      "beats": [
+        "descend"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.3,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "sprout-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sprout"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.35,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "hold-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.12,
+        "pitch": 1.2,
+        "repeat_ms": 1500
+      }
+    }
+  ],
+  "variation": {
+    "notes": "Seed nudges sizes, timing of the motes and the sparkle phase; the story stays the same."
+  },
+  "director_notes": "A halo made of a flower ties the light school to nature. The blossom opens a touch past flat (bloom 1.05) so it reads as a halo, not a cup."
+}
