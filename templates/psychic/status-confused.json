@@ -1,0 +1,278 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "psychic-status-confused",
+  "name": "Confused",
+  "description": "The victim is confused: question marks circle and wobble round their head, a dizzy pink sheen sits on them and a swirl turns under their feet.",
+  "element": "psychic",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "confused",
+    "ethereal",
+    "confuse",
+    "mind",
+    "crowd-control",
+    "comic"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Confused status effect: question marks circling the head"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Three pink question marks circling the head, tilting and bobbing.",
+      "side": "The question marks pass in front of and behind the head.",
+      "top": "A pink swirl turning under the victim, question marks circling the head.",
+      "three_quarter": "Hero view. A baffled figure with question marks circling its head."
+    }
+  },
+  "palette": {
+    "core": "#FFE8FA",
+    "primary": "#FF6FD8",
+    "secondary": "#8E2FB8",
+    "accent": "#FFB6EC",
+    "shadow": "#200A26"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A pink psychic pulse."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Their mind scrambles: a pink pulse and the question marks appear."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are confused: question marks circle and wobble. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Their head clears."
+    }
+  ],
+  "layers": [
+    {
+      "id": "confuse-swirl",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "swirl",
+        "radius_px": 40,
+        "opacity": 0.45,
+        "fade_in_ms": 300,
+        "lifetime_ms": 4300,
+        "fade_ms": 500,
+        "spin_deg_per_s": 120
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A pink swirl turning under the victim.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "questions",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "question",
+        "steady": true,
+        "count": 3,
+        "emit_ring": true,
+        "emit_radius_px": 30,
+        "height_px": 110,
+        "orbit_hz": 0.67,
+        "bob_px": 7,
+        "bob_hz": 1.33,
+        "size_px": 22,
+        "speed": 0,
+        "gravity": 0,
+        "tilt_deg": 25
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Question marks circling the head, tilting and bobbing.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "dizzy-sheen",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "glow",
+        "fill": 0.12,
+        "rim": 0.75,
+        "scale": 3,
+        "pulse_hz": 1,
+        "pulse": 0.3,
+        "opacity": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A dizzy pink sheen on the body.",
+        "technique": "mesh",
+        "fresnel": 0.75
+      }
+    },
+    {
+      "id": "pink-motes",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 10,
+        "speed": 20,
+        "gravity": -30,
+        "lifetime_ms": 900,
+        "size_px": 2,
+        "spread_deg": 90,
+        "drag": 0.5,
+        "emit_radius_px": 25,
+        "height_px": 80,
+        "orbit_hz": 0.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Pink motes swirling round the head.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "psychic-pulse",
+      "type": "ring",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 9,
+      "plane": "billboard",
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 70,
+        "thickness_px": 8,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A pink psychic pulse round the head.",
+        "technique": "procedural"
+      }
+    },
+    {
+      "id": "confuse-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.5,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "confuse-loop",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.2,
+        "repeat_ms": 1500,
+        "pitch": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The question marks' starting spots change per cast."
+  },
+  "director_notes": "Status effect: steady question glyphs on a loop-snapped orbit at head height, the comic read; a swirl decal for the top view. Loop 1200-4200 ms."
+}

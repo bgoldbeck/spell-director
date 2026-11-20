@@ -51,7 +51,8 @@
         "psychic",
         "blood",
         "sound",
-        "spirit"
+        "spirit",
+        "physical"
       ]
     },
     "line": {
@@ -66,8 +67,10 @@
         "chain",
         "beam",
         "aura",
-        "nova"
-      ]
+        "nova",
+        "status"
+      ],
+      "description": "strike, projectile, chain, beam, aura or nova; status: a lingering affliction on one target (burning, frozen, asleep) that applies, loops while it lasts (timing.loop_range) and expires."
     },
     "tags": {
       "type": "array",
@@ -450,6 +453,7 @@
               "eruption",
               "vortex",
               "wave",
+              "coat",
               "ring",
               "decal",
               "smoke",

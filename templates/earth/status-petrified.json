@@ -1,0 +1,336 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "earth-status-petrified",
+  "name": "Petrified",
+  "description": "The victim turns to stone: grey rock creeps up from their feet to the top of their head with a dusty edge, cracks run through the ground, and when the effect ends the stone skin crumbles away in chunks and dust.",
+  "element": "earth",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "petrified",
+    "earth",
+    "stone",
+    "petrify",
+    "statue",
+    "crowd-control"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Petrified status effect: stone creeps up the body, crumbles at the end"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Stone creeping up the figure with a pale dusty edge until it is a rough grey statue, dark cracks across it.",
+      "side": "The same statue all round; the stone line climbs evenly.",
+      "top": "Cracked ground round a stone figure; dust puffs as it crumbles.",
+      "three_quarter": "Hero view. A person turned to a cracked stone statue, crumbling at the end."
+    }
+  },
+  "palette": {
+    "core": "#F2E8D2",
+    "primary": "#B8AC94",
+    "secondary": "#6C6250",
+    "accent": "#D8CDB2",
+    "shadow": "#1C1912"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Dust puffs off the stone as it creeps up."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Stone creeps up from the feet to the head; the ground cracks."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are a statue: still, grey, a little dust sifting. Seamless loop."
+    },
+    {
+      "id": "finale",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 4700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The stone skin bursts into chunks and dust."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The stone cracks and crumbles off in chunks and dust."
+    }
+  ],
+  "layers": [
+    {
+      "id": "ground-cracks",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": -1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": 55,
+        "opacity": 0.75,
+        "fade_in_ms": 200,
+        "reveal_ms": 1000,
+        "lifetime_ms": 4500,
+        "fade_ms": 500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Cracks spreading through the ground as the stone takes hold.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "stone-skin",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "cover_px",
+          "value": 0
+        },
+        {
+          "t_ms": 1100,
+          "param": "cover_px",
+          "value": 135,
+          "ease": "ease_in_out"
+        }
+      ],
+      "params": {
+        "pattern": "stone",
+        "fill": 0.8,
+        "rim": 0.4,
+        "scale": 7,
+        "edge_glow": 0.5,
+        "opacity": 1
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Rough grey stone with dark cracks covering the body.",
+        "technique": "mesh",
+        "lighting": "lit",
+        "noise": {
+          "type": "voronoi",
+          "scale": 7,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.08,
+          "edge_color": "accent"
+        },
+        "notes": "Lerp the character's material to stone with a height mask that rises; dusty edge."
+      }
+    },
+    {
+      "id": "sifting-dust",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 8,
+        "speed": 8,
+        "gravity": 60,
+        "lifetime_ms": 900,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.6,
+        "emit_radius_px": 14,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A little dust sifting off the statue.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "creep-dust",
+      "type": "smoke",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 8,
+        "rise_speed": 25,
+        "size_px": 14,
+        "lifetime_ms": 450,
+        "opacity": 0.35,
+        "spread_px": 14,
+        "height_px": 30
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Dust puffing off the creeping stone edge.",
+        "technique": "flipbook"
+      }
+    },
+    {
+      "id": "crumble-chunks",
+      "type": "sparks",
+      "beats": [
+        "finale"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "look": "debris",
+        "count": 22,
+        "speed": 140,
+        "gravity": 900,
+        "lifetime_ms": 700,
+        "size_px": 6,
+        "spread_deg": 160,
+        "drag": 0.2,
+        "height_px": 50,
+        "emit_radius_px": 18
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of the stone skin breaking off and tumbling down.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crumble-dust",
+      "type": "smoke",
+      "beats": [
+        "finale"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "count": 14,
+        "rise_speed": 30,
+        "size_px": 26,
+        "lifetime_ms": 700,
+        "opacity": 0.45,
+        "spread_px": 20,
+        "height_px": 30,
+        "spread_speed": 90
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A cloud of dust as the statue crumbles.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "petrify-sound",
+      "type": "sound_cue",
+      "beats": [
+        "afflict"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.5,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "crumble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "finale"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.6,
+        "pitch": 1.1
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Crack pattern, stone texture and the crumble chunks change per cast."
+  },
+  "director_notes": "Status effect: a stone coat whose cover_px is keyframed from the feet to over the head through the afflict beat (edge_glow marks the creeping line); the loop holds a still statue. Loop 1200-4200 ms."
+}

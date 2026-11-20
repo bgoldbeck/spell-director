@@ -90,6 +90,7 @@ An effect is a stack of layers. Each layer has one job.
 | `decal` | Mark on the ground: scorch, burn, cracks, crater, puddle, splash, frost, rune circle, warning ring (telegraph), fissures. Fades in, stays, fades out; can outlive the spell. |
 | `smoke` | Soft alpha volume, slow drift. |
 | `motif` | A small modeled thing that acts out part of the story: a leaf, petal, feather, water drop, a blossom that opens, or a faceted gem. One or many, placed by hand (keyframed paths) or circling the anchor. |
+| `coat` | A skin over an afflicted character (status effects): flames, frost, stone, ooze, shadow, static, a sheen, or a block of ice round them. |
 | `light` | Dynamic light cast on the environment. |
 | `camera_shake` | Screen shake. |
 | `sound_cue` | A named sound that plays in sync with its beats (see §10). |
@@ -334,12 +335,41 @@ A buff is cast on one character to help them: a shield, haste, strength, regener
 
 Examples: `templates/water/dewdrop-ward.json` (leaf, drop, soap bubble), `earth/diamond-aegis.json` and the other Gemwarden orbits, `nature/petalfall-mending.json`, `arcane/moonmirror-veil.json` (glass), `ice/snowflake-ward.json`.
 
+### Status effects
+
+| Word | Means | Template |
+|---|---|---|
+| status effect, affliction, debuff, condition | a lingering effect on one target that the game puts on and takes off | `archetype: status` + `timing.loop_range` |
+| apply / lasts / expires | landing, holding, wearing off | beats before, across and after the loop range |
+| burning | on fire | `coat` `pattern: flame`, add-blend flame smoke, embers, black smoke, scorch |
+| frozen (solid) | trapped in ice | `coat` `shape: crystal` `pattern: ice` that climbs up (`cover_px` keyframed), frost skin, shatters at the end |
+| chilled | cold, slowed by frost | frost `coat` clipped to the legs, falling `flake` snow, breath puffs |
+| poisoned | toxic, venom | `coat` `pattern: ooze`, bubble glyphs, a skull glyph per tick, drips, puddle |
+| diseased, plague | sick | murky `shadow` coat, miasma smoke, spores, `fly` glyphs circling the head |
+| bleeding | a wound that keeps bleeding | droplet drips and spurts, a growing blood pool, a rim throbbing like a heartbeat |
+| haunted | followed by spirits | `ghost` glyphs orbiting, a cold rim, dark mist |
+| dazed, dizzy | seeing stars | steady `star` glyphs on an `emit_ring` orbit over the head |
+| stunned | locked up | spinning `swirl` glyphs, sparks round the head, a rim |
+| sleepy, asleep | out cold | `z` glyphs floating up and growing, slow breathing glow |
+| rooted, snared | stuck to the ground | an inward-leaning `eruption` ring of roots, bark `coat` on the legs |
+| silenced | can't cast | a glowing gag (`coat` band at the mouth), a `mute` glyph |
+| cursed, hexed | doomed | `shadow` coat, a `skull` glyph, a hex rune circle |
+| shocked | electrified | `coat` `pattern: static`, crackle lifted round the body, spitting sparks |
+| petrified | turned to stone | `stone` coat creeping up (`cover_px` keyframed, `edge_glow`), crumbles at the end |
+| slowed | time drags | `hourglass` glyph, inward rings, a 12-fold clock circle |
+| confused | baffled | `question` glyphs circling the head |
+| feared | terrified | shadow climbing the body, `exclaim` glyphs, sweat `drop` glyphs |
+| blinded | can't see | a bright `coat` band over the eyes, glare |
+| charmed | love-struck | `heart` glyphs circling and rising, a rosy heartbeat glow |
+| bubbled | trapped in a bubble | orb `bubble` round the body, rising bubbles, pops at the end |
+| comic glyph | a cartoon symbol over a character | `sparks` `look: glyph` |
+
 Examples of targeted area spells: `templates/lightning/stormhammer-barrage.json` (hammers then a fork), `cleaving-squall.json` (a chain round the group), `ricochet-stormdiscs.json` (a ricochet), `stormcage-javelin.json` (a cage), `runefall-cairn.json` and `thunderhead-verdict.json` (from the sky), plus `ice/glacial-shatterpoint.json`, `fire/emberfall-cascade.json`, `earth/faultline-crush.json` and `poison/venom-bloom.json`. Point-blank: `lightning/stormcrown-nova.json`, `shadow/abyssal-implosion.json` (pull in, then detonate), `ice/permafrost-crown.json`, `earth/tectonic-crown.json` and more. Ground-targeted: `poison/mire-splat.json`.
 
 ## 9. How the director uses this
 
 1. Hear the request (text) or read a GIF breakdown.
-2. Pick an archetype: `strike`, `projectile`, `chain`, `beam`, `aura`, `nova`, and the hero view (ask what camera the game uses if unknown).
+2. Pick an archetype: `strike`, `projectile`, `chain`, `beam`, `aura`, `nova`, `status`, and the hero view (ask what camera the game uses if unknown).
 3. Propose the phases with durations, and ask at most 2–3 choices in plain words, for example:
    *"Should it have a long charge-up (heavier, 0.4 s) or hit instantly (snappier)?"*
    *"One clean bolt, or a wild tree of forks?"*

@@ -25,6 +25,7 @@ export const DEFAULT_SHADER = {
   smoke: { technique: "particles", material: "smoky", noise: { type: "curl", scale: 1.5, speed: 0.6, contrast: 0.5 }, flow: { direction: "upward", speed: 0.4 }, dissolve: { pattern: "fbm", edge_width: 0.3 }, lighting: "lit" },
   eruption: { technique: "mesh", material: "stone", noise: { type: "voronoi", scale: 4, speed: 0, contrast: 0.6 }, dissolve: { pattern: "voronoi", edge_width: 0.15 }, lighting: "lit" },
   motif: { technique: "mesh", material: "foliage", fresnel: 0.4, lighting: "lit" },
+  coat: { technique: "mesh", material: "ethereal", noise: { type: "fbm", scale: 6, speed: 1, contrast: 0.5 }, fresnel: 0.6, emissive: { hdr: 1.5, falloff: "soft", core_ratio: 0.2 }, lighting: "unlit", notes: "A second skin over the character's mesh (inflated a little along the normals), or a mesh enclosing it." },
   light: { technique: "light", lighting: "emits_light" },
 };
 

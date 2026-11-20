@@ -1,0 +1,377 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "poison-status-poisoned",
+  "name": "Poisoned",
+  "description": "Poison seeps through the victim: a slick green ooze crawls down their body, toxic bubbles rise off them and pop, a little skull floats up now and then, and venom drips into a green puddle.",
+  "element": "poison",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "poisoned",
+    "poison",
+    "venom",
+    "liquid",
+    "damage-over-time",
+    "dot"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Poisoned status effect: green ooze, bubbles, skulls, drips"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A green sheen dripping down the body, bubbles rising past the face, drips falling, and a skull popping up over the head.",
+      "side": "The same ooze all round the body; drips fall to the puddle.",
+      "top": "A green puddle under the victim with bubbles rising out of it.",
+      "three_quarter": "Hero view. A sickly green figure dripping venom, bubbles and the odd skull rising off it."
+    }
+  },
+  "palette": {
+    "core": "#E9FFB8",
+    "primary": "#7CF03A",
+    "secondary": "#2F9E2A",
+    "accent": "#C6FF5A",
+    "shadow": "#0F2410"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A splash of green venom."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Venom spreads through them: a green flush and a splash of drips."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "Poison works on them: ooze runs down, bubbles rise and pop, a skull floats up once per loop. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The poison wears off: the ooze fades and the puddle dries."
+    }
+  ],
+  "layers": [
+    {
+      "id": "venom-puddle",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 38,
+        "opacity": 0.75,
+        "fade_in_ms": 600,
+        "grow_ms": 1200,
+        "start_scale": 0.3,
+        "lifetime_ms": 4400,
+        "fade_ms": 600,
+        "fill": "liquid"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A glossy pool of green venom spreading under the victim.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "ooze-skin",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "ooze",
+        "fill": 0.5,
+        "rim": 0.75,
+        "scale": 6,
+        "flow_hz": 0.33,
+        "opacity": 0.8
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Slick green ooze crawling down the skin with a glossy rim.",
+        "technique": "mesh",
+        "fresnel": 0.7,
+        "flow": {
+          "direction": "downward",
+          "speed": 0.5
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 6,
+          "speed": 0.5,
+          "contrast": 0.6
+        },
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "toxic-bubbles",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 9,
+      "params": {
+        "look": "glyph",
+        "glyph": "bubble",
+        "count": 9,
+        "speed": 40,
+        "speed_spread": 0.4,
+        "gravity": -30,
+        "lifetime_ms": 900,
+        "size_px": 14,
+        "spread_deg": 40,
+        "drag": 0.4,
+        "emit_radius_px": 18,
+        "height_px": 35,
+        "sway": 0.5,
+        "grow": 0.5
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Toxic bubbles rising off the body and popping.",
+        "technique": "particles",
+        "notes": "Bubble sprites with a bright rim; pop with a tiny splash at the end of life."
+      }
+    },
+    {
+      "id": "skull-puff",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "skull",
+        "count": 1,
+        "speed": 25,
+        "gravity": -10,
+        "lifetime_ms": 1000,
+        "size_px": 27,
+        "spread_deg": 10,
+        "height_px": 105,
+        "sway": 0.4,
+        "grow": 0.3,
+        "tilt_deg": 10
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A little green skull floating up over the head: the poison ticking.",
+        "technique": "particles",
+        "notes": "A comic skull sprite once per loop; time it to the damage tick."
+      }
+    },
+    {
+      "id": "drips",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "look": "droplet",
+        "count": 10,
+        "speed": 15,
+        "gravity": 700,
+        "lifetime_ms": 550,
+        "size_px": 3,
+        "spread_deg": 60,
+        "drag": 0.2,
+        "emit_radius_px": 14,
+        "height_px": 45
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Venom dripping off the body into the puddle.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "venom-splash",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "look": "droplet",
+        "count": 18,
+        "speed": 220,
+        "gravity": 700,
+        "lifetime_ms": 450,
+        "size_px": 3,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A splash of venom as the poison takes hold.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "toxic-glow",
+      "type": "glow",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 55,
+        "softness": 0.95,
+        "height_px": 50,
+        "pulse_hz": 1
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A sickly green glow round the body.",
+        "technique": "light"
+      }
+    },
+    {
+      "id": "status-light",
+      "type": "light",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "radius": 4,
+        "energy": 1.0,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The affliction's own light on the victim and the ground.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "venom-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "bubble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.25,
+        "pitch": 1.6,
+        "repeat_ms": 1000,
+        "offset_ms": 200
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Ooze drips, bubble paths and the puddle's shape change per cast."
+  },
+  "director_notes": "Status effect: an ooze coat (scrolling noise down the body), bubble glyphs, one skull glyph per loop as the damage tick, droplet drips and a liquid puddle. Loop 1200-4200 ms."
+}

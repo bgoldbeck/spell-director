@@ -34,8 +34,8 @@ Pull these out of what the user said, and note which are missing:
 
 | Decide | Words that tell you | If missing |
 |---|---|---|
-| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash", "wave", "tide"; "ice", "frost", "freeze", "snow", "blizzard"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "sun", "solar", "holy", "radiant" (light); "raw power", "hyper", "cannon", "annihilate" (energy); "psychic", "mind", "telekinetic" (psychic); "earth", "rock", "stone", "ground", "quake", "slam", "boulder"; "blood", "vampire", "bleed", "siphon" (blood); "song", "bard", "anthem", "dirge" (sound); "shadow", "dark", "void", "death", "necro" (shadow); "plague", "rot", "toxic", "disease" (poison) | ask (it's rarely missing) |
-| `archetype` | strike (from above / one hit), projectile (thrown), chain (jumps), beam (continuous), aura (around the caster), nova (bursts outward) | infer, or ask as a choice |
+| `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash", "wave", "tide"; "ice", "frost", "freeze", "snow", "blizzard"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "sun", "solar", "holy", "radiant" (light); "raw power", "hyper", "cannon", "annihilate" (energy); "psychic", "mind", "telekinetic" (psychic); "earth", "rock", "stone", "ground", "quake", "slam", "boulder"; "blood", "vampire", "bleed", "siphon" (blood); "song", "bard", "anthem", "dirge" (sound); "shadow", "dark", "void", "death", "necro" (shadow); "plague", "rot", "toxic", "disease" (poison); "bonk", "daze", "stun", "knockout" (physical) | ask (it's rarely missing) |
+| `archetype` | strike (from above / one hit), projectile (thrown), chain (jumps), beam (continuous), aura (around the caster), nova (bursts outward), status (an affliction on a target: burning, frozen, asleep, poisoned) | infer, or ask as a choice |
 | weight | heavy, boss, big, ultimate → long anticipation, hold frames, shake. quick, light, basic → snappy | default to medium |
 | camera / hero view | top-down, isometric, side-scroller, fighting game, over-the-shoulder (see vocabulary §7) | **ask** |
 | scale | boss, area, single target, ultimate | infer from weight |
@@ -75,6 +75,7 @@ Write the beats first; everything else hangs off them.
    | beam | anticipation → release → travel (sustained) → dissipation |
    | aura | anticipation → impact (sustained, `hold` or `flicker`) → dissipation |
    | nova | anticipation → release → impact (expanding ring) → dissipation |
+   | status | impact (apply) → release (sustained `hold`, the loop) → dissipation (expire) |
 
 2. Turn weight words into durations (vocabulary "Timing words → numbers"):
 
@@ -93,6 +94,10 @@ Write the beats first; everything else hangs off them.
 If the request is for something that *lasts* ("an aura", "while it's active", "a field around me", "a damage zone", "a buff that stays"), make an aura (template-format.md, *Auras*): `archetype: aura`, three beats (start-up `anticipation`, a steady `hold` sustain, end `dissipation`) and `timing.loop_range` exactly over the sustain, e.g. 1200–4200 ms in a 5000 ms spell. Give the looping layers all three beats so they build up in the start-up, keep particle lifetimes under ~1 s, use rings with `repeat_ms` for ticks and line the tick sounds up with them. Put one-shots (the cast flare) early in the start-up. Choose the line from the request (Paladin, Druid, Bard, ...) and the element from what it's made of. Tell the user the loop range so they can set it up in the engine.
 
 **Buffs** (a shield, haste, strength, regeneration or a resistance cast on one character) are auras that tell a tiny story first. Make the start-up two to four short story beats (a leaf unfurls, a drop rolls down it and hangs, falls, splashes) that resolve into the lingering part (a soap-bubble shield, gems circling, a cocoon of leaves). Build the story out of `motif` layers (template-format.md, *Motifs*): keyframe their `side_px`/`height_px` for paths, `ease_in` for a fall, `bloom` for a flower opening, `stagger_ms` so gems or leaves appear one by one. Keep it delicate: small sizes, faint ground marks (decal `opacity` 0.1–0.3), soft lights (`energy` under 1), gentle orbits (one turn per loop). Tag it `buff`, set `views.frame: "close"`, and pick the theme from the effect: protection is a shell, haste lives at the feet, strength in the chest, regeneration breathes inward, a resistance is a halo or crown. Gem buffs: `motif` `shape: gem` with a `cut` per stone (diamond `brilliant`, emerald `emerald`, jade `cabochon`), a `light` per color orbiting at the same `orbit_hz` with a `tint`, and `sparkle`. See [`templates/water/dewdrop-ward.json`](../templates/water/dewdrop-ward.json) and [`templates/earth/diamond-aegis.json`](../templates/earth/diamond-aegis.json).
+
+### Status effects (afflictions on a target)
+
+If the request is for something that *afflicts* a character ("burning", "frozen", "poisoned", "asleep", "stunned", "a debuff", "a status effect", "a condition"), make a status effect (template-format.md, *Status effects*): `archetype: status`, `space` origin and destination `target` with `travel: none`, an apply beat (`impact`, 0–1200 ms), a steady `hold` beat over `timing.loop_range` (1200–4200 ms) and an expire beat (`dissipation`), plus short `onset` and `finale` beats for the one-shots of landing and wearing off. Anchor every layer at `target`. Make it read on the body: a `coat` on the character, something over the head that reads from far away (comic glyphs are welcome when the game is light-hearted: Zs, stars, question marks, a skull), and a mark on the ground for the top view. Give the expire something to do when it fits (ice shatters, a bubble pops, stone crumbles). The aura loop rules all apply.
 
 ## Step 4. Choose layers
 

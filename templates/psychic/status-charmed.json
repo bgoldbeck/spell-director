@@ -1,0 +1,294 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "psychic-status-charmed",
+  "name": "Charmed",
+  "description": "The victim is charmed: little hearts float up off them and circle their head, a rosy glow beats softly through them and a pink circle shimmers at their feet.",
+  "element": "psychic",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "charmed",
+    "ethereal",
+    "charm",
+    "love",
+    "mind-control",
+    "crowd-control",
+    "comic"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Charmed status effect: hearts floating round the head"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Pink hearts floating up and circling the head, a rosy rim on the body beating softly.",
+      "side": "Hearts circle round the head in depth.",
+      "top": "A pink circle under the victim, hearts circling the head.",
+      "three_quarter": "Hero view. A love-struck figure with hearts floating round its head."
+    }
+  },
+  "palette": {
+    "core": "#FFF0F6",
+    "primary": "#FF5C9A",
+    "secondary": "#B8205E",
+    "accent": "#FFB3D1",
+    "shadow": "#2A0A18"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A burst of little hearts."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "They are smitten: a pink burst of hearts."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are charmed: hearts float and circle, the glow beats. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The charm wears off: the hearts fade."
+    }
+  ],
+  "layers": [
+    {
+      "id": "charm-circle",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 40,
+        "opacity": 0.45,
+        "fade_in_ms": 300,
+        "lifetime_ms": 4300,
+        "fade_ms": 500,
+        "symmetry": 6,
+        "spin_deg_per_s": 20,
+        "depth": 0,
+        "detail": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A shimmering pink circle at their feet.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "heart-ring",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "heart",
+        "steady": true,
+        "count": 3,
+        "emit_ring": true,
+        "emit_radius_px": 28,
+        "height_px": 112,
+        "orbit_hz": 0.33,
+        "bob_px": 5,
+        "bob_hz": 1.33,
+        "size_px": 18,
+        "speed": 0,
+        "gravity": 0,
+        "tilt_deg": 15
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Hearts circling the head.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "rising-hearts",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 9,
+      "params": {
+        "look": "glyph",
+        "glyph": "heart",
+        "count": 4,
+        "speed": 35,
+        "gravity": -15,
+        "lifetime_ms": 1000,
+        "size_px": 14,
+        "spread_deg": 40,
+        "drag": 0.3,
+        "emit_radius_px": 18,
+        "height_px": 70,
+        "sway": 0.5,
+        "grow": 0.5,
+        "tilt_deg": 20
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Little hearts floating up off the body.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "rosy-glow",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "glow",
+        "fill": 0.15,
+        "rim": 0.75,
+        "scale": 3,
+        "pulse_hz": 1.33,
+        "pulse": 0.35,
+        "opacity": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A rosy sheen beating softly like a heart.",
+        "technique": "mesh",
+        "fresnel": 0.75
+      }
+    },
+    {
+      "id": "heart-burst",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 11,
+      "params": {
+        "look": "glyph",
+        "glyph": "heart",
+        "count": 6,
+        "speed": 150,
+        "gravity": 0,
+        "lifetime_ms": 450,
+        "size_px": 14,
+        "spread_deg": 360,
+        "drag": 0.6,
+        "height_px": 90
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A burst of little hearts.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "charm-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.5,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "charm-beat",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "heartbeat",
+        "gain": 0.2,
+        "repeat_ms": 750,
+        "pitch": 1.2
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The hearts' paths and starting spots change per cast."
+  },
+  "director_notes": "Status effect: steady heart glyphs orbiting the head plus rising ones, a glow coat beating at 1.33 Hz with the heartbeat cue. Comic by design. Loop 1200-4200 ms."
+}

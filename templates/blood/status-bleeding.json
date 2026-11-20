@@ -1,0 +1,309 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "blood-status-bleeding",
+  "name": "Bleeding",
+  "description": "The victim is bleeding: blood drips steadily off them into a spreading pool, a red pulse beats through them like a heartbeat, and now and then a spurt of drops sprays out.",
+  "element": "blood",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "bleeding",
+    "blood",
+    "bleed",
+    "wound",
+    "damage-over-time",
+    "dot"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Bleeding status effect: dripping blood, pool, pulsing heartbeat"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Red drops falling from the body, a dark red pool under the feet and a red rim that throbs on each heartbeat.",
+      "side": "Same drips and pool edge-on; the spurts fly out sideways.",
+      "top": "A dark blood pool spreading under the victim, drops splashing into it.",
+      "three_quarter": "Hero view. A wounded figure dripping blood into a growing pool, throbbing red."
+    }
+  },
+  "palette": {
+    "core": "#FF9A9A",
+    "primary": "#D3122A",
+    "secondary": "#7A0614",
+    "accent": "#FF4057",
+    "shadow": "#1A0306"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A spray of blood as the wound opens."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The wound opens: a spray of blood."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They bleed: drips, a pulsing red rim on every heartbeat, a spurt every beat or so. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The bleeding stops: the pulse fades, the pool stays a moment and dries."
+    }
+  ],
+  "layers": [
+    {
+      "id": "blood-pool",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 55,
+        "opacity": 0.9,
+        "fade_in_ms": 400,
+        "grow_ms": 2400,
+        "start_scale": 0.3,
+        "lifetime_ms": 4600,
+        "fade_ms": 400,
+        "fill": "liquid"
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A dark, glossy pool of blood spreading under the victim.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "pulse-rim",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "glow",
+        "fill": 0.1,
+        "rim": 0.85,
+        "scale": 4,
+        "pulse_hz": 1.33,
+        "pulse": 0.6,
+        "opacity": 0.7
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A red rim throbbing on each heartbeat.",
+        "technique": "mesh",
+        "fresnel": 0.8,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "drips",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "look": "droplet",
+        "count": 16,
+        "speed": 25,
+        "gravity": 800,
+        "lifetime_ms": 550,
+        "size_px": 5,
+        "spread_deg": 70,
+        "drag": 0.2,
+        "emit_radius_px": 12,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Blood dripping off the body.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "spurts",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 8,
+      "params": {
+        "look": "droplet",
+        "count": 12,
+        "speed": 170,
+        "speed_spread": 0.5,
+        "gravity": 700,
+        "lifetime_ms": 600,
+        "size_px": 3,
+        "spread_deg": 120,
+        "drag": 0.2,
+        "height_px": 60,
+        "emit_ms": 200
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A spurt of blood sprayed out on the beat.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "blood-drops",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 9,
+      "params": {
+        "look": "glyph",
+        "glyph": "drop",
+        "count": 2,
+        "speed": 60,
+        "gravity": 300,
+        "lifetime_ms": 700,
+        "size_px": 16,
+        "spread_deg": 140,
+        "height_px": 85
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A couple of comic blood drops flicked off.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "wound-spray",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "look": "droplet",
+        "count": 24,
+        "speed": 260,
+        "gravity": 800,
+        "lifetime_ms": 500,
+        "size_px": 3,
+        "spread_deg": 120,
+        "drag": 0.2,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "A spray of blood as the wound opens.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "wound-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.6,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "heartbeat",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "heartbeat",
+        "gain": 0.45,
+        "repeat_ms": 750
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Drip spots, spurt directions and the pool's shape change per cast."
+  },
+  "director_notes": "Status effect: steady drips and a growing pool carry the bleed; a glow coat throbbing at 1.33 Hz (four beats per loop) matches the heartbeat cue's 750 ms. Loop 1200-4200 ms."
+}

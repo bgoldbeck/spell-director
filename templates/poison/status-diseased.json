@@ -1,0 +1,318 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "poison-status-diseased",
+  "name": "Diseased",
+  "description": "The victim is sick with plague: a murky, blotchy film covers them, sickly spores and a yellow-green miasma drift off them, and a few flies buzz round their head.",
+  "element": "poison",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "diseased",
+    "disease",
+    "plague",
+    "sickness",
+    "rot",
+    "damage-over-time",
+    "dot"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Diseased status effect: plague miasma, spores, flies buzzing"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A murky olive film over the body, haze rising off it and dark flies circling the head.",
+      "side": "Same haze and flies edge-on; the flies loop round the head in depth.",
+      "top": "A grimy stain under the victim, haze spreading, flies circling the head.",
+      "three_quarter": "Hero view. A sickly figure in a cloud of foul air with flies buzzing round its head."
+    }
+  },
+  "palette": {
+    "core": "#F1F4B0",
+    "primary": "#B9C94A",
+    "secondary": "#6B7A2A",
+    "accent": "#D7E27A",
+    "shadow": "#1F2210"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A puff of spores."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The sickness takes hold: a sickly flush and a puff of spores."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are diseased: miasma drifts, spores float, flies circle. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The sickness clears: the haze thins and the flies leave."
+    }
+  ],
+  "layers": [
+    {
+      "id": "grime",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 34,
+        "opacity": 0.6,
+        "fade_in_ms": 600,
+        "lifetime_ms": 4400,
+        "fade_ms": 600,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A grimy, damp stain under the sick victim.",
+        "technique": "decal"
+      }
+    },
+    {
+      "id": "sick-film",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 5,
+      "params": {
+        "pattern": "shadow",
+        "fill": 0.45,
+        "rim": 0.6,
+        "scale": 8,
+        "flow_hz": 0.33,
+        "opacity": 0.75
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A blotchy, murky film over the skin.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 8,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "miasma",
+      "type": "smoke",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": 10,
+        "rise_speed": 18,
+        "size_px": 24,
+        "lifetime_ms": 950,
+        "opacity": 0.28,
+        "spread_px": 22,
+        "height_px": 25
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Yellow-green foul air rising off the body.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.4,
+          "contrast": 0.4
+        }
+      }
+    },
+    {
+      "id": "spores",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 16,
+        "speed": 20,
+        "gravity": -40,
+        "lifetime_ms": 1000,
+        "size_px": 2,
+        "spread_deg": 120,
+        "drag": 0.6,
+        "emit_radius_px": 22,
+        "height_px": 40
+      },
+      "shader": {
+        "material": "organic",
+        "look": "Pale spores drifting up.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "flies",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "fly",
+        "steady": true,
+        "count": 4,
+        "emit_ring": true,
+        "emit_radius_px": 28,
+        "height_px": 108,
+        "orbit_hz": 1.33,
+        "bob_px": 7,
+        "bob_hz": 3,
+        "size_px": 12,
+        "speed": 0,
+        "gravity": 0,
+        "tilt_deg": 30
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A few flies buzzing round the head.",
+        "technique": "particles",
+        "notes": "Tiny fly sprites on a jittery orbit round the head."
+      }
+    },
+    {
+      "id": "spore-puff",
+      "type": "smoke",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 8,
+        "rise_speed": 30,
+        "size_px": 20,
+        "lifetime_ms": 600,
+        "opacity": 0.4,
+        "spread_px": 15,
+        "height_px": 50,
+        "spread_speed": 80
+      },
+      "shader": {
+        "material": "organic",
+        "look": "A puff of spores as the sickness takes hold.",
+        "technique": "flipbook"
+      }
+    },
+    {
+      "id": "spore-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "squelch",
+        "gain": 0.4,
+        "pitch": 0.8
+      }
+    },
+    {
+      "id": "fly-buzz",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "buzz",
+        "gain": 0.2,
+        "pitch": 1.8,
+        "repeat_ms": 1500
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Spore paths, miasma puffs and the flies' starting spots change per cast."
+  },
+  "director_notes": "Status effect: a murky shadow-patterned coat, alpha miasma, spore embers and steady fly glyphs on a loop-snapped orbit (orbit_hz and bob_hz snap to whole cycles per loop). Loop 1200-4200 ms."
+}

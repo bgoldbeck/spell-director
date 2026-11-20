@@ -26,6 +26,8 @@ import { makeSixWayMaterial } from "./sixwaymat.js";
 import { lightOffset } from "./lights.js";
 import { GEM_LOOKS, MOTIF_SHAPES, motifPlacement } from "./motifplace.js";
 import { bladeMaterial, dropletMaterial, jewelMaterial, motifGeometry, starTex } from "./motif.js";
+import { COAT_PATTERNS, coatGeometry, coatSettings, makeCoatMaterial } from "./coat.js";
+import { GlyphPoints } from "./glyphs.js";
 import { centerAt, radiusAt, shapeAt, spinTurns, wallPoint, vortexPlan } from "./vortex.js";
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -1230,7 +1232,8 @@ class CrackleLayer extends Layer {
     const count = Math.round(this.p("count", t, 3));
     const len = this.p("length_px", t, 16) * PX * 2.2;
     const radius = this.p("radius_px", t, 30) * PX;
-    const center = this.anchorPos();
+    // height_px: crackle in the air this far above the anchor (over a body).
+    const center = this.anchorPos().add(new THREE.Vector3(0, this.p("height_px", t, 0) * PX, 0));
     const onGround = center.y < 0.05;
     let segs = [];
     for (let i = 0; i < count; i++) {
@@ -1266,7 +1269,9 @@ class GlowLayer extends Layer {
     this.group.visible = I > 0.001;
     if (!this.group.visible) return;
     const attached = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
-    const pts = attached ? attached.points() : [this.anchorPos().add(new THREE.Vector3(0, this.p("height_px", t, 0) * PX, 0))];
+    // height_px: lift the glow off its anchor (round a victim's chest or head).
+    const lift = this.p("height_px", t, 0) * PX;
+    const pts = attached ? attached.points() : [this.anchorPos().add(new THREE.Vector3(0, lift, 0))];
     let radius = this.p("radius_px", t, 30) * PX;
     if (attached instanceof OrbLayer) radius += attached.currentRadius * 1.5;
     const pulse = this.hz("pulse_hz", t, 0);
@@ -1428,6 +1433,14 @@ class SparksLayer extends Layer {
     this.bone = this.base.look === "bone";
     // look "note": glowing music notes (head, stem and flag) that sway.
     this.note = this.base.look === "note";
+    // look "glyph": comic symbols (engine/glyphs.js: sleepy Zs, dizzy stars,
+    // question marks, hearts, skulls...) drawn as camera-facing sprites.
+    this.glyph = this.base.look === "glyph";
+    if (this.glyph) {
+      this.glyphs = new GlyphPoints(this.max, String(this.base.glyph || "star"), core, outer, def.blend === "add");
+      this.group.add(this.glyphs.points);
+      return;
+    }
     if (this.bat) {
       this.streaks = new RibbonMesh(this.max * 6, outer, 1, 0.35, { blending: THREE.NormalBlending });
       this.hot = new RibbonMesh(this.max * 6, core, 1, 1.2);
@@ -1485,7 +1498,11 @@ class SparksLayer extends Layer {
     const local = this.local(t);
     const count = Math.min(this.max, Math.round(this.p("count", 0, 20)));
     const life = this.p("lifetime_ms", 0, 400);
-    if (!w || local < 0 || local > (w.end - w.start) + life) {
+    // steady: the sparks don't come and go; each one stays for the whole
+    // layer (orbiting, bobbing) and the layer's intensity fades them in and
+    // out: a ring of dizzy stars, glyphs circling a head.
+    const steady = !!this.base.steady;
+    if (!w || local < 0 || local > (w.end - w.start) + (steady ? 0 : life)) {
       this.group.visible = false;
       return;
     }
@@ -1499,6 +1516,8 @@ class SparksLayer extends Layer {
     origin.y += this.p("height_px", 0, 0) * PX;
     const ground = origin.y < 0.05;
     if (ground) origin.y = 0.12;
+    // height_px: emit from this far above the anchor (a victim's head).
+    origin.y += this.p("height_px", 0, 0) * PX;
     const speed = this.p("speed", 0, 300) * PX;
     const spread = this.p("speed_spread", 0, 0.5);
     const gravity = this.p("gravity", 0, 800) * PX;
@@ -1512,11 +1531,15 @@ class SparksLayer extends Layer {
     // (rocks raining over an area) instead of all from one point.
     const emitR = this.p("emit_radius_px", 0, 0) * PX;
     const ro = this.rng("emit");
-    const startAt = () => {
+    // emit_ring: evenly spaced round the rim of that disc instead (a halo).
+    const ringStart = !!this.base.emit_ring;
+    // (drawn only for a ring, so other layers keep their seeded spots)
+    const ring0 = ringStart ? ro.range(0, Math.PI * 2) : 0;
+    const startAt = (i = 0) => {
       const o = origin.clone();
       if (emitR > 0) {
-        const ea = ro.range(0, Math.PI * 2);
-        const ed = Math.sqrt(ro()) * emitR;
+        const ea = ringStart ? ring0 + (i / Math.max(1, count)) * Math.PI * 2 : ro.range(0, Math.PI * 2);
+        const ed = ringStart ? emitR : Math.sqrt(ro()) * emitR;
         o.x += Math.cos(ea) * ed;
         o.z += Math.sin(ea) * ed;
       }
@@ -1541,7 +1564,19 @@ class SparksLayer extends Layer {
     // orbit_hz: each spark also circles the anchor (turns per second around
     // the vertical axis, negative = clockwise seen from above): leaves, notes
     // or embers swirling around a caster.
-    const orbit = this.p("orbit_hz", 0, 0) * Math.PI * 2;
+    // Steady sparks live the whole layer, so their rates snap to the loop.
+    const orbit = (steady ? this.hz("orbit_hz", 0, 0) : this.p("orbit_hz", 0, 0)) * Math.PI * 2;
+    const I = this.glyph || steady ? Math.min(1, this.intensityAt(t)) : 1;
+    // Glyphs: sway (0-1) lets them flutter side to side as they drift,
+    // spin_hz turns them, grow scales them up over their life, bob_px and
+    // bob_hz bob steady ones up and down.
+    const sway = this.glyph ? this.p("sway", 0, 0) : 1;
+    const spinG = (steady ? this.hz("spin_hz", 0, 0) : this.p("spin_hz", 0, 0)) * Math.PI * 2;
+    const tilt = THREE.MathUtils.degToRad(this.p("tilt_deg", 0, 20));
+    const grow = this.p("grow", 0, 0);
+    const bob = this.p("bob_px", 0, 0) * PX;
+    const bobHz = this.hz("bob_hz", 0, 1) * Math.PI * 2;
+    const glyphs = [];
     const paths = [];
     for (let i = 0; i < count; i++) {
       // Looping: `count` sparks per loop, each reborn every loop.
@@ -1555,10 +1590,13 @@ class SparksLayer extends Layer {
       const dy = Math.cos(phi);
       const dz = Math.sin(phi) * Math.sin(theta);
       // Drawn before any skip below so each spark keeps its spot.
-      const o = startAt();
-      for (const age of sparkAges(local, born, lifeI, this.loop, w.end - w.start)) {
+      const o = startAt(i);
+      // (from the index, not r, so other looks keep their seeded sequence)
+      const rot0 = tilt * (2 * ((((Math.sin(i * 91.7) * 43758.5453) % 1) + 1) % 1) - 1);
+      const ages = steady ? [local / 1000] : sparkAges(local, born, lifeI, this.loop, w.end - w.start);
+      for (const age of ages) {
       const ph = i * 2.399; // not from r: sparks skipped above would shift the sequence
-      const wobble = this.ember || this.flake;
+      const wobble = this.ember || this.flake || (this.glyph && sway > 0);
       const reach = gather * (0.7 + 0.6 * (((Math.sin(i * 78.233) * 43758.5453) % 1 + 1) % 1));
       const inward = (a) => {
         const f = Math.min(1, Math.max(0, (a * 1000) / lifeI));
@@ -1574,14 +1612,14 @@ class SparksLayer extends Layer {
       };
       const flown = gather > 0 ? inward : (a) => {
         const travel = (v * (1 - Math.exp(-drag * a))) / drag;
-        const flutter = wobble ? Math.sin(a * 7 + ph) * 0.18 * a : 0;
+        const flutter = wobble ? Math.sin(a * 7 + ph) * 0.18 * a * sway : 0;
         // Flakes are light: air drag caps their fall at a steady gravity/4
         // per second instead of accelerating, so snow fills the whole column.
         const fall = this.flake ? (gravity / 4) * (a - (1 - Math.exp(-4 * a)) / 4) : 0.5 * gravity * a * a;
         return new THREE.Vector3(
           o.x + dx * travel + flutter + wind * a,
           Math.max(0.01, o.y + dy * travel - fall),
-          o.z + dz * travel + (wobble ? Math.cos(a * 5 + ph) * 0.18 * a : 0),
+          o.z + dz * travel + (wobble ? Math.cos(a * 5 + ph) * 0.18 * a * sway : 0),
         );
       };
       const loose = orbit ? (a) => {
@@ -1612,7 +1650,15 @@ class SparksLayer extends Layer {
       if (this.shard) fade = Math.min(1, fade * 5);
       // Notes fade in as they appear and hold until late in their life.
       if (this.note) fade = Math.min(1, fade * 2.5, age * 5);
+      if (this.glyph || steady) fade = steady ? I : Math.min(1, fade * 2.5, age * 5) * I;
       const head = at(age);
+      if (bob) head.y += bob * Math.sin(bobHz * age + ph);
+      if (this.glyph) {
+        const kg = 0.8 + 0.4 * (((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1);
+        const lifeF = steady ? 0 : Math.min(1, (age * 1000) / lifeI);
+        glyphs.push({ p: head, s: sz * kg * (1 + grow * lifeF), rot: rot0 + spinG * age, a: Math.max(0, fade) });
+        continue;
+      }
       // A shard is a needle that grows from near the anchor out to its head.
       const tail = this.shard ? at(0).lerp(head, 0.3) : at(Math.max(0, age - streakS));
       if (head.distanceTo(tail) < sz * 0.5) tail.copy(head).addScaledVector(UP, -sz * 0.5);
@@ -1629,6 +1675,10 @@ class SparksLayer extends Layer {
       }
       paths.push({ pts: [head, mid, tail], w: [fade, fade * 0.8, 0.15 * fade], k });
       }
+    }
+    if (this.glyph) {
+      this.glyphs.set(glyphs);
+      return;
     }
     this.draw(paths, sz);
   }
@@ -3985,6 +4035,57 @@ class MotifLayer extends Layer {
   }
 }
 
+// A skin over the afflicted character in a status effect (engine/coat.js):
+// flames licking up the body, a crust of frost, creeping stone, oozing
+// poison, a cold shadow, static, or a block of ice it is frozen inside.
+class CoatLayer extends Layer {
+  constructor(effect, def, instance) {
+    super(effect, def, instance);
+    this.s = coatSettings((n, f) => (this.base[n] === undefined || this.base[n] === null ? f : this.base[n]), PX);
+    const [core, outer] = this.colors;
+    const add = def.blend ? def.blend === "add" : !COAT_PATTERNS[this.s.pattern].alpha;
+    this.material = makeCoatMaterial(outer, core, this.s, add);
+    for (const g of [].concat(coatGeometry(this.s.shape, this.s.inflate, this.rng("crystal")))) {
+      const m = new THREE.Mesh(g, this.material);
+      m.frustumCulled = false;
+      this.group.add(m);
+    }
+    const a = this.anchorPos();
+    this.group.position.set(a.x, 0, a.z);
+    if (this.s.shape === "crystal") {
+      const r = this.rng("lean");
+      this.group.rotation.set(r.range(-0.06, 0.06), r.range(0, Math.PI * 2), r.range(-0.06, 0.06));
+    }
+  }
+
+  update(t) {
+    const I = this.intensityAt(t);
+    this.group.visible = I > 0.001;
+    if (!this.group.visible) return;
+    const u = this.material.uniforms;
+    const s = this.s;
+    u.opacity.value = Math.max(0, Math.min(1, this.p("opacity", t, s.opacity))) * Math.min(1, I);
+    u.rim.value = this.p("rim", t, s.rim);
+    u.fill.value = this.p("fill", t, s.fill);
+    u.cover.value = this.p("cover_px", t, s.cover / PX) * PX;
+    u.coverFrom.value = this.p("cover_from_px", t, s.coverFrom / PX) * PX;
+    u.edge.value = this.p("edge_glow", t, s.edge);
+    // flow_hz: the pattern's noise scrolls through one repeat per cycle,
+    // snapped to whole cycles per loop so a status effect loops seamlessly.
+    u.flow.value = (t / 1000) * this.hz("flow_hz", t, s.flowHz);
+    const pulse = this.hz("pulse_hz", t, s.pulseHz);
+    u.pulse.value = pulse ? this.p("pulse", t, s.pulse) * Math.sin((t / 1000) * pulse * Math.PI * 2) : 0;
+    // static redraws its creases every regen_ms (wrapping in a loop).
+    const base = this.effect.seed % 997;
+    u.seed.value = s.pattern === "static" ? base + this.tick(t, Math.max(20, this.p("regen_ms", t, 70))) * 7.31 : base;
+  }
+
+  points() {
+    const a = this.anchorPos();
+    return [a.clone(), a.clone().setY(1.05)];
+  }
+}
+
 class LightLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
@@ -4040,6 +4141,7 @@ const TYPES = {
   vortex: VortexLayer,
   wave: WaveLayer,
   motif: MotifLayer,
+  coat: CoatLayer,
   light: LightLayer,
   camera_shake: ShakeLayer,
   sound_cue: SoundLayer,

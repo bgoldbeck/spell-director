@@ -53,6 +53,12 @@ export function makeStudio() {
   function setStage(stage) {
     disposeTree(props);
     props.clear();
+    // A status effect has no caster: the afflicted character stands alone at
+    // the origin, facing the front camera (-X).
+    if (stage.status) {
+      props.add(standIn("#7a7e8c", -1));
+      return;
+    }
     props.add(standIn("#8c90a0", 1));
     for (const p of stage.targets) {
       const d = standIn("#6c6f7b", -1);

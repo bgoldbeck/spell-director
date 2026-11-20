@@ -1,0 +1,313 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "psychic-status-sleepy",
+  "name": "Sleepy",
+  "description": "The victim has nodded off: big comic Zs float up from their head, growing and swaying as they go, a soft lavender glow breathes slowly round them and drowsy motes drift.",
+  "element": "psychic",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "sleepy",
+    "sleep",
+    "drowsy",
+    "mesmerize",
+    "crowd-control",
+    "comic"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Sleepy status effect: floating Zs"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "White Zs with lavender outlines floating up from the head and drifting to one side, growing as they rise.",
+      "side": "The Zs rise and drift; the soft glow breathes round the body.",
+      "top": "A pale sleep circle on the ground; the Zs float up toward the camera.",
+      "three_quarter": "Hero view. A sleeping figure with a string of Zs floating up off it."
+    }
+  },
+  "palette": {
+    "core": "#F6F0FF",
+    "primary": "#A893FF",
+    "secondary": "#5340A8",
+    "accent": "#D9CCFF",
+    "shadow": "#140F2A"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A wash of sleepy motes settling on them."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Drowsiness falls over them: a soft wash of lavender motes."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They sleep: Zs float up, the glow breathes slowly. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "They wake: the Zs fade and the glow lifts."
+    }
+  ],
+  "layers": [
+    {
+      "id": "sleep-circle",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 45,
+        "opacity": 0.4,
+        "fade_in_ms": 600,
+        "lifetime_ms": 4300,
+        "fade_ms": 600,
+        "symmetry": 6,
+        "spin_deg_per_s": 12,
+        "depth": 0,
+        "detail": 0.3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft sleep circle under the victim.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "zzz",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "z",
+        "count": 3,
+        "speed": 40,
+        "speed_spread": 0.2,
+        "gravity": -8,
+        "lifetime_ms": 1000,
+        "size_px": 20,
+        "spread_deg": 20,
+        "drag": 0.2,
+        "height_px": 98,
+        "wind_px": 18,
+        "sway": 0.6,
+        "grow": 1,
+        "tilt_deg": 25
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Comic Zs floating up from the head, growing and swaying.",
+        "technique": "particles",
+        "notes": "Z sprites, scale up over life, drift and sway."
+      }
+    },
+    {
+      "id": "breathing-glow",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "glow",
+        "fill": 0.12,
+        "rim": 0.7,
+        "scale": 3,
+        "pulse_hz": 0.33,
+        "pulse": 0.4,
+        "opacity": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft lavender sheen that swells and fades with slow sleeping breaths.",
+        "technique": "mesh",
+        "fresnel": 0.7
+      }
+    },
+    {
+      "id": "motes",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 12,
+        "speed": 12,
+        "gravity": -25,
+        "lifetime_ms": 1000,
+        "size_px": 2,
+        "spread_deg": 90,
+        "drag": 0.5,
+        "emit_radius_px": 30,
+        "height_px": 40
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Drowsy motes drifting round them.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "dream-glow",
+      "type": "glow",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 45,
+        "softness": 0.95,
+        "height_px": 90,
+        "pulse_hz": 0.33
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft glow round the sleeping head.",
+        "technique": "light"
+      }
+    },
+    {
+      "id": "drowsy-wash",
+      "type": "sparks",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 22,
+        "speed": 10,
+        "gravity": 50,
+        "lifetime_ms": 450,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.4,
+        "emit_radius_px": 35,
+        "height_px": 120
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Lavender motes settling down over them.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "drowsy-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.4,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "snore",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 0.2,
+        "pitch": 0.6,
+        "repeat_ms": 1500
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The Zs' drift and the motes change per cast."
+  },
+  "director_notes": "Status effect: Z glyphs rising off the head (grow 1 doubles them over their life, wind_px drifts them sideways), a glow coat breathing once per loop. Comic by design. Loop 1200-4200 ms."
+}

@@ -1,0 +1,336 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "shadow-status-cursed",
+  "name": "Cursed",
+  "description": "The victim is cursed: a violet-black shadow crawls over them, dark wisps rise off them, a grinning skull hangs over their head and a hex circle burns under their feet.",
+  "element": "shadow",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "cursed",
+    "shadow",
+    "curse",
+    "hex",
+    "doom"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Cursed status effect: shadow, skull, hex circle"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "A dark violet shadow over the body with a bright violet rim, wisps rising and a skull bobbing over the head.",
+      "side": "The same shadow edge-on; wisps and the skull above.",
+      "top": "A three-fold hex circle under the victim, dark wisps spreading.",
+      "three_quarter": "Hero view. A doomed figure wrapped in shadow, a skull hanging over it."
+    }
+  },
+  "palette": {
+    "core": "#E6C8FF",
+    "primary": "#9A3CFF",
+    "secondary": "#4A1280",
+    "accent": "#C77DFF",
+    "shadow": "#0D0614"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A dark ring of hex power pulses out."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The hex lands: a dark pulse and the shadow spills over them."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are cursed: shadow crawls, wisps rise, the skull grins. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The curse lifts: the shadow drains away."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hex-circle",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 50,
+        "opacity": 0.7,
+        "fade_in_ms": 300,
+        "lifetime_ms": 4300,
+        "fade_ms": 500,
+        "symmetry": 3,
+        "spin_deg_per_s": 40,
+        "depth": 0,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A burning violet hex circle under the victim.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "curse-shadow",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 6,
+      "params": {
+        "pattern": "shadow",
+        "fill": 0.6,
+        "rim": 0.9,
+        "scale": 6,
+        "flow_hz": 0.67,
+        "opacity": 0.85
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Violet-black shadow crawling up over the body with a bright violet rim.",
+        "technique": "mesh",
+        "fresnel": 0.8,
+        "flow": {
+          "direction": "upward",
+          "speed": 0.7
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 6,
+          "speed": 0.7,
+          "contrast": 0.6
+        }
+      }
+    },
+    {
+      "id": "skull",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "skull",
+        "steady": true,
+        "count": 1,
+        "height_px": 128,
+        "bob_px": 6,
+        "bob_hz": 0.67,
+        "size_px": 30,
+        "speed": 0,
+        "gravity": 0,
+        "tilt_deg": 0
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A grinning skull hanging over the head.",
+        "technique": "particles",
+        "notes": "One sprite, bobbing slowly."
+      }
+    },
+    {
+      "id": "dark-wisps",
+      "type": "smoke",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 8,
+      "params": {
+        "count": 12,
+        "rise_speed": 40,
+        "size_px": 18,
+        "lifetime_ms": 950,
+        "opacity": 0.5,
+        "spread_px": 16,
+        "height_px": 30
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Dark wisps rising off the cursed body.",
+        "technique": "flipbook",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hex-sparks",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 9,
+      "params": {
+        "look": "ember",
+        "count": 12,
+        "speed": 30,
+        "gravity": -60,
+        "lifetime_ms": 900,
+        "size_px": 2,
+        "spread_deg": 60,
+        "drag": 0.4,
+        "emit_radius_px": 30
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Violet motes rising from the hex circle.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "hex-pulse",
+      "type": "ring",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 100,
+        "thickness_px": 12,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A dark pulse of hex power.",
+        "technique": "procedural"
+      }
+    },
+    {
+      "id": "status-light",
+      "type": "light",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "radius": 4,
+        "energy": 0.8,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The affliction's own light on the victim and the ground.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hex-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "drain",
+        "gain": 0.5
+      }
+    },
+    {
+      "id": "curse-drone",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 0.25,
+        "repeat_ms": 1500,
+        "pitch": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The hex circle's angle and the wisps change per cast."
+  },
+  "director_notes": "Status effect: a shadow coat, a steady skull glyph and a three-fold hex rune circle (a third of a turn per loop). Loop 1200-4200 ms."
+}

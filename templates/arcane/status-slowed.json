@@ -1,0 +1,309 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "arcane-status-slowed",
+  "name": "Slowed",
+  "description": "Time drags for the victim: an hourglass hangs over their head, rings of slowed time sink in toward them, a clock-face circle turns under their feet and golden sand drifts lazily round them.",
+  "element": "arcane",
+  "archetype": "status",
+  "tags": [
+    "status",
+    "status-effect",
+    "affliction",
+    "looping",
+    "debuff",
+    "slowed",
+    "arcane",
+    "time",
+    "slow",
+    "haste-debuff",
+    "crowd-control"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Slowed status effect: hourglass, time rings, drifting sand"
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "target",
+    "destination": "target",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 0.5,
+      "distribution": "center_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "An hourglass over the head, a teal sheen on the body and rings closing in slowly round the feet; sand drifts.",
+      "side": "Same rings and hourglass edge-on.",
+      "top": "A twelve-fold clock circle turning under the victim, rings sinking in toward it.",
+      "three_quarter": "Hero view. A figure caught in slow time under an hourglass."
+    }
+  },
+  "palette": {
+    "core": "#FFF6DA",
+    "primary": "#5FD6C8",
+    "secondary": "#1F7A86",
+    "accent": "#F2C66A",
+    "shadow": "#0A1E22"
+  },
+  "beats": [
+    {
+      "id": "onset",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A ripple of slowed time."
+    },
+    {
+      "id": "afflict",
+      "phase": "impact",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "Time thickens round them: a ripple and the clock circle appears."
+    },
+    {
+      "id": "linger",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They are slowed: rings sink in, sand drifts, the hourglass bobs. Seamless loop."
+    },
+    {
+      "id": "expire",
+      "phase": "dissipation",
+      "start_ms": 4200,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Time snaps back to normal."
+    }
+  ],
+  "layers": [
+    {
+      "id": "clock-circle",
+      "type": "decal",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 45,
+        "opacity": 0.4,
+        "fade_in_ms": 400,
+        "lifetime_ms": 4300,
+        "fade_ms": 500,
+        "symmetry": 12,
+        "spin_deg_per_s": 10,
+        "depth": 0,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A clock-face circle of twelve marks turning slowly under the victim.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "time-rings",
+      "type": "ring",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 75,
+        "end_radius_px": 18,
+        "thickness_px": 4,
+        "softness": 0.8,
+        "repeat_ms": 1500,
+        "count": 2,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Rings of slowed time sinking in toward the victim.",
+        "technique": "procedural",
+        "distortion": 0.3
+      }
+    },
+    {
+      "id": "hourglass",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_primary_to_secondary",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "hourglass",
+        "steady": true,
+        "count": 1,
+        "height_px": 125,
+        "bob_px": 4,
+        "bob_hz": 0.33,
+        "size_px": 30,
+        "speed": 0,
+        "gravity": 0,
+        "tilt_deg": 0
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "An hourglass hanging over the head.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "time-sheen",
+      "type": "coat",
+      "beats": [
+        "afflict",
+        "linger",
+        "expire"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "glow",
+        "fill": 0.15,
+        "rim": 0.8,
+        "scale": 3,
+        "pulse_hz": 0.33,
+        "pulse": 0.3,
+        "opacity": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A teal sheen of slowed time.",
+        "technique": "mesh",
+        "fresnel": 0.8
+      }
+    },
+    {
+      "id": "drifting-sand",
+      "type": "sparks",
+      "beats": [
+        "afflict",
+        "linger"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 16,
+        "speed": 8,
+        "gravity": -10,
+        "lifetime_ms": 1000,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.8,
+        "emit_radius_px": 35,
+        "height_px": 50,
+        "orbit_hz": 0.15
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Golden sand drifting lazily round them.",
+        "technique": "particles"
+      }
+    },
+    {
+      "id": "time-ripple",
+      "type": "ring",
+      "beats": [
+        "onset"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 90,
+        "thickness_px": 10,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A ripple of slowed time.",
+        "technique": "procedural",
+        "distortion": 0.4
+      }
+    },
+    {
+      "id": "slow-sound",
+      "type": "sound_cue",
+      "beats": [
+        "onset"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.4,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "tick-drone",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 0.2,
+        "pitch": 0.6,
+        "repeat_ms": 1500
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The clock circle's angle and the sand change per cast."
+  },
+  "director_notes": "Status effect: inward rings (start radius bigger than end) every 1500 ms, an hourglass glyph and a 12-fold rune circle as a clock face. Loop 1200-4200 ms."
+}
