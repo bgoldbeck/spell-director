@@ -1,0 +1,854 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-thunderanvil-drop",
+  "name": "Thunderanvil Drop",
+  "description": "A warning ring spreads round the chosen enemy, then three spinning anvils crackling with lightning drop out of the sky round it. They land together with a thunderclap and a shockwave that knocks into every enemy in the ring.",
+  "element": "lightning",
+  "archetype": "strike",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "anvil",
+    "spinning",
+    "sky",
+    "shockwave",
+    "thunderclap",
+    "heavy",
+    "telegraph"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2600,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 3.6,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 160
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The anvils drop in from above the frame, tumbling; on landing the dust wave rolls toward the camera.",
+      "side": "Clear fall paths at slight angles; the thunderclap ring stands up facing the camera.",
+      "top": "The warning ring shows the blast area; three craters appear round the target and the shockwave crosses every enemy in turn.",
+      "three_quarter": "Hero view. The anvils' silhouettes, the big ground shockwave, and each enemy knocked as the wave passes."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#9BC8FF",
+    "secondary": "#4A62FF",
+    "accent": "#FFE7A8",
+    "shadow": "#232633"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Where each anvil lands, its tumble and approach, the dust and the enemy layout change per cast; the landing time is fixed."
+  },
+  "beats": [
+    {
+      "id": "call",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "The caster raises a hand; a warning ring spreads round the target and storm light gathers overhead."
+    },
+    {
+      "id": "fall",
+      "phase": "travel",
+      "start_ms": 700,
+      "end_ms": 1020,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "Three spinning anvils drop out of the sky round the target."
+    },
+    {
+      "id": "land",
+      "phase": "impact",
+      "start_ms": 1020,
+      "end_ms": 1300,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "They land together: a thunderclap and a huge shockwave."
+    },
+    {
+      "id": "knock",
+      "phase": "impact",
+      "start_ms": 1060,
+      "end_ms": 1320,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "The shockwave knocks into every enemy around."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1300,
+      "end_ms": 2600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "Dust settles round the anvils' craters."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "call"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hand-crackle",
+      "type": "crackle",
+      "beats": [
+        "call"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": 5,
+        "length_px": 16,
+        "jaggedness": 0.9,
+        "regen_ms": 40,
+        "radius_px": 22
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Energy crawling over the hand and forearm before the throw.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "call"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "warning",
+      "type": "decal",
+      "beats": [
+        "call",
+        "fall"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "secondary",
+      "z": 1,
+      "params": {
+        "shape": "warning_ring",
+        "radius_px": 240,
+        "opacity": 0.8,
+        "fade_in_ms": 150,
+        "grow_ms": 500,
+        "start_scale": 0.3,
+        "rotation_deg": 0,
+        "fade_ms": 80,
+        "pulse_hz": 3,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A telegraph ring the size of the blast, pulsing.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "anvil-1",
+      "type": "orb",
+      "beats": [
+        "fall"
+      ],
+      "anchor": "sky",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "look": "weapon",
+        "shape": "anvil",
+        "radius_px": {
+          "min": 49,
+          "max": 55
+        },
+        "spin_hz": {
+          "min": 0.8,
+          "max": 1.4
+        },
+        "crackle_count": 4,
+        "trail_ms": 200,
+        "scatter_px": 60,
+        "travel_ease": "ease_in",
+        "stick": true,
+        "approach_deg": {
+          "min": 8,
+          "max": 18
+        },
+        "approach_yaw_deg": {
+          "min": 0,
+          "max": 360
+        }
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A blacksmith's anvil of dark iron crackling with lightning, tumbling as it drops.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "anvil-2",
+      "type": "orb",
+      "beats": [
+        "fall"
+      ],
+      "anchor": "sky",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "look": "weapon",
+        "shape": "anvil",
+        "radius_px": {
+          "min": 38,
+          "max": 44
+        },
+        "spin_hz": {
+          "min": 0.8,
+          "max": 1.4
+        },
+        "crackle_count": 4,
+        "trail_ms": 200,
+        "scatter_px": 130,
+        "travel_ease": "ease_in",
+        "stick": true,
+        "approach_deg": {
+          "min": 8,
+          "max": 18
+        },
+        "approach_yaw_deg": {
+          "min": 0,
+          "max": 360
+        }
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A blacksmith's anvil of dark iron crackling with lightning, tumbling as it drops.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "anvil-3",
+      "type": "orb",
+      "beats": [
+        "fall"
+      ],
+      "anchor": "sky",
+      "color": "primary",
+      "z": 12,
+      "params": {
+        "look": "weapon",
+        "shape": "anvil",
+        "radius_px": {
+          "min": 38,
+          "max": 44
+        },
+        "spin_hz": {
+          "min": 0.8,
+          "max": 1.4
+        },
+        "crackle_count": 4,
+        "trail_ms": 200,
+        "scatter_px": 130,
+        "travel_ease": "ease_in",
+        "stick": true,
+        "approach_deg": {
+          "min": 8,
+          "max": 18
+        },
+        "approach_yaw_deg": {
+          "min": 0,
+          "max": 360
+        }
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A blacksmith's anvil of dark iron crackling with lightning, tumbling as it drops.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "clap-ring",
+      "type": "ring",
+      "beats": [
+        "land"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "color": "core",
+      "z": 4,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 200,
+        "thickness_px": 10,
+        "softness": 0.5
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A thin bright inner ring for the thunderclap itself.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "dust-wave",
+      "type": "smoke",
+      "beats": [
+        "land",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 3,
+      "params": {
+        "count": 30,
+        "rise_speed": 10,
+        "size_px": {
+          "min": 36,
+          "max": 44
+        },
+        "lifetime_ms": 1200,
+        "opacity": 0.6,
+        "spread_speed": 420
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A dust wave rolling out from under the anvils.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "fall-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fall"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.6,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "clap-sound",
+      "type": "sound_cue",
+      "beats": [
+        "land"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 1.0,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "rumble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.5
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "land"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "land"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "land",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 380,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "land"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "land",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "land"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 15,
+          "max": 17
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "land"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "land",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 120,
+          "max": 135
+        },
+        "opacity": 0.75,
+        "fade_in_ms": 60,
+        "grow_ms": 260,
+        "start_scale": 0.4,
+        "lifetime_ms": 4000,
+        "fade_ms": 2000,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A broad dark burn left where the spell landed.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hit-light",
+      "type": "light",
+      "beats": [
+        "land",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 2.6
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "The blast lights up every enemy standing round the target.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "knock"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "knock"
+      ],
+      "anchor": "splash",
+      "color": "shadow",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "knock"
+      ],
+      "anchor": "splash",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "knock"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "impact",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "knock"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design. Three weapon-look orbs (shape anvil) fall from the sky with scatter_px so they land round the target. Splash ripple 160 ms per unit matches the shockwave reaching each enemy."
+}

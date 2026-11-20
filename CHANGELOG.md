@@ -6,6 +6,12 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Added
+
+- **Targeted area spells**: pick one enemy and slam everyone around it. Templates can ask for a splash layout (`space.targets.layout: "splash"`): the viewer stands a group of dummy enemies round the chosen one, marks it with a red ring, and plays layers anchored at `splash` on every enemy round it, rippling outward or one after another.
+- Sixteen new targeted area spells. Seven are spinning lightning throws: **Stormhammer Barrage**, **Cleaving Squall**, **Runefall Cairn**, **Stormpin Trident**, **Thunderanvil Drop**, **Ricochet Stormdiscs** and **Stormcage Javelin**. The other nine are **Glacial Shatterpoint** (ice), **Emberfall Cascade** (fire), **Hollow Star Rupture** (shadow), **Glyphbrand Judgement** (arcane), **Brambleheart Snare** (nature), **Thunderhead Verdict** (lightning from the sky), **Wailing Lantern** (spirit, a new type), **Faultline Crush** (earth) and **Venom Bloom** (poison).
+- Thrown weapons: orbs take `look: weapon`, a spinning hammer, axe, anvil, disc, spear, trident or rune-stone wrapped in the spell's energy. Bolts and orbs on splash targets can fork from the chosen enemy, chain from one enemy to the next (closing into a cage with `wrap`) or come down from the sky.
+
 ## [0.12.0] - 2026-11-17
 
 ### Added

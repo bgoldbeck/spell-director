@@ -61,6 +61,15 @@ export function makeStudio() {
       d.rotateY(-Math.PI / 2);
       props.add(d);
     }
+    // Splash spells: a selection ring under the primary target (the one the
+    // caster picked) so it reads apart from the enemies around it.
+    if (stage.splash && stage.targets[0]) {
+      const p = stage.targets[0];
+      const m = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.36, 40), new THREE.MeshBasicMaterial({ color: "#b04a4a" }));
+      m.rotation.x = -Math.PI / 2;
+      m.position.set(p.x, 0.008, p.z);
+      props.add(m);
+    }
     if (stage.showPointMarker) {
       const m = new THREE.Mesh(new THREE.RingGeometry(0.12, 0.16, 32), new THREE.MeshBasicMaterial({ color: "#555b6e" }));
       m.rotation.x = -Math.PI / 2;

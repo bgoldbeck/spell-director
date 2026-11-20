@@ -1,0 +1,848 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-stormpin-trident",
+  "name": "Stormpin Trident",
+  "description": "A lightning-charged trident spirals point first into the chosen enemy and pins it. A bolt from the sky answers the trident, and then lightning forks out from the pinned enemy to everyone around it.",
+  "element": "lightning",
+  "archetype": "projectile",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "trident",
+    "thrown-weapon",
+    "spinning",
+    "pin",
+    "fork",
+    "sky"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 140
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The trident flies away from the camera rolling on its shaft, then stands in the target as the sky bolt hits it.",
+      "side": "Clearest flight: a long point-first spiral; it stays stuck in the target while the forks spread at chest height.",
+      "top": "The trident is a line pointing at the target; the forks radiate from it like spokes.",
+      "three_quarter": "Hero view. The pin, the sky bolt and then the spreading forks, each one reaching a farther enemy a little later."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#8FD3FF",
+    "secondary": "#3D6BFF",
+    "accent": "#DDF3FF",
+    "shadow": "#1A2233"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Spin rate, sky bolt shape, fork shapes and the enemy layout change per cast."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 480,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "Lightning winds up the trident's shaft."
+    },
+    {
+      "id": "throw",
+      "phase": "release",
+      "start_ms": 480,
+      "end_ms": 540,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "The trident is hurled point first."
+    },
+    {
+      "id": "flight",
+      "phase": "travel",
+      "start_ms": 520,
+      "end_ms": 820,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "It spirals through the air, rolling about its shaft."
+    },
+    {
+      "id": "pin",
+      "phase": "impact",
+      "start_ms": 820,
+      "end_ms": 1060,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.4
+      },
+      "intent": "It pins the target; a bolt drops from the sky onto it."
+    },
+    {
+      "id": "held",
+      "phase": "impact",
+      "start_ms": 820,
+      "end_ms": 1900,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "The trident stays stuck in the target, humming."
+    },
+    {
+      "id": "fork",
+      "phase": "impact",
+      "start_ms": 1060,
+      "end_ms": 1500,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.6,
+        "to": 1.0,
+        "flicker_hz": 16
+      },
+      "intent": "Three tines' worth of lightning fork outward to everyone nearby."
+    },
+    {
+      "id": "fork-hit",
+      "phase": "impact",
+      "start_ms": 1080,
+      "end_ms": 1320,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each enemy is struck by a fork."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1500,
+      "end_ms": 2400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "The trident dissolves into sparks."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "charge",
+        "throw"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hand-crackle",
+      "type": "crackle",
+      "beats": [
+        "charge",
+        "throw"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": 5,
+        "length_px": 16,
+        "jaggedness": 0.9,
+        "regen_ms": 40,
+        "radius_px": 22
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Energy crawling over the hand and forearm before the throw.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 10,
+          "speed": 8,
+          "contrast": 0.9
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "charge",
+        "throw"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "count": 26,
+        "speed": 40,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 420,
+        "size_px": 2.5,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 380,
+        "gather_px": 120,
+        "swirl": 0.35
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Motes drawn in from the air, spiralling into the hand.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "trident",
+      "type": "orb",
+      "beats": [
+        "charge",
+        "flight",
+        "held"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "look": "weapon",
+        "shape": "trident",
+        "radius_px": {
+          "min": 38,
+          "max": 44
+        },
+        "spin_hz": {
+          "min": 2.5,
+          "max": 3
+        },
+        "crackle_count": 4,
+        "trail_ms": 160,
+        "stick": true,
+        "travel_ease": "ease_in"
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A long trident of dark bronze, its three tines white-hot with lightning, spiralling point first.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "pin-bolt",
+      "type": "bolt",
+      "beats": [
+        "pin"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "segments": 14,
+        "jaggedness": 0.6,
+        "width_px": 9,
+        "taper": 0.3,
+        "branch_chance": 0.3,
+        "branch_depth": 2,
+        "branch_length_ratio": 0.3,
+        "regen_ms": 45,
+        "afterimage_ms": 120,
+        "glow_px": 18
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A sky bolt drawn down onto the pinned target by the trident.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fork",
+      "type": "bolt",
+      "beats": [
+        "fork"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 9,
+      "params": {
+        "segments": {
+          "min": 10,
+          "max": 13
+        },
+        "jaggedness": {
+          "min": 0.55,
+          "max": 0.75
+        },
+        "width_px": {
+          "min": 4,
+          "max": 6
+        },
+        "taper": 0.3,
+        "branch_chance": 0.25,
+        "branch_depth": 1,
+        "branch_length_ratio": 0.3,
+        "regen_ms": {
+          "min": 45,
+          "max": 60
+        },
+        "afterimage_ms": 90,
+        "glow_px": 12
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Forks of lightning spreading from the pinned target to each enemy round it.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 4,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "pin-crackle",
+      "type": "crackle",
+      "beats": [
+        "held"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": 5,
+        "length_px": 30,
+        "jaggedness": 0.9,
+        "regen_ms": 45,
+        "radius_px": 40
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Lightning crawling round the pinned target.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "throw-sound",
+      "type": "sound_cue",
+      "beats": [
+        "throw"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.6,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "pin-crack",
+      "type": "sound_cue",
+      "beats": [
+        "pin"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 1.0,
+        "pitch": 0.75
+      }
+    },
+    {
+      "id": "fork-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fork"
+      ],
+      "params": {
+        "cue": "buzz",
+        "gain": 0.6
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "pin"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "pin"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "pin",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 260,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "pin"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "pin",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7,
+        "reveal_ms": 160
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "pin"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 9,
+          "max": 11
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "pin"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "pin",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": {
+          "min": 120,
+          "max": 135
+        },
+        "opacity": 0.75,
+        "fade_in_ms": 60,
+        "grow_ms": 260,
+        "start_scale": 0.4,
+        "lifetime_ms": 4000,
+        "fade_ms": 2000,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A broad dark burn left where the spell landed.",
+        "technique": "decal",
+        "noise": {
+          "type": "fbm",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hit-light",
+      "type": "light",
+      "beats": [
+        "pin",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 2.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The blast lights up every enemy standing round the target.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "fork-hit"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "fork-hit"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "fork-hit"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fork-hit"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "zap",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "fork-hit"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design. The trident is a weapon-look orb (shape trident, rolls about its shaft) with stick: true, kept visible through a 'held' beat so it stays pinned in the target. Forks are splash bolts from the primary."
+}

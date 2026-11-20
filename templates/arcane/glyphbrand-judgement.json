@@ -1,0 +1,727 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "arcane-glyphbrand-judgement",
+  "name": "Glyphbrand Judgement",
+  "description": "A glyph circle brands the chosen enemy, and smaller glyphs spread from it to every enemy nearby along threads of light. Then lances of violet light strike down on all the marked enemies in the same instant.",
+  "element": "arcane",
+  "archetype": "strike",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "rune",
+    "glyph",
+    "mark",
+    "sky",
+    "simultaneous",
+    "telegraph"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "sky",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 3.2,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 0
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Glyphs light up under each enemy; the lances stand like posts of light across the frame.",
+      "side": "Straight vertical lances of different heights; threads link them at chest height.",
+      "top": "Hero for the marking: a big circle under the target and small ones under each enemy linked by threads, then a burn under each.",
+      "three_quarter": "Hero view. Glowing glyph circles on the ground, then the lances."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#C08CFF",
+    "secondary": "#6B3DFF",
+    "accent": "#FFD6F6",
+    "shadow": "#1C1530"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Glyph rotation, the enemy layout and spark bursts change per cast."
+  },
+  "beats": [
+    {
+      "id": "mark",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "A rune is branded on the chosen enemy: a circle of glyphs under it."
+    },
+    {
+      "id": "spread",
+      "phase": "anticipation",
+      "start_ms": 300,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "Smaller glyph circles spread to every enemy nearby, one after another."
+    },
+    {
+      "id": "verdict",
+      "phase": "impact",
+      "start_ms": 1000,
+      "end_ms": 1260,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Lances of violet light strike down on the target and every marked enemy."
+    },
+    {
+      "id": "lances",
+      "phase": "impact",
+      "start_ms": 1000,
+      "end_ms": 1260,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "Each marked enemy is struck."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1260,
+      "end_ms": 2400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "The glyphs fade from the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "mark"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather",
+      "type": "sparks",
+      "beats": [
+        "mark"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "count": 26,
+        "speed": 40,
+        "speed_spread": 0.4,
+        "gravity": 0,
+        "lifetime_ms": 420,
+        "size_px": 2.5,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 380,
+        "gather_px": 120,
+        "swirl": 0.35
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Motes drawn in from the air, spiralling into the hand.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "mark"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "brand",
+      "type": "decal",
+      "beats": [
+        "mark",
+        "spread",
+        "verdict",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 110,
+        "opacity": 0.95,
+        "fade_in_ms": 120,
+        "grow_ms": 300,
+        "start_scale": 0.3,
+        "spin_deg_per_s": 60,
+        "lifetime_ms": 1500,
+        "fade_ms": 600,
+        "detail": 0.7,
+        "symmetry": 8
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A bright glyph circle under the chosen enemy.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "glyphs",
+      "type": "decal",
+      "beats": [
+        "spread",
+        "verdict",
+        "fade"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 55,
+        "opacity": 0.9,
+        "fade_in_ms": 100,
+        "grow_ms": 200,
+        "start_scale": 0.3,
+        "spin_deg_per_s": -90,
+        "lifetime_ms": 1100,
+        "fade_ms": 500,
+        "detail": 0.6,
+        "symmetry": 5
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Small glyph circles spreading to each enemy round the target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "link",
+      "type": "bolt",
+      "beats": [
+        "spread"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "from": "primary",
+        "segments": 6,
+        "jaggedness": 0.1,
+        "width_px": 2,
+        "taper": 0,
+        "regen_ms": 0,
+        "glow_px": 6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Straight threads of light linking the brand to each glyph.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "main-lance",
+      "type": "bolt",
+      "beats": [
+        "verdict"
+      ],
+      "anchor": "sky",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "segments": 6,
+        "jaggedness": 0.08,
+        "width_px": 14,
+        "taper": 0.1,
+        "regen_ms": 0,
+        "afterimage_ms": 140,
+        "glow_px": 22
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A straight lance of violet-white light driven down onto the target.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "lance",
+      "type": "bolt",
+      "beats": [
+        "lances"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "params": {
+        "from": "sky",
+        "segments": 6,
+        "jaggedness": 0.08,
+        "width_px": 7,
+        "taper": 0.1,
+        "regen_ms": 0,
+        "afterimage_ms": 120,
+        "glow_px": 14
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "Thinner lances onto each marked enemy, all in the same instant.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "spread-sound",
+      "type": "sound_cue",
+      "beats": [
+        "spread"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.5
+      }
+    },
+    {
+      "id": "lance-sound",
+      "type": "sound_cue",
+      "beats": [
+        "verdict"
+      ],
+      "params": {
+        "cue": "zap",
+        "gain": 0.8,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "verdict"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "verdict"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "verdict",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 280,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "verdict"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "verdict",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "verdict"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 7,
+          "max": 9
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "verdict"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "hit-light",
+      "type": "light",
+      "beats": [
+        "verdict",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 7,
+        "energy": 2.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "The blast lights up every enemy standing round the target.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "lances"
+      ],
+      "anchor": "splash",
+      "color": "core",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "lances"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "lances"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "burn",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lances"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "zap",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "lances"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design. Glyphs spread with the 'spread' beat, but the verdict lands all at once (ripple 0) to contrast the slow marking with an instant payoff."
+}

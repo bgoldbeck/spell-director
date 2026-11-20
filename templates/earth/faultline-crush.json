@@ -1,0 +1,710 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "earth-faultline-crush",
+  "name": "Faultline Crush",
+  "description": "The caster heaves a boulder out of the ground and hurls it onto the chosen enemy. It smashes down, slabs of ground shove up round the crater, and fault lines race out to burst a stone spear up under every enemy nearby.",
+  "element": "earth",
+  "archetype": "projectile",
+  "tags": [
+    "targeted-aoe",
+    "splash",
+    "multi-target",
+    "boulder",
+    "lob",
+    "quake",
+    "fissures",
+    "eruption",
+    "heavy"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Big targeted AoE: pick one enemy, slam everything around it."
+  },
+  "timing": {
+    "duration_ms": 2800,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "targets",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "length": 5.2,
+      "radius": 2.2,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.2
+      },
+      "ripple_ms": 220
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The boulder tumbles in a high arc; spears burst up across the frame as the fault lines reach each enemy.",
+      "side": "Tall spears and slabs; the dust wave rolls along the ground.",
+      "top": "Hero for the spread: fissures race out from the crater and a spear and crater appear under each enemy as they arrive.",
+      "three_quarter": "Hero view. The crater ringed by slabs, and spears punching up under the group."
+    }
+  },
+  "palette": {
+    "core": "#FFE9B8",
+    "primary": "#8A6A4A",
+    "secondary": "#C9A877",
+    "accent": "#FFB84D",
+    "shadow": "#3A2E24"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "Boulder shape and spin, slab and spear layouts, dust and the enemy layout change per cast."
+  },
+  "beats": [
+    {
+      "id": "heave",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 550,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "The caster heaves a boulder up out of the ground."
+    },
+    {
+      "id": "lob",
+      "phase": "travel",
+      "start_ms": 550,
+      "end_ms": 950,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "The boulder tumbles through a high arc onto the target."
+    },
+    {
+      "id": "crush",
+      "phase": "impact",
+      "start_ms": 950,
+      "end_ms": 1250,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "It smashes down: the ground splits round the target."
+    },
+    {
+      "id": "quake",
+      "phase": "impact",
+      "start_ms": 1000,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Fault lines race out and stone spears burst up under each enemy."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1700,
+      "end_ms": 2800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.5,
+        "to": 0.0
+      },
+      "intent": "Dust settles; the spears crumble."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-glow",
+      "type": "glow",
+      "beats": [
+        "heave"
+      ],
+      "anchor": "caster_hand",
+      "color": "accent",
+      "z": 5,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.9,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A gathering glow in the caster's hand that swells as the spell charges.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "heave"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.55
+      }
+    },
+    {
+      "id": "boulder",
+      "type": "orb",
+      "beats": [
+        "heave",
+        "lob"
+      ],
+      "anchor": "caster_hand",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "look": "weapon",
+        "shape": "stone",
+        "radius_px": {
+          "min": 38,
+          "max": 44
+        },
+        "spin_hz": {
+          "min": 1.2,
+          "max": 1.6
+        },
+        "crackle_count": 0,
+        "trail_ms": 120,
+        "arc_height_px": 180,
+        "travel_ease": "ease_in",
+        "stick": true
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A rough boulder with molten seams, tumbling slowly through its arc.",
+        "technique": "mesh",
+        "noise": {
+          "type": "ridged",
+          "scale": 8,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "faults",
+      "type": "decal",
+      "beats": [
+        "crush",
+        "quake",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "shape": "fissures",
+        "radius_px": 280,
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 2500,
+        "fade_ms": 900,
+        "detail": 0.7,
+        "reveal_ms": 420,
+        "fill": "glow",
+        "fill_color": "accent"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Fault lines tearing out over the area with a hot glow deep in them.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crush-ring",
+      "type": "eruption",
+      "beats": [
+        "crush",
+        "quake",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "shape": "slabs",
+        "arc_deg": 360,
+        "rows": 2,
+        "start_radius_px": 60,
+        "end_radius_px": 120,
+        "row_delay_ms": 60,
+        "growth": 1.2,
+        "height_px": {
+          "min": 60,
+          "max": 75
+        },
+        "width_px": 40,
+        "spacing_px": 50,
+        "tilt_deg": 30,
+        "jitter": 0.4,
+        "rise_ms": 80,
+        "hold_ms": 700,
+        "sink_ms": 500,
+        "debris_count": 3,
+        "debris_speed": 380,
+        "debris_size_px": 7,
+        "gravity": 980,
+        "dust": 0.5
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Slabs of ground shoved up on edge round the crater.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "spears",
+      "type": "eruption",
+      "beats": [
+        "quake",
+        "fade"
+      ],
+      "anchor": "splash",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 1,
+        "start_radius_px": 0,
+        "end_radius_px": 0,
+        "height_px": {
+          "min": 120,
+          "max": 140
+        },
+        "width_px": 36,
+        "rise_ms": 70,
+        "hold_ms": 700,
+        "sink_ms": 450,
+        "debris_count": 4,
+        "debris_speed": 340,
+        "debris_size_px": 6,
+        "gravity": 980,
+        "dust": 0.5
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A stone spear bursting up under each enemy.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "dust-wave",
+      "type": "smoke",
+      "beats": [
+        "crush",
+        "fade"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "count": 32,
+        "rise_speed": 10,
+        "size_px": {
+          "min": 40,
+          "max": 48
+        },
+        "lifetime_ms": 1300,
+        "opacity": 0.6,
+        "spread_speed": 380
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A thick dust wave rolling out from the impact.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "lob-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lob"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.5,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "crush-crash",
+      "type": "sound_cue",
+      "beats": [
+        "crush"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.9,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "quake-sound",
+      "type": "sound_cue",
+      "beats": [
+        "quake"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.7
+      }
+    },
+    {
+      "id": "hit-flash",
+      "type": "flash",
+      "beats": [
+        "crush"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A white-hot pop on the primary target as the spell lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "crush"
+      ],
+      "anchor": "screen",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A short full-screen flash that sells the weight of the hit.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shockwave",
+      "type": "ring",
+      "beats": [
+        "crush",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 340,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A ground shockwave rolling out over the whole splash area.",
+        "technique": "mesh",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "crush"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 50,
+          "max": 60
+        },
+        "speed": 560,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "lifetime_ms": 520,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A burst of hot fragments thrown off the primary target.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-mark",
+      "type": "decal",
+      "beats": [
+        "crush",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 90,
+          "max": 105
+        },
+        "opacity": 0.95,
+        "fade_in_ms": 30,
+        "grow_ms": 160,
+        "start_scale": 0.4,
+        "lifetime_ms": 1300,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "stone",
+        "look": "The mark of the hit glowing on the ground under the primary target.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "crush"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 15,
+          "max": 17
+        },
+        "frequency_hz": 22,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "crush"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "splash-flash",
+      "type": "flash",
+      "beats": [
+        "quake"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 13,
+      "params": {
+        "scope": "local",
+        "radius_px": 60,
+        "peak": 0.85
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A bright pop on each enemy in the splash as it is hit.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "splash-sparks",
+      "type": "sparks",
+      "beats": [
+        "quake"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 380,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 420,
+        "size_px": 2.6,
+        "spread_deg": 140,
+        "drag": 0.3,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A smaller burst thrown off each enemy caught in the area.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-mark",
+      "type": "decal",
+      "beats": [
+        "quake"
+      ],
+      "anchor": "splash",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 36,
+          "max": 44
+        },
+        "opacity": 0.9,
+        "fade_in_ms": 30,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A mark under each enemy hit by the splash.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "splash-sound",
+      "type": "sound_cue",
+      "beats": [
+        "quake"
+      ],
+      "anchor": "splash",
+      "params": {
+        "cue": "crash",
+        "gain": 0.35,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.25
+        }
+      }
+    },
+    {
+      "id": "splash-ring",
+      "type": "ring",
+      "beats": [
+        "quake"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 3,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A small ring kicked out under each enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    }
+  ],
+  "director_notes": "Original design. The boulder reuses the weapon look (shape stone) for a tumbling throw; spears are single-spike splash eruptions with ripple timed to the fissures' reveal."
+}

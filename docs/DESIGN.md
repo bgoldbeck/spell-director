@@ -118,7 +118,7 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 - Screen flash in "All four" mode covers all quadrants at once.
 - Export makes sprite sheets only (no PNG sequence or GIF yet), and the viewer can't play an exported sheet back to check it.
 - Sounds are procedural placeholders (synth + filtered noise). They get the timing right but sound like placeholders; swap in CC0 samples or text-to-SFX output per cue (`web/sounds/README.md`).
-- The viewer only lays out several targets for chains, so an area "storm" of strikes can't be previewed yet; the director playbook tells the AI to stay within what the viewer draws.
+- The viewer lays out several targets for chains and for targeted area (splash) spells only; a free-standing area "storm" with no target in it still renders on one spot.
 
 ## 8. Decisions log
 
@@ -138,3 +138,4 @@ Static hosting: `templates/index.json` (written by `tools/build_index.py`) lists
 | 2026-11-15 | Decals are a first-class layer: ground marks with fade-in/out, lifetime past the spell, grow, rotation, spin and seeded variation, exported as a top-down texture plus timing curves for Unity/Godot decal projectors. |
 | 2026-11-15 | Engine handoff is sprite sheets + an instruction .md (and JSON): one sheet per layer, frames as columns and the four views as rows, layer timings documented. |
 | 2026-11-15 | Exports are a timing and composition reference, not literal instructions; the magic is described per layer as shader intent (material, noise, flow, distortion, fresnel, dissolve, emissive) in the vocabulary and templates, for engines to build with shaders. |
+| 2026-11-20 | Targeted area spells (pick one enemy, slam everyone round it) are a space layout (`targets.layout: splash`) plus a `splash` anchor, not a new archetype, so any element and archetype can splash. Thrown weapons are an orb look. |
