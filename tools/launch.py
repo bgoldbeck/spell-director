@@ -9,9 +9,10 @@
    commits, a branch with no GitHub copy) skips the update with a note: the
    viewer still starts. It never discards work and never switches branches;
    update.bat / update.sh do the fuller job (switch to main, packages).
-2. Run: start tools/serve.py --replace --open in a new process, so the code
-   just pulled is the code that runs. --replace closes any viewer that is
-   already running first, so exactly one runs.
+2. Run: start tools/serve.py --replace-stale --open in a new process, so the
+   code just pulled is the code that runs. Any viewer still running older code
+   (or a stray copy on a nearby port) is closed first and a fresh one starts;
+   one already on the latest code is kept and opened. Exactly one runs.
 
 Set SPELLDIRECTOR_NO_UPDATE=1 to always skip the update.
 Only the Python standard library is needed.
@@ -108,7 +109,7 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv)
     if not args.no_update and os.environ.get("SPELLDIRECTOR_NO_UPDATE", "") in ("", "0"):
         update()
-    cmd = [sys.executable, str(ROOT / "tools" / "serve.py"), "--replace", "--open"]
+    cmd = [sys.executable, str(ROOT / "tools" / "serve.py"), "--replace-stale", "--open"]
     if args.port is not None:
         cmd += ["--port", str(args.port)]
     try:

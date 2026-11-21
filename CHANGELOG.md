@@ -8,6 +8,7 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ### Added
 
+- `run.bat` and `run.sh` only restart a running SpellDirector when it is out of date (older version or git commit than the code just pulled); one already on the latest code is kept and opened. They also close stray copies left on nearby ports. `tools/serve.py --replace-stale` does this on its own.
 - **Warcries**: six shouts that roll out over the allies or enemies round the caster, listed under **Type → Kinds → Warcries**. **Breaker Roar** (a wall of sound that blows every enemy off their feet), **Thunderclap Shout** (a bolt drops on each enemy as the wave passes), **Dread Howl** (enemies cower under a skull of dread), **Rallying Standard** (a war banner slams into the ground and its golden aura holds over your allies), **Battle Fury** (a red fury ignites over every ally) and **Ironhide Bellow** (stone creeps up your allies and sets to bronze).
 - Spells can stand **allies** round the caster instead of enemies (`space.targets.side`), and the stand-ins **react**: knocked back, flinching, cowering, hopping, and the caster rears back and shouts (`space.targets.react`, `space.caster_react`). Coats stay on the bodies they cover.
 - `motif` `shape: banner`: a war banner on a pole with a rippling swallowtail cloth, trim and an emblem (chevron, sun, star, fang, crown).
