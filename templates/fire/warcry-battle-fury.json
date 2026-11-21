@@ -1,0 +1,692 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-warcry-battle-fury",
+  "name": "Battle Fury",
+  "description": "A savage war cry that sets the blood burning. A red shockwave rolls out over every ally; they pump up on the spot, then a crimson fury ignites over them: flickering red flames on their bodies, a hot glow in the chest and embers streaming up, held for as long as the fury lasts.",
+  "element": "fire",
+  "archetype": "aura",
+  "tags": [
+    "warcry",
+    "shout",
+    "fury",
+    "berserk",
+    "aura",
+    "allies",
+    "group-buff",
+    "splash",
+    "point-blank"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Warcry: a battle-fury red aura over the caster and every nearby ally."
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 2.6,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "side": "allies",
+      "count": {
+        "min": 5,
+        "max": 6
+      },
+      "radius": {
+        "min": 1.8,
+        "max": 2.2
+      },
+      "ripple_ms": 0,
+      "react": {
+        "kind": "cheer",
+        "at_ms": 480,
+        "duration_ms": 380,
+        "hops": 1,
+        "lift_px": 10
+      }
+    },
+    "caster_react": {
+      "kind": "shout",
+      "at_ms": 0,
+      "duration_ms": 800,
+      "lean_deg": 20
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Every figure round the caster wreathed in red flame with embers pouring up.",
+      "side": "Flame coats read as tall red silhouettes; embers stream up.",
+      "top": "A red shockwave, then a ring of burning marks: one under the caster and one under each ally.",
+      "three_quarter": "Hero view: the cry, the red wave, the hop and the fury catching on everyone."
+    }
+  },
+  "palette": {
+    "core": "#FFE2C8",
+    "primary": "#FF3B24",
+    "secondary": "#9E0F1A",
+    "accent": "#FF9A3C",
+    "shadow": "#1E0606"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "The ring of dummies and the particles change per cast."
+  },
+  "beats": [
+    {
+      "id": "seethe",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 380,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "The caster rears back, red heat welling in the chest."
+    },
+    {
+      "id": "cry",
+      "phase": "impact",
+      "start_ms": 380,
+      "end_ms": 640,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "The war cry."
+    },
+    {
+      "id": "surge",
+      "phase": "impact",
+      "start_ms": 390,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A red shockwave rolls over every ally."
+    },
+    {
+      "id": "ignite",
+      "phase": "release",
+      "start_ms": 900,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "The fury catches: red flames climb each body."
+    },
+    {
+      "id": "fury",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "They burn with fury: flames lick, embers stream. Seamless loop."
+    },
+    {
+      "id": "cool",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The fury burns out to smoke."
+    }
+  ],
+  "layers": [
+    {
+      "id": "seethe-glow",
+      "type": "glow",
+      "beats": [
+        "seethe"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 50,
+        "softness": 0.9,
+        "height_px": 60,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Red heat welling in the caster's chest.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "seethe-sound",
+      "type": "sound_cue",
+      "beats": [
+        "seethe"
+      ],
+      "params": {
+        "cue": "heartbeat",
+        "gain": 0.5,
+        "pitch": 1.4,
+        "repeat_ms": 190
+      }
+    },
+    {
+      "id": "cry-flash",
+      "type": "flash",
+      "beats": [
+        "cry"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 180,
+        "peak": 0.8
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A hot flash on the cry.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "cry-shake",
+      "type": "camera_shake",
+      "beats": [
+        "cry"
+      ],
+      "params": {
+        "amplitude_px": 9,
+        "frequency_hz": 20,
+        "decay": 0.75
+      }
+    },
+    {
+      "id": "cry-sound",
+      "type": "sound_cue",
+      "beats": [
+        "cry"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.9,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "cry-ignite",
+      "type": "sound_cue",
+      "beats": [
+        "ignite"
+      ],
+      "params": {
+        "cue": "ignite",
+        "gain": 0.7
+      }
+    },
+    {
+      "id": "red-wave",
+      "type": "ring",
+      "beats": [
+        "cry",
+        "surge"
+      ],
+      "anchor": "caster",
+      "color": "gradient_primary_to_secondary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 320,
+        "thickness_px": 30,
+        "softness": 0.5,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A red shockwave of rage skimming the ground.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        }
+      }
+    },
+    {
+      "id": "red-air",
+      "type": "ring",
+      "beats": [
+        "cry",
+        "surge"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 260,
+        "thickness_px": 10,
+        "softness": 0.6,
+        "repeat_ms": 150,
+        "count": 2,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "The cry standing up as red rings in the air.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "distortion": 0.3
+      }
+    },
+    {
+      "id": "fury-coat",
+      "type": "coat",
+      "beats": [
+        "ignite",
+        "fury",
+        "cool"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "flame",
+        "fill": 0.55,
+        "rim": 0.9,
+        "opacity": 0.75,
+        "flow_hz": 2,
+        "cover_px": 100
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Red flames licking up each ally's body: the fury on them.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fury-coat-caster",
+      "type": "coat",
+      "beats": [
+        "ignite",
+        "fury",
+        "cool"
+      ],
+      "anchor": "caster",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "flame",
+        "fill": 0.6,
+        "rim": 1,
+        "opacity": 0.8,
+        "flow_hz": 2,
+        "cover_px": 110
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "The same fury burning on the caster, a little brighter.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fury-heart",
+      "type": "glow",
+      "beats": [
+        "ignite",
+        "fury",
+        "cool"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 26,
+        "softness": 1,
+        "height_px": 52,
+        "pulse_hz": 2
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A hot red glow throbbing in each ally's chest.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fury-heart-caster",
+      "type": "glow",
+      "beats": [
+        "ignite",
+        "fury",
+        "cool"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 32,
+        "softness": 1,
+        "height_px": 52,
+        "pulse_hz": 2
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "The caster's chest glowing with rage.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fury-embers",
+      "type": "sparks",
+      "beats": [
+        "surge",
+        "ignite",
+        "fury",
+        "cool"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "look": "ember",
+        "count": 14,
+        "speed": 30,
+        "gravity": -170,
+        "lifetime_ms": 600,
+        "size_px": 1.6,
+        "spread_deg": 50,
+        "emit_ms": 5000,
+        "emit_radius_px": 16,
+        "height_px": 40
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers streaming up off each ally.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fury-embers-caster",
+      "type": "sparks",
+      "beats": [
+        "surge",
+        "ignite",
+        "fury",
+        "cool"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "look": "ember",
+        "count": 18,
+        "speed": 30,
+        "gravity": -170,
+        "lifetime_ms": 600,
+        "size_px": 1.8,
+        "spread_deg": 50,
+        "emit_ms": 5000,
+        "emit_radius_px": 18,
+        "height_px": 40
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers streaming off the caster.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fury-flames",
+      "type": "smoke",
+      "beats": [
+        "surge",
+        "ignite",
+        "fury",
+        "cool"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 12,
+        "rise_speed": 90,
+        "size_px": 14,
+        "lifetime_ms": 450,
+        "opacity": 0.55,
+        "spread_px": 12,
+        "height_px": 30
+      },
+      "keyframes": [
+        {
+          "t_ms": 390,
+          "param": "opacity",
+          "value": 0
+        },
+        {
+          "t_ms": 1100,
+          "param": "opacity",
+          "value": 0.55,
+          "ease": "ease_out"
+        }
+      ],
+      "shader": {
+        "material": "fiery",
+        "look": "Billows of red flame boiling up off each ally's shoulders.",
+        "technique": "flipbook",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fury-mark",
+      "type": "decal",
+      "beats": [
+        "ignite",
+        "fury",
+        "cool"
+      ],
+      "anchor": "splash",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "burn",
+        "radius_px": 38,
+        "opacity": 0.5,
+        "fade_in_ms": 250,
+        "fade_ms": 700
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A smouldering red patch under each ally.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fury-mark-caster",
+      "type": "decal",
+      "beats": [
+        "ignite",
+        "fury",
+        "cool"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 60,
+        "opacity": 0.4,
+        "fade_in_ms": 250,
+        "fade_ms": 700,
+        "symmetry": 3,
+        "spin_deg_per_s": -40,
+        "depth": 0
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A turning red war sigil under the caster.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "fury-light",
+      "type": "light",
+      "beats": [
+        "ignite",
+        "fury",
+        "cool"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 1.0,
+        "height_px": 70
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Red light thrown over the group.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "cool-smoke",
+      "type": "smoke",
+      "beats": [
+        "cool"
+      ],
+      "anchor": "splash",
+      "color": "shadow",
+      "z": 3,
+      "params": {
+        "count": 6,
+        "rise_speed": 50,
+        "size_px": 18,
+        "lifetime_ms": 700,
+        "opacity": 0.4,
+        "spread_px": 12,
+        "height_px": 40
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Smoke as the fury burns out.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "fury-roar",
+      "type": "sound_cue",
+      "beats": [
+        "fury"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.25,
+        "repeat_ms": 1500
+      }
+    },
+    {
+      "id": "fury-pulse",
+      "type": "sound_cue",
+      "beats": [
+        "fury"
+      ],
+      "params": {
+        "cue": "heartbeat",
+        "gain": 0.25,
+        "pitch": 1.2,
+        "repeat_ms": 500
+      }
+    }
+  ],
+  "director_notes": "Original fury warcry. The allies hop once on the cry (before their flames catch, so the coats never drift off them). ripple_ms 0 keeps every per-ally loop layer in step with the loop. The caster carries the same coat, glow and embers under separate layer ids."
+}

@@ -1,0 +1,574 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-warcry-thunderclap-shout",
+  "name": "Thunderclap Shout",
+  "description": "A shout that cracks like thunder: a crackling blue shockwave rolls out from the caster and, as it passes each enemy, a bolt drops out of the sky onto them and they reel back.",
+  "element": "lightning",
+  "archetype": "nova",
+  "tags": [
+    "warcry",
+    "shout",
+    "splash",
+    "point-blank",
+    "pbae",
+    "thunder",
+    "shockwave",
+    "sky-strike",
+    "multi-target"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Warcry: a thunder shout that calls lightning down on every nearby enemy."
+  },
+  "timing": {
+    "duration_ms": 2400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 3.2,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "side": "enemies",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 2.2,
+        "max": 2.7
+      },
+      "ripple_ms": 160,
+      "react": {
+        "kind": "flinch",
+        "at_ms": 480,
+        "lean_deg": 24,
+        "duration_ms": 500
+      }
+    },
+    "caster_react": {
+      "kind": "shout",
+      "at_ms": 0,
+      "duration_ms": 900
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Bolts crash down round the caster one after another as the ring passes.",
+      "side": "Tall bolts from the sky either side of the caster; the ring flat on the ground.",
+      "top": "A crackling ring rolling out with a bright scorch blooming under each enemy as it reaches them.",
+      "three_quarter": "Hero view: shout, ring, the ripple of sky bolts and the enemies reeling."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#7FC8FF",
+    "secondary": "#3A6CFF",
+    "accent": "#D8F0FF",
+    "shadow": "#141A2E"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "The ring of dummies and the particles change per cast."
+  },
+  "beats": [
+    {
+      "id": "charge",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 420,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 1.0
+      },
+      "intent": "Static crawls over the caster as they draw breath."
+    },
+    {
+      "id": "clap",
+      "phase": "impact",
+      "start_ms": 420,
+      "end_ms": 660,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "The shout cracks like thunder."
+    },
+    {
+      "id": "roll",
+      "phase": "impact",
+      "start_ms": 430,
+      "end_ms": 1180,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A crackling shockwave rolls out over the ground."
+    },
+    {
+      "id": "strike",
+      "phase": "impact",
+      "start_ms": 460,
+      "end_ms": 720,
+      "intensity": {
+        "shape": "flicker",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "A bolt drops onto each enemy as the wave reaches them."
+    },
+    {
+      "id": "afterglow",
+      "phase": "dissipation",
+      "start_ms": 680,
+      "end_ms": 2400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "Scorches smoke and sparks fizzle."
+    }
+  ],
+  "layers": [
+    {
+      "id": "static-crawl",
+      "type": "crackle",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "count": 5,
+        "length_px": 30,
+        "jaggedness": 0.7,
+        "regen_ms": 60,
+        "radius_px": 25,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Little arcs snapping over the caster's body as the charge builds.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "charge-glow",
+      "type": "glow",
+      "beats": [
+        "charge"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 50,
+        "softness": 0.9,
+        "height_px": 70,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A cold blue glow swelling at the chest.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "charge"
+      ],
+      "params": {
+        "cue": "buzz",
+        "gain": 0.4
+      }
+    },
+    {
+      "id": "clap-flash",
+      "type": "flash",
+      "beats": [
+        "clap"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 220,
+        "peak": 1.0
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A white-blue clap of light at the caster.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "screen-flash",
+      "type": "flash",
+      "beats": [
+        "clap"
+      ],
+      "anchor": "screen",
+      "color": "accent",
+      "z": 16,
+      "params": {
+        "scope": "screen",
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A short full-screen flash on the clap.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shock-ring",
+      "type": "ring",
+      "beats": [
+        "clap",
+        "roll"
+      ],
+      "anchor": "caster",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 420,
+        "thickness_px": 24,
+        "softness": 0.4,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A hard ring of blue-white charge skimming the ground.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        }
+      }
+    },
+    {
+      "id": "ring-crackle",
+      "type": "crackle",
+      "beats": [
+        "roll"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 7,
+      "params": {
+        "count": 10,
+        "length_px": 70,
+        "jaggedness": 0.8,
+        "regen_ms": 50,
+        "radius_px": 200
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Arcs snapping along the ground inside the ring.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "air-ring",
+      "type": "ring",
+      "beats": [
+        "clap",
+        "roll"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 300,
+        "thickness_px": 8,
+        "softness": 0.6,
+        "repeat_ms": 180,
+        "count": 2,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "The thunderclap standing up in the air.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "distortion": 0.3
+      }
+    },
+    {
+      "id": "clap-shake",
+      "type": "camera_shake",
+      "beats": [
+        "clap"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 10,
+          "max": 13
+        },
+        "frequency_hz": 24,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "clap-sound",
+      "type": "sound_cue",
+      "beats": [
+        "clap"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 1.0,
+        "pitch": 0.85
+      }
+    },
+    {
+      "id": "clap-boom",
+      "type": "sound_cue",
+      "beats": [
+        "clap"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.8,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "sky-bolt",
+      "type": "bolt",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "params": {
+        "from": "sky",
+        "segments": 14,
+        "jaggedness": 0.65,
+        "width_px": {
+          "min": 5,
+          "max": 7
+        },
+        "taper": 0.4,
+        "branch_chance": 0.35,
+        "branch_depth": 2,
+        "regen_ms": 70,
+        "restrikes": 1,
+        "restrike_gap_ms": 90,
+        "leader_ms": 40,
+        "glow_px": 18
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A thin, ragged bolt dropping from the sky onto each enemy.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bolt-flash",
+      "type": "glow",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "radius_px": 60,
+        "softness": 0.8,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A flare where each bolt hits.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bolt-sparks",
+      "type": "sparks",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "count": 16,
+        "speed": 320,
+        "speed_spread": 0.5,
+        "gravity": 600,
+        "lifetime_ms": 450,
+        "size_px": 1.6,
+        "spread_deg": 160,
+        "drag": 0.4,
+        "emit_ms": 60
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "White sparks spraying off each strike.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "bolt-scorch",
+      "type": "decal",
+      "beats": [
+        "strike",
+        "afterglow"
+      ],
+      "anchor": "splash",
+      "color": "shadow",
+      "z": -1,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 45,
+        "opacity": 0.7,
+        "fade_ms": 700
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "A burnt blotch under each enemy.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "bolt-cracks",
+      "type": "decal",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "shape": "cracks",
+        "radius_px": 50,
+        "opacity": 0.9,
+        "lifetime_ms": 200,
+        "fade_ms": 500
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Glowing cracks flashing out from each strike and cooling.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "scorch-smoke",
+      "type": "smoke",
+      "beats": [
+        "afterglow"
+      ],
+      "anchor": "splash",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "count": 6,
+        "rise_speed": 40,
+        "size_px": 18,
+        "lifetime_ms": 1100,
+        "opacity": 0.35,
+        "spread_px": 10
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Thin smoke curling off each scorch.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "strike-sound",
+      "type": "sound_cue",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "cue": "zap",
+        "gain": 0.6,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.2
+        }
+      }
+    }
+  ],
+  "director_notes": "Original warcry. A ring at 5 units/s with ripple_ms 160 means each bolt lands just before the ring passes, so the strikes lead the wave a little: the shout calls them. The flinch starts with the strike."
+}

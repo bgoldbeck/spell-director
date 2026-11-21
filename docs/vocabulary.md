@@ -335,6 +335,20 @@ A buff is cast on one character to help them: a shield, haste, strength, regener
 
 Examples: `templates/water/dewdrop-ward.json` (leaf, drop, soap bubble), `earth/diamond-aegis.json` and the other Gemwarden orbits, `nature/petalfall-mending.json`, `arcane/moonmirror-veil.json` (glass), `ice/snowflake-ward.json`.
 
+### Warcries
+
+A warcry is a shout that rolls out over the allies or enemies round the caster. Tag it `warcry`; the viewer lists them under **Type → Kinds → Warcries**.
+
+| Word | Means | Template |
+|---|---|---|
+| warcry, shout, roar, bellow, howl, battle cry | the caster rears back and shouts, and a wave rolls out | point-blank splash + `space.caster_react` `kind: shout`, release at its chest-forward moment |
+| knockback, blown back | enemies shoved off their feet | `targets.react` `kind: knockback`, a hard linear ground ring, a dust wave, `ripple_ms` matched to the ring |
+| thunder shout, thunderclap | a crack of thunder and bolts on every foe | `targets.react` `flinch`, splash `bolt` `from: sky` |
+| fear howl, terror | enemies cower | `targets.react` `cower`, a `skull` glyph and a shadow `coat` on each |
+| rally, rallying cry, banner | allies lifted by a cry and a planted banner | `targets.side: allies`, `cheer`, `motif` `shape: banner` keyframed down, an aura with `ripple_ms: 0` |
+| battle fury, frenzy, berserk | allies burning with rage | allies, a red flame `coat` and embers on each, an aura |
+| stoneskin, ironhide | allies hardened | allies, a `stone` coat creeping up, then a bronze `glow` coat |
+
 ### Status effects
 
 | Word | Means | Template |

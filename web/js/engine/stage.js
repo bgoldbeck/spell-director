@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { resolveValue, rng, seedFor } from "./timeline.js";
 import { isSplash, splashLayout } from "./splash.js";
 import { isStatus } from "./status.js";
+import { reactionPose, REST } from "./react.js";
 
 export { isStatus };
 
@@ -79,10 +80,51 @@ export function buildStage(template, seed) {
   const splashHalfWidth = splash ? targets.reduce((m, p) => Math.max(m, Math.abs(p.z)), 0) + 1 : 0;
   const radius = status ? 1.6 : Math.max(2.2, far / 2 + 1.2, space.origin === "sky" ? sky.y / 1.6 : 0, arcHalfWidth, aroundRadius, splashHalfWidth);
 
+  // Who stands round the caster or the primary target: enemies (default) or
+  // allies (a rallying shout, a battle-fury aura). And how the stand-ins
+  // react (engine/react.js): space.targets.react for the targets, delayed
+  // like their splash layers, and space.caster_react for the caster.
+  const side = space.targets?.side === "allies" ? "allies" : "enemies";
+  const targetReact = space.targets?.react || null;
+  const casterReact = space.caster_react || null;
+  const reactAt = (r) => resolveValue(r?.at_ms, seed, "react.at") ?? 0;
+  const firstSplash = splash && !splashCentered && !splashCentre ? 1 : 0;
+
   return {
     caster,
     hand,
     status,
+    side,
+    // Target i's pose at time t (its reaction, delayed like its splash
+    // layers), and the unit ground direction it is pushed along: away from
+    // the spell's centre (from the caster for the primary target).
+    targetPose(i, t) {
+      if (!targetReact || status) return { ...REST };
+      const k = i - firstSplash;
+      const delay = splash && k >= 0 ? splashDelays[k] ?? 0 : 0;
+      return reactionPose(targetReact, t - reactAt(targetReact) - delay);
+    },
+    targetAway(i) {
+      const p = targets[i];
+      if (!p) return new THREE.Vector3(1, 0, 0);
+      const from = splash && !(firstSplash && i === 0) ? primaryTarget : caster;
+      const d = new THREE.Vector3(p.x - from.x, 0, p.z - from.z);
+      return d.lengthSq() > 1e-8 ? d.normalize() : new THREE.Vector3(1, 0, 0);
+    },
+    casterPose(t) {
+      if (!casterReact || status) return { ...REST };
+      return reactionPose(casterReact, t - reactAt(casterReact));
+    },
+    // The pose of the figure a layer anchored at `anchor` (instance k) stands
+    // on, so a skin on a body (a coat) moves with it: { pose, away } or null.
+    bodyPose(anchor, k, t) {
+      if (status) return null;
+      if (anchor === "caster") return casterReact ? { pose: this.casterPose(t), away: new THREE.Vector3(-1, 0, 0) } : null;
+      if (!targetReact) return null;
+      const i = anchor === "splash" ? k + firstSplash : anchor === "target" && !splash ? k : anchor === "target" && firstSplash ? 0 : -1;
+      if (i < 0 || !targets[i]) return null;
+      return { pose: this.targetPose(i, t), away: this.targetAway(i) };
+    },
     targets,
     point,
     sky,

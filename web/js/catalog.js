@@ -48,7 +48,7 @@ export function groupByLine(templates) {
 // "Status effects": lingering afflictions on a target (archetype "status":
 // burning, frozen, poisoned, asleep...) that apply, loop while they last and
 // expire. Type "kind:status".
-// "Buffs": see isBuff.
+// "Buffs": see isBuff. "Warcries": see isWarcry.
 export const KIND_PREFIX = "kind:";
 
 const loops = (tpl) => {
@@ -70,6 +70,13 @@ export function isBuff(tpl) {
   return Array.isArray(tpl?.tags) && tpl.tags.includes("buff");
 }
 
+// "Warcries": the caster shouts and a shockwave or aura rolls out over the
+// allies or enemies round them (tagged "warcry"): a roar that knocks foes
+// back, a rallying banner, a fear howl, a battle fury. Type "kind:warcry".
+export function isWarcry(tpl) {
+  return Array.isArray(tpl?.tags) && tpl.tags.includes("warcry");
+}
+
 export function groupByKind(templates) {
   const byName = (a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id));
   const groups = [];
@@ -77,6 +84,8 @@ export function groupByKind(templates) {
   if (auras.length) groups.push({ type: `${KIND_PREFIX}aura`, label: "Auras", kind: true, templates: auras });
   const buffs = templates.filter(isBuff).sort(byName);
   if (buffs.length) groups.push({ type: `${KIND_PREFIX}buff`, label: "Buffs", kind: true, templates: buffs });
+  const warcries = templates.filter(isWarcry).sort(byName);
+  if (warcries.length) groups.push({ type: `${KIND_PREFIX}warcry`, label: "Warcries", kind: true, templates: warcries });
   const statuses = templates.filter(isStatusEffect).sort(byName);
   if (statuses.length) groups.push({ type: `${KIND_PREFIX}status`, label: "Status effects", kind: true, templates: statuses });
   return groups;

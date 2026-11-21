@@ -4,7 +4,7 @@
 // part, shared by the viewer and the Node tests: where each item is at any
 // time. No DOM or Three.js here. The meshes and materials are in motif.js.
 
-export const MOTIF_SHAPES = ["leaf", "petal", "feather", "droplet", "blossom", "gem"];
+export const MOTIF_SHAPES = ["leaf", "petal", "feather", "droplet", "blossom", "gem", "banner"];
 export const GEM_CUTS = ["brilliant", "emerald", "cabochon", "marquise", "prism", "heart"];
 
 // Per-cut look: clarity (0 = milky like jade, 1 = water clear), fire

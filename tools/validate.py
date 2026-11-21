@@ -74,6 +74,7 @@ KNOWN_PARAMS = {
         "orbit_radius_px", "orbit_hz", "orbit_tilt_deg", "orbit_phase_deg", "weave_px", "bob_px", "bob_hz",
         "sway_px", "sway_hz", "stack_px", "stagger_ms", "appear_ms", "spin_hz", "yaw_deg", "tilt_deg", "roll_deg",
         "face", "bloom", "petals", "sparkle", "glint_hz", "trail_ms", "clarity", "fire", "glow",
+        "emblem", "wave", "wave_hz",
     },
     "light": {"radius", "energy", "height_px", "forward_px", "side_px", "orbit_hz", "tint"},
     "camera_shake": {"amplitude_px", "frequency_hz", "decay"},
@@ -139,7 +140,14 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
             errors.append(f"duplicate layer id {layer['id']!r}")
         layer_ids.add(layer["id"])
 
-    splash = (doc["space"].get("targets") or {}).get("layout") == "splash"
+    targets = doc["space"].get("targets") or {}
+    splash = targets.get("layout") == "splash"
+    if targets.get("side") == "allies" and not splash:
+        warnings.append("space.targets.side is 'allies', but space.targets.layout isn't 'splash', so no allies stand round the caster")
+    for where, react in (("space.targets.react", targets.get("react")), ("space.caster_react", doc["space"].get("caster_react"))):
+        at = (react or {}).get("at_ms")
+        if isinstance(at, (int, float)) and at > duration:
+            warnings.append(f"{where}: starts at {at} ms, after the spell ends ({duration} ms)")
     for layer in doc["layers"]:
         lid = layer["id"]
         if layer.get("anchor") == "splash" and not splash:

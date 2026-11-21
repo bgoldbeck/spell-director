@@ -25,7 +25,7 @@ import { smokeLighting, sixwayFrame } from "./sixway.js";
 import { makeSixWayMaterial } from "./sixwaymat.js";
 import { lightOffset } from "./lights.js";
 import { GEM_LOOKS, MOTIF_SHAPES, motifPlacement } from "./motifplace.js";
-import { bladeMaterial, dropletMaterial, jewelMaterial, motifGeometry, starTex } from "./motif.js";
+import { bannerParts, bladeMaterial, dropletMaterial, jewelMaterial, motifGeometry, starTex } from "./motif.js";
 import { COAT_PATTERNS, coatGeometry, coatSettings, makeCoatMaterial } from "./coat.js";
 import { GlyphPoints } from "./glyphs.js";
 import { centerAt, radiusAt, shapeAt, spinTurns, wallPoint, vortexPlan } from "./vortex.js";
@@ -3905,6 +3905,13 @@ class MotifLayer extends Layer {
         m.uniforms.seed.value = rs() * 100;
         mats.push(m);
         item.add(new THREE.Mesh(motifGeometry("gem", cut), m));
+      } else if (this.shape === "banner") {
+        // A war banner planted in the ground: pole, crossbar, rippling cloth
+        // in the tint with trim and an emblem in the core color.
+        const bn = bannerParts(tint, core, b.emblem || "chevron");
+        mats.push(...bn.mats);
+        item.add(...bn.parts);
+        this.cloths = (this.cloths || []).concat(bn.cloth);
       } else if (this.shape === "droplet") {
         const m = dropletMaterial(tint, core);
         mats.push(m);
@@ -3983,6 +3990,15 @@ class MotifLayer extends Layer {
     const sparkle = Math.max(0, this.p("sparkle", t, 0));
     const glintHz = this.hz("glint_hz", t, 0.7);
     const trailMs = this.p("trail_ms", t, 0);
+    // Banner cloth ripples at wave_hz (snapped to the loop), wave strong.
+    if (this.cloths) {
+      const phase = Math.PI * 2 * this.hz("wave_hz", t, 1.2) * s;
+      const wave = Math.max(0, Math.min(1.5, this.p("wave", t, 0.5)));
+      for (const c of this.cloths) {
+        c.uniforms.phase.value = phase;
+        c.uniforms.wave.value = wave;
+      }
+    }
     const paths = [];
     this.items.forEach((item, i) => {
       const { at, pl } = this.placeAt(i, t);
@@ -4062,6 +4078,7 @@ class CoatLayer extends Layer {
     const I = this.intensityAt(t);
     this.group.visible = I > 0.001;
     if (!this.group.visible) return;
+    this.followBody(t + this.offset);
     const u = this.material.uniforms;
     const s = this.s;
     u.opacity.value = Math.max(0, Math.min(1, this.p("opacity", t, s.opacity))) * Math.min(1, I);
@@ -4078,6 +4095,20 @@ class CoatLayer extends Layer {
     // static redraws its creases every regen_ms (wrapping in a loop).
     const base = this.effect.seed % 997;
     u.seed.value = s.pattern === "static" ? base + this.tick(t, Math.max(20, this.p("regen_ms", t, 70))) * 7.31 : base;
+  }
+
+  // Ride on the figure when it reacts (pushed back, crouched, leaning,
+  // hopping: engine/react.js), the same way the studio poses it. `t` is the
+  // spell's time, not the layer's.
+  followBody(t) {
+    const body = this.effect.stage.bodyPose?.(this.def.anchor || "target", this.instance, t);
+    if (!body) return;
+    const { pose, away } = body;
+    const a = this.anchorPos();
+    this.group.position.set(a.x + away.x * pose.push - away.z * pose.shiver, pose.lift, a.z + away.z * pose.push + away.x * pose.shiver);
+    const axis = new THREE.Vector3(0, 1, 0).cross(away).normalize();
+    this.group.quaternion.setFromAxisAngle(axis, pose.lean);
+    this.group.scale.set(1, pose.squash, 1);
   }
 
   points() {

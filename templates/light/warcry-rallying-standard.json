@@ -1,0 +1,687 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "light-warcry-rallying-standard",
+  "name": "Rallying Standard",
+  "description": "The caster bellows a rallying cry and drives a golden war banner into the ground beside them. A ring of light washes over every ally, who leap up cheering, and the banner's aura holds: the cloth ripples, a golden circle glows on the ground and motes of light lift off each ally.",
+  "element": "light",
+  "archetype": "aura",
+  "tags": [
+    "warcry",
+    "shout",
+    "rally",
+    "banner",
+    "aura",
+    "allies",
+    "group-buff",
+    "splash",
+    "point-blank"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Warcry: plant a rallying banner whose aura lifts every nearby ally."
+  },
+  "timing": {
+    "duration_ms": 5000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 1200,
+      "end_ms": 4200
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 2.6,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "side": "allies",
+      "count": {
+        "min": 5,
+        "max": 6
+      },
+      "radius": {
+        "min": 1.9,
+        "max": 2.3
+      },
+      "ripple_ms": 0,
+      "react": {
+        "kind": "cheer",
+        "at_ms": 640,
+        "duration_ms": 520,
+        "hops": 2,
+        "lift_px": 14
+      }
+    },
+    "caster_react": {
+      "kind": "shout",
+      "at_ms": 0,
+      "duration_ms": 900
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The banner stands tall beside the caster, cloth rippling; allies around it glow gold.",
+      "side": "Banner and pole read tall; motes rise off each ally.",
+      "top": "A golden circle round the group, a bright rune under the banner and a ring under each ally.",
+      "three_quarter": "Hero view: the banner slams in, the light washes out and the allies hop."
+    }
+  },
+  "palette": {
+    "core": "#FFF6D8",
+    "primary": "#FFC94A",
+    "secondary": "#C2402E",
+    "accent": "#FFE9A8",
+    "shadow": "#2B1D10"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "The ring of dummies and the particles change per cast."
+  },
+  "beats": [
+    {
+      "id": "call",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 420,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "The caster rears back, banner raised high."
+    },
+    {
+      "id": "plant",
+      "phase": "impact",
+      "start_ms": 300,
+      "end_ms": 560,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.6,
+        "to": 1.0
+      },
+      "intent": "The banner drops and bites into the ground."
+    },
+    {
+      "id": "rally",
+      "phase": "impact",
+      "start_ms": 520,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A ring of golden light washes out over every ally."
+    },
+    {
+      "id": "lift",
+      "phase": "impact",
+      "start_ms": 560,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.5
+      },
+      "intent": "Each ally lights up as the wave reaches them."
+    },
+    {
+      "id": "rise",
+      "phase": "release",
+      "start_ms": 300,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "The aura kindles: the circle glows, the allies light up."
+    },
+    {
+      "id": "hold",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 4200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The banner's aura holds: cloth ripples, motes rise. Seamless loop."
+    },
+    {
+      "id": "lower",
+      "phase": "dissipation",
+      "start_ms": 4234,
+      "end_ms": 5000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The aura fades and the banner sinks into light."
+    }
+  ],
+  "layers": [
+    {
+      "id": "banner",
+      "type": "motif",
+      "beats": [
+        "plant",
+        "rise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "shape": "banner",
+        "emblem": "sun",
+        "count": 1,
+        "size_px": 175,
+        "height_px": 0,
+        "forward_px": -18,
+        "side_px": 34,
+        "yaw_deg": 20,
+        "wave": 0.6,
+        "wave_hz": 1.0
+      },
+      "keyframes": [
+        {
+          "t_ms": 300,
+          "param": "height_px",
+          "value": 190
+        },
+        {
+          "t_ms": 540,
+          "param": "height_px",
+          "value": 0,
+          "ease": "ease_in"
+        },
+        {
+          "t_ms": 4234,
+          "param": "opacity",
+          "value": 1
+        },
+        {
+          "t_ms": 5000,
+          "param": "opacity",
+          "value": 0,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "organic",
+        "look": "A crimson war banner with gold trim and a gold sun, on a dark pole with a gilded finial; the cloth ripples in a steady wind.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "banner-halo",
+      "type": "glow",
+      "beats": [
+        "rise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 40,
+        "softness": 1,
+        "height_px": 120,
+        "pulse_hz": 0.667
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A soft gold light round the top of the banner.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "plant-flash",
+      "type": "flash",
+      "beats": [
+        "plant"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 14,
+      "params": {
+        "scope": "local",
+        "radius_px": 160,
+        "peak": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A flash where the pole bites into the ground.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "plant-dust",
+      "type": "sparks",
+      "beats": [
+        "plant"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 6,
+      "params": {
+        "count": 20,
+        "speed": 160,
+        "gravity": 300,
+        "lifetime_ms": 500,
+        "size_px": 2,
+        "spread_deg": 80,
+        "drag": 0.5,
+        "emit_ms": 80,
+        "emit_radius_px": 20
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Gold sparks jumping off the ground as the banner lands.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "plant-shake",
+      "type": "camera_shake",
+      "beats": [
+        "plant"
+      ],
+      "params": {
+        "amplitude_px": 6,
+        "frequency_hz": 20,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "call-sound",
+      "type": "sound_cue",
+      "beats": [
+        "call"
+      ],
+      "params": {
+        "cue": "charge",
+        "gain": 0.4,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "plant-sound",
+      "type": "sound_cue",
+      "beats": [
+        "plant"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.8,
+        "pitch": 0.9,
+        "offset_ms": 230
+      }
+    },
+    {
+      "id": "rally-wave",
+      "type": "ring",
+      "beats": [
+        "rally"
+      ],
+      "anchor": "caster",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 320,
+        "thickness_px": 30,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A bright ring of gold light washing out over every ally.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        }
+      }
+    },
+    {
+      "id": "rally-air",
+      "type": "ring",
+      "beats": [
+        "rally"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 240,
+        "thickness_px": 10,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "The cry itself: a golden ring standing in the air.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "rally-sound",
+      "type": "sound_cue",
+      "beats": [
+        "rally"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.8,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "cheer-burst",
+      "type": "sparks",
+      "beats": [
+        "lift"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "count": 14,
+        "speed": 140,
+        "gravity": -40,
+        "lifetime_ms": 400,
+        "size_px": 1.8,
+        "spread_deg": 120,
+        "drag": 0.6,
+        "emit_ms": 120,
+        "height_px": 60
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A burst of gold motes off each ally as the wave reaches them.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ward-circle",
+      "type": "ring",
+      "beats": [
+        "rise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "steady": true,
+        "end_radius_px": 280,
+        "thickness_px": 8,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A steady circle of gold light marking the aura's reach.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ward-pulse",
+      "type": "ring",
+      "beats": [
+        "rise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "start_radius_px": 60,
+        "end_radius_px": 280,
+        "thickness_px": 6,
+        "softness": 0.8,
+        "repeat_ms": 1500,
+        "count": 2,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Slow pulses rolling out to the circle: the aura ticking.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "flow": {
+          "direction": "outward",
+          "speed": 2
+        }
+      }
+    },
+    {
+      "id": "banner-rune",
+      "type": "decal",
+      "beats": [
+        "rise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 90,
+        "opacity": 0.5,
+        "fade_in_ms": 500,
+        "fade_ms": 700,
+        "spin_deg_per_s": 24,
+        "symmetry": 6,
+        "depth": 0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A slowly turning golden rune round the banner's foot.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ally-ring",
+      "type": "decal",
+      "beats": [
+        "rise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 36,
+        "opacity": 0.45,
+        "fade_in_ms": 400,
+        "fade_ms": 700,
+        "symmetry": 4,
+        "detail": 0.3,
+        "depth": 0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A small gold ring under each rallied ally.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ally-glow",
+      "type": "glow",
+      "beats": [
+        "rise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "splash",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 30,
+        "softness": 1,
+        "height_px": 55,
+        "pulse_hz": 1.0
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A warm light in each ally's chest.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ally-motes",
+      "type": "sparks",
+      "beats": [
+        "rise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 6,
+      "params": {
+        "count": 10,
+        "speed": 15,
+        "gravity": -70,
+        "lifetime_ms": 700,
+        "size_px": 1.6,
+        "spread_deg": 60,
+        "emit_ms": 5000,
+        "emit_radius_px": 18,
+        "height_px": 20
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Motes of gold light lifting off each ally.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "aura-light",
+      "type": "light",
+      "beats": [
+        "rise",
+        "hold",
+        "lower"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 0.9,
+        "height_px": 140,
+        "side_px": 34
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Gold light from the banner over the group.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "aura-hum",
+      "type": "sound_cue",
+      "beats": [
+        "hold"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.15,
+        "pitch": 1.4,
+        "repeat_ms": 1500
+      }
+    },
+    {
+      "id": "lower-sound",
+      "type": "sound_cue",
+      "beats": [
+        "lower"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.35,
+        "pitch": 0.8
+      }
+    }
+  ],
+  "director_notes": "Original rallying warcry. ripple_ms 0 keeps every per-ally layer in step with the loop (a delayed layer would cross the loop seam mid-fade). The banner is a motif dropped in by keyframing height_px; its cloth wave and every rate snap to whole cycles per 3 s loop."
+}
