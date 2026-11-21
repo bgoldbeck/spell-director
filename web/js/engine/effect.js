@@ -3901,10 +3901,22 @@ class MotifLayer extends Layer {
         const look = { ...(GEM_LOOKS[cut] || GEM_LOOKS.brilliant) };
         if (typeof b.clarity === "number") look.clarity = Math.max(0, Math.min(1, b.clarity));
         if (typeof b.fire === "number") look.fire = Math.max(0, Math.min(1, b.fire));
-        const m = jewelMaterial(tint, core, look);
-        m.uniforms.seed.value = rs() * 100;
-        mats.push(m);
-        item.add(new THREE.Mesh(motifGeometry("gem", cut), m));
+        const geo = motifGeometry("gem", cut);
+        geo.computeBoundingBox();
+        const yRange = new THREE.Vector2(geo.boundingBox.min.y, geo.boundingBox.max.y);
+        const seed = rs() * 100;
+        // encase: a hollow shell of the gem round a character, see-through
+        // so they show inside; its far side draws first, then its near side.
+        const sides = b.encase ? [THREE.BackSide, THREE.FrontSide] : [undefined];
+        sides.forEach((side, k) => {
+          const m = jewelMaterial(tint, core, look, { shell: !!b.encase, side });
+          m.uniforms.seed.value = seed;
+          m.uniforms.yRange.value.copy(yRange);
+          mats.push(m);
+          const mesh = new THREE.Mesh(geo, m);
+          mesh.renderOrder = k;
+          item.add(mesh);
+        });
       } else if (this.shape === "banner") {
         // A war banner planted in the ground: pole, crossbar, rippling cloth
         // in the tint with trim and an emblem in the core color.
@@ -3987,6 +3999,10 @@ class MotifLayer extends Layer {
     const size = this.p("size_px", t, 14) * PX * Math.max(0, this.p("scale", t, 1));
     const op = Math.max(0, Math.min(1, this.p("opacity", t, 1)));
     const bloom = Math.max(0, Math.min(1, this.p("bloom", t, 1)));
+    // fill (gems): how much of it has grown up out of the ground, 0-1.
+    const fill = Math.max(0, Math.min(1, this.p("fill", t, 1)));
+    // stretch: taller (or squatter) than its cut, so a gem can hold a body.
+    const stretch = Math.max(0.1, this.p("stretch", t, 1));
     const sparkle = Math.max(0, this.p("sparkle", t, 0));
     const glintHz = this.hz("glint_hz", t, 0.7);
     const trailMs = this.p("trail_ms", t, 0);
@@ -4009,12 +4025,14 @@ class MotifLayer extends Layer {
         const a = I * op * Math.min(1, pl.appear * 1.5);
         if (m.uniforms) {
           m.uniforms.opacity.value = a;
+          if (m.uniforms.fill) m.uniforms.fill.value = fill;
           if (m.uniforms.time) m.uniforms.time.value = Math.PI * 2 * loopHz(0.07, this.loop) * s;
         } else m.opacity = a;
       }
       item.position.copy(at);
       item.rotation.set(pl.pitch, pl.yaw - this.headings, pl.roll, "YXZ");
       item.scale.setScalar(Math.max(1e-5, k));
+      item.scale.y *= stretch;
       // bloom: petals rise from a closed bud (0) to open and flat (1).
       for (const petal of ud.petals) petal.rotation.x = 0.18 + 1.55 * bloom;
       if (item.visible) this.pos.push(at.clone());

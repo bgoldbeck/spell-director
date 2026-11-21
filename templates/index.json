@@ -1,5 +1,6 @@
 {
   "templates": [
+    "arcane/amethyst-geode.json",
     "arcane/astral-shatter.json",
     "arcane/glyphbrand-judgement.json",
     "arcane/moonmirror-veil.json",
@@ -10,6 +11,8 @@
     "blood/nightwing-swarm.json",
     "blood/sanguine-siphon.json",
     "blood/status-bleeding.json",
+    "earth/adamant-vigil.json",
+    "earth/amber-reliquary.json",
     "earth/diamond-aegis.json",
     "earth/faultline-crush.json",
     "earth/ground-pound.json",
@@ -72,8 +75,10 @@
     "lightning/volt-lash.json",
     "lightning/warcry-thunderclap-shout.json",
     "nature/brambleheart-snare.json",
+    "nature/emerald-bastion.json",
     "nature/emerald-fervor.json",
     "nature/jade-serenity.json",
+    "nature/jadeheart-cocoon.json",
     "nature/petalfall-mending.json",
     "nature/status-rooted.json",
     "nature/thornleaf-mantle.json",

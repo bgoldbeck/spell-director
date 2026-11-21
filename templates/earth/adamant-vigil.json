@@ -1,0 +1,395 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "earth-adamant-vigil",
+  "name": "Adamant Vigil",
+  "description": "An armor buff: a giant diamond, its point high over the head and its table at the feet, grows down round the character from the point and turns slowly, throwing rainbow fire, with the character standing inside it.",
+  "element": "earth",
+  "line": "Gemwarden",
+  "archetype": "aura",
+  "tags": [
+    "buff",
+    "aura",
+    "looping",
+    "gem",
+    "encase",
+    "shell",
+    "armor",
+    "protection",
+    "diamond",
+    "crystal",
+    "fire"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Gem buff: a giant diamond encases the whole character, reflective and colorful"
+  },
+  "timing": {
+    "duration_ms": 6000,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 2100,
+      "end_ms": 5100
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.0,
+      "distribution": "even"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "frame": "close",
+    "reads": {
+      "front": "A huge cut diamond standing on its table round the character, point over the head, facets flashing.",
+      "side": "The diamond's profile: wide at the feet, the girdle at the waist, the point over the head.",
+      "top": "The pavilion facets from above meeting at the point over the caster's head.",
+      "three_quarter": "Hero view. A person-sized diamond turning slowly, rainbow fire in its facets."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#DCE8FF",
+    "secondary": "#8EA8E8",
+    "accent": "#F4F8FF",
+    "shadow": "#161C30"
+  },
+  "style": {
+    "preset": "stylized",
+    "notes": "Delicate and lovely: small, clean shapes, gentle motion, nothing harsh. Bloom soft, not blown out."
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 900,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "White sparkles spiral up round the feet; a ring of light draws in."
+    },
+    {
+      "id": "encase",
+      "phase": "release",
+      "start_ms": 900,
+      "end_ms": 2100,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "A huge diamond forms point first over the head and grows down round the body, facet by facet, until its table meets the ground."
+    },
+    {
+      "id": "sustain",
+      "phase": "release",
+      "start_ms": 2100,
+      "end_ms": 5100,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "The diamond turns once per loop round the character, facets flashing white and rainbow. Seamless loop."
+    },
+    {
+      "id": "shatter",
+      "phase": "dissipation",
+      "start_ms": 5100,
+      "end_ms": 6000,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The diamond flashes and bursts into glittering shards."
+    }
+  ],
+  "layers": [
+    {
+      "id": "ground-sigil",
+      "type": "decal",
+      "beats": [
+        "gather",
+        "encase",
+        "sustain",
+        "shatter"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 62,
+        "opacity": 0.22,
+        "fade_in_ms": 500,
+        "fade_ms": 500,
+        "spin_deg_per_s": 20,
+        "symmetry": 8,
+        "detail": 0.4,
+        "depth": 0
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A faint faceted circle on the ground where the crystal stands.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gem-dust",
+      "type": "sparks",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 5,
+      "params": {
+        "look": "spark",
+        "count": 28,
+        "speed": 30,
+        "gravity": -90,
+        "lifetime_ms": 700,
+        "size_px": 1.5,
+        "spread_deg": 40,
+        "emit_ms": 900,
+        "emit_radius_px": 45,
+        "orbit_hz": 0.8
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "Glittering gem dust spiralling up out of the ground round the feet.",
+        "technique": "particles",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "hard"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather-ring",
+      "type": "ring",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "start_radius_px": 90,
+        "end_radius_px": 30,
+        "thickness_px": 2,
+        "softness": 0.8,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A ring of light drawing in to the feet.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shell",
+      "type": "motif",
+      "beats": [
+        "encase",
+        "sustain",
+        "shatter"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "shape": "gem",
+        "cut": "brilliant",
+        "size_px": 50,
+        "stretch": 2.0,
+        "height_px": 36,
+        "encase": true,
+        "fill": 0,
+        "clarity": 1.0,
+        "fire": 0.8,
+        "sparkle": 1,
+        "glint_hz": 0.667,
+        "spin_hz": 0.333,
+        "tilt_deg": 180
+      },
+      "keyframes": [
+        {
+          "t_ms": 2100,
+          "param": "fill",
+          "value": 1,
+          "ease": "ease_in_out"
+        },
+        {
+          "t_ms": 5100,
+          "param": "scale",
+          "value": 1
+        },
+        {
+          "t_ms": 5350,
+          "param": "scale",
+          "value": 1.06,
+          "ease": "ease_out"
+        },
+        {
+          "t_ms": 6000,
+          "param": "scale",
+          "value": 1.1
+        }
+      ],
+      "shader": {
+        "material": "gemstone",
+        "look": "A water-clear diamond the size of a person: dark and bright facets, rainbow fire, the character visible through the table.",
+        "technique": "mesh",
+        "fresnel": 0.9,
+        "distortion": 0.3,
+        "emissive": {
+          "hdr": 1.2,
+          "falloff": "soft"
+        },
+        "lighting": "lit",
+        "notes": "A hollow faceted shell round the character: refract the body inside it, reflect the environment off flat facets, alpha low face-on and high at grazing angles. Grow it up from the ground with a clip plane that glows where it cuts."
+      }
+    },
+    {
+      "id": "inner-glow",
+      "type": "glow",
+      "beats": [
+        "encase",
+        "sustain",
+        "shatter"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 2,
+      "params": {
+        "radius_px": 55,
+        "softness": 1,
+        "pulse_hz": 0.333,
+        "height_px": 36
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Soft colored light filling the crystal.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shell-light",
+      "type": "light",
+      "beats": [
+        "encase",
+        "sustain",
+        "shatter"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "height_px": 66,
+        "forward_px": 40,
+        "energy": 0.9,
+        "radius": 3
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shards",
+      "type": "sparks",
+      "beats": [
+        "shatter"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "look": "shard",
+        "count": 40,
+        "speed": 160,
+        "speed_spread": 0.5,
+        "gravity": 500,
+        "drag": 0.15,
+        "lifetime_ms": 700,
+        "size_px": 3,
+        "spread_deg": 180,
+        "emit_ms": 60,
+        "emit_radius_px": 40.0,
+        "height_px": 36
+      },
+      "shader": {
+        "material": "crystalline",
+        "look": "The shell cracking apart into glittering shards that fall and fade.",
+        "technique": "particles",
+        "fresnel": 0.6,
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.3,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "grow-sound",
+      "type": "sound_cue",
+      "beats": [
+        "encase"
+      ],
+      "params": {
+        "cue": "freeze",
+        "gain": 0.3,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "hold-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sustain"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.1,
+        "pitch": 1.4,
+        "repeat_ms": 1500
+      }
+    },
+    {
+      "id": "shatter-sound",
+      "type": "sound_cue",
+      "beats": [
+        "shatter"
+      ],
+      "params": {
+        "cue": "shatter",
+        "gain": 0.4,
+        "pitch": 1.3
+      }
+    }
+  ],
+  "variation": {
+    "notes": "Seed nudges sizes, timing of the motes and the sparkle phase; the story stays the same."
+  },
+  "director_notes": "The brilliant cut stood on its table (tilt 180) and stretched tall (stretch 2) so its wide part holds the body; it forms point first, from above. One turn per loop keeps the fire moving without making it busy."
+}

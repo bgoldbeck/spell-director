@@ -96,7 +96,7 @@ test("every motif in a buff is in the same place at both ends of the loop", () =
           const d = (((b[k] - a[k]) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
           assert.ok(d < 1e-4 || 2 * Math.PI - d < 1e-4, `${t.id}/${l.id}[${i}].${k} turns whole turns per loop`);
         }
-        for (const k of ["scale", "opacity", "bloom"]) {
+        for (const k of ["scale", "opacity", "bloom", "fill", "stretch"]) {
           const pa = paramAtFrom(base, l.keyframes, k, lr.start_ms, w.start);
           const pb = paramAtFrom(base, l.keyframes, k, lr.end_ms, w.start);
           assert.ok(pa === pb || near(pa, pb), `${t.id}/${l.id}.${k} is steady across the loop`);
@@ -121,4 +121,20 @@ test("buffs are a kind of their own in the Type list", () => {
   assert.ok(g, "a Buffs group");
   assert.equal(g.label, "Buffs");
   assert.deepEqual(g.templates.map((t) => t.id).sort(), buffs.map((t) => t.id).sort());
+});
+
+test("some gem buffs seal the whole character inside a crystal shell that grows up round them", () => {
+  const shells = story.filter((t) => t.layers.some((l) => l.type === "motif" && l.params.shape === "gem" && l.params.encase));
+  assert.ok(shells.length >= 5, `${shells.length} encasing buffs`);
+  for (const t of shells) {
+    const l = t.layers.find((x) => x.type === "motif" && x.params.encase);
+    const w = layerWindow(t, l);
+    const base = resolveParams(l.params, 7, `${l.id}#0`);
+    const fill = (tm) => paramAtFrom(base, l.keyframes, "fill", tm, w.start);
+    assert.ok(fill(w.start) < 0.05, `${t.id} shell starts empty`);
+    assert.ok(near(fill(t.timing.loop_range.start_ms), 1), `${t.id} shell is whole when the loop starts`);
+    // Tall enough to hold a standing body.
+    const half = (base.size_px ?? 10) * (base.stretch ?? 1);
+    assert.ok(half >= 45, `${t.id} shell is tall enough (${half})`);
+  }
 });
