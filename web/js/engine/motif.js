@@ -151,6 +151,23 @@ function gemGeometry(cut) {
         { y: -1.0, s: 0 }, { y: -0.62, s: 0.5 }, { y: -0.5, s: 0.55 }, { y: 0.45, s: 0.55 }, { y: 0.62, s: 0.46 }, { y: 1.05, s: 0 },
       ]);
     }
+    case "cocoon": {
+      // An egg of rough crystal facets: a subdivided icosahedron with each
+      // corner pushed in or out a little (by its position, so the facets
+      // that share a corner stay joined), drawn up taller than wide.
+      const g = new THREE.IcosahedronGeometry(1, 1);
+      const pos = g.getAttribute("position");
+      for (let k = 0; k < pos.count; k++) {
+        const x = pos.getX(k);
+        const y = pos.getY(k);
+        const z = pos.getZ(k);
+        const h = Math.sin(Math.round(x * 97) * 12.9898 + Math.round(y * 97) * 78.233 + Math.round(z * 97) * 37.719) * 43758.5453;
+        const j = 0.9 + 0.16 * (h - Math.floor(h));
+        pos.setXYZ(k, x * j, y * j * 1.25, z * j);
+      }
+      g.computeVertexNormals();
+      return g;
+    }
     case "heart":
       return stackGeometry(heartOutline(20), [
         { y: -0.7, s: 0 }, { y: -0.28, s: 0.66 }, { y: 0, s: 1 }, { y: 0.06, s: 1 }, { y: 0.22, s: 0.8 }, { y: 0.32, s: 0.56 },
@@ -206,6 +223,9 @@ uniform float clarity;
 uniform float fire;
 uniform float seed;
 uniform float time;
+uniform float shell;
+uniform float fill;
+uniform vec2 yRange;
 varying vec3 vWorld;
 varying vec3 vNormalW;
 varying vec3 vLocal;
@@ -222,8 +242,14 @@ vec3 env(vec3 d) {
 }
 vec3 rainbow(float h) { return 0.5 + 0.5 * cos(6.28318 * (h + vec3(0.0, 0.33, 0.67))); }
 void main() {
+  // fill: the gem grows up out of the ground, bottom to top (an encasing shell forming).
+  float up = (vLocal.y - yRange.x) / max(1e-4, yRange.y - yRange.x);
+  if (up > fill) discard;
   vec3 V = normalize(cameraPosition - vWorld);
-  vec3 N = facets > 0.5 ? normalize(cross(dFdx(vWorld), dFdy(vWorld))) : normalize(vNormalW);
+  // Faceted cuts are built with one normal per facet, so the interpolated
+  // normal is already flat and steady (screen-space derivatives speckle on
+  // big facets).
+  vec3 N = normalize(vNormalW);
   if (dot(N, V) < 0.0) N = -N;
   float ndv = clamp(dot(N, V), 0.0, 1.0);
   float fres = pow(1.0 - ndv, 3.0);
@@ -238,7 +264,16 @@ void main() {
   // Jade and other milky stones glow softly through (subsurface-ish).
   vec3 col = mix(inside, refl, mix(0.2, 0.7, fres) * mix(0.6, 1.0, clarity));
   col += core * fres * 0.25;
-  gl_FragColor = vec4(col, opacity * mix(0.94, 0.82 + 0.18 * fres, clarity));
+  float alpha = mix(0.94, 0.82 + 0.18 * fres, clarity);
+  if (shell > 0.5) {
+    // A shell round a character: see-through face-on so they show inside,
+    // solid toward the edges, milky stones (jade) cloudier than clear ones.
+    float spec = pow(max(dot(R, normalize(vec3(0.35, 0.85, 0.4))), 0.0), 90.0);
+    alpha = clamp(mix(0.22 + 0.4 * (1.0 - clarity), 0.95, fres) + spec, 0.0, 1.0);
+    // The growing edge glows.
+    if (fill < 0.999) col += core * smoothstep(0.08, 0.0, fill - up) * 1.5;
+  }
+  gl_FragColor = vec4(col, opacity * alpha);
   #include <colorspace_fragment>
 }`;
 
@@ -325,7 +360,9 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
-export function jewelMaterial(body, core, look) {
+// opts.shell: a hollow see-through shell round a character (no depth
+// writes; draw it as a back pass and a front pass). opts.side picks one.
+export function jewelMaterial(body, core, look, opts = {}) {
   return new THREE.ShaderMaterial({
     vertexShader: JEWEL_VERTEX,
     fragmentShader: JEWEL_FRAGMENT,
@@ -338,10 +375,13 @@ export function jewelMaterial(body, core, look) {
       fire: { value: look.fire },
       seed: { value: 0 },
       time: { value: 0 },
+      shell: { value: opts.shell ? 1 : 0 },
+      fill: { value: 1 },
+      yRange: { value: new THREE.Vector2(-1, 1) },
     },
     transparent: true,
-    side: THREE.DoubleSide,
-    depthWrite: true,
+    side: opts.side ?? THREE.DoubleSide,
+    depthWrite: !opts.shell,
   });
 }
 

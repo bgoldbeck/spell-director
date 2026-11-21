@@ -73,7 +73,7 @@ KNOWN_PARAMS = {
         "shape", "cut", "count", "tints", "size_px", "scale", "opacity", "height_px", "forward_px", "side_px",
         "orbit_radius_px", "orbit_hz", "orbit_tilt_deg", "orbit_phase_deg", "weave_px", "bob_px", "bob_hz",
         "sway_px", "sway_hz", "stack_px", "stagger_ms", "appear_ms", "spin_hz", "yaw_deg", "tilt_deg", "roll_deg",
-        "face", "bloom", "petals", "sparkle", "glint_hz", "trail_ms", "clarity", "fire", "glow",
+        "face", "bloom", "petals", "sparkle", "glint_hz", "trail_ms", "clarity", "fire", "glow", "encase", "fill", "stretch",
         "emblem", "wave", "wave_hz",
     },
     "light": {"radius", "energy", "height_px", "forward_px", "side_px", "orbit_hz", "tint"},

@@ -330,10 +330,11 @@ A buff is cast on one character to help them: a shield, haste, strength, regener
 | glass dome, mirror veil | a clear tinted shell with a dark refracted edge | `orb` `bubble: true`, `finish: glass` |
 | gem orbit | gems that pop in one by one and circle the character, spinning and glinting | `motif` `shape: gem` (`cut`), `count`, `orbit_radius_px`, `orbit_hz`, `spin_hz`, `stagger_ms`, `sparkle`; `glow` `attach_to` it for halos; `light` layers with the same `orbit_hz` and `tint` for colored light on the body |
 | diamond, emerald, jade, sapphire, ruby | the gem's cut and color | `cut: brilliant`, `emerald`, `cabochon` (milky polished stones like jade), `marquise`, `heart`, `prism` (crystal points); the layer color or `tints` (one color per gem) |
+| encased, sealed in jade, crystal shell, geode | the character stands inside a gem that grows up round them, clear face-on with bright facet edges, and shatters when it ends | `motif` `shape: gem` `encase: true`, `cut: cocoon` / `prism` / `brilliant` (`tilt_deg: 180`), `stretch` to fit the body, keyframe `fill` 0 → 1; `sparks` `look: shard` for the shatter |
 | cocoon, mantle of leaves | many items stacked up the body | `motif` `count` 12–20, `stack_px`, `face: out`, `stagger_ms` so it spirals up |
 | halo, crown | items circling above the head | `motif` at `height_px` 130–150, small `orbit_radius_px`; prisms with `tilt_deg: 90` and `face: out` make a snowflake |
 
-Examples: `templates/water/dewdrop-ward.json` (leaf, drop, soap bubble), `earth/diamond-aegis.json` and the other Gemwarden orbits, `nature/petalfall-mending.json`, `arcane/moonmirror-veil.json` (glass), `ice/snowflake-ward.json`.
+Examples: `templates/water/dewdrop-ward.json` (leaf, drop, soap bubble), `earth/diamond-aegis.json` and the other Gemwarden orbits, `nature/petalfall-mending.json`, `arcane/moonmirror-veil.json` (glass), `ice/snowflake-ward.json`; encasing shells: `nature/jadeheart-cocoon.json`, `earth/adamant-vigil.json`, `nature/emerald-bastion.json`, `arcane/amethyst-geode.json`, `earth/amber-reliquary.json`.
 
 ### Warcries
 

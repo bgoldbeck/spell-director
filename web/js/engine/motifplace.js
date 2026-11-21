@@ -5,7 +5,7 @@
 // time. No DOM or Three.js here. The meshes and materials are in motif.js.
 
 export const MOTIF_SHAPES = ["leaf", "petal", "feather", "droplet", "blossom", "gem", "banner"];
-export const GEM_CUTS = ["brilliant", "emerald", "cabochon", "marquise", "prism", "heart"];
+export const GEM_CUTS = ["brilliant", "emerald", "cabochon", "marquise", "prism", "heart", "cocoon"];
 
 // Per-cut look: clarity (0 = milky like jade, 1 = water clear), fire
 // (rainbow flashes from dispersion) and whether its facets are flat.
@@ -16,6 +16,8 @@ export const GEM_LOOKS = {
   marquise: { clarity: 0.95, fire: 0.5, facets: true },
   prism: { clarity: 0.9, fire: 0.45, facets: true },
   heart: { clarity: 0.95, fire: 0.5, facets: true },
+  // A tall rough-faceted egg of crystal, big enough to hold a character.
+  cocoon: { clarity: 0.6, fire: 0.2, facets: true },
 };
 
 const TAU = Math.PI * 2;

@@ -946,7 +946,8 @@
                         "cabochon",
                         "marquise",
                         "prism",
-                        "heart"
+                        "heart",
+                        "cocoon"
                       ],
                       "description": "A gem's cut."
                     },
