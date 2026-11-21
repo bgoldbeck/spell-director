@@ -124,7 +124,7 @@ def test_starts_a_fresh_viewer_that_replaces_the_running_one(monkeypatch):
     monkeypatch.setattr(launch, "update", lambda: calls.append("update"))
     monkeypatch.setattr(launch.subprocess, "call", lambda cmd, cwd: calls.append(cmd[1:]) or 0)
     assert launch.main(["50123"]) == 0
-    assert calls == ["update", [str(launch.ROOT / "tools" / "serve.py"), "--replace", "--open", "--port", "50123"]]
+    assert calls == ["update", [str(launch.ROOT / "tools" / "serve.py"), "--replace-stale", "--open", "--port", "50123"]]
     calls.clear()
     assert launch.main(["--no-update"]) == 0
-    assert calls == [[str(launch.ROOT / "tools" / "serve.py"), "--replace", "--open"]]
+    assert calls == [[str(launch.ROOT / "tools" / "serve.py"), "--replace-stale", "--open"]]

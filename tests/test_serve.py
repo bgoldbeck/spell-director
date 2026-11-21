@@ -131,6 +131,73 @@ def test_replace_stops_the_running_viewer_and_starts_fresh(tmp_path):
                 proc.wait()
 
 
+def _wait_for_new_viewer(lock, proc, wait=15):
+    deadline = time.monotonic() + wait
+    while time.monotonic() < deadline:
+        info = lock.running_info()
+        if info.get("pid") == proc.pid and serve.is_viewer(info["url"]):
+            return info["url"]
+        time.sleep(0.2)
+    return None
+
+
+def test_replace_stale_keeps_a_viewer_on_the_latest_code(tmp_path):
+    lock = serve.InstanceLock(tmp_path)
+    first = _start_viewer(tmp_path)
+    try:
+        url = serve.find_running(lock, wait=15)
+        assert lock.running_info()["commit"] == serve.git_commit()
+        second = _start_viewer(tmp_path, "--replace-stale")
+        out, _ = second.communicate(timeout=15)
+        assert second.returncode == 0
+        assert "already running the latest code" in out
+        assert first.poll() is None and serve.is_viewer(url)  # kept, not restarted
+    finally:
+        first.kill()
+        first.wait()
+
+
+def test_replace_stale_restarts_a_viewer_on_older_code(tmp_path):
+    lock = serve.InstanceLock(tmp_path)
+    first = _start_viewer(tmp_path)
+    second = None
+    try:
+        assert serve.find_running(lock, wait=15)
+        info = lock.running_info()
+        info["version"] = "0.0.1"  # as if it was started before an update
+        lock.url_path.write_text(json.dumps(info), encoding="utf-8")
+        second = _start_viewer(tmp_path, "--replace-stale")
+        assert first.wait(timeout=15) == serve.REPLACED
+        assert _wait_for_new_viewer(lock, second), "the fresh viewer did not start"
+    finally:
+        for proc in (first, second):
+            if proc and proc.poll() is None:
+                proc.kill()
+                proc.wait()
+
+
+def test_stray_viewers_on_nearby_ports_are_closed(tmp_path):
+    probe = socket.socket()
+    probe.bind(("127.0.0.1", 0))
+    port = probe.getsockname()[1]
+    probe.close()
+    env = {**os.environ, "SPELLDIRECTOR_INSTANCE_DIR": str(tmp_path)}
+    stray = subprocess.Popen([sys.executable, str(ROOT / "tools" / "serve.py"), "--port", str(port), "--new-instance"],
+                             env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        url = f"http://127.0.0.1:{port}/"
+        deadline = time.monotonic() + 15
+        while not serve.is_viewer(url) and time.monotonic() < deadline:
+            time.sleep(0.2)
+        assert serve.is_viewer(url)
+        serve.stop_strays(port)
+        assert stray.wait(timeout=15) == serve.REPLACED
+    finally:
+        if stray.poll() is None:
+            stray.kill()
+        stray.wait()
+
+
 def test_shutdown_needs_the_launcher_header(tmp_path, monkeypatch):
     server, base = _serve(tmp_path, monkeypatch)
     try:

@@ -16,7 +16,11 @@ second server. --new-instance skips that check (used by tests and tools).
 viewer and starts a fresh one in its place, so a launch after an update always
 serves the new code. The running viewer is asked to stop through
 POST /api/shutdown (header X-SpellDirector: shutdown, localhost only); if it
-doesn't, its process is ended by the PID it noted.
+doesn't, its process is ended by the PID it noted. Viewers left on the next
+few ports (an old version without the lock, or --new-instance) are closed too.
+--replace-stale (what run.bat and run.sh use) is the same, except that a
+running viewer already on this exact code (same folder, version and git
+commit, noted in its instance file) is kept and opened in the browser.
 
 GET /version.json returns {"app": "SpellDirector", "version": "<VERSION>"}.
 
@@ -82,6 +86,26 @@ def read_version() -> str:
 
 
 VERSION = read_version()
+
+
+def git_commit() -> str | None:
+    """The checkout's HEAD commit, or None outside a git checkout (such as the exe)."""
+    if getattr(sys, "frozen", False) or not (ROOT / ".git").exists() or shutil.which("git") is None:
+        return None
+    try:
+        out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, timeout=5,
+                             stdin=subprocess.DEVNULL,
+                             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    return out.stdout.strip() or None
+
+
+def code_stamp() -> dict:
+    """What identifies the code this viewer runs: a running viewer with another stamp is out of date."""
+    return {"version": VERSION, "commit": git_commit(), "root": str(ROOT)}
 
 ANALYZE_SUFFIXES = {".gif", ".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi"}
 ANALYZE_MAX_BYTES = 1024 * 1024 * 1024  # 1 GB
@@ -438,7 +462,7 @@ class InstanceLock:
         return True
 
     def publish(self, url: str) -> None:
-        self.url_path.write_text(json.dumps({"url": url, "pid": os.getpid(), "version": VERSION}), encoding="utf-8")
+        self.url_path.write_text(json.dumps({"url": url, "pid": os.getpid(), **code_stamp()}), encoding="utf-8")
 
     def running_info(self) -> dict:
         try:
@@ -554,22 +578,44 @@ def stop_viewer(url: str | None, pid: int | None, wait: float = 10.0, gone=None)
     return gone()
 
 
-def replace_running(lock: InstanceLock, port: int) -> bool:
-    """--replace: stop whichever viewer is running and take the lock. False if it won't stop."""
+SWEEP_PORTS = 20  # bind() tries this many ports, so a stray viewer could be on any of them
+
+
+def stop_strays(port: int, keep: int | None = None) -> None:
+    """Close viewers that answer on port..port+SWEEP_PORTS-1 (except keep): ones started without
+    the lock, by an old version or --new-instance."""
+    if not port:
+        return
+    for p in range(port, port + SWEEP_PORTS):
+        url = f"http://127.0.0.1:{p}/"
+        if p == keep or not is_viewer(url, timeout=0.3):
+            continue
+        print(f"Closing the {APP} that is using port {p}...", flush=True)
+        if not stop_viewer(url, listening_pid(p)):
+            print(f"The one on port {p} did not stop.", flush=True)
+
+
+def replace_running(lock: InstanceLock, port: int, keep_current: bool = False) -> tuple[bool, str | None]:
+    """--replace: stop whichever viewers are running and take the lock.
+
+    Returns (ok, kept_url). ok is False if the running viewer won't stop. With keep_current, a
+    running viewer on this very code is left alone: kept_url is its URL and the lock is not taken.
+    """
     if not lock.acquire():
         info = lock.running_info()
         url = info.get("url") if isinstance(info.get("url"), str) else None
         pid = info.get("pid") if isinstance(info.get("pid"), int) else None
-        print(f"Closing the {APP} that is already running" + (f" ({url})" if url else "") + "...", flush=True)
+        current = all(info.get(k) == v for k, v in code_stamp().items())
+        if keep_current and current and url and is_viewer(url):
+            print(f"{APP} is already running the latest code: {url}", flush=True)
+            stop_strays(port, keep=urllib.parse.urlsplit(url).port)
+            return True, url
+        why = "an older version" if not current else "a running copy"
+        print(f"Closing {why} of {APP}" + (f" ({url})" if url else "") + "...", flush=True)
         if not stop_viewer(url, pid, gone=lock.acquire):
-            return False
-    # A viewer started without the lock (an old version, or --new-instance) may still hold the port.
-    old = f"http://127.0.0.1:{port}/"
-    if port and is_viewer(old, timeout=0.5):
-        print(f"Closing the {APP} that is using port {port}...", flush=True)
-        if not stop_viewer(old, listening_pid(port)):
-            print("It did not stop, so the new one will use another port.", flush=True)
-    return True
+            return False, None
+    stop_strays(port)
+    return True, None
 
 
 def main(argv: list[str]) -> int:
@@ -581,13 +627,20 @@ def main(argv: list[str]) -> int:
                     help="start a server even if a viewer is already running")
     ap.add_argument("--replace", action="store_true",
                     help="stop the viewer that is already running and start a fresh one")
+    ap.add_argument("--replace-stale", action="store_true",
+                    help="like --replace, but keep a running viewer that is already on this code")
     args = ap.parse_args(argv)
     lock = None
-    if args.replace and not args.new_instance:
+    if (args.replace or args.replace_stale) and not args.new_instance:
         lock = InstanceLock()
-        if not replace_running(lock, args.port):
+        ok, kept = replace_running(lock, args.port, keep_current=args.replace_stale and not args.replace)
+        if not ok:
             print(f"The {APP} that is already running did not stop. Close its window and try again.", flush=True)
             return 1
+        if kept:
+            if args.open:
+                webbrowser.open(kept)
+            return 0
         args.bind_wait = 5.0
     elif not args.new_instance:
         lock = InstanceLock()
