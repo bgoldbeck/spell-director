@@ -401,3 +401,130 @@ export function starTex() {
   starTexture.colorSpace = THREE.SRGBColorSpace;
   return starTexture;
 }
+
+// ------------------------------------------------------------ banner
+
+// A war banner: a pole (1 unit tall, base at 0) with a crossbar near the
+// top and a cloth hanging from it that ripples in the wind, a trim along
+// its edges, a swallowtail and an emblem in the middle. The cloth hangs in
+// the pole's YZ plane, so it faces along the item's +X (its face).
+const BANNER_W = 0.21; // half width of the cloth
+const BANNER_TOP = 0.93;
+const BANNER_DROP = 0.56;
+
+function clothGeometry() {
+  const g = new THREE.PlaneGeometry(BANNER_W * 2, BANNER_DROP, 14, 18);
+  g.rotateY(Math.PI / 2); // into the YZ plane, facing +X
+  g.translate(0.03, BANNER_TOP - BANNER_DROP / 2, 0);
+  return g;
+}
+
+const CLOTH_VERTEX = /* glsl */ `
+uniform float phase;
+uniform float wave;
+varying vec2 vUv;
+varying vec3 vWorld;
+void main() {
+  vUv = uv;
+  vec3 p = position;
+  // Ripples run down and across the cloth, growing toward its free end.
+  float hang = clamp((${BANNER_TOP.toFixed(3)} - p.y) / ${BANNER_DROP.toFixed(3)}, 0.0, 1.0);
+  float w = sin(phase - p.z * 11.0 - hang * 5.0) * 0.6 + sin(phase * 2.0 + 1.3 - p.z * 17.0 - hang * 9.0) * 0.25;
+  p.x += wave * 0.07 * (0.25 + hang) * w;
+  p.z += wave * 0.02 * hang * sin(phase + hang * 4.0);
+  vec4 wp = modelMatrix * vec4(p, 1.0);
+  vWorld = wp.xyz;
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}`;
+
+const CLOTH_FRAGMENT = /* glsl */ `
+uniform vec3 cloth;
+uniform vec3 trim;
+uniform float opacity;
+uniform float emblem; // 0 none, 1 chevron, 2 sun, 3 star, 4 fang, 5 crown
+varying vec2 vUv;
+varying vec3 vWorld;
+void main() {
+  vec2 uv = vUv; // x across (0-1), y up (0 bottom, 1 top)
+  // Swallowtail: a V cut out of the bottom edge.
+  float cut = 0.16 * (1.0 - abs(uv.x - 0.5) * 2.0);
+  if (uv.y < cut) discard;
+  vec3 N = normalize(cross(dFdx(vWorld), dFdy(vWorld)));
+  vec3 V = normalize(cameraPosition - vWorld);
+  if (dot(N, V) < 0.0) N = -N;
+  float light = 0.45 + 0.55 * abs(dot(N, normalize(vec3(-0.4, 0.8, 0.45))));
+  // Folds catch the light: a soft sheen across the ripples.
+  float sheen = pow(max(dot(reflect(-V, N), normalize(vec3(-0.4, 0.8, 0.45))), 0.0), 10.0) * 0.35;
+  vec3 col = cloth * mix(0.55, 1.0, uv.y) * light + vec3(sheen);
+  // Trim along the sides, the top and the cut.
+  float edge = min(min(uv.x, 1.0 - uv.x), min(1.0 - uv.y, (uv.y - cut) * 0.9));
+  float trimBand = smoothstep(0.05, 0.035, edge);
+  col = mix(col, trim * (0.7 + 0.5 * light), trimBand);
+  // The emblem, centred a little above the middle.
+  vec2 p = vec2((uv.x - 0.5) * ${(BANNER_W * 2 / BANNER_DROP).toFixed(3)}, uv.y - 0.56);
+  float e = 0.0;
+  if (emblem > 0.5 && emblem < 1.5) {
+    // Two stacked chevrons pointing up.
+    float c1 = abs(p.y - 0.02 + abs(p.x) * 0.9) - 0.035;
+    float c2 = abs(p.y + 0.12 + abs(p.x) * 0.9) - 0.035;
+    e = (1.0 - smoothstep(0.0, 0.012, min(c1, c2))) * step(abs(p.x), 0.26);
+  } else if (emblem > 1.5 && emblem < 2.5) {
+    // A sun: a disc with rays.
+    float r = length(p);
+    float a = atan(p.y, p.x);
+    float rays = step(0.6, cos(a * 12.0)) * smoothstep(0.24, 0.2, r) * step(0.13, r);
+    e = max(1.0 - smoothstep(0.1, 0.115, r), rays);
+  } else if (emblem > 2.5 && emblem < 3.5) {
+    // A five-pointed star.
+    float a = atan(p.x, p.y);
+    float r = mix(0.075, 0.19, pow(0.5 + 0.5 * cos(5.0 * a), 3.0));
+    e = 1.0 - smoothstep(r - 0.012, r, length(p));
+  } else if (emblem > 3.5 && emblem < 4.5) {
+    // A fang: a curved tooth pointing down.
+    float y = p.y + 0.02;
+    float w = 0.085 * clamp((y + 0.2) / 0.34, 0.0, 1.0);
+    float bend = 0.6 * (y - 0.14) * (y - 0.14);
+    e = (1.0 - smoothstep(w - 0.01, w, abs(p.x + bend))) * step(-0.2, y) * step(y, 0.14);
+  } else if (emblem > 4.5) {
+    // A crown: a band with three points.
+    float band = step(abs(p.y + 0.08), 0.04) * step(abs(p.x), 0.17);
+    float d = abs(fract((p.x + 0.17) / 0.17 + 0.5) - 0.5) * 0.17;
+    float pts = step(abs(p.x), 0.17) * step(-0.04, p.y) * step(p.y, 0.14 - 1.6 * d);
+    e = max(band, pts);
+  }
+  col = mix(col, trim * 1.25, e);
+  gl_FragColor = vec4(col, opacity);
+  #include <colorspace_fragment>
+}`;
+
+export const BANNER_EMBLEMS = ["none", "chevron", "sun", "star", "fang", "crown"];
+
+/** {parts: [Mesh], mats, cloth}: a banner in `color` with `trim` metal. */
+export function bannerParts(color, trim, emblem = "chevron") {
+  const cloth = new THREE.ShaderMaterial({
+    vertexShader: CLOTH_VERTEX,
+    fragmentShader: CLOTH_FRAGMENT,
+    uniforms: {
+      cloth: { value: color.clone() },
+      trim: { value: trim.clone() },
+      opacity: { value: 0 },
+      phase: { value: 0 },
+      wave: { value: 0.5 },
+      emblem: { value: Math.max(0, BANNER_EMBLEMS.indexOf(emblem)) },
+    },
+    transparent: true,
+    side: THREE.DoubleSide,
+  });
+  const wood = new THREE.MeshStandardMaterial({ color: "#3b2f26", roughness: 0.7, metalness: 0.1, transparent: true });
+  const metal = new THREE.MeshStandardMaterial({ color: trim.clone(), roughness: 0.35, metalness: 0.5, emissive: trim.clone().multiplyScalar(0.5), transparent: true });
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.018, 1.0, 8), wood);
+  pole.position.y = 0.5;
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, BANNER_W * 2 + 0.06, 6), metal);
+  bar.rotation.x = Math.PI / 2;
+  bar.position.set(0.03, BANNER_TOP + 0.01, 0);
+  const finial = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.09, 8), metal);
+  finial.position.y = 1.04;
+  const flag = new THREE.Mesh(clothGeometry(), cloth);
+  flag.frustumCulled = false;
+  return { parts: [pole, bar, finial, flag], mats: [cloth, wood, metal], cloth };
+}

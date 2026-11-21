@@ -1,0 +1,549 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "sound-warcry-breaker-roar",
+  "name": "Breaker Roar",
+  "description": "The caster rears back and roars. A wall of sound slams out over the ground in a ring, tearing up dust and gouging the earth, and every enemy round them is blown off their feet and shoved back.",
+  "element": "sound",
+  "archetype": "nova",
+  "tags": [
+    "warcry",
+    "shout",
+    "splash",
+    "point-blank",
+    "pbae",
+    "knockback",
+    "shockwave",
+    "sound-wave",
+    "multi-target"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Warcry: a roar ring that knocks every nearby foe back."
+  },
+  "timing": {
+    "duration_ms": 2400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "side": "enemies",
+      "count": {
+        "min": 7,
+        "max": 8
+      },
+      "radius": {
+        "min": 2.3,
+        "max": 2.7
+      },
+      "ripple_ms": 200,
+      "react": {
+        "kind": "knockback",
+        "at_ms": 450,
+        "distance_px": {
+          "min": 80,
+          "max": 100
+        },
+        "duration_ms": 560
+      }
+    },
+    "caster_react": {
+      "kind": "shout",
+      "at_ms": 0,
+      "duration_ms": 900
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The roar wall stands up and rushes at the lens; enemies ahead fly back off the ring.",
+      "side": "Air rings stacked over the caster; dust rolls out both ways.",
+      "top": "Hero for the read: one hard ring of force, a dust wave behind it, every enemy shoved straight out from the caster.",
+      "three_quarter": "Hero view: the rear-back, the roar, the ring and the scattered enemies."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#F2C27A",
+    "secondary": "#B86A34",
+    "accent": "#FFE7C2",
+    "shadow": "#2A221C"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "The ring of dummies and the particles change per cast."
+  },
+  "beats": [
+    {
+      "id": "breath",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 420,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 1.0
+      },
+      "intent": "The caster rears back and fills their lungs; dust is sucked in."
+    },
+    {
+      "id": "roar",
+      "phase": "impact",
+      "start_ms": 420,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The roar: the air in front of their mouth breaks."
+    },
+    {
+      "id": "wall",
+      "phase": "impact",
+      "start_ms": 430,
+      "end_ms": 1250,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A wall of sound rushes out over the ground."
+    },
+    {
+      "id": "blow",
+      "phase": "impact",
+      "start_ms": 450,
+      "end_ms": 780,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "It hits each enemy and throws them back."
+    },
+    {
+      "id": "settle",
+      "phase": "dissipation",
+      "start_ms": 920,
+      "end_ms": 2400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "Dust drifts down; the ground is torn."
+    }
+  ],
+  "layers": [
+    {
+      "id": "breath-glow",
+      "type": "glow",
+      "beats": [
+        "breath"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "radius_px": 55,
+        "softness": 0.9,
+        "height_px": 80,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A warm swell of breath gathering at the caster's chest.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "suck-in",
+      "type": "ring",
+      "beats": [
+        "breath"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 2,
+      "params": {
+        "start_radius_px": 300,
+        "end_radius_px": 30,
+        "thickness_px": 6,
+        "softness": 0.8,
+        "repeat_ms": 200,
+        "count": 2,
+        "ease": "ease_in"
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Faint rings of air sliding in to the caster as they inhale.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "flow": {
+          "direction": "inward",
+          "speed": 4
+        }
+      }
+    },
+    {
+      "id": "dust-in",
+      "type": "sparks",
+      "beats": [
+        "breath"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "count": 30,
+        "speed": 20,
+        "gravity": 0,
+        "lifetime_ms": 450,
+        "size_px": 2,
+        "spread_deg": 360,
+        "drag": 0.2,
+        "emit_ms": 360,
+        "gather_px": 220,
+        "swirl": 0.3,
+        "streak_ms": 40
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Grit pulled across the ground toward the caster.",
+        "technique": "particles",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "breath-sound",
+      "type": "sound_cue",
+      "beats": [
+        "breath"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.45,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "mouth-burst",
+      "type": "ring",
+      "beats": [
+        "roar"
+      ],
+      "anchor": "caster",
+      "plane": "vertical",
+      "color": "core",
+      "z": 9,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 110,
+        "thickness_px": 14,
+        "softness": 0.5,
+        "height_px": 85
+      },
+      "shader": {
+        "material": "airy",
+        "look": "The air breaking in front of the caster's mouth: a hard ring standing up.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "roar-wall",
+      "type": "ring",
+      "beats": [
+        "roar",
+        "wall"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 6,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 430,
+        "thickness_px": 34,
+        "softness": 0.45,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "airy",
+        "look": "The lead shockwave: a thick, bright ring of force skimming the ground past every enemy.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "flow": {
+          "direction": "outward",
+          "speed": 8
+        }
+      }
+    },
+    {
+      "id": "air-rings",
+      "type": "ring",
+      "beats": [
+        "roar",
+        "wall"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 330,
+        "thickness_px": 10,
+        "softness": 0.6,
+        "repeat_ms": 160,
+        "count": 3,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Sound rings standing up in the air, rolling out behind the lead wave.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "distortion": 0.4
+      }
+    },
+    {
+      "id": "dust-wave",
+      "type": "smoke",
+      "beats": [
+        "wall",
+        "settle"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 3,
+      "params": {
+        "count": 48,
+        "rise_speed": 18,
+        "size_px": 34,
+        "lifetime_ms": 1500,
+        "opacity": 0.5,
+        "spread_px": 40,
+        "spread_speed": 330
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A thick bank of dust shoved outward by the roar and hanging in the air after it.",
+        "technique": "flipbook",
+        "lighting": "six_way"
+      }
+    },
+    {
+      "id": "gouge",
+      "type": "decal",
+      "beats": [
+        "wall",
+        "settle"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": -1,
+      "params": {
+        "shape": "fissures",
+        "radius_px": 170,
+        "opacity": 0.75,
+        "reveal_ms": 300,
+        "fade_ms": 600,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Ground split open round the caster's feet.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "roar-flash",
+      "type": "flash",
+      "beats": [
+        "roar"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 200,
+        "peak": 0.8
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A pop of light where the roar breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "roar-light",
+      "type": "light",
+      "beats": [
+        "roar",
+        "wall"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "params": {
+        "radius": 6,
+        "energy": 1.6,
+        "height_px": 80
+      },
+      "shader": {
+        "material": "airy",
+        "look": "Warm light thrown over the enemies by the blast.",
+        "technique": "light",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "roar-shake",
+      "type": "camera_shake",
+      "beats": [
+        "roar"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 12,
+          "max": 15
+        },
+        "frequency_hz": 18,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "roar-sound",
+      "type": "sound_cue",
+      "beats": [
+        "roar"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "pitch": 0.75
+      }
+    },
+    {
+      "id": "rumble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "wall"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.7,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "hit-burst",
+      "type": "ring",
+      "beats": [
+        "blow"
+      ],
+      "anchor": "splash",
+      "plane": "billboard",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 70,
+        "thickness_px": 8,
+        "softness": 0.6,
+        "height_px": 55
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A punch of air on each enemy's chest as the wave hits.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "hit-dust",
+      "type": "sparks",
+      "beats": [
+        "blow"
+      ],
+      "anchor": "splash",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "look": "debris",
+        "count": 10,
+        "speed": 260,
+        "speed_spread": 0.5,
+        "gravity": 900,
+        "lifetime_ms": 700,
+        "size_px": 3,
+        "spread_deg": 70,
+        "drag": 0.3,
+        "emit_ms": 80
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Clods kicked up at each enemy's feet as they're thrown.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "hit-sound",
+      "type": "sound_cue",
+      "beats": [
+        "blow"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.6,
+        "pitch": {
+          "min": 0.8,
+          "max": 1.1
+        }
+      }
+    }
+  ],
+  "director_notes": "Original warcry. The caster's shout pose peaks at about 420 ms, so the roar starts there. The lead ring is linear at 5 units/s (430 px over 800 ms) and ripple_ms 200 per unit puts each enemy's hit and knockback right as it passes them. Dummies are pushed straight away from the caster."
+}

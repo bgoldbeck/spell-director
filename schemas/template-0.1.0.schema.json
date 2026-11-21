@@ -254,8 +254,23 @@
                 "sequence"
               ],
               "description": "splash: ripple (default) delays each splash target by its distance from the primary; sequence hits them one after another, hop_delay_ms apart, going round the primary (a ricochet)."
+            },
+            "side": {
+              "enum": [
+                "enemies",
+                "allies"
+              ],
+              "description": "splash: who stands round the centre. enemies (default) or allies (a rallying shout, a battle-fury aura: blue stand-ins with a green ring)."
+            },
+            "react": {
+              "$ref": "#/$defs/reaction",
+              "description": "How each target reacts, starting at_ms plus its splash delay."
             }
           }
+        },
+        "caster_react": {
+          "$ref": "#/$defs/reaction",
+          "description": "How the caster moves (kind shout: rear back, then shout)."
         }
       }
     },
@@ -919,9 +934,10 @@
                         "feather",
                         "droplet",
                         "blossom",
-                        "gem"
+                        "gem",
+                        "banner"
                       ],
-                      "description": "What the motif is. See docs/template-format.md#motifs."
+                      "description": "What the motif is (banner: a war banner on a pole). See docs/template-format.md#motifs."
                     },
                     "cut": {
                       "enum": [
@@ -1022,6 +1038,21 @@
                           "$ref": "#/$defs/range"
                         }
                       ]
+                    },
+                    "emblem": {
+                      "enum": [
+                        "none",
+                        "chevron",
+                        "sun",
+                        "star",
+                        "fang",
+                        "crown"
+                      ],
+                      "description": "banner only: the device on the cloth, in the core color."
+                    },
+                    "wave": {
+                      "$ref": "#/$defs/number_or_range",
+                      "description": "banner only: how hard the cloth ripples (0 hangs still, 1 a stiff wind; default 0.5)."
                     }
                   }
                 }
@@ -1381,6 +1412,48 @@
               "$ref": "#/$defs/shader"
             }
           }
+        }
+      }
+    },
+    "reaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "description": "How a stand-in figure reacts (the viewer poses it; an engine plays a hit reaction or animation). See docs/template-format.md#warcries.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "knockback",
+            "flinch",
+            "cower",
+            "cheer",
+            "shout"
+          ],
+          "description": "knockback: shoved back off their feet and stays pushed. flinch: rocked back and upright again. cower: crouched, leaning away and trembling, then straightening. cheer: hopping on the spot. shout: the caster rears back and throws the chest forward."
+        },
+        "at_ms": {
+          "$ref": "#/$defs/number_or_range",
+          "description": "When it starts (targets: plus their splash delay)."
+        },
+        "duration_ms": {
+          "$ref": "#/$defs/number_or_range"
+        },
+        "distance_px": {
+          "$ref": "#/$defs/number_or_range",
+          "description": "knockback: how far they are pushed away from the centre (default 90)."
+        },
+        "lean_deg": {
+          "$ref": "#/$defs/number_or_range"
+        },
+        "lift_px": {
+          "$ref": "#/$defs/number_or_range",
+          "description": "cheer: hop height (default 14)."
+        },
+        "hops": {
+          "$ref": "#/$defs/int_or_range",
+          "description": "cheer: how many hops (default 2)."
         }
       }
     }

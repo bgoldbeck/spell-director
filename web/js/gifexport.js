@@ -84,6 +84,7 @@ export async function exportGifs(template, opts = {}) {
   // One frame of one view, as the viewer would show it, in RGBA.
   const draw = (view, t) => {
     effect.update(t);
+    studio.update(t);
     const list = view === "quad"
       ? Object.entries(quadViewports(W, H)).map(([v, port]) => ({ scene: studio.scene, camera: cams[v], ...port }))
       : [{ scene: studio.scene, camera: cams[view] }];

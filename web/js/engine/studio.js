@@ -50,23 +50,46 @@ export function makeStudio() {
   scene.add(props);
 
   // Stand-ins for the caster and each target, and a marker on a ground point.
+  // Each figure stands in a pivot at its feet, so update(t) can lean, push,
+  // lift and crouch it for a reaction (engine/react.js) without state.
+  let posed = [];
+  let current = null;
+  const pivot = (figure, x, z, away) => {
+    const g = new THREE.Group();
+    g.position.set(x, 0, z);
+    g.add(figure);
+    g.userData = { x, z, away };
+    props.add(g);
+    return g;
+  };
   function setStage(stage) {
     disposeTree(props);
     props.clear();
+    posed = [];
+    current = stage;
     // A status effect has no caster: the afflicted character stands alone at
     // the origin, facing the front camera (-X).
     if (stage.status) {
       props.add(standIn("#7a7e8c", -1));
       return;
     }
-    props.add(standIn("#8c90a0", 1));
-    for (const p of stage.targets) {
-      const d = standIn("#6c6f7b", -1);
-      d.position.set(p.x, 0, p.z);
-      d.lookAt(0, 0, 0);
+    posed.push({ g: pivot(standIn("#8c90a0", 1), 0, 0, new THREE.Vector3(-1, 0, 0)), caster: true });
+    // Allies (a rallying shout, a battle-fury aura) wear a blue tint and a
+    // green ring at their feet; enemies stay grey.
+    const allies = stage.side === "allies";
+    stage.targets.forEach((p, i) => {
+      const d = standIn(allies ? "#6f86b0" : "#6c6f7b", -1);
+      d.lookAt(-p.x, 0, -p.z);
       d.rotateY(-Math.PI / 2);
-      props.add(d);
-    }
+      const g = pivot(d, p.x, p.z, stage.targetAway ? stage.targetAway(i) : new THREE.Vector3(1, 0, 0));
+      posed.push({ g, i });
+      if (allies) {
+        const m = new THREE.Mesh(new THREE.RingGeometry(0.26, 0.31, 40), new THREE.MeshBasicMaterial({ color: "#3f9f6e" }));
+        m.rotation.x = -Math.PI / 2;
+        m.position.y = 0.008;
+        g.add(m);
+      }
+    });
     // Splash spells: a selection ring under the primary target (the one the
     // caster picked) so it reads apart from the enemies around it.
     if (stage.splash && !stage.splashNoPrimary && stage.targets[0]) {
@@ -82,12 +105,32 @@ export function makeStudio() {
       m.position.set(stage.point.x, 0.01, 0);
       props.add(m);
     }
+    update(0);
   }
 
-  return {
+  // Pose the figures at time t (ms): pushed away from the spell's centre,
+  // lifted, crouched and leaning, all worked out fresh from t.
+  const axis = new THREE.Vector3();
+  const UP = new THREE.Vector3(0, 1, 0);
+  function update(t) {
+    if (!current) return;
+    for (const { g, i, caster } of posed) {
+      const pose = caster ? current.casterPose?.(t) : current.targetPose?.(i, t);
+      if (!pose) continue;
+      const { x, z, away } = g.userData;
+      // Sideways is the away direction turned a quarter turn.
+      g.position.set(x + away.x * pose.push - away.z * pose.shiver, pose.lift, z + away.z * pose.push + away.x * pose.shiver);
+      // Tip the top away from the centre: turn about the horizontal axis
+      // at right angles to the away direction.
+      axis.crossVectors(UP, away).normalize();
+      g.quaternion.setFromAxisAngle(axis, pose.lean);
+      g.scale.set(1, pose.squash, 1);
+    }
+  }  return {
     scene,
     props,
     setStage,
+    update,
     dispose() {
       scene.remove(props);
       disposeTree(scene);

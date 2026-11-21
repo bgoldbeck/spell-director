@@ -151,7 +151,7 @@ Unknown params are allowed (the validator warns) so the director can experiment,
 | `eruption` | Rock bursting out of the ground in rows along an arc (or full circle) that sweeps outward from its anchor, each row bigger than the last: `shape` (`spikes` default: jagged pointed rocks; `slabs`: broken plates of ground shoved up on edge; `mushrooms`: smooth mushrooms with softly glowing caps in the layer's color on pale stems, popping up with a springy overshoot: a druid's ring of fungi; use `debris_count` 0 and a little dust), `arc_deg` (default 100, centred on the cast direction; 360 = a ring), `rows` (default 5), `start_radius_px`, `end_radius_px` (first and last row, default 50 and 360; 0 puts one rock at the centre), `row_delay_ms` (default 120), `delay_growth` (each gap this many times the last, default 1; above 1 the rhythm slows so the big rows land with weight), `growth` (size per row, default 1.3; below 1 the centre is biggest: a crown of spikes), `height_px`, `width_px` (row 0), `spacing_px` (gap along the arc, default 40), `tilt_deg` (lean away from the anchor), `jitter` (0–1), `rise_ms` (thrust up with a small overshoot, default 90), `hold_ms` (default 300), `sink_ms` (crumble back down, default 350), `debris_count` (chunks thrown per rock, default 3), `debris_speed`, `debris_size_px`, `gravity`, `dust` (0–1 opacity of the dust kicked up at each rock), `dust_size_px`, `dust_life_ms`. Rocks take the layer's color and are lit by the scene; dust is the palette's `secondary` dulled toward the rock. |
 | `decal` | `shape`, `radius_px`, `opacity`, `fade_in_ms`, `lifetime_ms`, `fade_ms`, `grow_ms`, `start_scale`, `rotation_deg`, `spin_deg_per_s`, `stretch`, `pulse_hz`, `detail`, `symmetry`. See [Decals](#decals). |
 | `smoke` | `count` (max 64), `rise_speed` (negative sinks), `size_px`, `lifetime_ms`, `opacity`, `spread_px` (how far around the anchor the puffs are scattered, default 15; widen it for a cloud or a smoke bank), `spread_speed` (px/s the puffs also roll outward along the ground, evenly around the centre and slowing as they go: a dust wave or a spreading fireball; default 0). With the layer's `blend: add` the puffs glow instead of shading: billows of flame. With `attach_to` a `vortex` they swirl around its foot (a dust skirt). `height_px`: puffs start this far above the anchor (a ball of black smoke at a target's chest; default 0). Shader intent `lighting: "six_way"` draws alpha smoke as six-way lit smoke (relit by the scene's and the spell's lights; the Realistic style does this for all alpha smoke not marked `unlit`), see [vocabulary.md](vocabulary.md#six-way-lit-smoke). |
-| `motif` | Small modeled things that act out a buff's story: `shape` (`leaf`, `petal`, `feather`, `droplet`, `blossom`, `gem`), `cut` for gems (`brilliant`, `emerald`, `cabochon`, `marquise`, `heart`, `prism`), `count`, `tints` (a list of `#RRGGBB`, one per item, cycled), `size_px`, `scale`, `opacity`, placement (`height_px`, `forward_px`, `side_px`, orbit `orbit_radius_px`, `orbit_hz`, `orbit_tilt_deg`, `orbit_phase_deg`, `weave_px`, `bob_px`, `bob_hz`, `sway_px`, `sway_hz`, `stack_px`), timing (`stagger_ms`, `appear_ms`), pose (`spin_hz`, `yaw_deg`, `tilt_deg`, `roll_deg`, `face`), `bloom`, `petals`, `sparkle`, `glint_hz`, `trail_ms`, `clarity`, `fire`, `glow`. See [Motifs](#motifs). |
+| `motif` | Small modeled things that act out a buff's story: `shape` (`leaf`, `petal`, `feather`, `droplet`, `blossom`, `gem`, `banner`), `cut` for gems (`brilliant`, `emerald`, `cabochon`, `marquise`, `heart`, `prism`), `count`, `tints` (a list of `#RRGGBB`, one per item, cycled), `size_px`, `scale`, `opacity`, placement (`height_px`, `forward_px`, `side_px`, orbit `orbit_radius_px`, `orbit_hz`, `orbit_tilt_deg`, `orbit_phase_deg`, `weave_px`, `bob_px`, `bob_hz`, `sway_px`, `sway_hz`, `stack_px`), timing (`stagger_ms`, `appear_ms`), pose (`spin_hz`, `yaw_deg`, `tilt_deg`, `roll_deg`, `face`), `bloom`, `petals`, `sparkle`, `glint_hz`, `trail_ms`, `clarity`, `fire`, `glow`; banners take `emblem`, `wave` and `wave_hz`. See [Motifs](#motifs). |
 | `coat` | A skin over the afflicted character in a status effect. See [Coat](#coat). |
 | `light` | `radius` (world units, default 6), `energy` (default 2), `height_px` (above the ground, default 80; negative = under the ground), `forward_px` (along the cast direction from the anchor), `side_px` (positive = left of the cast direction), `orbit_hz` (circles the anchor at its forward/side distance, counter-clockwise from above), `tint` (`#RRGGBB`, a light color outside the palette: neon stage or rim lights). Place lights round a `six_way` smoke layer to light it from a side. |
 | `camera_shake` | `amplitude_px`, `frequency_hz`, `decay` (0–1) |
@@ -169,6 +169,7 @@ A `motif` layer is one or more small modeled things that play a part in a spell'
 | `droplet` | a clear teardrop of water, point up: bright rim, window highlight, a caustic on its underside | half its height |
 | `blossom` | `petals` (default 5) petals round a glowing heart; `bloom` 0 is a closed bud, 1 open flat, a little over 1 droops into a halo | petal length |
 | `gem` | a faceted gem that reflects a studio sky, glows inside facet by facet and throws rainbow fire; `cut`: `brilliant` (diamond), `emerald` (step cut), `cabochon` (polished dome, milky like jade), `marquise`, `heart`, `prism` (a crystal point) | radius |
+| `banner` | a war banner: a dark pole with a gilded finial and crossbar, and a swallowtailed cloth in the layer color (or `tints`) that ripples in the wind, with a trim and an `emblem` (`chevron` default, `sun`, `star`, `fang`, `crown`, `none`) in the core color. `wave` (0–1.5, default 0.5) is how hard the cloth ripples, `wave_hz` (default 1.2, snapped to the loop) how fast. The cloth faces along the cast direction: turn it with `yaw_deg`. Plant it by keyframing `height_px` down to 0 with `ease_in` | pole height |
 
 Gems take `clarity` (0 milky, 1 water clear; set by the cut) and `fire` (0–1, rainbow flashes). `sparkle` (0–1) adds a four-pointed star glint that twinkles on each item at `glint_hz`. `trail_ms` draws a light trail behind each moving item. `glow` (leaf, petal, feather) is how much light shines through the edges.
 
@@ -202,6 +203,41 @@ Many big area spells need a target: the caster picks one enemy and the spell sla
 **Point-blank** (`destination: "caster"`): no primary enemy. The caster is the centre and all `count` enemies stand round them; `ripple_ms` counts from the caster, layers anchored at `caster` are the blast, and splash bolts and orbs come `from` the caster. **Ground-targeted** (`destination: "point"` or `"ground"`): the centre is a spot on the ground the caster picked (at `footprint.length`, marked in the viewer), the `count` enemies stand in and round it, and layers anchored at `target` or `sky` sit on that spot.
 
 Layers anchored at `target` play once, on the primary target. Layers anchored at **`splash`** repeat on every other enemy, each delayed as above: hit flashes, sparks and marks, a bolt forking to them (see `bolt`), an `orb` flying to them (see `orb`), an eruption under each. `sparks` with `home_to: target` fly to the primary. Sky layers sit above the primary; a spell from the `sky` frames its height in the viewer. The viewer marks the primary target with a red ring. Exports mark `splash` decals `per_target`.
+
+## Warcries
+
+A **warcry** is a shout: the caster rears back and bellows, and a shockwave or an aura rolls out over the allies or the enemies standing round them (a roar that knocks foes back, a rallying banner, a fear howl, a thunder shout, a battle fury). Tag it `warcry`; the viewer lists every one under **Type → Kinds → Warcries** (`?type=kind:warcry`). It uses the point-blank splash layout (`destination: "caster"`, see [Splash](#splash-targeted-area-spells)), so layers anchored at `splash` play on every figure round the caster, plus three fields that set the stage:
+
+```json
+"space": {
+  "origin": "caster", "destination": "caster", "travel": "instant",
+  "targets": { "layout": "splash", "side": "enemies", "count": 7, "radius": 2.5, "ripple_ms": 200,
+               "react": { "kind": "knockback", "at_ms": 450, "distance_px": 90 } },
+  "caster_react": { "kind": "shout", "at_ms": 0, "duration_ms": 900 }
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `targets.side` | Who stands round the caster: `enemies` (default, grey) or `allies` (blue, with a green ring at their feet). |
+| `targets.react` | How each figure reacts, starting `at_ms` plus its splash delay (so it reacts as the wave reaches it). |
+| `caster_react` | How the caster moves. |
+
+A reaction has a `kind`, `at_ms` and `duration_ms` (default per kind), and:
+
+| Kind | Looks like | Knobs |
+|---|---|---|
+| `knockback` | shoved back off their feet with a little hop, tipped back, righting as they land; stays pushed | `distance_px` (default 90), `lean_deg` (32) |
+| `flinch` | rocked back and swaying upright again | `lean_deg` (18), `distance_px` (6) |
+| `cower` | crouched, leaning away and trembling, then straightening up at the end; a negative `lean_deg` with `distance_px: 0` is a brace | `lean_deg` (14), `distance_px` (12) |
+| `cheer` | hopping on the spot | `hops` (2), `lift_px` (14), `lean_deg` (6) |
+| `shout` | the caster rears back drawing breath (the first 40%), then throws the chest forward with the shout and settles | `lean_deg` (16) |
+
+Push and lean are away from the caster (the caster's own lean is backward). The pose is worked out fresh from the time, like everything else in the viewer. `coat` layers ride on the figure they cover, so a skin stays on a body that crouches or hops; other layers stay where they were anchored. In an engine these are hit reactions and animations: the export lists them.
+
+Time the shout first: with `caster_react` `shout`, its chest-forward moment is 40–52% into its `duration_ms` (about 400 ms of 900), so start the release there. Then match `ripple_ms` to the wave: a ring that rolls out at *v* units per second reaches a figure *d* units away after *d / v* seconds, so `ripple_ms` = 1000 / *v*. A warcry that holds an aura over its allies is an aura too (`timing.loop_range`): give it `ripple_ms: 0` so every per-ally loop layer stays in step with the loop, and keep `knockback` and `cheer` in the start-up, before the per-ally coats appear.
+
+Examples: `templates/*/warcry-*.json` (Breaker Roar, Thunderclap Shout, Dread Howl, Rallying Standard, Battle Fury, Ironhide Bellow).
 
 ## Auras
 

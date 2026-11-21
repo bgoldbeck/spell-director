@@ -462,10 +462,20 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       intent: b.intent || "",
     })),
     palette: template.palette || {},
+    reactions: reactionsOut(template),
     decals,
     six_way_smoke: sixWay,
     ...tracksOut,
   };
+}
+
+// Who stands round the caster and how the characters react (warcries and
+// other area spells): for the engine's hit reactions and animations.
+function reactionsOut(template) {
+  const t = template.space?.targets || {};
+  const c = template.space?.caster_react;
+  if (!t.react && !c && t.side !== "allies") return null;
+  return { side: t.side === "allies" ? "allies" : "enemies", targets: t.react || null, caster: c || null };
 }
 
 // ------------------------------------------------------------ guide (Markdown)
@@ -766,6 +776,17 @@ export function guideMarkdown(m, { files } = {}) {
     }),
   ), "");
   add("Pixel positions are from the top-left of a cell and can fall outside it (the caster is often off to the side). Front, side and 3/4 are perspective cameras; top is a straight-down orthographic camera.", "");
+
+  if (m.reactions) {
+    const r = m.reactions;
+    const n = (v) => (v && typeof v === "object" ? `${v.min}–${v.max}` : v);
+    const say = (x) => `\`${x.kind}\` from ${n(x.at_ms ?? 0)} ms${x.duration_ms ? ` for ${n(x.duration_ms)} ms` : ""}`;
+    add("## Character reactions", "");
+    add(`The characters round the caster are **${r.side}**. The viewer poses its stand-ins to show how your characters should move; play these as hit reactions or animations on your own characters (they are not in the sheets).`, "");
+    if (r.caster) add(`- **Caster**: ${say(r.caster)} (\`shout\`: rear back drawing breath, then throw the chest forward with the shout about 40% in).`);
+    if (r.targets) add(`- **Each ${r.side === "allies" ? "ally" : "enemy"}**: ${say(r.targets)}, plus their own per-target delay (the same delay as the layers marked per target), pushed and leaning away from the caster.`);
+    add("");
+  }
 
   add("## Rebuild it in Unity", "");
   add(

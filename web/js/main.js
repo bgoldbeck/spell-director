@@ -475,6 +475,7 @@ function frame(now) {
     sound.at = state.t;
     sound.playing = state.playing;
     state.effect.update(state.t);
+    studio.update(state.t);
     controls?.update();
     render();
     updateOverlay();

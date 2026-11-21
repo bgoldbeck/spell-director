@@ -1,0 +1,545 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "shadow-warcry-dread-howl",
+  "name": "Dread Howl",
+  "description": "The caster throws back their head and howls. Cold rings of shadow ripple out and dark wisps crawl along the ground; every enemy they touch shrinks back, trembling, with a skull of dread flaring over their head.",
+  "element": "shadow",
+  "archetype": "nova",
+  "tags": [
+    "warcry",
+    "shout",
+    "howl",
+    "splash",
+    "point-blank",
+    "pbae",
+    "fear",
+    "terror",
+    "multi-target",
+    "glyph"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Warcry: a fear howl that makes every nearby enemy cower."
+  },
+  "timing": {
+    "duration_ms": 3200,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 3,
+      "distribution": "even"
+    },
+    "targets": {
+      "layout": "splash",
+      "side": "enemies",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 2.2,
+        "max": 2.6
+      },
+      "ripple_ms": 260,
+      "react": {
+        "kind": "cower",
+        "at_ms": 560,
+        "duration_ms": 2000,
+        "lean_deg": 16
+      }
+    },
+    "caster_react": {
+      "kind": "shout",
+      "at_ms": 0,
+      "duration_ms": 1100,
+      "lean_deg": 22
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Skulls flare over the heads round the caster; enemies crouch away.",
+      "side": "A dark column of howl over the caster; wisps creeping out along the ground.",
+      "top": "Slow shadow rings and a dark stain spreading to every enemy; a dread mark under each.",
+      "three_quarter": "Hero view: the howl, the slow cold rings and the ring of cowering enemies with skulls."
+    }
+  },
+  "palette": {
+    "core": "#E9DBFF",
+    "primary": "#9B6BFF",
+    "secondary": "#4B2A8C",
+    "accent": "#CFE6FF",
+    "shadow": "#0E0814"
+  },
+  "variation": {
+    "seeded": true,
+    "notes": "The ring of dummies and the particles change per cast."
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 1.0
+      },
+      "intent": "Shadow pools at the caster's feet as they throw back their head."
+    },
+    {
+      "id": "howl",
+      "phase": "release",
+      "start_ms": 500,
+      "end_ms": 1300,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The howl: long, cold rings of shadow roll out."
+    },
+    {
+      "id": "creep",
+      "phase": "impact",
+      "start_ms": 520,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Dark wisps crawl out along the ground to the enemies."
+    },
+    {
+      "id": "dread",
+      "phase": "impact",
+      "start_ms": 560,
+      "end_ms": 2400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "Each enemy shrinks back, a skull flaring over them."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1700,
+      "end_ms": 3200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The darkness drains back into the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "pool",
+      "type": "decal",
+      "beats": [
+        "gather",
+        "howl",
+        "creep",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": -1,
+      "params": {
+        "shape": "puddle",
+        "radius_px": 80,
+        "opacity": 0.8,
+        "fade_in_ms": 300,
+        "grow_ms": 500,
+        "start_scale": 0.3,
+        "fade_ms": 600,
+        "fill": "void"
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A pool of darkness welling up under the caster.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather-smoke",
+      "type": "smoke",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 3,
+      "params": {
+        "count": 14,
+        "rise_speed": 50,
+        "size_px": 22,
+        "lifetime_ms": 700,
+        "opacity": 0.55,
+        "spread_px": 30
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Black smoke curling up round the caster.",
+        "technique": "flipbook",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.5,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "howl-column",
+      "type": "glow",
+      "beats": [
+        "howl"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "radius_px": 70,
+        "softness": 1,
+        "height_px": 110,
+        "pulse_hz": 4
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A dim violet glow rising off the caster's raised head.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "howl-rings",
+      "type": "ring",
+      "beats": [
+        "howl"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 330,
+        "thickness_px": 14,
+        "softness": 0.7,
+        "repeat_ms": 260,
+        "count": 3,
+        "ease": "ease_out"
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Slow, cold rings of violet shadow rolling out over the ground.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        }
+      }
+    },
+    {
+      "id": "howl-air",
+      "type": "ring",
+      "beats": [
+        "howl"
+      ],
+      "anchor": "caster",
+      "plane": "vertical",
+      "color": "secondary",
+      "z": 7,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 200,
+        "thickness_px": 8,
+        "softness": 0.8,
+        "repeat_ms": 260,
+        "count": 2,
+        "height_px": 100
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "The howl itself: dark ripples pouring forward from the caster's mouth.",
+        "technique": "post_process",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit",
+        "distortion": 0.3
+      }
+    },
+    {
+      "id": "wisps",
+      "type": "smoke",
+      "beats": [
+        "creep"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 2,
+      "params": {
+        "count": 40,
+        "rise_speed": 8,
+        "size_px": 26,
+        "lifetime_ms": 1200,
+        "opacity": 0.55,
+        "spread_px": 30,
+        "spread_speed": 230
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Dark wisps crawling out along the ground toward every enemy.",
+        "technique": "flipbook",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "stain",
+      "type": "decal",
+      "beats": [
+        "creep",
+        "fade"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": -2,
+      "params": {
+        "shape": "swirl",
+        "radius_px": 260,
+        "opacity": 0.3,
+        "reveal_ms": 900,
+        "fade_ms": 800,
+        "detail": 0.3
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A faint dark stain spreading out under the howl.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "howl-sound",
+      "type": "sound_cue",
+      "beats": [
+        "howl"
+      ],
+      "params": {
+        "cue": "drone",
+        "gain": 0.8,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "howl-wail",
+      "type": "sound_cue",
+      "beats": [
+        "howl"
+      ],
+      "params": {
+        "cue": "whisper",
+        "gain": 0.6,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "dread-skull",
+      "type": "sparks",
+      "beats": [
+        "dread"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 11,
+      "params": {
+        "look": "glyph",
+        "glyph": "skull",
+        "steady": true,
+        "count": 1,
+        "height_px": 122,
+        "bob_px": 3,
+        "bob_hz": 2,
+        "size_px": 30,
+        "speed": 0,
+        "gravity": 0,
+        "tilt_deg": 0
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A pale skull flaring over each enemy's head: they're terrified.",
+        "technique": "flipbook",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "dread-exclaim",
+      "type": "sparks",
+      "beats": [
+        "dread"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 11,
+      "params": {
+        "look": "glyph",
+        "glyph": "exclaim",
+        "count": 2,
+        "speed": 90,
+        "gravity": 0,
+        "lifetime_ms": 600,
+        "size_px": 13,
+        "spread_deg": 80,
+        "drag": 0.8,
+        "height_px": 105,
+        "grow": 0.3,
+        "emit_ms": 200
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Startled marks popping off each enemy.",
+        "technique": "flipbook",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "dread-coat",
+      "type": "coat",
+      "beats": [
+        "dread"
+      ],
+      "anchor": "splash",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "pattern": "shadow",
+        "fill": 0.4,
+        "rim": 1,
+        "opacity": 0.75,
+        "cover_px": 70,
+        "flow_hz": 1
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "Cold shadow clinging to each enemy's legs.",
+        "technique": "mesh",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "dread-mark",
+      "type": "decal",
+      "beats": [
+        "dread",
+        "fade"
+      ],
+      "anchor": "splash",
+      "color": "secondary",
+      "z": -1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 40,
+        "opacity": 0.45,
+        "fade_ms": 500,
+        "symmetry": 5,
+        "spin_deg_per_s": -30,
+        "depth": 0
+      },
+      "shader": {
+        "material": "shadowy",
+        "look": "A faint dread sigil under each enemy.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "dread-sweat",
+      "type": "sparks",
+      "beats": [
+        "dread"
+      ],
+      "anchor": "splash",
+      "color": "accent",
+      "z": 10,
+      "params": {
+        "look": "glyph",
+        "glyph": "drop",
+        "count": 5,
+        "speed": 100,
+        "gravity": 450,
+        "lifetime_ms": 550,
+        "size_px": 8,
+        "spread_deg": 130,
+        "drag": 0.2,
+        "height_px": 92,
+        "emit_ms": 900
+      },
+      "shader": {
+        "material": "liquid",
+        "look": "Beads of cold sweat flying off.",
+        "technique": "particles",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "dread-heart",
+      "type": "sound_cue",
+      "beats": [
+        "dread"
+      ],
+      "params": {
+        "cue": "heartbeat",
+        "gain": 0.35,
+        "pitch": 1.3,
+        "repeat_ms": 450
+      }
+    }
+  ],
+  "director_notes": "Original fear warcry. The howl is slow (ripple_ms 260) so fear spreads rather than strikes. Enemies cower (crouch, lean away, tremble) rather than move, so the skulls and shadow on their legs stay on them."
+}
