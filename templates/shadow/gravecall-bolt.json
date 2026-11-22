@@ -1,0 +1,685 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "shadow-gravecall-bolt",
+  "name": "Gravecall Bolt",
+  "line": "Necromancer",
+  "description": "The caster draws grave-cold up out of the earth into a clawed hand, a sickly green sigil opening underfoot, then flings it: a pale green, skull-bright bolt dragging a tail of black grave-mist streaks to the target and bursts in a cold green flash, a spray of bone shards and a gout of black mist, leaving a rotting sigil on the ground that crumbles away.",
+  "element": "shadow",
+  "archetype": "projectile",
+  "tags": [
+    "necrotic",
+    "grave",
+    "projectile",
+    "fast",
+    "single-target",
+    "necromancer"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A necrotic bolt for a graveyard keeper: grave-cold called up from the earth and thrown. Original."
+  },
+  "timing": {
+    "duration_ms": 1400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster_hand",
+    "destination": "target",
+    "travel": "projectile",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 4,
+      "distribution": "center_weighted"
+    },
+    "caster_gestures": [
+      {
+        "kind": "hold_orb",
+        "at_ms": 0,
+        "duration_ms": 170,
+        "hold_ms": 0
+      },
+      {
+        "kind": "throw",
+        "at_ms": 90,
+        "duration_ms": 250
+      }
+    ]
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "From over the caster's shoulder green cold gathers in the hand, then the bolt flies down the middle of the frame and breaks in a cold flash and black mist on the target.",
+      "side": "The clearest read of the flight: a pale green head with a tail of black mist crossing the frame, then bone shards spraying and mist rolling off the target.",
+      "top": "A green sigil opens under the caster, the bolt draws a line of mist to the target, and a rotting sigil spreads under it as the mist pools.",
+      "three_quarter": "Hero view. The gather, the misty tail and the burst of bone and mist all read, and the rotting sigil sits as an ellipse under the target."
+    }
+  },
+  "palette": {
+    "core": "#E6FFE9",
+    "primary": "#7DF0A2",
+    "secondary": "#2F7F55",
+    "accent": "#B6FFD0",
+    "shadow": "#0C0F12"
+  },
+  "beats": [
+    {
+      "id": "invoke",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 340,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 0.9
+      },
+      "intent": "Grave-cold is drawn up out of the ground into a clawed hand: pale green motes rise and spiral in, a sickly sigil opens underfoot."
+    },
+    {
+      "id": "loose",
+      "phase": "release",
+      "start_ms": 340,
+      "end_ms": 390,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "A cold green flash at the hand as the bolt is flung."
+    },
+    {
+      "id": "flight",
+      "phase": "travel",
+      "start_ms": 370,
+      "end_ms": 680,
+      "intensity": {
+        "shape": "flicker",
+        "from": 0.9,
+        "to": 1.0,
+        "flicker_hz": 8
+      },
+      "intent": "A pale green, skull-bright head trailing black grave-mist streaks to the target in a slight arc."
+    },
+    {
+      "id": "smite",
+      "phase": "impact",
+      "start_ms": 680,
+      "end_ms": 860,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "The bolt breaks on the target: a cold green flash, bone shards sprayed out and a gout of black mist."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 820,
+      "end_ms": 1400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.0
+      },
+      "intent": "The mist sinks and pools, and the rotting sigil crumbles away into dark flecks."
+    }
+  ],
+  "layers": [
+    {
+      "id": "hand-sigil",
+      "type": "decal",
+      "beats": [
+        "invoke",
+        "loose",
+        "flight"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": 40,
+        "opacity": 0.7,
+        "fade_in_ms": 120,
+        "grow_ms": 250,
+        "start_scale": 0.4,
+        "spin_deg_per_s": 90,
+        "symmetry": 5,
+        "fade_ms": 300,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A sickly green grave sigil opening under the caster's feet as the cold is called.",
+        "technique": "decal",
+        "flow": {
+          "direction": "swirl",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "gather-motes",
+      "type": "sparks",
+      "beats": [
+        "invoke"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "count": {
+          "min": 30,
+          "max": 36
+        },
+        "speed": 0,
+        "lifetime_ms": 300,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "emit_ms": 280,
+        "streak_ms": 30,
+        "gather_px": 70,
+        "swirl": 0.5
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Pale green motes of grave-cold rising out of the ground into the hand.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 3.5,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "bolt",
+      "type": "orb",
+      "beats": [
+        "invoke",
+        "loose",
+        "flight"
+      ],
+      "anchor": "caster_hand",
+      "color": "gradient_core_to_primary",
+      "z": 10,
+      "keyframes": [
+        {
+          "t_ms": 0,
+          "param": "radius_px",
+          "value": 3
+        },
+        {
+          "t_ms": 340,
+          "param": "radius_px",
+          "value": 9,
+          "ease": "ease_in"
+        }
+      ],
+      "params": {
+        "radius_px": 9,
+        "pulse_hz": 7,
+        "wobble": 0.08,
+        "crackle_count": 0,
+        "trail_ms": 200,
+        "arc_height_px": {
+          "min": 14,
+          "max": 24
+        }
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A pale green, skull-bright spark of grave-cold dragging a tail of black grave-mist.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.3
+        },
+        "fresnel": 0.5,
+        "notes": "Head: a soft sphere sprite; tail: a camera-facing ribbon of dark smoke with a thin green core fading along its length.",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "soft",
+          "core_ratio": 0.5
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bolt-glow",
+      "type": "glow",
+      "beats": [
+        "invoke",
+        "loose",
+        "flight"
+      ],
+      "attach_to": "bolt",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "radius_px": 34,
+        "softness": 0.9,
+        "pulse_hz": 7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cold green bloom around the bolt head.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "gaussian"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "loose-flash",
+      "type": "flash",
+      "beats": [
+        "loose"
+      ],
+      "anchor": "caster_hand",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 70,
+        "peak": 0.7
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cold green flash at the hand as the bolt is thrown.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "smite-flash",
+      "type": "flash",
+      "beats": [
+        "smite"
+      ],
+      "anchor": "target",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 110,
+        "peak": 0.9
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A cold green flash on the target as the bolt breaks.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 7,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "halo-ring",
+      "type": "ring",
+      "beats": [
+        "smite"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 14,
+      "params": {
+        "start_radius_px": 12,
+        "end_radius_px": 95,
+        "thickness_px": 7,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A ring of cold green light rolling out low across the ground.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ground-ring",
+      "type": "ring",
+      "beats": [
+        "smite"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "color": "shadow",
+      "z": 3,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 110,
+        "thickness_px": 6,
+        "softness": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A dark ring of grave-mist pushed out across the ground from the target.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "smite-motes",
+      "type": "sparks",
+      "beats": [
+        "smite"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 15,
+      "params": {
+        "count": {
+          "min": 28,
+          "max": 36
+        },
+        "speed": 260,
+        "speed_spread": 0.5,
+        "gravity": 320,
+        "lifetime_ms": 500,
+        "size_px": 2.6,
+        "spread_deg": 220,
+        "drag": 0.6,
+        "emit_ms": 80,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Splinters of pale bone sprayed off the target, falling fast.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 3
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "rising-motes",
+      "type": "sparks",
+      "beats": [
+        "smite",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 13,
+      "params": {
+        "count": {
+          "min": 22,
+          "max": 28
+        },
+        "speed": 50,
+        "speed_spread": 0.6,
+        "gravity": -60,
+        "lifetime_ms": 650,
+        "size_px": 2.1,
+        "spread_deg": 70,
+        "drag": 0.5,
+        "emit_ms": 500,
+        "emit_radius_px": 30,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A few cold green flecks drifting up out of the mist.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 1
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "impact-mist",
+      "type": "smoke",
+      "beats": [
+        "smite",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "secondary",
+      "z": 4,
+      "params": {
+        "count": 18,
+        "rise_speed": 6,
+        "size_px": 48,
+        "lifetime_ms": 700,
+        "opacity": 0.55,
+        "spread_px": 70
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "A gout of black grave-mist bursting off the target and sinking.",
+        "technique": "flipbook",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.3
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.15,
+          "edge_color": "secondary"
+        }
+      }
+    },
+    {
+      "id": "brand-sigil",
+      "type": "decal",
+      "beats": [
+        "smite",
+        "fade"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "shape": "rune_circle",
+        "radius_px": {
+          "min": 46,
+          "max": 52
+        },
+        "opacity": 0.8,
+        "fade_in_ms": 60,
+        "grow_ms": 180,
+        "start_scale": 0.5,
+        "spin_deg_per_s": -40,
+        "symmetry": 4,
+        "lifetime_ms": 250,
+        "fade_ms": 450,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "arcane",
+        "look": "A rotting sigil spreading under the target, crumbling away into dark flecks as it fades.",
+        "technique": "decal",
+        "flow": {
+          "direction": "swirl",
+          "speed": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.2,
+          "edge_color": "accent"
+        },
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "shake",
+      "type": "camera_shake",
+      "beats": [
+        "smite"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 2,
+          "max": 3
+        },
+        "frequency_hz": 22,
+        "decay": 0.8
+      }
+    },
+    {
+      "id": "bolt-light",
+      "type": "light",
+      "beats": [
+        "invoke",
+        "loose",
+        "flight",
+        "smite",
+        "fade"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "params": {
+        "radius": 5,
+        "energy": 1.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "Cold green light flaring on the target.",
+        "technique": "light",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "invoke"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.5,
+        "pitch": 0.91
+      }
+    },
+    {
+      "id": "loose-sound",
+      "type": "sound_cue",
+      "beats": [
+        "loose"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.6,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.91
+        }
+      }
+    },
+    {
+      "id": "flight-sound",
+      "type": "sound_cue",
+      "beats": [
+        "flight"
+      ],
+      "params": {
+        "cue": "hum",
+        "gain": 0.35,
+        "pitch": 1.05
+      }
+    },
+    {
+      "id": "smite-sound",
+      "type": "sound_cue",
+      "beats": [
+        "smite"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.7,
+        "pitch": {
+          "min": 0.73,
+          "max": 0.84
+        }
+      }
+    },
+    {
+      "id": "tail-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fade"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.35,
+        "pitch": 1.05
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "The arc height, the shard paths, the mist and the sigil texture vary per cast. The 0.34 s wind-up and 0.31 s flight stay fixed so the hit lands on the same frame every time."
+  },
+  "director_notes": "An original necrotic bolt for a graveyard keeper (Necromancer line), built as the dark answer to Sanctified Bolt: same quick rhythm, opposite feel. Grave-cold rises out of the ground into the hand instead of light gathering. The bolt is a pale green head with a tail of black mist so it reads against both bright and dark ground. The impact is cold and heavy, not radiant: a green flash, bone splinters that fall rather than float, a gout of black mist, rings pushed out low across the ground, and a rotting sigil that crumbles instead of glowing. Sounds are the bolt cues pitched down."
+}
