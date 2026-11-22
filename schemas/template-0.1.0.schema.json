@@ -271,6 +271,14 @@
         "caster_react": {
           "$ref": "#/$defs/reaction",
           "description": "How the caster moves (kind shout: rear back, then shout)."
+        },
+        "caster_gestures": {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "$ref": "#/$defs/gesture"
+          },
+          "description": "The caster's arm and hand movements, in order: raise, throw, push palm-out, point a finger, slam, roar... Anchors on the hands (caster_hand, caster_fingertip, ...) follow them. See docs/template-format.md#gestures."
         }
       }
     },
@@ -1093,6 +1101,10 @@
       "enum": [
         "caster",
         "caster_hand",
+        "caster_off_hand",
+        "caster_fingertip",
+        "caster_off_fingertip",
+        "caster_hands",
         "sky",
         "ground",
         "target",
@@ -1455,6 +1467,83 @@
         "hops": {
           "$ref": "#/$defs/int_or_range",
           "description": "cheer: how many hops (default 2)."
+        }
+      }
+    },
+    "gesture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "description": "One casting gesture. Its last key lands at at_ms + duration_ms (the release of a throw); it holds for hold_ms, then the arms ease back to rest over return_ms unless the next gesture takes over.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "rest",
+            "raise",
+            "point",
+            "push",
+            "throw",
+            "spin_throw",
+            "sky_point",
+            "sign",
+            "channel",
+            "hold_orb",
+            "raise_both",
+            "push_both",
+            "channel_both",
+            "gather",
+            "summon",
+            "slam",
+            "clap",
+            "roar",
+            "flex",
+            "ground_press",
+            "guard",
+            "flail",
+            "cheer"
+          ],
+          "description": "One-handed: raise, point, push, throw, spin_throw, sky_point, sign, channel, hold_orb (rest returns that arm to rest). Two-handed: raise_both, push_both, channel_both, gather, summon, slam, clap, roar, flex, ground_press, guard, flail, cheer."
+        },
+        "at_ms": {
+          "$ref": "#/$defs/number_or_range",
+          "description": "When it starts."
+        },
+        "duration_ms": {
+          "$ref": "#/$defs/number_or_range",
+          "description": "How long until its last key (default per kind)."
+        },
+        "hand": {
+          "enum": [
+            "lead",
+            "off",
+            "both"
+          ],
+          "description": "One-handed gestures: lead (default, the casting hand at caster_hand), off, or both (mirrored)."
+        },
+        "hold_ms": {
+          "$ref": "#/$defs/number_or_range",
+          "description": "How long the end pose holds (default 250)."
+        },
+        "return_ms": {
+          "$ref": "#/$defs/number_or_range",
+          "description": "How long the arms take to ease back to rest (default 400)."
+        },
+        "shape": {
+          "enum": [
+            "relaxed",
+            "open",
+            "flat",
+            "spread",
+            "claw",
+            "cup",
+            "grip",
+            "fist",
+            "point",
+            "sign"
+          ],
+          "description": "The hand shape at the end, instead of the gesture's own."
         }
       }
     }

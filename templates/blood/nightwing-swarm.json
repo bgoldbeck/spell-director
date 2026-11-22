@@ -33,7 +33,20 @@
       "shape": "line",
       "length": 4,
       "distribution": "random"
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "hold_orb",
+        "at_ms": 0,
+        "duration_ms": 175,
+        "hold_ms": 0
+      },
+      {
+        "kind": "throw",
+        "at_ms": 100,
+        "duration_ms": 250
+      }
+    ]
   },
   "views": {
     "hero": "three_quarter",

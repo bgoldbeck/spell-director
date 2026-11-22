@@ -34,7 +34,15 @@
       "length": 4.2,
       "angle_deg": 70,
       "distribution": "edge_weighted"
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "push",
+        "at_ms": 0,
+        "duration_ms": 400,
+        "hold_ms": 250
+      }
+    ]
   },
   "views": {
     "hero": "three_quarter",

@@ -33,7 +33,15 @@
       "shape": "line",
       "length": 4,
       "distribution": "even"
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "channel",
+        "at_ms": 0,
+        "duration_ms": 350,
+        "hold_ms": 2550
+      }
+    ]
   },
   "views": {
     "hero": "three_quarter",

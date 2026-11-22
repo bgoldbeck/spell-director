@@ -46,7 +46,21 @@
         "max": 3.0
       },
       "ripple_ms": 150
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "gather",
+        "at_ms": 0,
+        "duration_ms": 150,
+        "hold_ms": 0
+      },
+      {
+        "kind": "slam",
+        "at_ms": 150,
+        "duration_ms": 500,
+        "hold_ms": 250
+      }
+    ]
   },
   "views": {
     "hero": "three_quarter",

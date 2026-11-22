@@ -45,7 +45,21 @@
         "max": 3.0
       },
       "ripple_ms": 0
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "raise_both",
+        "at_ms": 0,
+        "duration_ms": 350,
+        "hold_ms": 0
+      },
+      {
+        "kind": "clap",
+        "at_ms": 400,
+        "duration_ms": 300,
+        "hold_ms": 300
+      }
+    ]
   },
   "views": {
     "hero": "top",

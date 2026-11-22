@@ -34,7 +34,15 @@
       "shape": "circle",
       "radius": 1.8,
       "distribution": "edge_weighted"
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "point",
+        "at_ms": 200,
+        "duration_ms": 300,
+        "hold_ms": 250
+      }
+    ]
   },
   "views": {
     "hero": "three_quarter",

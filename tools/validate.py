@@ -148,8 +148,15 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
         at = (react or {}).get("at_ms")
         if isinstance(at, (int, float)) and at > duration:
             warnings.append(f"{where}: starts at {at} ms, after the spell ends ({duration} ms)")
+    for i, gesture in enumerate(doc["space"].get("caster_gestures") or []):
+        at = gesture.get("at_ms")
+        if isinstance(at, (int, float)) and at > duration:
+            warnings.append(f"space.caster_gestures[{i}] ({gesture['kind']}): starts at {at} ms, after the spell ends ({duration} ms)")
+    no_caster = doc.get("archetype") == "status"
     for layer in doc["layers"]:
         lid = layer["id"]
+        if no_caster and str(layer.get("anchor", "")).startswith("caster_"):
+            warnings.append(f"layer {lid!r}: anchored at {layer['anchor']!r}, but a status effect has no caster")
         if layer.get("anchor") == "splash" and not splash:
             warnings.append(f"layer {lid!r}: anchored at 'splash', but space.targets.layout isn't 'splash', "
                             "so there are no splash targets and it sits on the primary target once")

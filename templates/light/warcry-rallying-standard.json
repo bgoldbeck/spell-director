@@ -62,7 +62,21 @@
       "kind": "shout",
       "at_ms": 0,
       "duration_ms": 900
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "flex",
+        "at_ms": 0,
+        "duration_ms": 360,
+        "hold_ms": 0
+      },
+      {
+        "kind": "roar",
+        "at_ms": 360,
+        "duration_ms": 126,
+        "hold_ms": 270
+      }
+    ]
   },
   "views": {
     "hero": "three_quarter",

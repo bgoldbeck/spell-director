@@ -30,7 +30,15 @@
         "max": 10
       },
       "distribution": "even"
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "channel",
+        "at_ms": 380,
+        "duration_ms": 400,
+        "hold_ms": 320
+      }
+    ]
   },
   "views": {
     "hero": "side",

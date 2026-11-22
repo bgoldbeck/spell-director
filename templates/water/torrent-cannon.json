@@ -30,7 +30,15 @@
       "shape": "line",
       "length": 4,
       "distribution": "even"
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "push",
+        "at_ms": 170,
+        "duration_ms": 450,
+        "hold_ms": 660
+      }
+    ]
   },
   "views": {
     "hero": "side",

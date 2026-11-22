@@ -336,13 +336,33 @@ A buff is cast on one character to help them: a shield, haste, strength, regener
 
 Examples: `templates/water/dewdrop-ward.json` (leaf, drop, soap bubble), `earth/diamond-aegis.json` and the other Gemwarden orbits, `nature/petalfall-mending.json`, `arcane/moonmirror-veil.json` (glass), `ice/snowflake-ward.json`; encasing shells: `nature/jadeheart-cocoon.json`, `earth/adamant-vigil.json`, `nature/emerald-bastion.json`, `arcane/amethyst-geode.json`, `earth/amber-reliquary.json`.
 
+### Gestures (the caster's arms and hands)
+
+The caster has arms with hands and fingers; `space.caster_gestures` is the casting animation (template-format.md, *Gestures*). The last key of a gesture lands at `at_ms + duration_ms`: put it on the release.
+
+| Word | Means | Template |
+|---|---|---|
+| throw, hurl, lob, fling | overhand throw from behind the head | `throw`, released on the `travel` beat; `hold_orb` first to hold it |
+| spinning throw, sidearm, whip, discus | swung back to the side and slung across | `spin_throw` (discs, hammers, axes) |
+| point, finger, jab | arm out, index finger at the target | `point`; emit from `caster_fingertip` |
+| palm out, push, thrust, blast | palm shoved out flat | `push` / `push_both` (beams, blasts, gusts) |
+| channel, stream, drain, force lightning | arm out, fingers clawed, held | `channel` / `channel_both` with `hold_ms` through the sustain |
+| call down, skyward | finger to the sky, then down at the target | `sky_point` (or `raise`, `raise_both`), then `point` on the strike |
+| charge, gather, cup | hands cupped before the chest | `gather`, emit from `caster_hands` |
+| invoke, summon, uplift | hands lifted palms up | `summon` (buffs and auras) |
+| slam, pound, smash | fists overhead, driven down | `slam` (ground pounds, quakes) |
+| clap, thunderclap | palms clapped | `clap`, the impact on the clap |
+| roar, outburst, nova | fists up, then flung wide | `flex` then `roar` (warcries, novas) |
+| sign, mudra, incantation | two fingers up before the face | `sign` |
+| press, root, earthbind | palms pressed at the ground | `ground_press` |
+
 ### Warcries
 
 A warcry is a shout that rolls out over the allies or enemies round the caster. Tag it `warcry`; the viewer lists them under **Type → Kinds → Warcries**.
 
 | Word | Means | Template |
 |---|---|---|
-| warcry, shout, roar, bellow, howl, battle cry | the caster rears back and shouts, and a wave rolls out | point-blank splash + `space.caster_react` `kind: shout`, release at its chest-forward moment |
+| warcry, shout, roar, bellow, howl, battle cry | the caster rears back and shouts, and a wave rolls out | point-blank splash + `space.caster_react` `kind: shout` and `caster_gestures` `flex` then `roar`, release at its chest-forward moment |
 | knockback, blown back | enemies shoved off their feet | `targets.react` `kind: knockback`, a hard linear ground ring, a dust wave, `ripple_ms` matched to the ring |
 | thunder shout, thunderclap | a crack of thunder and bolts on every foe | `targets.react` `flinch`, splash `bolt` `from: sky` |
 | fear howl, terror | enemies cower | `targets.react` `cower`, a `skull` glyph and a shadow `coat` on each |

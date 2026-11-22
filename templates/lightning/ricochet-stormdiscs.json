@@ -51,7 +51,20 @@
         "min": 110,
         "max": 130
       }
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "hold_orb",
+        "at_ms": 0,
+        "duration_ms": 190,
+        "hold_ms": 0
+      },
+      {
+        "kind": "spin_throw",
+        "at_ms": 130,
+        "duration_ms": 250
+      }
+    ]
   },
   "views": {
     "hero": "top",
