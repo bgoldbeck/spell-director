@@ -6,10 +6,44 @@ import { resolveValue, rng, seedFor } from "./timeline.js";
 import { isSplash, splashLayout } from "./splash.js";
 import { isStatus } from "./status.js";
 import { reactionPose, REST } from "./react.js";
+import { HAND_ANCHORS, armsAt, gestureTracks, isHandAnchor, reactionGestures } from "./gesture.js";
 
 export { isStatus };
 
 export const PX = 0.01; // template pixel sizes -> world units
+
+export { HAND_ANCHORS, isHandAnchor };
+
+// The caster's gestures with their numbers resolved (ranges picked by seed).
+function resolveGestures(list, seed) {
+  return [].concat(list || []).map((g, i) => ({
+    ...g,
+    at_ms: resolveValue(g.at_ms, seed, "gesture.at", i) ?? 0,
+    duration_ms: resolveValue(g.duration_ms, seed, "gesture.duration", i),
+    hold_ms: resolveValue(g.hold_ms, seed, "gesture.hold", i),
+    return_ms: resolveValue(g.return_ms, seed, "gesture.return", i),
+  }));
+}
+
+// Where a point on a figure (body coords) is in the world when the figure
+// stands at (x, z) in a reaction pose: the same transform the studio gives
+// the figure's pivot (push, lift, shiver, lean away, squash).
+const _m = new THREE.Matrix4();
+const _q = new THREE.Quaternion();
+const _ax = new THREE.Vector3();
+const _UP = new THREE.Vector3(0, 1, 0);
+export function bodyToWorld(local, pose, x, z, away) {
+  const v = new THREE.Vector3(local[0], local[1], local[2]);
+  if (!pose) return v.add(new THREE.Vector3(x, 0, z));
+  _ax.crossVectors(_UP, away).normalize();
+  _q.setFromAxisAngle(_ax, pose.lean);
+  _m.compose(
+    new THREE.Vector3(x + away.x * pose.push - away.z * pose.shiver, pose.lift, z + away.z * pose.push + away.x * pose.shiver),
+    _q,
+    new THREE.Vector3(1, pose.squash, 1),
+  );
+  return v.applyMatrix4(_m);
+}
 
 export function buildStage(template, seed) {
   const space = template.space || {};
@@ -89,6 +123,24 @@ export function buildStage(template, seed) {
   const casterReact = space.caster_react || null;
   const reactAt = (r) => resolveValue(r?.at_ms, seed, "react.at") ?? 0;
   const firstSplash = splash && !splashCentered && !splashCentre ? 1 : 0;
+  const targetDelay = (i) => {
+    const k = i - firstSplash;
+    return splash && k >= 0 ? splashDelays[k] ?? 0 : 0;
+  };
+
+  // Arms (engine/gesture.js). The caster's gestures come from
+  // space.caster_gestures; without any, a shout swings its arms wide. The
+  // targets' arms follow their reaction.
+  const casterTracks = gestureTracks(
+    space.caster_gestures ? resolveGestures(space.caster_gestures, seed) : casterReact ? reactionGestures(casterReact, reactAt(casterReact)) : [],
+  );
+  const targetTracks = targets.map((_, i) => (targetReact && !status ? gestureTracks(reactionGestures(targetReact, reactAt(targetReact) + targetDelay(i))) : null));
+  let armsMemo = null;
+  const casterArms = (t) => {
+    const tt = Number.isFinite(t) ? t : 0;
+    if (!armsMemo || armsMemo.t !== tt) armsMemo = { t: tt, arms: armsAt(casterTracks, tt, "ready") };
+    return armsMemo.arms;
+  };
 
   return {
     caster,
@@ -100,9 +152,7 @@ export function buildStage(template, seed) {
     // the spell's centre (from the caster for the primary target).
     targetPose(i, t) {
       if (!targetReact || status) return { ...REST };
-      const k = i - firstSplash;
-      const delay = splash && k >= 0 ? splashDelays[k] ?? 0 : 0;
-      return reactionPose(targetReact, t - reactAt(targetReact) - delay);
+      return reactionPose(targetReact, t - reactAt(targetReact) - targetDelay(i));
     },
     targetAway(i) {
       const p = targets[i];
@@ -115,6 +165,31 @@ export function buildStage(template, seed) {
       if (!casterReact || status) return { ...REST };
       return reactionPose(casterReact, t - reactAt(casterReact));
     },
+    // Arms in body coords (engine/gesture.js armsAt) for a figure at time t:
+    // who is "caster", a target index, or "status" (the afflicted figure).
+    armsLocal(who, t) {
+      if (who === "caster") return casterArms(t);
+      if (who === "status" || status) return armsAt(null, t, "hang");
+      return armsAt(targetTracks[who], t, "hang");
+    },
+    // Where the caster's hand is at time t (world). which: "lead" (the
+    // casting hand, caster_hand), "off", "tip" (the lead index fingertip),
+    // "off_tip", or "both" (between the palms). Before the effect has a time,
+    // the hands are at rest.
+    handAt(t = this.now, which = "lead") {
+      if (status) return hand.clone();
+      const a = casterArms(t);
+      const local =
+        which === "off" ? a.off.hand
+        : which === "tip" ? a.lead.tip
+        : which === "off_tip" ? a.off.tip
+        : which === "both" ? a.lead.hand.map((v, j) => (v + a.off.hand[j]) / 2)
+        : a.lead.hand;
+      return bodyToWorld(local, casterReact ? this.casterPose(t ?? 0) : null, 0, 0, new THREE.Vector3(-1, 0, 0));
+    },
+    // The effect's current time (set by Effect.update each frame), so
+    // anchors on the hands follow the arms.
+    now: 0,
     // The pose of the figure a layer anchored at `anchor` (instance k) stands
     // on, so a skin on a body (a coat) moves with it: { pose, away } or null.
     bodyPose(anchor, k, t) {
@@ -153,12 +228,20 @@ export function buildStage(template, seed) {
     radius,
     close: template.views?.frame === "close",
     showPointMarker: space.destination === "point",
-    anchor(name, k = 0) {
+    anchor(name, k = 0, t = this.now) {
       switch (name) {
         case "caster":
           return caster.clone();
         case "caster_hand":
-          return hand.clone();
+          return this.handAt(t, "lead");
+        case "caster_off_hand":
+          return this.handAt(t, "off");
+        case "caster_fingertip":
+          return this.handAt(t, "tip");
+        case "caster_off_fingertip":
+          return this.handAt(t, "off_tip");
+        case "caster_hands":
+          return this.handAt(t, "both");
         case "sky":
           return sky.clone();
         case "ground":

@@ -16,7 +16,8 @@
     "destination": "target",
     "travel": "beam",
     "scale": 1.0,
-    "footprint": { "shape": "cone", "length": 3.4, "angle_deg": 40, "distribution": "center_weighted" }
+    "footprint": { "shape": "cone", "length": 3.4, "angle_deg": 40, "distribution": "center_weighted" },
+    "caster_gestures": [{ "kind": "push", "at_ms": 0, "duration_ms": 320, "hold_ms": 680 }]
   },
   "views": {
     "hero": "three_quarter",

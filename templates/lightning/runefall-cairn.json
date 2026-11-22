@@ -46,7 +46,21 @@
         "max": 2.2
       },
       "ripple_ms": 0
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "sky_point",
+        "at_ms": 140,
+        "duration_ms": 400,
+        "hold_ms": 160
+      },
+      {
+        "kind": "point",
+        "at_ms": 700,
+        "duration_ms": 200,
+        "hold_ms": 300
+      }
+    ]
   },
   "views": {
     "hero": "three_quarter",

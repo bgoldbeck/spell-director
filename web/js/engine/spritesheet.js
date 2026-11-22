@@ -463,6 +463,9 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
     })),
     palette: template.palette || {},
     reactions: reactionsOut(template),
+    // The caster's arm and hand movements (engine/gesture.js): the casting
+    // animation, for the engine's caster.
+    caster_gestures: template.space?.caster_gestures?.length ? template.space.caster_gestures : null,
     decals,
     six_way_smoke: sixWay,
     ...tracksOut,
@@ -786,6 +789,17 @@ export function guideMarkdown(m, { files } = {}) {
     if (r.caster) add(`- **Caster**: ${say(r.caster)} (\`shout\`: rear back drawing breath, then throw the chest forward with the shout about 40% in).`);
     if (r.targets) add(`- **Each ${r.side === "allies" ? "ally" : "enemy"}**: ${say(r.targets)}, plus their own per-target delay (the same delay as the layers marked per target), pushed and leaning away from the caster.`);
     add("");
+  }
+
+  if (m.caster_gestures) {
+    const n = (v) => (v && typeof v === "object" ? `${v.min}–${v.max}` : v);
+    add("## Casting animation", "");
+    add("The viewer moves the caster's arms and hands with these gestures; play matching animations on your caster. Each gesture's last pose lands at its start plus its duration (a throw's release), holds, then eases back to rest. The effect leaves the hand at those moments.", "");
+    add(table(["Gesture", "Hand", "Starts (ms)", "Lands (ms)", "Holds (ms)"], m.caster_gestures.map((g) => {
+      const at = n(g.at_ms ?? 0);
+      const lands = typeof g.at_ms === "object" || typeof g.duration_ms === "object" ? "" : g.duration_ms != null ? (g.at_ms ?? 0) + g.duration_ms : "";
+      return [`\`${g.kind}\`${g.shape ? ` (${g.shape})` : ""}`, g.hand || "lead", at, lands, n(g.hold_ms ?? 250)];
+    })), "");
   }
 
   add("## Rebuild it in Unity", "");

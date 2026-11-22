@@ -3,13 +3,80 @@
 // the GIF export, so a GIF looks like the view on screen.
 
 import * as THREE from "three";
+import { BODY } from "./gesture.js";
 
 export const STUDIO_BACKGROUND = "#0b0d12";
 
+// Crude low-poly arms: a capsule-ish upper arm and forearm, ball joints, a
+// box palm and two-segment fingers, all placed fresh each frame from the
+// joint positions engine/gesture.js works out (so the hand anchors the
+// effects use sit exactly on the hands drawn here).
+const Y = new THREE.Vector3(0, 1, 0);
+const _a = new THREE.Vector3();
+const _b = new THREE.Vector3();
+const _d = new THREE.Vector3();
+const _basis = new THREE.Matrix4();
+const _x = new THREE.Vector3();
+const _y = new THREE.Vector3();
+const _z = new THREE.Vector3();
+
+function placeSegment(mesh, a, b) {
+  _a.fromArray(a);
+  _b.fromArray(b);
+  _d.subVectors(_b, _a);
+  const l = _d.length();
+  mesh.position.addVectors(_a, _b).multiplyScalar(0.5);
+  if (l > 1e-6) mesh.quaternion.setFromUnitVectors(Y, _d.multiplyScalar(1 / l));
+  mesh.scale.set(1, Math.max(1e-4, l), 1);
+}
+
+function makeArm(mat, skin) {
+  const g = new THREE.Group();
+  const seg = (r0, r1, m = mat) => new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, 1, 7, 1), m);
+  const ball = (r, m = mat) => new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6), m);
+  const parts = {
+    upper: seg(0.048, 0.042),
+    fore: seg(0.04, 0.032),
+    shoulder: ball(0.052),
+    elbow: ball(0.041),
+    wrist: ball(0.034, skin),
+    palm: new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), skin),
+    fingers: Array.from({ length: 5 }, (_, i) => [seg(i ? 0.0145 : 0.016, i ? 0.013 : 0.015, skin), seg(0.013, 0.011, skin)]),
+    knuckles: Array.from({ length: 5 }, () => ball(0.014, skin)),
+  };
+  g.add(parts.upper, parts.fore, parts.shoulder, parts.elbow, parts.wrist, parts.palm, ...parts.fingers.flat(), ...parts.knuckles);
+  g.userData.parts = parts;
+  return g;
+}
+
+function poseArm(arm, fk) {
+  const p = arm.userData.parts;
+  placeSegment(p.upper, fk.shoulder, fk.elbow);
+  placeSegment(p.fore, fk.elbow, fk.wrist);
+  p.shoulder.position.fromArray(fk.shoulder);
+  p.elbow.position.fromArray(fk.elbow);
+  p.wrist.position.fromArray(fk.wrist);
+  const { center, aim, normal } = fk.palm;
+  // A right-handed basis (the box is symmetric, so the thumb side needn't match).
+  _x.fromArray(aim);
+  _y.fromArray(normal);
+  _basis.makeBasis(_x, _y, _z.crossVectors(_x, _y));
+  p.palm.quaternion.setFromRotationMatrix(_basis);
+  p.palm.position.fromArray(center);
+  p.palm.scale.set(BODY.palmLen, BODY.palmThick, BODY.palmWidth);
+  fk.fingers.forEach(([base, mid, tip], i) => {
+    placeSegment(p.fingers[i][0], base, mid);
+    placeSegment(p.fingers[i][1], mid, tip);
+    p.knuckles[i].position.fromArray(mid);
+  });
+}
+
 function standIn(color, facing = 1) {
-  // A simple figure, 1 unit tall, like the stand-ins in a motion study.
+  // A simple figure, 1 unit tall, like the stand-ins in a motion study,
+  // with crude arms and hands (posed by setArms).
   const g = new THREE.Group();
   const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
+  const skin = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).lerp(new THREE.Color("#e6cfb0"), 0.55), roughness: 0.75 });
   const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.42, 4, 12), mat);
   body.position.y = 0.37;
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 12), mat);
@@ -17,7 +84,23 @@ function standIn(color, facing = 1) {
   const visor = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.035, 0.2), new THREE.MeshStandardMaterial({ color: "#2a2d36" }));
   visor.position.set(0.12 * facing, 0.88, 0);
   g.add(body, head, visor);
+  // The arms are worked out facing +X; a figure facing -X turns them round.
+  const rig = new THREE.Group();
+  if (facing < 0) rig.rotation.y = Math.PI;
+  const lead = makeArm(mat, skin);
+  const off = makeArm(mat, skin);
+  rig.add(lead, off);
+  g.add(rig);
+  g.userData.arms = { lead, off };
   return g;
+}
+
+// Pose a stand-in's arms from engine/gesture.js armsAt (body coords).
+function setArms(figure, arms) {
+  const a = figure?.userData.arms;
+  if (!a || !arms) return;
+  poseArm(a.lead, arms.lead);
+  poseArm(a.off, arms.off);
 }
 
 function disposeTree(obj) {
@@ -70,10 +153,13 @@ export function makeStudio() {
     // A status effect has no caster: the afflicted character stands alone at
     // the origin, facing the front camera (-X).
     if (stage.status) {
-      props.add(standIn("#7a7e8c", -1));
+      const f = standIn("#7a7e8c", -1);
+      setArms(f, stage.armsLocal?.("status", 0));
+      props.add(f);
       return;
     }
-    posed.push({ g: pivot(standIn("#8c90a0", 1), 0, 0, new THREE.Vector3(-1, 0, 0)), caster: true });
+    const casterFig = standIn("#8c90a0", 1);
+    posed.push({ g: pivot(casterFig, 0, 0, new THREE.Vector3(-1, 0, 0)), caster: true, fig: casterFig });
     // Allies (a rallying shout, a battle-fury aura) wear a blue tint and a
     // green ring at their feet; enemies stay grey.
     const allies = stage.side === "allies";
@@ -82,7 +168,7 @@ export function makeStudio() {
       d.lookAt(-p.x, 0, -p.z);
       d.rotateY(-Math.PI / 2);
       const g = pivot(d, p.x, p.z, stage.targetAway ? stage.targetAway(i) : new THREE.Vector3(1, 0, 0));
-      posed.push({ g, i });
+      posed.push({ g, i, fig: d });
       if (allies) {
         const m = new THREE.Mesh(new THREE.RingGeometry(0.26, 0.31, 40), new THREE.MeshBasicMaterial({ color: "#3f9f6e" }));
         m.rotation.x = -Math.PI / 2;
@@ -114,7 +200,8 @@ export function makeStudio() {
   const UP = new THREE.Vector3(0, 1, 0);
   function update(t) {
     if (!current) return;
-    for (const { g, i, caster } of posed) {
+    for (const { g, i, caster, fig } of posed) {
+      setArms(fig, current.armsLocal?.(caster ? "caster" : i, t));
       const pose = caster ? current.casterPose?.(t) : current.targetPose?.(i, t);
       if (!pose) continue;
       const { x, z, away } = g.userData;

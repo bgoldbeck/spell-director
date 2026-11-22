@@ -45,7 +45,20 @@
         "max": 2.2
       },
       "ripple_ms": 40
-    }
+    },
+    "caster_gestures": [
+      {
+        "kind": "hold_orb",
+        "at_ms": 0,
+        "duration_ms": 250,
+        "hold_ms": 0
+      },
+      {
+        "kind": "throw",
+        "at_ms": 150,
+        "duration_ms": 350
+      }
+    ]
   },
   "views": {
     "hero": "three_quarter",

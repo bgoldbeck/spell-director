@@ -15,7 +15,7 @@ import {
   rng,
   seedFor,
 } from "./timeline.js";
-import { PX, buildStage } from "./stage.js";
+import { PX, buildStage, isHandAnchor } from "./stage.js";
 import { decalFillState, decalPlan, decalState } from "./decal.js";
 import { decalDepthMaps, drawDecal } from "./decaltex.js";
 import { makeDecalMaterial } from "./decalmat.js";
@@ -1094,9 +1094,15 @@ class BoltLayer extends Layer {
         return [[st.splashFrom(k, from, !!this.base.wrap), st.splashChest(k)]];
       }
       case "caster_hand":
+      case "caster_off_hand":
+      case "caster_fingertip":
+      case "caster_off_fingertip":
+      case "caster_hands": {
+        // From the hand (or fingertip) where it is now: it follows the arm.
+        const hand = st.anchor(this.def.anchor);
         if (tp.space.travel === "chain") {
           const hops = [];
-          let from = st.hand;
+          let from = hand;
           st.targets.forEach((_, k) => {
             const to = st.chest(k);
             hops.push([from, to]);
@@ -1105,8 +1111,9 @@ class BoltLayer extends Layer {
           return hops;
         }
         // A bolt thrown at a single target lands on its chest, not its feet.
-        if (tp.space.destination === "point") return [[st.hand, st.anchor("point")]];
-        return [[st.hand, st.chest(0)]];
+        if (tp.space.destination === "point") return [[hand, st.anchor("point")]];
+        return [[hand, st.chest(0)]];
+      }
       default:
         return [[this.anchorPos().setY(1.5), this.anchorPos()]];
     }
@@ -2356,7 +2363,7 @@ class OrbLayer extends Layer {
     // target before it, a ricochet; from: "sky": falls onto it).
     this.splashFlight = def.anchor === "splash";
     if (this.splashFlight && this.base.from === "sky") this.fromSky = true;
-    const flies = (tp.space?.travel === "projectile" || this.splashFlight) && ["caster_hand", "caster", "sky", "splash"].includes(def.anchor || "target");
+    const flies = (tp.space?.travel === "projectile" || this.splashFlight) && (["caster", "sky", "splash"].includes(def.anchor || "target") || isHandAnchor(def.anchor));
     this.flight = flies ? (this.window?.beats || []).find((b) => b.phase === "travel") || null : null;
     // scatter_px: a falling orb lands at a seeded spot up to this far from
     // the target instead of on it (one meteor of a storm).
@@ -2419,7 +2426,10 @@ class OrbLayer extends Layer {
     // height_px lifts a resting orb off its anchor (a field around a target's body).
     if (!f) return this.anchorPos().add(new THREE.Vector3(0, this.p("height_px", t, 0) * PX, 0));
     const st = this.effect.stage;
-    let from = this.fromSky ? this.skyStart(t) : st.hand.clone();
+    // From the hand: the orb rides in it until it is thrown, then leaves
+    // from where the hand was at the release.
+    const handName = isHandAnchor(this.def.anchor) ? this.def.anchor : "caster_hand";
+    let from = this.fromSky ? this.skyStart(t) : st.anchor(handName, 0, Math.min(t + this.offset, f.start_ms + this.offset));
     let to = this.fromSky ? this.landPoint() : st.chest(0);
     if (this.splashFlight && !this.fromSky) {
       from = st.splashFrom(this.instance, this.p("from", 0, "primary"), !!this.base.wrap);
@@ -2831,8 +2841,9 @@ class BeamLayer extends Layer {
     if (this.def.anchor === "sky") return [[st.sky, st.anchor("target")]];
     // A beam in a spell that isn't a beam spell (a link that holds a target)
     // ends on the target's chest rather than at its feet.
-    if (this.effect.template.space?.travel !== "beam" && st.targets.length) return [[st.hand, st.chest(0)]];
-    return [[st.hand, st.anchor("point")]];
+    const hand = st.anchor(isHandAnchor(this.def.anchor) ? this.def.anchor : "caster_hand");
+    if (this.effect.template.space?.travel !== "beam" && st.targets.length) return [[hand, st.chest(0)]];
+    return [[hand, st.anchor("point")]];
   }
 
   update(t) {
@@ -4246,6 +4257,8 @@ export class Effect {
   update(t) {
     this.screen = [];
     this.shake = { x: 0, y: 0 };
+    // Anchors on the caster's hands follow the arms at this moment.
+    this.stage.now = t;
     // Attached layers read their parent's state, so update parents first.
     const parentsFirst = [...this.layers].sort((a, b) => (a.def.attach_to ? 1 : 0) - (b.def.attach_to ? 1 : 0));
     for (const layer of parentsFirst) {
