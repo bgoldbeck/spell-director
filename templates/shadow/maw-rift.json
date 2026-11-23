@@ -1,0 +1,355 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "shadow-maw-rift",
+  "name": "Maw Rift",
+  "description": "The same travel gate opened by a deeply corrupted caster: the air tears into a ragged, toothed rift, black and red inside, dripping embers and pooling smoke, and when it slams shut it leaves a smouldering scar on the ground that others can follow.",
+  "element": "shadow",
+  "line": "Wayfarer",
+  "archetype": "aura",
+  "tags": [
+    "travel",
+    "portal",
+    "gate",
+    "rift",
+    "corruption",
+    "maw",
+    "aura",
+    "looping",
+    "wayfaring"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Corrupted travel gate: a ragged toothed rift in the air, black-red inside, embers dripping, smoke pooling, leaves a burning scar"
+  },
+  "timing": {
+    "duration_ms": 4800,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 2000,
+      "end_ms": 4000
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.6,
+      "distribution": "even"
+    },
+    "caster_gestures": [
+      {
+        "kind": "summon",
+        "at_ms": 100,
+        "duration_ms": 600,
+        "hold_ms": 200
+      }
+    ]
+  },
+  "views": {
+    "hero": "three_quarter",
+    "frame": "auto",
+    "reads": {
+      "front": "A ragged rift facing the camera, black and red inside.",
+      "side": "The ring is a thin bright line edge-on; the sigil and mist read on the ground.",
+      "top": "The sigil circle on the ground and the ring as a line across it.",
+      "three_quarter": "Hero view: the caster, the sigil, the ring standing ahead with depth inside it."
+    }
+  },
+  "palette": {
+    "core": "#FFB08A",
+    "primary": "#C4152B",
+    "secondary": "#3A0712",
+    "accent": "#E8D9C4",
+    "shadow": "#0A0204"
+  },
+  "style": {
+    "preset": "stylized",
+    "notes": "Wrong and hungry, never heroic. Low saturated reds against black; the inside reads as a hole, not a light. Scar stays after close."
+  },
+  "beats": [
+    {
+      "id": "draw",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "The caster claws at the air; the ground ahead cracks into a weeping red sigil."
+    },
+    {
+      "id": "tear",
+      "phase": "impact",
+      "start_ms": 700,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "The air tears like cloth; a ragged, toothed rift wrenches open, taller than a person."
+    },
+    {
+      "id": "hold",
+      "phase": "release",
+      "start_ms": 1100,
+      "end_ms": 4100,
+      "intensity": {
+        "shape": "hold",
+        "from": 0.8
+      },
+      "intent": "The rift holds open: a churning black-red maw inside, embers dripping from its lips, smoke pooling at its foot. Seamless loop."
+    },
+    {
+      "id": "close",
+      "phase": "dissipation",
+      "start_ms": 4100,
+      "end_ms": 4800,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "The rift slams shut with a wet crack; a smouldering scar stays burned into the ground."
+    }
+  ],
+  "layers": [
+    {
+      "id": "sigil",
+      "type": "decal",
+      "beats": [
+        "draw",
+        "tear",
+        "hold",
+        "close"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": -1,
+      "params": {
+        "shape": "fissures",
+        "radius_px": 70,
+        "opacity": 0.75,
+        "grow_ms": 500,
+        "start_scale": 0.2,
+        "fade_in_ms": 150,
+        "fade_ms": 700,
+        "spin_deg_per_s": 0,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "molten",
+        "look": "Jagged cracks oozing red light, the ground split open.",
+        "technique": "decal",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ring-stones",
+      "type": "motif",
+      "beats": [
+        "tear",
+        "hold",
+        "close"
+      ],
+      "anchor": "caster",
+      "color": "accent",
+      "z": 4,
+      "params": {
+        "shape": "gem",
+        "cut": "marquise",
+        "count": 12,
+        "size_px": 8,
+        "height_px": 95,
+        "forward_px": 70,
+        "orbit_radius_px": 60,
+        "orbit_hz": -0.15,
+        "orbit_tilt_deg": 90,
+        "face": "out",
+        "appear_ms": 250,
+        "stagger_ms": 25,
+        "sparkle": 0.3,
+        "glint_hz": 0.5
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A ring of broken teeth and black shards around the rift's lips.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "veil",
+      "type": "orb",
+      "beats": [
+        "tear",
+        "hold",
+        "close"
+      ],
+      "anchor": "caster",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "bubble": true,
+        "finish": "soap",
+        "radius_px": 8,
+        "height_px": 95,
+        "squash": 0.12,
+        "pulse_hz": 0.333,
+        "wobble": 0.5,
+        "opacity": 0.85
+      },
+      "keyframes": [
+        {
+          "t_ms": 1100,
+          "param": "radius_px",
+          "value": 58,
+          "ease": "ease_out"
+        }
+      ],
+      "shader": {
+        "material": "shadowy",
+        "look": "A churning black membrane with red veins, pulling inward.",
+        "technique": "mesh",
+        "fresnel": 0.8,
+        "distortion": 0.5,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "motes",
+      "type": "sparks",
+      "beats": [
+        "draw",
+        "tear",
+        "hold"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 6,
+      "params": {
+        "count": 26,
+        "speed": 10,
+        "gravity": 30,
+        "lifetime_ms": 1100,
+        "size_px": 1.4,
+        "spread_deg": 180,
+        "emit_ms": 3000,
+        "emit_radius_px": 55,
+        "height_px": 95,
+        "orbit_hz": 0.2,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers dripping from the rift's lips.",
+        "technique": "particles",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "ground-mist",
+      "type": "smoke",
+      "beats": [
+        "draw",
+        "tear",
+        "hold",
+        "close"
+      ],
+      "anchor": "caster",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "count": 18,
+        "rise_speed": 6,
+        "size_px": 30,
+        "lifetime_ms": 1800,
+        "opacity": 0.45,
+        "spread_px": 60
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Black-red smoke pooling at the rift's foot.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gate-light",
+      "type": "light",
+      "beats": [
+        "tear",
+        "hold",
+        "close"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "height_px": 95,
+        "forward_px": 70,
+        "energy": 0.9,
+        "radius": 5
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "tear-flash",
+      "type": "flash",
+      "beats": [
+        "tear"
+      ],
+      "anchor": "caster",
+      "color": "core",
+      "z": 7,
+      "params": {
+        "scope": "local",
+        "radius_px": 90,
+        "peak": 0.6
+      },
+      "shader": {
+        "material": "ethereal",
+        "look": "A dull red pulse as the rift tears.",
+        "technique": "procedural",
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "open-sound",
+      "type": "sound_cue",
+      "beats": [
+        "tear"
+      ],
+      "anchor": "caster",
+      "z": 0,
+      "params": {
+        "cue": "rumble",
+        "gain": 0.45,
+        "pitch": 0.6
+      }
+    },
+    {
+      "id": "hum-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hold"
+      ],
+      "anchor": "caster",
+      "z": 0,
+      "params": {
+        "cue": "drone",
+        "gain": 0.25,
+        "pitch": 1.0,
+        "repeat_ms": 1500
+      }
+    }
+  ]
+}
