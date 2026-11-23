@@ -323,3 +323,43 @@ def test_only_the_newest_analyses_are_kept(tmp_path):
     serve._prune(tmp_path, serve.ANALYSES_KEPT)
     kept = sorted(p.name for p in tmp_path.iterdir())
     assert kept == [f"{i:032x}" for i in range(3, serve.ANALYSES_KEPT + 3)]
+
+
+# ---------------------------------------------------------------- clips
+
+
+def test_clips_are_saved_listed_and_served_from_the_library(tmp_path, monkeypatch):
+    monkeypatch.setenv("SPELLDIRECTOR_LIBRARY", str(tmp_path / "lib"))
+    server, base = _serve(tmp_path, monkeypatch)
+    clip = {"format": "spelldirector.clip/1", "name": "wave", "fps": 30, "frame_count": 1,
+            "rotations": {"Hips": [0, 0, 0, 1]}, "hips": [0, 0, 0]}
+    try:
+        # Only our own page may save (the custom header), and only good names and clips.
+        status, _ = _post(base, "/api/clips?name=wave", json.dumps(clip).encode())
+        assert status == 403
+
+        def save(name, body):
+            req = urllib.request.Request(f"{base}/api/clips?name={name}", data=body, method="POST",
+                                         headers={"Content-Type": "application/json", "X-SpellDirector": "clip"})
+            try:
+                with urllib.request.urlopen(req) as resp:
+                    return resp.status
+            except urllib.error.HTTPError as err:
+                return err.code
+
+        assert save("..%2Fevil", json.dumps(clip).encode()) == 400
+        assert save("wave", b'{"format": "something else"}') == 400
+        assert save("wave", json.dumps(clip).encode()) == 200
+        assert (tmp_path / "lib" / "clips" / "wave.json").is_file()
+        with urllib.request.urlopen(base + "/clips/index.json") as resp:
+            assert json.loads(resp.read()) == {"clips": ["wave"]}
+        with urllib.request.urlopen(base + "/clips/wave.json") as resp:
+            assert json.loads(resp.read())["name"] == "wave"
+        try:
+            urllib.request.urlopen(base + "/clips/missing.json")
+            raise AssertionError("missing clip served")
+        except urllib.error.HTTPError as err:
+            assert err.code == 404
+    finally:
+        server.shutdown()
+        server.server_close()

@@ -91,7 +91,7 @@ Write the beats first; everything else hangs off them.
 
 ### Gestures (the caster's arms)
 
-Give every spell with a caster a `space.caster_gestures` list (template-format.md, *Gestures*): it is the casting animation. Pick from the words (vocabulary.md, *Gestures*): `throw` or `spin_throw` for thrown projectiles, `push` or `channel` for beams, `point` for a quick zap, `sky_point` then `point` to call from the sky, `gather` then `slam` or `roar` for novas, `summon` for buffs. Land each gesture's last key (`at_ms + duration_ms`) on the beat it causes: the release, the strike, the impact. Hold a channel (`hold_ms`) through the sustain. Emit from the fingers with `caster_fingertip`, from between cupped hands with `caster_hands`.
+Give every spell with a caster a `space.caster_gestures` list (template-format.md, *Gestures*): it is the casting animation. Pick from the words (vocabulary.md, *Gestures*): `throw` or `spin_throw` for thrown projectiles, `push` or `channel` for beams, `point` for a quick zap, `sky_point` then `point` to call from the sky, `gather` then `slam` or `roar` for novas, `summon` for buffs. Land each gesture's last key (`at_ms + duration_ms`) on the beat it causes: the release, the strike, the impact. Hold a channel (`hold_ms`) through the sustain. Emit from the fingers with `caster_fingertip`, from between cupped hands with `caster_hands`. If the user has Mixamo animations in their clips folder and asks for one, add `space.caster_clip` (template-format.md, *Mixamo clips*) on top of the gestures, never instead of them: the gestures are the fallback wherever the clip isn't installed.
 
 ### Auras (persistent effects)
 

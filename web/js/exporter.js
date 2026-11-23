@@ -24,6 +24,8 @@ import {
 } from "./engine/spritesheet.js";
 import { soundEvents, soundSheet } from "./engine/sound.js";
 import { renderExportAudio } from "./audio.js";
+import { rigExportFiles, rigFileNames } from "./engine/rigexport.js";
+import { resolveGestures } from "./engine/stage.js";
 
 const VISIBLE = 3; // a pixel channel more than this (0-255) away from the empty background counts as drawn
 
@@ -316,6 +318,30 @@ export async function exportSpriteSheets(template, opts = {}) {
         }
       }
     }
+    // The caster rig: a Mixamo-named skeleton with the casting animation, and
+    // a timeline of every event tied to a bone socket or a world point.
+    let rigFiles = [];
+    if (!effect.stage.status && opts.rig !== false) {
+      const st = effect.stage;
+      const frames = plan.times.map((t) => st.rigAt(t));
+      const v = (p) => [p.x, p.y, p.z];
+      const points = { primary_target: v(st.anchor("target")), sky: v(st.sky), point: v(st.point) };
+      st.targets.forEach((p, i) => (points[`target_${i}`] = v(p)));
+      st.splashTargets.forEach((p, i) => (points[`splash_${i}`] = v(p)));
+      const driver = st.clip ? `clip: ${st.clip}` : "gestures";
+      const rig = rigExportFiles({
+        template, seed, version: opts.version, fps: plan.fps, times: plan.times, frames, weapon: st.weapon, points,
+        gestures: resolveGestures(template.space?.caster_gestures, seed), manifest, driver,
+      });
+      rigFiles = rig.files;
+      const names = rigFileNames(base);
+      manifest.caster_rig = { ...names, driven_by: driver, bones: "mixamo", casting_hand: "left" };
+      extra.push(
+        { name: names.glb, about: "The caster: Mixamo-named skeleton, socket nodes, world points and the baked casting animation (Unity: import as Humanoid)" },
+        { name: names.timeline, about: "Timeline: every event keyed to time and to a bone socket or world point, plus per-frame socket positions" },
+        { name: names.clip, about: "The casting animation as a SpellDirector clip" },
+      );
+    }
     const files = [];
     for (const sh of sheets) {
       files.push({ name: sheetFileName(sh.id), data: new Uint8Array(await (await toPng(sh.canvas)).arrayBuffer()) });
@@ -350,6 +376,7 @@ export async function exportSpriteSheets(template, opts = {}) {
     files.push({ name: extra[2].name, data: `${JSON.stringify(template, null, 2)}\n` });
     if (sheet.events.length) files.push({ name: soundSheetName(base), data: `${JSON.stringify(sheet, null, 2)}\n` });
     files.push(...audio);
+    files.push(...rigFiles);
     return { manifest, files };
   } finally {
     scene.remove(effect.group);

@@ -4,11 +4,14 @@
 
 import * as THREE from "three";
 import { BODY } from "./gesture.js";
+import { REST } from "./rig.js";
+
+const HIPS_Y = REST.pos.Hips[1];
 
 export const STUDIO_BACKGROUND = "#0b0d12";
 
 // Crude low-poly arms: a capsule-ish upper arm and forearm, ball joints, a
-// box palm and two-segment fingers, all placed fresh each frame from the
+// box palm and three-segment fingers (the Mixamo finger bones 1-3), all placed fresh each frame from the
 // joint positions engine/gesture.js works out (so the hand anchors the
 // effects use sit exactly on the hands drawn here).
 const Y = new THREE.Vector3(0, 1, 0);
@@ -41,8 +44,8 @@ function makeArm(mat, skin) {
     elbow: ball(0.041),
     wrist: ball(0.034, skin),
     palm: new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), skin),
-    fingers: Array.from({ length: 5 }, (_, i) => [seg(i ? 0.0145 : 0.016, i ? 0.013 : 0.015, skin), seg(0.013, 0.011, skin)]),
-    knuckles: Array.from({ length: 5 }, () => ball(0.014, skin)),
+    fingers: Array.from({ length: 5 }, (_, i) => [seg(i ? 0.0145 : 0.016, i ? 0.013 : 0.015, skin), seg(0.013, 0.012, skin), seg(0.012, 0.0105, skin)]),
+    knuckles: Array.from({ length: 10 }, () => ball(0.0128, skin)),
   };
   g.add(parts.upper, parts.fore, parts.shoulder, parts.elbow, parts.wrist, parts.palm, ...parts.fingers.flat(), ...parts.knuckles);
   g.userData.parts = parts;
@@ -64,10 +67,12 @@ function poseArm(arm, fk) {
   p.palm.quaternion.setFromRotationMatrix(_basis);
   p.palm.position.fromArray(center);
   p.palm.scale.set(BODY.palmLen, BODY.palmThick, BODY.palmWidth);
-  fk.fingers.forEach(([base, mid, tip], i) => {
-    placeSegment(p.fingers[i][0], base, mid);
-    placeSegment(p.fingers[i][1], mid, tip);
-    p.knuckles[i].position.fromArray(mid);
+  fk.fingers.forEach(([base, j2, j3, tip], i) => {
+    placeSegment(p.fingers[i][0], base, j2);
+    placeSegment(p.fingers[i][1], j2, j3);
+    placeSegment(p.fingers[i][2], j3, tip);
+    p.knuckles[2 * i].position.fromArray(j2);
+    p.knuckles[2 * i + 1].position.fromArray(j3);
   });
 }
 
@@ -133,7 +138,15 @@ function standIn(color, facing = 1, weapon = null) {
   head.position.y = 0.86;
   const visor = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.035, 0.2), new THREE.MeshStandardMaterial({ color: "#2a2d36" }));
   visor.position.set(0.12 * facing, 0.88, 0);
-  g.add(body, head, visor);
+  // The torso turns about the hips when a clip bends the body (engine/rig.js).
+  const torso = new THREE.Group();
+  torso.position.set(0, HIPS_Y, 0);
+  for (const m of [body, head, visor]) {
+    m.position.y -= HIPS_Y;
+    torso.add(m);
+  }
+  g.add(torso);
+  g.userData.torso = torso;
   // The arms are worked out facing +X; a figure facing -X turns them round.
   const rig = new THREE.Group();
   if (facing < 0) rig.rotation.y = Math.PI;
@@ -154,6 +167,16 @@ function standIn(color, facing = 1, weapon = null) {
 function setArms(figure, arms) {
   const a = figure?.userData.arms;
   if (!a || !arms) return;
+  const torso = figure.userData.torso;
+  if (torso) {
+    if (arms.body) {
+      torso.position.fromArray(arms.body.hips);
+      torso.quaternion.fromArray(arms.body.chest);
+    } else if (torso.position.y !== HIPS_Y || torso.quaternion.w !== 1) {
+      torso.position.set(0, HIPS_Y, 0);
+      torso.quaternion.identity();
+    }
+  }
   poseArm(a.lead, arms.lead);
   poseArm(a.off, arms.off);
   if (figure.userData.sword && arms.blade) poseSword(figure.userData.sword, arms.blade, arms.lead.palm);

@@ -12,6 +12,7 @@ import { makeZip } from "./zip.js";
 import { makeStudio, quadViewports, screenOverlays, shakeCamera } from "./engine/studio.js";
 import { GIF_VIEW_LABELS, exportGifs, gifFileName } from "./gifexport.js";
 import { ALL, groupCatalog, isExtra, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
+import { clipNames, clipsWanted, getClip, registerClip } from "./engine/clips.js";
 
 const $ = (id) => document.getElementById(id);
 const ui = {
@@ -26,6 +27,7 @@ const ui = {
   gifBtn: $("export-gif"), gifDialog: $("gif-dialog"), gifForm: $("gif-form"), gifGo: $("gif-go"), gifStatus: $("gif-status"),
   gifLength: $("gif-length"),
   bloom: $("bloom"), styleSelect: $("style-select"),
+  clipSelect: $("clip-select"), clipFile: $("clip-file"), clipMirror: $("clip-mirror"),
   mute: $("mute"), flash: $("flash"), dim: $("dim"), quadLabels: $("quad-labels"), viewRead: $("view-read"), error: $("error"),
 };
 
@@ -35,6 +37,10 @@ const state = {
   type: ALL,
   template: null,
   effect: null,
+  // A Mixamo-style clip picked in the viewer to play on the caster instead
+  // of the template's own animation ("" = the template's), and whether to mirror it.
+  clip: "",
+  clipMirror: false,
   seed: 1,
   t: 0,
   playing: true,
@@ -229,7 +235,7 @@ function loadEffect() {
     state.effect.dispose();
   }
   const style = currentStyle();
-  state.effect = new Effect(state.template, state.seed, { style });
+  state.effect = new Effect(playTemplate(state.template), state.seed, { style });
   post.setStyle(style.view);
   for (const id of state.hidden) state.effect.setHidden(id, true);
   scene.add(state.effect.group);
@@ -587,6 +593,94 @@ ui.file.onchange = async () => {
   ui.file.value = "";
 };
 
+// ------------------------------------------------------------ caster clips
+
+// The template as the viewer plays it: with a clip picked in the viewer, that
+// clip drives the caster (space.caster_clip), starting at the first gesture.
+function playTemplate(tpl) {
+  if (!tpl || !state.clip || tpl.archetype === "status") return tpl;
+  const first = (tpl.space?.caster_gestures || []).map((g) => (typeof g.at_ms === "number" ? g.at_ms : Array.isArray(g.at_ms) ? g.at_ms[0] : 0));
+  const at = first.length ? Math.min(...first) : 0;
+  return { ...tpl, space: { ...(tpl.space || {}), caster_clip: { clip: state.clip, at_ms: at, mirror: state.clipMirror } } };
+}
+
+async function fetchClip(name) {
+  if (getClip(name)) return true;
+  try {
+    const res = await fetch(`clips/${encodeURIComponent(name)}.json`);
+    if (!res.ok) return false;
+    return registerClip(name, await res.json());
+  } catch {
+    return false;
+  }
+}
+
+// Load the clips in the library's clips/ folder (and any a template asks for).
+async function loadClips() {
+  try {
+    const res = await fetch("clips/index.json");
+    if (res.ok) await Promise.all(((await res.json()).clips || []).map(fetchClip));
+  } catch {
+    // Opened without the server: no clip library.
+  }
+  await ensureClips(state.templates);
+  buildClipSelect();
+}
+
+async function ensureClips(templates) {
+  await Promise.all([...new Set(templates.flatMap(clipsWanted))].map(fetchClip));
+}
+
+function buildClipSelect() {
+  if (!ui.clipSelect) return;
+  ui.clipSelect.replaceChildren(new Option("Template's", ""), ...clipNames().map((n) => new Option(n, n)));
+  ui.clipSelect.value = clipNames().includes(state.clip) ? state.clip : "";
+}
+
+if (ui.clipSelect) {
+  ui.clipSelect.onchange = () => {
+    state.clip = ui.clipSelect.value;
+    if (state.template) loadEffect();
+  };
+  ui.clipMirror.onchange = () => {
+    state.clipMirror = ui.clipMirror.checked;
+    if (state.template) loadEffect();
+  };
+  ui.clipFile.onchange = async () => {
+    const f = ui.clipFile.files[0];
+    ui.clipFile.value = "";
+    if (!f) return;
+    try {
+      let name;
+      let clip;
+      if (/\.json$/i.test(f.name)) {
+        clip = JSON.parse(await f.text());
+        const { clipNameFor } = await import("./clipimport.js");
+        name = clip.name ? clipNameFor(clip.name) : clipNameFor(f.name);
+      } else {
+        const { clipFromFile } = await import("./clipimport.js");
+        const out = await clipFromFile(await f.arrayBuffer(), f.name, { fps: 30 });
+        clip = out.clip;
+        name = out.name;
+        if (!out.info.tPose) showError(`${f.name}: its rest pose isn't a T-pose, so the arms may be off. Download it from Mixamo "With Skin".`);
+      }
+      if (!registerClip(name, clip)) throw new Error("not an animation clip");
+      // Save it in the library's clips/ folder so templates can use it.
+      try {
+        await fetch(`api/clips?name=${encodeURIComponent(name)}`, { method: "POST", headers: { "Content-Type": "application/json", "X-SpellDirector": "clip" }, body: JSON.stringify(clip) });
+      } catch {
+        // No server: the clip still plays until the page is reloaded.
+      }
+      state.clip = name;
+      buildClipSelect();
+      if (state.template) loadEffect();
+    } catch (err) {
+      console.error(err);
+      showError(`Could not load ${f.name}: ${err.message}`);
+    }
+  };
+}
+
 // ------------------------------------------------------------ export
 
 function exportOptions(form) {
@@ -617,7 +711,7 @@ ui.exportBtn.onclick = () => {
   ui.exportDialog.showModal();
 };
 ui.exportGo.onclick = async () => {
-  const tpl = state.template;
+  const tpl = playTemplate(state.template);
   if (!tpl) return;
   const opts = exportOptions(ui.exportForm);
   if (!opts.views.length) {
@@ -727,8 +821,9 @@ ui.gifGo.onclick = async () => {
 // passed in) and return the files as base64.
 // With opts.kind "gif" (tools/export_gif.py) it exports GIFs instead.
 window.spellDirectorExport = async (opts = {}) => {
-  const tpl = opts.template || (opts.id ? state.templates.find((t) => t.id === opts.id) : state.template);
+  const tpl = opts.template || (opts.id ? state.templates.find((t) => t.id === opts.id) : playTemplate(state.template));
   if (!tpl) throw new Error(`unknown template ${opts.id ?? ""}`.trim());
+  await ensureClips([tpl]);
   const run = opts.kind === "gif"
     ? async () => {
       const { files, plan } = await exportGifs(tpl, { ...opts, seed: opts.seed ?? state.seed });
@@ -793,7 +888,15 @@ async function boot() {
     showError(`Could not load templates: ${err.message}`);
     return;
   }
+  await loadClips();
   const params = new URLSearchParams(location.search);
+  const urlClip = params.get("clip");
+  if (urlClip && (await fetchClip(urlClip))) {
+    state.clip = urlClip;
+    state.clipMirror = params.get("mirror") === "1";
+    buildClipSelect();
+    if (ui.clipMirror) ui.clipMirror.checked = state.clipMirror;
+  }
   const start = resolveStart(state.groups, { template: params.get("template"), type: params.get("type") });
   if (start.error) showError(start.error);
   state.type = start.type;

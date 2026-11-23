@@ -38,6 +38,11 @@ JPEGs are served under /analysis/<id>/ from a temp folder; only the newest
 few analyses are kept. This needs numpy, Pillow and PyAV (bundled in the exe);
 without them the endpoint answers 503 and the rest of the viewer still works.
 
+GET /clips/index.json lists the animation clips in the library's clips/
+folder and GET /clips/<name>.json serves one; POST /api/clips?name=<name>
+(header X-SpellDirector: clip, localhost only) saves a clip the viewer
+converted from a Mixamo FBX or GLB.
+
 Serves web/ at / and the templates at /templates/: the repo's templates/,
 or in the exe the built-in ones plus the user's library folder (see
 tools/app_paths.py). The template index is rebuilt on every request, so new
@@ -118,6 +123,7 @@ _analyze_lock = threading.Lock()  # one breakdown at a time: they are CPU and me
 # Playwright): the page GETs its options from /api/export-job/<token> and POSTs
 # the files back there.
 EXPORT_MAX_BYTES = 1024 * 1024 * 1024
+CLIP_MAX_BYTES = 64 * 1024 * 1024
 _export_jobs: dict[str, dict] = {}
 _export_jobs_lock = threading.Lock()
 
@@ -259,6 +265,9 @@ class Handler(SimpleHTTPRequestHandler):
             if name in SHARED_DOCS:
                 return str(SHARED_DOCS[name])
             return str(ROOT / "web" / "404")
+        if clean.startswith("/clips/") and clean.endswith(".json") and clean != "/clips/index.json":
+            target = app_paths.find_clip_file(urllib.parse.unquote(clean[len("/clips/"):-len(".json")]))
+            return str(target) if target else str(ROOT / "web" / "404")
         if clean.startswith("/templates/"):
             # The user's library first (the exe's saved spells), then the built-in templates.
             target = app_paths.find_template_file(urllib.parse.unquote(clean[len("/templates/"):]))
@@ -285,6 +294,9 @@ class Handler(SimpleHTTPRequestHandler):
         if clean == "/api/setup":
             self.send_json(setup_info())
             return
+        if clean == "/clips/index.json":
+            self.send_json(app_paths.clip_index())
+            return
         if clean == "/templates/index.json":
             body = json.dumps(app_paths.template_index()).encode()
             self.send_response(200)
@@ -305,6 +317,9 @@ class Handler(SimpleHTTPRequestHandler):
             return
         if url.path == "/api/shutdown":
             self.receive_shutdown()
+            return
+        if url.path == "/api/clips":
+            self.receive_clip(url.query)
             return
         if url.path != "/api/analyze":
             self.send_json({"error": "not found"}, 404)
@@ -354,6 +369,24 @@ class Handler(SimpleHTTPRequestHandler):
 
         results = client_setup.setup(clients)
         self.send_json({"results": results, **setup_info()})
+
+    def receive_clip(self, query: str) -> None:
+        """Save an animation clip the viewer converted (a Mixamo FBX/GLB) in the library's clips/ folder."""
+        if not self.local_request("clip"):
+            self.close_connection = True
+            self.send_json({"error": "forbidden"}, 403)
+            return
+        name = (urllib.parse.parse_qs(query).get("name") or [""])[0]
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            if not 0 < length <= CLIP_MAX_BYTES:
+                raise ValueError("clip too big or empty")
+            path = app_paths.save_clip(name, json.loads(self.rfile.read(length)))
+        except ValueError as exc:
+            self.close_connection = True
+            self.send_json({"error": str(exc)}, 400)
+            return
+        self.send_json({"ok": True, "name": name, "path": str(path)})
 
     def receive_shutdown(self) -> None:
         """Stop this viewer so a fresh launch can take its place (serve.py --replace)."""
