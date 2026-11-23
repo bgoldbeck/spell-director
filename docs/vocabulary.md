@@ -451,7 +451,7 @@ Sound is described as **timed cues**, not audio: "crackle during the charge, cra
 | `shatter` | one-shot | glassy pings and tinkles | glass, ice break, crystal |
 | `ignite` | one-shot | soft fwoomp into flame | fwoosh, flare, fireball launch |
 | `fire` | sustained | roaring, crackling fire | flames, burning, blaze |
-| `whoosh` | one-shot | air rushing past | swoosh, swing, fly by |
+| `whoosh` | one-shot | air rushing past | swoosh, fly by, dash |
 | `wind` | sustained | breathy gust rising and falling | gust, breeze, vortex |
 | `shimmer` | sustained | twinkling high chimes | sparkle, magic, heal |
 | `splash` | one-shot | wet slap, spray, droplets | splash, splat, water impact |
@@ -462,8 +462,10 @@ Sound is described as **timed cues**, not audio: "crackle during the charge, cra
 | `whisper` | sustained | breathy wordless whispers | voices, murmur, curse, hex |
 | `drain` | sustained | reversed sucking inhale that cuts off | siphon, life steal, leech |
 | `drone` | sustained | ominous dissonant low drone | doom, curse, void, shadow |
+| `swing` | one-shot | thin high blade swish, peaks early | sword swing, slash, cut, cleave |
+| `clang` | one-shot | metal strike with a long bright ring | clash, parry, block, metal hit |
 
-The viewer plays a procedural placeholder for every cue today; real recordings can replace any cue later without changing templates (see [`web/sounds/README.md`](../web/sounds/README.md)).
+Every cue has a **sound bank**: real sound files in three sizes with several takes each ([`web/sounds/bank`](../web/sounds/bank), made by `tools/soundbank.py`). A layer's `size` param picks `small` (shorter, higher, lighter: a spark, a dagger), `medium` (default) or `large` (longer, deeper, heavier: a big AoE, a greatsword); each play picks a take from the seed and detunes it slightly, so repeats never sound identical. Recordings (CC0 or CC-BY) can join or replace the bank without changing templates (see [`web/sounds/README.md`](../web/sounds/README.md)).
 
 The words for describing a sound (texture, pitch, envelope, space, size), how a spell's sound is layered across its phases, element flavors, timing and level rules, and how to make the real sounds with a text-to-SFX generator, an AI-written synthesizer or a library are in [sound-design.md](sound-design.md). Each cue in `cues.json` carries its `character` in those words, a `sfx_prompt`, a `synth` recipe and `search` terms.
 

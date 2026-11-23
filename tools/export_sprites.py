@@ -103,6 +103,7 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
     written = []
     for f in result["files"]:
         path = folder / f["name"]
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(base64.b64decode(f["base64"]))
         written.append(str(path))
     return {"out": str(folder), "files": written, "manifest": manifest}

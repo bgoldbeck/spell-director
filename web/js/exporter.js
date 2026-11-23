@@ -311,8 +311,11 @@ export async function exportSpriteSheets(template, opts = {}) {
         }
         if (audio.length) {
           manifest.sound_files = audio.map((f) => f.name);
-          extra.push({ name: soundPreviewName(base), about: "Placeholder sound mix of the whole spell, from 0 ms (timing reference)" });
-          extra.push({ name: "sound-<cue>.wav", about: "One placeholder sound per cue; replace with real sounds of the same name" });
+          if (audio.some((f) => f.name.startsWith("sounds/"))) {
+            extra.push({ name: "sounds/<cue>-<size>-<take>.ogg", about: "Sound bank files the spell plays; the sound sheet's events name the one each plays (CC0)" });
+          }
+          extra.push({ name: soundPreviewName(base), about: "Sound mix of the whole spell, from 0 ms (timing reference)" });
+          extra.push({ name: "sound-<cue>.wav", about: "One sound per cue it uses (bank sound, or a placeholder if the cue has none); replace with your own of the same name" });
         }
       }
     }

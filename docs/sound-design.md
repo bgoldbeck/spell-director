@@ -4,12 +4,12 @@ How SpellDirector describes a spell's sound, and how a person or an AI (Claude, 
 
 ## Who makes the final sounds?
 
-**You do, with help.** SpellDirector doesn't ship finished audio. It gives you:
+**The sound bank, then you.** SpellDirector ships a generated **sound bank**: every cue as real sound files in three sizes (small, medium, large) with three takes each, in [`web/sounds/bank`](../web/sounds/bank). They are made offline by [`tools/soundbank.py`](../tools/soundbank.py) from layered synthesis (transient, body, sub and tail, room reverb, saturation), so they're our own work and free to ship (CC0). The viewer plays them and exports include the ones a spell uses. They are good game-ready placeholders, strongest for energy, electric, magic, impacts and air; for hero spells you'll still want recorded or generated sounds for real-world textures (water, fire, flesh), and the rest of this page is how to describe and make them. SpellDirector gives you:
 
 - **Timing**: every sound cue's start, frame, length, volume and pitch, locked to the beats.
 - **A brief per cue**: what it should sound like, in the words below.
 - **Ways to make it**: a text-to-SFX prompt, a procedural synthesis recipe, and library search terms.
-- **Placeholders**: the viewer's procedural sounds, also exported as WAV files (`sound-<cue>.wav` and `<id>.preview.wav`) so the engine wiring and timing can be done before the real sounds exist.
+- **Sounds to start with**: the bank files each event plays (`sounds/<cue>-<size>-<take>.ogg` in the export, named per event in the sound sheet), plus a WAV per cue and a WAV of the whole spell (`sound-<cue>.wav` and `<id>.preview.wav`), so the engine wiring and timing can be done before your final sounds exist.
 
 The real sounds come from a text-to-SFX generator, from an AI writing a synthesizer, from a sound library, or from your own recordings. Swap them in under the same file names.
 
@@ -164,4 +164,14 @@ Search each cue's `search` terms. Only use clear licenses: CC0 (Freesound filter
 
 ## 8. In the viewer
 
-The viewer plays the procedural placeholders (sound is off by default; press **M** or the Sound button). They share a small reverb and a compressor, use white, pink and brown noise, and pan each sound slightly. To hear a real sound instead, add it as a sample in `web/sounds/` (see [`web/sounds/README.md`](../web/sounds/README.md)); the viewer and exports pick it up without code changes.
+The viewer plays the sound bank (sound is off by default; press **M** or the Sound button). Each event plays the take its seed picks, in the layer's `size`, detuned by up to ±2.5%, through a shared reverb and compressor, panned slightly. A cue with no samples falls back to its procedural Web Audio placeholder (`web/js/audio.js`). To add a recording, see [`web/sounds/README.md`](../web/sounds/README.md); the viewer and exports pick it up without code changes.
+
+## 9. The sound bank
+
+| Size | Use for | Compared to medium |
+|---|---|---|
+| `small` | sparks, darts, daggers, quick jabs, small bolts | about 0.65× as long, pitched up about 18%, less sub |
+| `medium` | most spells (default) | the cue's `duration_ms` |
+| `large` | big AoE, meteors, quakes, greatswords, boss attacks | about 1.6× as long, pitched down about 16%, more sub and room |
+
+Sustained cues are seamless loops of 2, 3 and 4 s; `charge` and `drain` instead swell and cut, and the viewer lines their end up with the release. Each recipe in `tools/soundbank.py` follows its cue's `character`, so the bank and the briefs agree. To change a sound, edit its recipe and run `python tools/soundbank.py <cue>` (needs numpy and ffmpeg); the output is deterministic, so unchanged cues don't change.

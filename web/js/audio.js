@@ -2,15 +2,16 @@
 // them offline to WAV for exports.
 //
 // Each cue in web/sounds/cues.json plays a real sample when the cue lists
-// `samples`, and otherwise a procedural placeholder from RECIPES below (keyed
-// by cue id). Replacing a placeholder never needs code: add files to
-// web/sounds/samples/ and list them on the cue.
+// `samples` (the generated sound bank in web/sounds/bank, see
+// tools/soundbank.py, plus any recordings in web/sounds/samples), and
+// otherwise a procedural placeholder from RECIPES below (keyed by cue id).
+// Which sample an event plays (size and take) is engine/sound.js pickSample.
 //
 // Playback is a side effect of the clock only: main.js hands over the events
 // whose start time was crossed this frame. Rendering never reads audio state.
 
 import { rng } from "./engine/timeline.js";
-import { eventSeed } from "./engine/sound.js";
+import { eventSeed, exportSampleName, pickSample, sampleEntries, SHAPED_CUES } from "./engine/sound.js";
 
 const MASTER_GAIN = 0.7;
 
@@ -418,6 +419,32 @@ export const RECIPES = {
     chain(v, noise(v, t0, d, "brown"), filter(v, "lowpass", 300 * r), lo);
   },
 
+  // A blade through the air: a narrow, high band-pass sweep that peaks early.
+  swing(v, t0, d) {
+    const r = v.rate;
+    const bp = filter(v, "bandpass", 900 * r, 5);
+    bp.frequency.exponentialRampToValueAtTime(4200 * r, t0 + d * 0.33);
+    bp.frequency.exponentialRampToValueAtTime(1000 * r, t0 + d);
+    const g = gain(v);
+    g.gain.setValueAtTime(0.001, t0);
+    g.gain.exponentialRampToValueAtTime(2.2, t0 + d * 0.33);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + d);
+    chain(v, noise(v, t0, d), bp, g);
+  },
+
+  // Metal on metal: a tick and inharmonic ringing partials.
+  clang(v, t0, d) {
+    const f0 = 480 * v.rate;
+    [1, 2.76, 5.4, 8.93].forEach((k, i) => {
+      const g = gain(v);
+      hit(g.gain, t0, 0.35 * Math.pow(0.75, i), (d * 0.35) / (1 + 0.6 * i));
+      chain(v, osc(v, "sine", f0 * k * (1 + (v.rand() - 0.5) * 0.01), t0, d), g);
+    });
+    const tick = gain(v);
+    hit(tick.gain, t0, 0.6, 0.004);
+    chain(v, noise(v, t0, 0.05), filter(v, "highpass", 1500), tick);
+  },
+
   wind(v, t0, d) {
     const r = v.rate;
     const bp = filter(v, "bandpass", 600 * r, 3.5);
@@ -673,10 +700,19 @@ function playVoice(ctx, bus, e, def, { seed = 0, speed = 1, buf = null, t0, pan 
   if (buf) {
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    src.playbackRate.value = v.rate;
+    // A little random detune per play, so repeats of one take still differ.
+    const rate = v.rate * (1 + (r() * 2 - 1) * 0.025);
+    src.playbackRate.value = rate;
     const g = ctx.createGain();
     src.connect(g).connect(out);
-    if (e.kind === "sustained") {
+    if (SHAPED_CUES.has(e.cue)) {
+      // A build-up ends exactly on the release: line up the sample's end.
+      const len = buf.duration / rate;
+      g.gain.value = 1;
+      if (len >= d) src.start(t0, (len - d) * rate);
+      else src.start(t0 + d - len);
+      src.stop(t0 + d);
+    } else if (e.kind === "sustained") {
       src.loop = buf.duration / v.rate < d;
       envelope(g.gain, t0, d, 1, 0.01, Math.min(0.12, d / 3));
       src.start(t0);
@@ -684,7 +720,7 @@ function playVoice(ctx, bus, e, def, { seed = 0, speed = 1, buf = null, t0, pan 
     } else {
       g.gain.value = 1;
       src.start(t0);
-      end = t0 + buf.duration / v.rate;
+      end = t0 + buf.duration / rate;
     }
   } else if (RECIPES[e.cue]) {
     RECIPES[e.cue](v, t0, d);
@@ -735,7 +771,7 @@ export class SoundPlayer {
   }
 
   preload() {
-    for (const def of Object.values(this.library.cues)) for (const s of def.samples || []) this.buffer(s);
+    for (const def of Object.values(this.library.cues)) for (const s of sampleEntries(def)) this.buffer(s.file);
   }
 
   // Decoded sample, or null while loading or if it failed (the caller falls back).
@@ -768,9 +804,8 @@ export class SoundPlayer {
     const def = this.library.cues[e.cue];
     if (!def) return; // unknown cue: caption only
     const ctx = this.ctx;
-    const samples = def.samples || [];
-    const pickR = rng(eventSeed(seed, e) ^ 0x5bd1e995);
-    const buf = samples.length ? this.buffer(samples[Math.floor(pickR() * samples.length)]) : null;
+    const sample = pickSample(def, e, seed);
+    const buf = sample ? this.buffer(sample.file) : null;
     const voice = playVoice(ctx, this.bus, e, def, { seed, speed, buf, t0: ctx.currentTime + 0.005 });
     this.voices.add(voice);
     setTimeout(() => this.release(voice), Math.max(0, (voice.end - ctx.currentTime) * 1000) + 200);
@@ -801,17 +836,21 @@ export class SoundPlayer {
 
 export const RENDER_RATE = 44100;
 
-async function loadSamples(ctx, library, base, cueIds) {
+// Decode the samples these events play: Map file -> AudioBuffer.
+async function loadSamples(ctx, library, base, events, seed) {
   const out = new Map();
-  for (const id of cueIds) {
-    for (const s of library.cues?.[id]?.samples || []) {
-      try {
-        const res = await fetch(base + s);
-        if (!res.ok) throw new Error(res.status);
-        out.set(s, await ctx.decodeAudioData(await res.arrayBuffer()));
-      } catch (err) {
-        console.warn(`SpellDirector: could not load sound ${base + s}, using the placeholder`, err);
-      }
+  const files = new Set();
+  for (const e of events) {
+    const s = pickSample(library.cues?.[e.cue], e, seed);
+    if (s) files.add(s.file);
+  }
+  for (const s of files) {
+    try {
+      const res = await fetch(base + s);
+      if (!res.ok) throw new Error(res.status);
+      out.set(s, await ctx.decodeAudioData(await res.arrayBuffer()));
+    } catch (err) {
+      console.warn(`SpellDirector: could not load sound ${base + s}, using the placeholder`, err);
     }
   }
   return out;
@@ -841,13 +880,11 @@ export async function renderEvents(events, library, { seed = 0, lengthMs, base =
   const length = Math.max(1, Math.ceil(((lengthMs ?? 1000) / 1000) * rate));
   const ctx = new Offline(2, length, rate);
   const bus = makeBus(ctx, 1);
-  const samples = await loadSamples(ctx, library, base, [...new Set(events.map((e) => e.cue))]);
+  const samples = await loadSamples(ctx, library, base, events, seed);
   for (const e of events) {
     const def = library.cues?.[e.cue];
     if (!def) continue;
-    const list = (def.samples || []).filter((s) => samples.has(s));
-    const pickR = rng(eventSeed(seed, e) ^ 0x5bd1e995);
-    const buf = list.length ? samples.get(list[Math.floor(pickR() * list.length)]) : null;
+    const buf = samples.get(pickSample(def, e, seed)?.file) || null;
     playVoice(ctx, bus, e, def, { seed, buf, t0: e.at / 1000, pan });
   }
   return ctx.startRendering();
@@ -885,16 +922,33 @@ export function encodeWav(buf) {
   return bytes;
 }
 
-// The audio files for an export: the whole spell's placeholder mix (a timing
-// reference) and one file per cue it uses, each normalized to -1 dBFS.
+// The audio files for an export: the sound bank samples the spell plays, the
+// whole spell's mix (a timing reference) and one file per cue it uses, each
+// normalized to -1 dBFS.
 // sheet: from soundSheet(). Returns [{name, data}] (empty without Web Audio).
 export async function renderExportAudio(template, events, sheet, library, { seed = 0, base = "sounds/" } = {}) {
   if (!events.length) return [];
   const files = [];
+  // The sound bank files the events play, under sounds/ (see the sheet's
+  // per-event `sample`): real sounds the engine can use as they are.
+  const used = new Map();
+  for (const e of events) {
+    const s = pickSample(library.cues?.[e.cue], e, seed);
+    if (s) used.set(exportSampleName(s.file), s.file);
+  }
+  for (const [name, file] of used) {
+    try {
+      const res = await fetch(base + file);
+      if (!res.ok) throw new Error(res.status);
+      files.push({ name, data: new Uint8Array(await res.arrayBuffer()) });
+    } catch (err) {
+      console.warn(`SpellDirector: could not copy sound ${base + file} into the export`, err);
+    }
+  }
   const lastEnd = Math.max(...events.map((e) => e.at + e.dur));
   const total = Math.max(template.timing?.duration_ms ?? 0, lastEnd) + 1200;
   const mix = await renderEvents(events, library, { seed, lengthMs: total, base });
-  if (!mix) return [];
+  if (!mix) return files;
   files.push({ name: `${template.id}.preview.wav`, data: encodeWav(normalize(mix)) });
   for (const c of sheet.cues) {
     if (!c.known) continue;
