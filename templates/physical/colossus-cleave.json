@@ -485,7 +485,7 @@
         "fall"
       ],
       "params": {
-        "cue": "whoosh",
+        "cue": "swing",
         "gain": 0.85,
         "pitch": {
           "min": 0.6,

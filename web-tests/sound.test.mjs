@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { cuePrompt, cuesAt, eventsBetween, soundEvents, soundFileName, soundSheet, SOUND_SHEET_FORMAT } from "../web/js/engine/sound.js";
+import { cuePrompt, cuesAt, eventSize, eventsBetween, pickSample, sampleEntries, soundEvents, soundFileName, soundSheet, SOUND_SHEET_FORMAT } from "../web/js/engine/sound.js";
 
 const library = JSON.parse(readFileSync(new URL("../web/sounds/cues.json", import.meta.url), "utf8"));
 
@@ -112,4 +112,50 @@ test("every cue has the sound-design fields", () => {
     for (const k of ["texture", "pitch", "envelope", "layers", "tail", "space"]) assert.ok(c.character?.[k], `${id}.character.${k}`);
     assert.ok(c.synth && c.search?.length, id);
   }
+});
+
+test("every cue has a sound bank in three sizes", () => {
+  for (const [id, def] of Object.entries(library.cues)) {
+    const sizes = new Set(sampleEntries(def).map((s) => s.size));
+    assert.deepEqual([...sizes].sort(), ["large", "medium", "small"], id);
+  }
+  assert.deepEqual(sampleEntries({ samples: ["samples/x-1.ogg"] }), [{ file: "samples/x-1.ogg", size: null, duration_ms: null }]);
+});
+
+test("pickSample: the layer's size, a take from the seed, repeats vary", () => {
+  const tpl = {
+    beats: [{ id: "a", start_ms: 0, end_ms: 1000 }],
+    layers: [
+      { id: "big", type: "sound_cue", beats: ["a"], params: { cue: "boom", size: "large" } },
+      { id: "hops", type: "sound_cue", beats: ["a"], params: { cue: "zap", repeat_ms: 100 } },
+    ],
+  };
+  const ev = soundEvents(tpl, 3, library);
+  const big = ev.find((e) => e.layer === "big");
+  assert.equal(pickSample(library.cues.boom, big, 3).size, "large");
+  assert.deepEqual(pickSample(library.cues.boom, big, 3), pickSample(library.cues.boom, big, 3));
+  const hops = ev.filter((e) => e.layer === "hops").map((e) => pickSample(library.cues.zap, e, 3));
+  assert.ok(hops.every((s) => s.size === "medium"));
+  assert.ok(new Set(hops.map((s) => s.file)).size > 1, "repeats use different takes");
+  assert.equal(pickSample({ samples: [] }, big, 3), null);
+});
+
+test("eventSize fits the length for build-ups and one-shots with a set duration", () => {
+  const charge = library.cues.charge;
+  const at = (dur) => eventSize(charge, { cue: "charge", kind: "sustained", dur, rate: 1 });
+  assert.equal(at(500), "small");
+  assert.equal(at(800), "medium");
+  assert.equal(at(1400), "large");
+  const crack = library.cues.crack;
+  assert.equal(eventSize(crack, { cue: "crack", kind: "one_shot", dur: 450, rate: 1 }), "medium");
+  assert.equal(eventSize(crack, { cue: "crack", kind: "one_shot", dur: 2000, rate: 1, fit: true }), "large");
+});
+
+test("the sound sheet names the bank file each event plays", () => {
+  const sheet = soundSheet(template, 1, library);
+  const known = sheet.events.filter((e) => e.cue !== "kazoo");
+  assert.ok(known.every((e) => /^sounds\/[a-z]+-[sml]-\d+\.ogg$/.test(e.sample)), JSON.stringify(known.map((e) => e.sample)));
+  assert.equal(sheet.events.find((e) => e.cue === "kazoo").sample, null);
+  const crack = sheet.cues.find((c) => c.cue === "crack");
+  assert.ok(crack.samples_used.length >= 1);
 });

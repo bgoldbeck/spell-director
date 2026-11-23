@@ -79,11 +79,13 @@ KNOWN_PARAMS = {
     "slash": {"trace_ms", "trail_ms", "inner", "reach_px", "width_px", "softness", "opacity", "edge"},
     "light": {"radius", "energy", "height_px", "forward_px", "side_px", "orbit_hz", "tint"},
     "camera_shake": {"amplitude_px", "frequency_hz", "decay"},
-    "sound_cue": {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms"},
+    "sound_cue": {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms", "size"},
 }
 
 # Layer types that draw nothing, so they take no shader intent.
 NO_SHADER = {"sound_cue", "camera_shake"}
+# Sound bank sizes a sound_cue layer can ask for (web/sounds/bank).
+SOUND_SIZES = ("small", "medium", "large")
 
 CUE_LIBRARY = ROOT / "web" / "sounds" / "cues.json"
 
@@ -190,6 +192,9 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
                     f"layer {lid!r} (sound_cue): unknown cue {cue!r}; the viewer captions it but plays nothing. "
                     f"Known cues: {', '.join(sorted(cues))}"
                 )
+            size = layer.get("params", {}).get("size")
+            if size is not None and size not in SOUND_SIZES:
+                warnings.append(f"layer {lid!r} (sound_cue): size {size!r} is not one of {', '.join(SOUND_SIZES)}; medium plays")
         if layer["type"] in NO_SHADER:
             if "shader" in layer:
                 warnings.append(f"layer {lid!r} ({layer['type']}): has a shader, but this layer type draws nothing")

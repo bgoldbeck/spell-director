@@ -397,7 +397,7 @@
         "rise"
       ],
       "params": {
-        "cue": "whoosh",
+        "cue": "swing",
         "gain": 0.7,
         "pitch": {
           "min": 1.05,

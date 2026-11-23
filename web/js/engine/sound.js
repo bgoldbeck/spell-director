@@ -2,11 +2,18 @@
 // No Web Audio here, so it runs in Node tests. web/js/audio.js plays the
 // events; the renderer never depends on what was played.
 
-import { loopRange, resolveValue, seedFor } from "./timeline.js";
+import { loopRange, resolveValue, rng, seedFor } from "./timeline.js";
 
 export const DEFAULT_GAIN = 0.8;
 const FALLBACK = { kind: "one_shot", duration_ms: 300 };
 const CAPTION_MS = 220;
+
+// Sound bank sizes (web/sounds/bank, tools/soundbank.py): small is shorter,
+// higher and lighter, large longer, deeper and heavier.
+export const SOUND_SIZES = ["small", "medium", "large"];
+// Build-ups that swell and cut on the release: their sample should end
+// exactly when the event ends, so pick the take whose length fits.
+export const SHAPED_CUES = new Set(["charge", "drain"]);
 
 function num(v, seed, fallback, ...parts) {
   const x = resolveValue(v, seed, ...parts);
@@ -32,7 +39,9 @@ export function soundEvents(template, seed, library = {}) {
     if (!beats.length) continue;
     const pick = (name, fallback, ...parts) => num(p[name], seed, fallback, layer.id, name, ...parts);
     const offset = pick("offset_ms", 0);
-    const base = { layer: layer.id, cue, kind: def.kind, known: cue in cues };
+    const size = SOUND_SIZES.includes(p.size) ? p.size : null;
+    // fit: choose the sample whose length matches the event (a set duration_ms).
+    const base = { layer: layer.id, cue, kind: def.kind, known: cue in cues, size, fit: p.duration_ms !== undefined };
 
     // A sustained cue with repeat_ms plays again every repeat_ms inside each
     // beat, each time for its own length (duration_ms or the cue's): a
@@ -86,6 +95,47 @@ export function cuesAt(events, t) {
 // Stable per-event seed, e.g. for choosing between several samples.
 export function eventSeed(seed, e) {
   return seedFor(seed, e.layer, "sound", e.n ?? 0);
+}
+
+// A cue's samples as [{file, size, duration_ms}]. Plain path strings are
+// allowed too (size and length unknown: they fit any size).
+export function sampleEntries(def) {
+  return (def?.samples || [])
+    .map((s) => (typeof s === "string" ? { file: s, size: null, duration_ms: null } : s))
+    .filter((s) => s && typeof s.file === "string");
+}
+
+// Which size an event wants: the layer's `size` param, else (for shaped
+// build-ups and one-shots with a set duration_ms) the size whose samples are
+// closest in length, else medium.
+export function eventSize(def, e) {
+  if (e.size) return e.size;
+  const list = sampleEntries(def).filter((s) => s.size && s.duration_ms > 0);
+  if (list.length && (SHAPED_CUES.has(e.cue) || (e.kind === "one_shot" && e.fit))) {
+    const want = Math.max(1, e.dur * (e.rate || 1)); // source length that plays for dur
+    let best = list[0];
+    for (const s of list) if (Math.abs(Math.log(s.duration_ms / want)) < Math.abs(Math.log(best.duration_ms / want))) best = s;
+    return best.size;
+  }
+  return "medium";
+}
+
+// The sample an event plays: one take of its size, picked from the event's
+// seed so repeats (chain hops, volleys, every cast) vary but stay
+// reproducible. null when the cue has no samples (the placeholder plays).
+export function pickSample(def, e, seed) {
+  const list = sampleEntries(def);
+  if (!list.length) return null;
+  const want = eventSize(def, e);
+  const sized = list.filter((s) => !s.size || s.size === want);
+  const pool = sized.length ? sized : list;
+  const r = rng(eventSeed(seed, e) ^ 0x5bd1e995);
+  return pool[Math.floor(r() * pool.length)];
+}
+
+// File name a sample gets inside an export (next to the sound sheet).
+export function exportSampleName(file) {
+  return `sounds/${file.split("/").pop()}`;
 }
 
 // ------------------------------------------------------------ sound sheet
@@ -149,6 +199,13 @@ export function soundSheet(template, seed, library = {}, { frameOf } = {}) {
     return own.find((b) => e.at >= b.start_ms && e.at < b.end_ms) || own.find((b) => e.at >= b.start_ms) || own[0] || null;
   };
 
+  // The bank sample each event plays (shipped in the export under sounds/).
+  const hasSamples = (e) => sampleEntries(cues[e.cue]).length > 0;
+  const sampleOf = (e) => {
+    const s = pickSample(cues[e.cue], e, seed);
+    return s ? exportSampleName(s.file) : null;
+  };
+
   // An aura's seamless loop: sounds inside it repeat every loop.
   const lr = loopRange(template);
   const out = events.map((e) => {
@@ -170,6 +227,8 @@ export function soundSheet(template, seed, library = {}, { frameOf } = {}) {
       gain: r2(e.gain),
       volume_db: db(e.gain),
       pitch: r2(e.rate),
+      size: hasSamples(e) ? eventSize(cues[e.cue], e) : null,
+      sample: hasSamples(e) ? sampleOf(e) : null,
     };
     if (lr) {
       // intro: plays once when the aura starts; loop: repeats every loop
@@ -212,6 +271,7 @@ export function soundSheet(template, seed, library = {}, { frameOf } = {}) {
       synth: def.synth || "",
       search: def.search || [],
       samples: def.samples || [],
+      samples_used: [...new Set(evs.map((e) => e.sample).filter(Boolean))],
     };
   });
 
@@ -241,6 +301,7 @@ export function soundSheet(template, seed, library = {}, { frameOf } = {}) {
       peak_dbfs: -1,
       note: "volume_db is relative to full scale for that cue's own file: normalize every file to a -1 dBFS peak, then play it at volume_db. Impacts are the loudest moment; build-ups and tails sit under them.",
       pitch_note: "pitch is a playback-rate multiplier (1 = as recorded); a range across events means each cast or hit varies.",
+      sample_note: "sample is the sound bank file this event plays (in the export's sounds/ folder; null = no recording yet, use sound-<cue>.wav). One-shots play the whole file; sustained cues loop it from at_ms to end_ms (charge and drain instead end exactly at end_ms). Add a little random pitch (±2-3%) per play so repeats don't sound identical.",
     },
   };
 }
