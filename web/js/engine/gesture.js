@@ -217,7 +217,7 @@ function shapeOf(name) {
 
 // The way a held blade points when a pose doesn't say: out of the thumb
 // side of the fist, tipped a little toward the knuckles.
-function defaultBlade(aim, palm) {
+export function defaultBlade(aim, palm) {
   const n = norm(sub(palm, mul(aim, dot(palm, aim))), [0, 0, -1]);
   return norm(add(mul(cross(aim, n), 0.85), mul(aim, 0.35)));
 }
@@ -348,8 +348,10 @@ const DEG = Math.PI / 180;
  * Forward kinematics for one arm in a pose. side: -1 for the lead arm (on
  * -Z), +1 for the off arm. Returns joint positions (body coords):
  * { shoulder, elbow, wrist, palm: { center, aim, normal, thumb }, fingers:
- * [[base, mid, tip] x5 (thumb first)], hand (the emit point just off the
- * palm), tip (the index fingertip) }.
+ * [[knuckle, joint 2, joint 3, tip] x5 (thumb first)], hand (the emit point
+ * just off the palm), tip (the index fingertip) }. The joints are the
+ * Mixamo skeleton's (engine/rig.js): shoulder = Arm, elbow = ForeArm, wrist =
+ * Hand, a finger's four points = its bones 1, 2, 3 and the end bone 4.
  */
 export function armFK(pose, side) {
   const s = side < 0 ? -1 : 1;
@@ -371,21 +373,25 @@ export function armFK(pose, side) {
     const open = norm(add(add(mul(aim, 0.6), mul(thumb, 0.75)), mul(n, 0.25)));
     const across = norm(add(add(mul(n, 0.6), mul(thumb, -0.6)), mul(aim, 0.5)));
     const d1 = norm(lerp3(open, across, c * 0.8));
-    const d2 = norm(lerp3(d1, across, 0.3 + c * 0.6));
+    const d2 = norm(lerp3(d1, across, 0.2 + c * 0.45));
+    const d3 = norm(lerp3(d1, across, 0.3 + c * 0.6));
     const L = BODY.fingers[0];
-    const mid = add(base, mul(d1, L * 0.55));
-    fingers.push([base, mid, add(mid, mul(d2, L * 0.45))]);
+    const j2 = add(base, mul(d1, L * 0.45));
+    const j3 = add(j2, mul(d2, L * 0.3));
+    fingers.push([base, j2, j3, add(j3, mul(d3, L * 0.25))]);
   }
   const offsets = [0.38, 0.13, -0.13, -0.38];
   for (let i = 0; i < 4; i++) {
     const c = pose.curl[i + 1];
     const base = add(knuckles, mul(thumb, offsets[i] * BODY.palmWidth));
     const f0 = norm(add(aim, mul(thumb, offsets[i] * pose.spread * 0.9)));
-    const d1 = bend(f0, n, c * 80 * DEG);
-    const d2 = bend(f0, n, c * 175 * DEG);
+    const d1 = bend(f0, n, c * 75 * DEG);
+    const d2 = bend(f0, n, c * 150 * DEG);
+    const d3 = bend(f0, n, c * 200 * DEG);
     const L = BODY.fingers[i + 1];
-    const mid = add(base, mul(d1, L * 0.55));
-    fingers.push([base, mid, add(mid, mul(d2, L * 0.45))]);
+    const j2 = add(base, mul(d1, L * 0.45));
+    const j3 = add(j2, mul(d2, L * 0.3));
+    fingers.push([base, j2, j3, add(j3, mul(d3, L * 0.25))]);
   }
   return {
     shoulder: S,
@@ -394,7 +400,7 @@ export function armFK(pose, side) {
     palm: { center, aim, normal: n, thumb },
     fingers,
     hand: add(center, mul(n, 0.025)),
-    tip: fingers[1][2],
+    tip: fingers[1][3],
     // The way a blade held in this hand points (see bladeFK).
     blade: norm(mirror(pose.blade || defaultBlade(norm(pose.aim), norm(pose.palm)), s)),
   };

@@ -313,6 +313,56 @@
           },
           "description": "The caster's arm and hand movements, in order: raise, throw, push palm-out, point a finger, slam, roar... Anchors on the hands (caster_hand, caster_fingertip, ...) follow them. See docs/template-format.md#gestures."
         },
+        "caster_clip": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "clip"
+          ],
+          "description": "A Mixamo-style animation clip (spelldirector.clip/1, converted in the viewer from a Mixamo FBX or GLB and kept in the library's clips/ folder) that drives the caster's arms, hands and fingers while it plays, blended in from and back out to caster_gestures. Hand anchors follow it. Without the clip loaded, the gestures play. See docs/template-format.md#mixamo-clips.",
+          "properties": {
+            "clip": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+              "description": "The clip's name: its file name in clips/ without .json."
+            },
+            "at_ms": {
+              "type": "number",
+              "minimum": 0,
+              "description": "When the clip starts (spell time). Default 0."
+            },
+            "from_ms": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Where in the clip to start (skip a wind-up). Default 0."
+            },
+            "to_ms": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Where in the clip to stop. Default its end."
+            },
+            "speed": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 8,
+              "description": "Playback speed (2 = twice as fast). Default 1."
+            },
+            "mirror": {
+              "type": "boolean",
+              "description": "Play it on the other side: a right-handed Mixamo throw thrown with the casting (left, lead) hand. Default false."
+            },
+            "blend_ms": {
+              "type": "number",
+              "minimum": 0,
+              "description": "How long it blends in before at_ms and back out after it ends. Default 150."
+            },
+            "hold_ms": {
+              "type": "number",
+              "minimum": 0,
+              "description": "How long the clip's last pose holds before it blends out. Default 0."
+            }
+          }
+        },
         "caster_weapon": {
           "type": "object",
           "additionalProperties": false,

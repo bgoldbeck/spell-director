@@ -172,6 +172,15 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
     for i, kf in enumerate(readability.get("key_frames") or []):
         if isinstance(kf.get("t_ms"), (int, float)) and kf["t_ms"] > duration:
             errors.append(f"readability.key_frames[{i}] ({kf.get('label')!r}): at {kf['t_ms']} ms, after the spell ends ({duration} ms)")
+    clip = doc["space"].get("caster_clip")
+    if clip:
+        at = clip.get("at_ms", 0)
+        if isinstance(at, (int, float)) and at > duration:
+            warnings.append(f"space.caster_clip ({clip['clip']}): starts at {at} ms, after the spell ends ({duration} ms)")
+        if not doc["space"].get("caster_gestures"):
+            warnings.append(f"space.caster_clip ({clip['clip']}): no caster_gestures to fall back on when the clip isn't loaded")
+        if doc.get("archetype") == "status":
+            warnings.append(f"space.caster_clip ({clip['clip']}): a status effect has no caster")
     no_caster = doc.get("archetype") == "status"
     for layer in doc["layers"]:
         lid = layer["id"]
