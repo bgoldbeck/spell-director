@@ -20,6 +20,18 @@ Every guide has a build order (also `build_order` in the JSON): core hero layer 
 
 **Every layer gets an on/off switch.** The guide asks the builder to make each layer its own switchable part of the effect, named by its layer id: in Unity a child GameObject per layer under the spell's prefab with an enabled flag per layer on the root (plus Solo and All on), in Godot a child node per layer with an exported bool. Build with only the current layer on, compare it with its sheet, then switch on the earlier layers and check them together (the build table's **Switch on** column). The switches stay in the finished spell for tuning, debugging and cheaper variants. The JSON lists them in build order as `layer_toggles` (`id`, `type`, `stage`, `build_step`, `default_on`), each build step names its `toggle`, and every layer event in the caster timeline carries a `toggle` the driver checks before it plays.
 
+### How we rendered it (code and shaders)
+
+Each layer also gets `render/<layer id>.md`: how SpellDirector's viewer drew it, so the builder can port the real technique instead of guessing from pixels. It holds:
+
+- the layer's class from `web/js/engine/effect.js` and every top-level helper it uses, followed across the engine's own imports (the stage, gesture and rig files that only place anchors are left out and named; the caster timeline gives those points);
+- the settings it was drawn with for this seed;
+- a snapshot of the Three.js objects it made at its strongest frame (Mesh, Points, Sprite, ...), with vertex counts and what each usually becomes in Unity;
+- every material: blending, depth write and test, culling, color, textures, its render state written as Unity ShaderLab (`Blend SrcAlpha One`, `ZWrite Off`, `Cull Off`...), the uniform values at the snapshot, and any `onBeforeCompile` patch;
+- the GLSL of every custom shader (each program written once per layer).
+
+`render/PORTING.md` maps it to engines: how the viewer is built (every layer is `update(t)`, a pure function of time), Three.js objects to Unity components, blend modes to ShaderLab and Shader Graph settings, a GLSL to HLSL table (`mix` to `lerp`, `fract` to `frac`, `mod`, matrices, built-ins), Shader Graph Custom Function and VFX Graph tips, a step-by-step for porting one layer, and Godot notes. The JSON lists the files as `render` (`porting`, `engine`, and per layer `id`, `type`, `file`, `summary`, in build order), and each `layers[]` entry names its `render` file. Sound cue layers have none (the sound sheet covers them).
+
 ## What you get
 
 | File | What it is |
@@ -33,6 +45,7 @@ Every guide has a build order (also `build_order` in the JSON): core hero layer 
 | `<id>.sounds.json` | The sound cue sheet (format `spelldirector-sounds-1`): every sound event (time, frame, file, beat, role, volume, pitch) and, per cue, what it should sound like, a text-to-SFX prompt with duration and loop settings, a synthesis recipe and library search terms. See [Sound](#sound). |
 | `<id>.preview.wav` | The whole spell's placeholder sound mix, starting at 0 ms: a timing reference to play under `all.png`. |
 | `sound-<cue>.wav` | One placeholder sound per cue, peak-normalized to -1 dBFS. Replace each with a real sound of the same name. |
+| `render/<layer id>.md`, `render/PORTING.md` | How we rendered each layer: the viewer's code, materials and blend state (as Unity ShaderLab), uniforms and GLSL, plus porting notes for Unity and Godot. See [How we rendered it](#how-we-rendered-it-code-and-shaders). |
 | `<id>.caster.glb`, `<id>.timeline.json`, `<id>.caster.clip.json` | The caster rig (Mixamo bone names) with the casting animation, and every event tied to a bone socket or a world point. See [Caster rig](#caster-rig-and-animation-unity-humanoid). |
 
 ### Sheet layout

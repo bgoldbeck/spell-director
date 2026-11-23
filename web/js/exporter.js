@@ -26,6 +26,7 @@ import { soundEvents, soundSheet } from "./engine/sound.js";
 import { renderExportAudio } from "./audio.js";
 import { rigExportFiles, rigFileNames } from "./engine/rigexport.js";
 import { resolveGestures } from "./engine/stage.js";
+import { PORTING_FILE, collectSource, describeGroup, portingMarkdown, renderFileName, renderMarkdown, renderSummary } from "./engine/renderinfo.js";
 
 const VISIBLE = 3; // a pixel channel more than this (0-255) away from the empty background counts as drawn
 
@@ -172,6 +173,64 @@ function toPng(canvas) {
  *        sound (default true: write the sounds JSON and render placeholder WAVs)}
  * Returns {manifest, files: [{name, data: Uint8Array | string}]}.
  */
+// The engine's source, read from the server the viewer runs on.
+async function fetchSource(path) {
+  const res = await fetch(new URL(`../${path.replace(/^web\//, "")}`, import.meta.url));
+  if (!res.ok) throw new Error(`${path}: ${res.status}`);
+  return res.text();
+}
+
+// One render/<layer>.md per layer (snapshot at its strongest frame) and
+// render/PORTING.md; adds manifest.render and each layer's `render` file.
+async function renderNotes(effect, template, seed, plan, manifest) {
+  const files = [];
+  const index = [];
+  const seen = new Set();
+  for (const layer of effect.layers) {
+    const def = layer.def;
+    // Sound cues have their own sheet and files.
+    if (seen.has(def.id) || def.type === "sound_cue") continue;
+    seen.add(def.id);
+    let peak = plan.times[0] ?? 0;
+    let best = -1;
+    for (const t of plan.times) {
+      let k = 0;
+      try {
+        k = layer.intensityAt(t - layer.offset);
+      } catch {
+        k = 0;
+      }
+      if (k > best + 1e-6) {
+        best = k;
+        peak = t;
+      }
+    }
+    effect.update(peak);
+    const scene = describeGroup(layer.group);
+    const className = layer.constructor.name;
+    const sourceFile = "web/js/engine/effect.js";
+    let source = null;
+    try {
+      source = await collectSource(sourceFile, className, fetchSource);
+    } catch (err) {
+      console.warn("SpellDirector: could not read the engine source", err);
+    }
+    const name = renderFileName(def.id);
+    files.push({ name, data: renderMarkdown({ layer: def, className, scene, source, sourceFile, peak_ms: peak, seed, params: layer.base }) });
+    const summary = renderSummary(scene);
+    index.push({ id: def.id, type: def.type, file: name, summary });
+    const ml = manifest.layers?.find((l) => l.id === def.id);
+    if (ml) ml.render = name;
+    await nextTick();
+  }
+  // Build order, like the layer switches.
+  const step = Object.fromEntries((manifest.layer_toggles?.layers || []).map((l, i) => [l.id, i]));
+  index.sort((a, b) => (step[a.id] ?? 1e9) - (step[b.id] ?? 1e9));
+  files.push({ name: PORTING_FILE, data: portingMarkdown({ templateId: template.id, layers: index }) });
+  manifest.render = { porting: PORTING_FILE, engine: "Three.js r169 on WebGL 2", layers: index };
+  return files;
+}
+
 export async function exportSpriteSheets(template, opts = {}) {
   const seed = (opts.seed ?? 1) >>> 0;
   const size = Math.max(32, Math.min(1024, Math.round(opts.frame || DEFAULTS.frame)));
@@ -345,6 +404,21 @@ export async function exportSpriteSheets(template, opts = {}) {
         { name: names.clip, about: "The casting animation as a SpellDirector clip" },
       );
     }
+    // How we rendered it: per layer, the viewer's own code, the live
+    // materials (blend, depth, uniforms, GLSL) and porting notes.
+    let renderFiles = [];
+    if (opts.render !== false) {
+      progress({ stage: "render notes" });
+      try {
+        renderFiles = await renderNotes(effect, template, seed, plan, manifest);
+        extra.push(
+          { name: PORTING_FILE, about: "How we rendered it: porting the viewer's Three.js/GLSL to Unity (HLSL, Shader Graph, VFX Graph) and Godot" },
+          { name: "render/<layer>.md", about: "One per layer: the code that drew it, its materials and blend state (as Unity ShaderLab), uniforms and GLSL shaders" },
+        );
+      } catch (err) {
+        console.warn("SpellDirector: could not write the render notes", err);
+      }
+    }
     const files = [];
     for (const sh of sheets) {
       files.push({ name: sheetFileName(sh.id), data: new Uint8Array(await (await toPng(sh.canvas)).arrayBuffer()) });
@@ -380,6 +454,7 @@ export async function exportSpriteSheets(template, opts = {}) {
     if (sheet.events.length) files.push({ name: soundSheetName(base), data: `${JSON.stringify(sheet, null, 2)}\n` });
     files.push(...audio);
     files.push(...rigFiles);
+    files.push(...renderFiles);
     return { manifest, files };
   } finally {
     scene.remove(effect.group);

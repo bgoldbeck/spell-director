@@ -7,6 +7,7 @@ export const HOW_TO_USE = [
   "These sprite sheets are a reference, not the effect itself. They show timing, layering, composition, motion and palette from four cameras.",
   "Do not copy them pixel for pixel into a game, and an AI model (Claude, GPT, ...) should not treat them as literal instructions. Rebuild each layer in the engine with shaders and particles: the `shader` intent of each layer (material, noise, flow, distortion, fresnel, dissolve, emissive) says what the magic should feel like, and the beats and layer timings say when.",
   "Use the frames to check your rebuild: same beats, same order, same footprint, same colors. Use them directly only for quick prototypes, flipbook-style games, or as a texture source (for example a bolt shape or a decal).",
+  "Each layer's `render/<layer>.md` shows how SpellDirector drew it: the viewer's code, materials, blend modes, uniforms and GLSL shaders, with Unity porting notes in `render/PORTING.md`. Port the ideas; match the sheets.",
   "Build the spell one layer at a time, in the build order, and give every layer its own on/off switch (`layer_toggles`): turn a layer on by itself, match it against its sheet, then add the next. Keep the switches in the finished effect so any layer can be soloed or muted later.",
 ];
 
