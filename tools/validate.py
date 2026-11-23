@@ -162,6 +162,16 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
         at = gesture.get("at_ms")
         if isinstance(at, (int, float)) and at > duration:
             warnings.append(f"space.caster_gestures[{i}] ({gesture['kind']}): starts at {at} ms, after the spell ends ({duration} ms)")
+    readability = doc.get("readability") or {}
+    for i, cue in enumerate(readability.get("must_read") or []):
+        for lid in cue.get("layers") or []:
+            if lid not in layer_ids:
+                errors.append(f"readability.must_read[{i}] ({cue.get('cue')!r}): unknown layer {lid!r}")
+        if cue.get("beat") and cue["beat"] not in beats:
+            errors.append(f"readability.must_read[{i}] ({cue.get('cue')!r}): unknown beat {cue['beat']!r}")
+    for i, kf in enumerate(readability.get("key_frames") or []):
+        if isinstance(kf.get("t_ms"), (int, float)) and kf["t_ms"] > duration:
+            errors.append(f"readability.key_frames[{i}] ({kf.get('label')!r}): at {kf['t_ms']} ms, after the spell ends ({duration} ms)")
     no_caster = doc.get("archetype") == "status"
     for layer in doc["layers"]:
         lid = layer["id"]
@@ -173,6 +183,8 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
         for b in layer["beats"]:
             if b not in beats:
                 errors.append(f"layer {lid!r}: unknown beat {b!r}")
+        if "tracking" in layer and layer["type"] in ("sound_cue", "camera_shake"):
+            warnings.append(f"layer {lid!r} ({layer['type']}): tracking does nothing on a layer that draws nothing")
         if "attach_to" in layer:
             if layer["attach_to"] not in layer_ids:
                 errors.append(f"layer {lid!r}: attach_to unknown layer {layer['attach_to']!r}")

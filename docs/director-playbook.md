@@ -214,6 +214,10 @@ Sizes are in pixels at 100 px per world unit (1 unit = a character's height).
 | `camera_shake.amplitude_px` | 0–3 | 4–8 | 10–16 |
 | `space.scale` | 2–3 | 3–4.5 | 4.5–7 |
 
+### Readability (thin, fast or sustained spells)
+
+When a spell's look could be unclear at gameplay distance (a thin jet or beam, a fast hit, a faint cone), add a `readability` block: the `reference_distance` it is judged at (usually the reach), two or three `must_read` cues with the layers that carry them, and `key_frames` for the moments that set the quality target (ignition, first contact, shutdown). Give layers whose movement matters an explicit `tracking`: `follow` for what rides on an actor, `trail` for embers and smoke that should stream off a moving one, `stay` for marks left where they landed. Then run `python tools/range_guide.py <id>`: a must-read cue that falls under 3 px at 12 units is a sign to thicken it or give it a brighter, wider glow. See [template-format.md](template-format.md#readability).
+
 ## Step 5. Palette
 
 Fill `core` and `primary`, and usually `secondary`. Add `accent` only for a contrasting spark color, and `shadow` only if something dark is drawn (smoke, scorch, sky-dim). Electricity is additive with a near-white core. Fire is a temperature ramp: `core` white-yellow, `primary` orange, `secondary` deep red, `accent` gold for embers, `shadow` a warm near-black for smoke and scorch. Earth is muted: `primary` the rock (a mid brown or grey), `secondary` a lighter dust tan, `core` a pale sunlit dust for pops, `accent` only for a dull glow in the fist or cracks, `shadow` near-black for fissures and craters; no bright, saturated colors unless it is magical earth. Water is mid-blue (`primary`) over a deep blue (`secondary`) with white only for foam (`core`), so it reads as water on any background. Ice is paler and cooler than water: a white `core`, pale cyan `primary`, a steel-blue `secondary`; keep saturated blue out of it or it reads as water. Colors should be original choices, not sampled from a game.

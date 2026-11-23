@@ -49,6 +49,64 @@
       "three_quarter": "The jet reads as a tight column receding toward the target with the splash rising off it; the scorch reads as an ellipse under the target."
     }
   },
+  "readability": {
+    "reference_distance": 3.4,
+    "view_distances": [
+      6,
+      12,
+      20
+    ],
+    "must_read": [
+      {
+        "cue": "hand-to-jet connection",
+        "layers": [
+          "hand-fire",
+          "hand-glow",
+          "jet"
+        ],
+        "beat": "jet",
+        "measure": "start",
+        "why": "The jet must visibly leave the palm. A gap or a jet that starts in mid-air reads as a projectile, not a stream from the caster."
+      },
+      {
+        "cue": "thin hot core",
+        "layers": [
+          "jet"
+        ],
+        "beat": "jet",
+        "measure": "core",
+        "why": "The white-hot thread down the middle is what makes it a pressurised jet rather than a flame cone; it is also the first thing to vanish with distance."
+      },
+      {
+        "cue": "clear first hit",
+        "layers": [
+          "splash-billows",
+          "splash-sparks"
+        ],
+        "beat": "splash",
+        "at_ms": 420,
+        "measure": "size",
+        "why": "One clean impact beat when the jet tip reaches the target, before the sustained splash, so the hit lands on a readable frame."
+      }
+    ],
+    "key_frames": [
+      {
+        "label": "ignition",
+        "t_ms": 230,
+        "note": "Hot flare at the palm and the jet already attached to it: no gap at the hand, the white thread visible from the first frame."
+      },
+      {
+        "label": "first contact",
+        "t_ms": 360,
+        "note": "The jet tip has just reached the target: billows and sparks start to bloom at the hit point, the column stays tight (it only widens a little toward the target)."
+      },
+      {
+        "label": "shutdown",
+        "t_ms": 1080,
+        "note": "The jet chokes off from the hand forward; the last flame curls off the target as smoke and the scorch stays where it landed."
+      }
+    ]
+  },
   "palette": {
     "core": "#FFF6D6",
     "primary": "#FF7A1A",
@@ -129,6 +187,7 @@
         "gutter"
       ],
       "anchor": "target",
+      "tracking": "stay",
       "plane": "ground",
       "color": "shadow",
       "z": 0,
@@ -171,6 +230,7 @@
         "gutter"
       ],
       "anchor": "target",
+      "tracking": "stay",
       "plane": "ground",
       "blend": "add",
       "color": "primary",
@@ -219,6 +279,7 @@
         "ignite"
       ],
       "anchor": "caster_hand",
+      "tracking": "follow",
       "color": "gradient_core_to_primary",
       "z": 10,
       "keyframes": [
@@ -272,6 +333,7 @@
         "jet"
       ],
       "anchor": "caster_hand",
+      "tracking": "follow",
       "color": "primary",
       "z": 6,
       "params": {
@@ -297,6 +359,7 @@
         "kindle"
       ],
       "anchor": "caster_hand",
+      "tracking": "trail",
       "color": "gradient_core_to_primary",
       "z": 12,
       "params": {
@@ -337,6 +400,7 @@
         "ignite"
       ],
       "anchor": "caster_hand",
+      "tracking": "follow",
       "color": "core",
       "z": 16,
       "params": {
@@ -363,6 +427,7 @@
         "gutter"
       ],
       "anchor": "caster_hand",
+      "tracking": "follow",
       "plane": "volume",
       "color": "gradient_core_to_primary",
       "z": 11,
@@ -452,7 +517,8 @@
           "falloff": "gaussian"
         },
         "lighting": "unlit"
-      }
+      },
+      "tracking": "follow"
     },
     {
       "id": "splash-billows",
@@ -461,6 +527,7 @@
         "splash"
       ],
       "anchor": "target",
+      "tracking": "trail",
       "blend": "add",
       "color": "primary",
       "z": 13,
@@ -507,6 +574,7 @@
         "splash"
       ],
       "anchor": "point",
+      "tracking": "trail",
       "color": "gradient_core_to_primary",
       "z": 14,
       "params": {
@@ -548,6 +616,7 @@
         "gutter"
       ],
       "anchor": "target",
+      "tracking": "trail",
       "blend": "alpha",
       "color": "shadow",
       "z": 5,
@@ -591,6 +660,7 @@
         "gutter"
       ],
       "anchor": "target",
+      "tracking": "follow",
       "color": "primary",
       "params": {
         "radius": 4,

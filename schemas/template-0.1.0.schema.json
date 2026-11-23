@@ -391,6 +391,104 @@
         }
       }
     },
+    "readability": {
+      "description": "How the spell should read on screen: the distance it is judged at, the camera distances to check, the must-read cues and the key frames that set the quality target. tools/range_guide.py measures and draws it. See docs/template-format.md#readability.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reference_distance": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "World units (1 = a character's height) the look is judged at. Default: space.footprint.length (or radius)."
+        },
+        "view_distances": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "description": "Camera distances in world units to check the spell at (default 3, 6, 12, 20)."
+        },
+        "must_read": {
+          "type": "array",
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "cue",
+              "layers"
+            ],
+            "properties": {
+              "cue": {
+                "type": "string",
+                "minLength": 1,
+                "description": "What the player must see, in a few words (the hand-to-jet connection)."
+              },
+              "layers": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/local_id"
+                },
+                "description": "The layers that carry the cue."
+              },
+              "beat": {
+                "$ref": "#/$defs/local_id",
+                "description": "The beat it must read in (default: the spell's peak)."
+              },
+              "at_ms": {
+                "type": "number",
+                "minimum": 0,
+                "description": "The moment it must read at (default: the middle of its beat, else the spell's peak)."
+              },
+              "measure": {
+                "enum": [
+                  "thickness",
+                  "start",
+                  "core",
+                  "size"
+                ],
+                "description": "What to measure: thickness across the cast direction (the median along it), start (thickness where it leaves the caster, so a gap at the hand shows), the hot core's thickness, or the overall size. Default: thickness for long shapes, else size."
+              },
+              "why": {
+                "type": "string",
+                "description": "Why it matters."
+              }
+            }
+          }
+        },
+        "key_frames": {
+          "type": "array",
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "t_ms"
+            ],
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "t_ms": {
+                "type": "number",
+                "minimum": 0
+              },
+              "note": {
+                "type": "string",
+                "description": "What the frame must show (the quality target)."
+              }
+            }
+          },
+          "description": "Moments to judge the quality target by (ignition, first contact, shutdown). Default: the start of the first release and impact beats and partway into the first dissipation beat."
+        }
+      }
+    },
     "palette": {
       "type": "object",
       "additionalProperties": false,
@@ -628,6 +726,14 @@
           },
           "shader": {
             "$ref": "#/$defs/shader"
+          },
+          "tracking": {
+            "enum": [
+              "follow",
+              "trail",
+              "stay"
+            ],
+            "description": "How the layer moves when the actor it sits on moves. follow: rides on its anchor (local space). trail: the emitter follows but each particle stays where it was emitted (world-space particles: embers, smoke). stay: placed once where its anchor was and left there (a scorch mark). Default: decals and eruptions stay, free sparks and smoke trail, everything else follows. See docs/template-format.md#readability."
           }
         },
         "allOf": [

@@ -29,6 +29,7 @@ A **template** is what the director writes. It describes a spell effect well eno
 | `timing` | yes | `duration_ms`, optional `fps_hint`, `loop` (replay the whole spell), `loop_range` (an aura's seamless sustain loop, see [Auras](#auras)). |
 | `space` | yes | Origin, destination, travel mode, footprint, chain targets. |
 | `views` | yes | `hero` view plus `reads` for `front`, `side`, `top`, `three_quarter`. |
+| `readability` | no | The quality target: the distance the look is judged at, camera distances to check, must-read cues and key frames. See [Readability](#readability). |
 | `palette` | yes | `core` and `primary` required; `secondary`, `accent`, `shadow` optional. |
 | `style` | no | The art style the spell is meant for: `preset` (`stylized` default, `realistic`, `toon`, `pixel`) and a few knobs. Every spell works in every style; see [Style](#style). |
 | `beats` | yes | The timeline. |
@@ -88,6 +89,7 @@ Beats may overlap (an impact can start while the release is still fading). Every
 
 - `beats`: ids of beats this layer is visible in. Its brightness follows those beats' intensity curves.
 - `attach_to`: follow another layer (a glow wrapping a bolt).
+- `tracking`: how the layer moves when the actor it sits on moves: `follow`, `trail` or `stay`. See [Readability](#readability).
 - `keyframes`: override a numeric param at a moment in time. Values between keyframes are eased.
 
 ## Shader intent
@@ -131,6 +133,43 @@ A layer's shader intent can be refined per style with `shader.styles`: each key 
   "styles": { "realistic": { "look": "The ground splits open: deep cracks with lit walls and lava welling up in them, crusting over as it cools." } }
 }
 ```
+
+## Readability
+
+Two things a template can say so a rebuild in an engine keeps the look, and so `tools/range_guide.py` can check it. Neither changes the viewer's frames.
+
+**`readability`** (optional, top level): the quality target.
+
+| Field | Meaning |
+|---|---|
+| `reference_distance` | World units (1 = a character's height, not a metre) the look is judged at. Default: `space.footprint.length` (or `radius`). The flame jet's 3.4 is its reach, about 6 m for a 1.8 m character. |
+| `view_distances` | Camera distances in units to check it at (default `[3, 6, 12, 20]`). |
+| `must_read` | Up to 6 cues the player must see whatever else is simplified: `cue` (a few words), `layers` (the layers that carry it), optional `beat` or `at_ms` (when it must read; default the middle of the beat, else the spell's peak), `measure` (`thickness` across the cast direction, `start`: thickness where it leaves the caster so a gap at the hand shows, `core`: the hot core's thickness, `size`: overall size; default thickness for long shapes, else size) and `why`. |
+| `key_frames` | Up to 6 moments to judge the quality target by: `label`, `t_ms`, `note` (what the frame must show). Default: the start of the first `release` and `impact` beats and partway into the first `dissipation` beat. |
+
+```json
+"readability": {
+  "reference_distance": 3.4,
+  "view_distances": [6, 12, 20],
+  "must_read": [
+    { "cue": "hand-to-jet connection", "layers": ["hand-fire", "jet"], "beat": "jet", "measure": "start", "why": "The jet must visibly leave the palm." },
+    { "cue": "thin hot core", "layers": ["jet"], "beat": "jet", "measure": "core" }
+  ],
+  "key_frames": [ { "label": "ignition", "t_ms": 230, "note": "Hot flare at the palm, jet already attached." } ]
+}
+```
+
+**`tracking`** (optional, per layer): how a layer moves when the actor it sits on moves (pushed back, walking, dodging).
+
+| Value | Means | In an engine |
+|---|---|---|
+| `follow` | Rides on its anchor: the whole layer moves with the actor. Default for most layers. | Parent it to the anchor's bone; particles in local space. |
+| `trail` | The emitter rides on the anchor but each particle stays where it was emitted: embers and smoke stream off a moving actor. Default for `sparks` and `smoke` that aren't attached, steady, homing or orbiting. | Parent the emitter; particle Simulation Space World (Godot: `local_coords` off). |
+| `stay` | Placed once where the anchor was when it started and left there: a scorch mark, a crater. Default for `decal` and `eruption`. | Spawn it unparented in the level at the anchor's position. |
+
+The sprite export carries both: each layer's `tracking` (with Unity and Godot steps) in the JSON and the guide, and the guide's **Quality target** section lists the must-read cues and key frames.
+
+**Range guides.** `python tools/range_guide.py <template id>` renders the spell side-on in a headless browser and writes a guide sheet (PNG, plus the numbers as Markdown and JSON) to `exports/range-guides/`: how wide the whole visible body and the hot core are at stations from the hand to the target, the plume round the target, each must-read cue, what each is in pixels on a 1080p, 60° screen at the reference and view distances (and how far it still reads at 3 px), how the peak frame looks from each distance at true pixel size, the key frames annotated with what they must show, and which layers follow, trail or stay.
 
 ## Known params by layer type
 

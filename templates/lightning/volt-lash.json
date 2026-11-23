@@ -49,6 +49,67 @@
       "three_quarter": "The bolt reads as a jagged line slanting from hand to target with its forks in depth; the body static, the burst at the target and the scorch all read."
     }
   },
+  "readability": {
+    "reference_distance": 3.4,
+    "view_distances": [
+      6,
+      12,
+      20
+    ],
+    "must_read": [
+      {
+        "cue": "hand-to-chest bolt",
+        "layers": [
+          "main-bolt"
+        ],
+        "beat": "lash",
+        "measure": "thickness",
+        "why": "One thick jagged bolt from the hand to the target's chest; at range a thin bolt flickers out between frames."
+      },
+      {
+        "cue": "bright bolt spine",
+        "layers": [
+          "main-bolt"
+        ],
+        "beat": "lash",
+        "measure": "core",
+        "why": "The white-hot core is what reads as electricity rather than a yellow line."
+      },
+      {
+        "cue": "hit flash on the target",
+        "layers": [
+          "hit-flash",
+          "hit-sparks"
+        ],
+        "beat": "jolt",
+        "at_ms": 450,
+        "measure": "size",
+        "why": "A clear first hit, held for two frames."
+      }
+    ],
+    "key_frames": [
+      {
+        "label": "charge",
+        "t_ms": 300,
+        "note": "Static over the caster's body and arcs at their feet: the build-up must be visible before the lash."
+      },
+      {
+        "label": "lash",
+        "t_ms": 400,
+        "note": "One thick zig-zag bolt joins the hand and the target's chest, held bright: no gap at either end."
+      },
+      {
+        "label": "restrike",
+        "t_ms": 520,
+        "note": "The bolt re-strikes, the target is wrapped in arcs and sparks burst off it."
+      },
+      {
+        "label": "discharge",
+        "t_ms": 850,
+        "note": "Last arcs crawl over the ground and fizzle; a small scorch and a thread of smoke stay where they landed."
+      }
+    ]
+  },
   "palette": {
     "core": "#FFFDEB",
     "primary": "#FFE34D",

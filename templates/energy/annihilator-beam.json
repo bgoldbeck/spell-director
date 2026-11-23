@@ -51,6 +51,78 @@
       "three_quarter": "Hero view. The beam reads as a thick 3D column receding to the target with its strands winding round it, the recoil ring stands across the line of fire, the explosion rises tall, and both ground marks (recoil cracks, target crater) read as ellipses."
     }
   },
+  "readability": {
+    "reference_distance": 4.4,
+    "view_distances": [
+      6,
+      12,
+      20
+    ],
+    "must_read": [
+      {
+        "cue": "overload tell at the hand",
+        "layers": [
+          "core",
+          "core-glow",
+          "hand-arcs"
+        ],
+        "beat": "overload",
+        "measure": "size",
+        "why": "The last moment to dodge: the charging core must read from range."
+      },
+      {
+        "cue": "white-hot core in the beam",
+        "layers": [
+          "beam"
+        ],
+        "beat": "blast",
+        "measure": "core",
+        "why": "The core is what makes it a beam of raw energy rather than a red fog; check it survives at distance."
+      },
+      {
+        "cue": "beam as wide as a body",
+        "layers": [
+          "beam"
+        ],
+        "beat": "blast",
+        "measure": "thickness",
+        "why": "Its size is the threat: it should read as a massive column, not a laser."
+      },
+      {
+        "cue": "the blast swallowing the target",
+        "layers": [
+          "explosion-flash",
+          "fireball"
+        ],
+        "beat": "explode",
+        "at_ms": 1150,
+        "measure": "size",
+        "why": "A clear first hit on the target."
+      }
+    ],
+    "key_frames": [
+      {
+        "label": "overload",
+        "t_ms": 900,
+        "note": "The core at the hand shudders and flickers, arcs go wild: the tell must read even at range."
+      },
+      {
+        "label": "ignition",
+        "t_ms": 1000,
+        "note": "The beam tears loose with a blinding flash and a recoil ring at the hand."
+      },
+      {
+        "label": "first contact",
+        "t_ms": 1100,
+        "note": "The beam reaches the target, which vanishes in a flash and a billowing fireball."
+      },
+      {
+        "label": "shutdown",
+        "t_ms": 2000,
+        "note": "The beam has collapsed; smoke columns over the crater, which stays where it landed, and vents from the caster's hand."
+      }
+    ]
+  },
   "palette": {
     "core": "#FFF7F2",
     "primary": "#FF4E3A",
