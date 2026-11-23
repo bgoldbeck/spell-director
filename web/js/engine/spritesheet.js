@@ -760,6 +760,7 @@ export function guideMarkdown(m, { files } = {}) {
     add(...bits.map((b) => `- ${b}`));
     const params = Object.entries(l.params || {});
     if (params.length) add(`- Settings for this seed: ${params.map(([k, v]) => `${k} ${typeof v === "number" ? r3(v) : v}`).join(", ")}.`);
+    if (l.render) add(`- How we drew it (code, materials, shaders): \`${l.render}\`.`);
     if (l.keyframes?.length) add(`- Keyframes (already baked into the frames): ${l.keyframes.map((k) => `${k.param} → ${k.value} at ${k.t_ms} ms`).join("; ")}.`);
     if (l.shader) {
       add(`- **Shader intent**${l.shader_source.startsWith("template") ? "" : " (a default for this layer type; the template didn't say)"}: ${describeShader(l.shader)}.`);
@@ -897,6 +898,17 @@ export function guideMarkdown(m, { files } = {}) {
       const lands = typeof g.at_ms === "object" || typeof g.duration_ms === "object" ? "" : g.duration_ms != null ? (g.at_ms ?? 0) + g.duration_ms : "";
       return [`\`${g.kind}\`${g.shape ? ` (${g.shape})` : ""}`, g.hand || "lead", at, lands, n(g.hold_ms ?? 250)];
     })), "");
+  }
+
+  if (m.render?.layers?.length) {
+    add("## How we rendered it (code and shaders)", "");
+    add(
+      `Each layer has a \`render/<layer>.md\` with the code SpellDirector's viewer used to draw it (${m.render.engine}): the layer class and every helper it calls, the objects and materials it made at its strongest frame, each material's blend and depth state written as Unity ShaderLab, the uniforms, and the GLSL of every custom shader. \`${m.render.porting}\` maps all of it to Unity (HLSL, Shader Graph, VFX Graph) and Godot.`,
+      "",
+      "Use it as a recipe for your own shaders and particles, one layer at a time: read the layer's notes, build it, then compare it with its sheet.",
+      "",
+    );
+    add(table(["Layer", "Drawn with", "Notes"], m.render.layers.map((r) => [`${r.id} (${r.type})`, r.summary, `\`${r.file}\``])), "");
   }
 
   add("## Rebuild it in Unity", "");
