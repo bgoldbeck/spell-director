@@ -153,3 +153,39 @@ test("build order: hero layer first, one layer per step, finishing tracks last",
   const built = order.filter((s) => s.layer).map((s) => s.layer);
   assert.equal(new Set(built).size, built.length, "each layer once");
 });
+
+test("every layer gets an on/off switch, in build order, and the guide says to build with them", async () => {
+  const { layerToggles, buildOrder } = await import("../web/js/engine/spritesheet.js");
+  const m = fakeManifest(boss);
+  const ids = m.layer_toggles.layers.map((l) => l.id);
+  assert.deepEqual([...ids].sort(), boss.layers.map((l) => l.id).sort(), "one switch per layer");
+  assert.equal(ids[0], m.build_order[0].layer, "the first build step's layer comes first");
+  assert.ok(m.layer_toggles.layers.every((l) => l.default_on === true));
+  for (const st of m.build_order) {
+    if (st.layer) assert.equal(st.toggle, st.layer);
+    else assert.deepEqual(st.toggles, st.layers);
+  }
+  assert.deepEqual(layerToggles(boss, buildOrder(boss, m.layers)), m.layer_toggles);
+});
+
+test("the guide tells the builder to give each layer an on/off switch", () => {
+  const md = guideMarkdown(fakeManifest(boss), { files: [] });
+  assert.match(md, /### Give every layer an on\/off switch/);
+  assert.match(md, /Unity.*child GameObject per layer/);
+  assert.match(md, /Godot.*child node per layer/);
+  assert.match(md, /Switch on/);
+});
+
+test("every drawn layer of every template has a build step", async () => {
+  const { readdirSync } = await import("node:fs");
+  const { buildOrder, layerToggles } = await import("../web/js/engine/spritesheet.js");
+  const root = new URL("../templates/", import.meta.url);
+  const index = JSON.parse(readFileSync(new URL("index.json", root), "utf8")).templates;
+  assert.ok(readdirSync(root).length);
+  for (const p of index) {
+    const t = JSON.parse(readFileSync(new URL(p, root), "utf8"));
+    const order = buildOrder(t, []);
+    const toggles = layerToggles(t, order);
+    for (const l of toggles.layers) assert.ok(l.build_step, `${t.id}: ${l.id} has no build step`);
+  }
+});

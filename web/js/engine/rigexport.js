@@ -296,6 +296,8 @@ export function buildTimeline(src) {
   for (const l of manifest.lights || []) events.push({ t_ms: l.start_ms ?? 0, kind: "light", layer: l.layer, end_ms: l.end_ms ?? null, ...binding(l.anchor), offset_units: l.offset_units, color: l.color, radius_m: r4((l.radius_units || 0) * H) });
   for (const s of manifest.screen_flashes || []) events.push({ t_ms: s.start_ms ?? 0, kind: "screen_flash", layer: s.layer, end_ms: s.end_ms ?? null, color: s.color });
   if (manifest.camera_shake?.length) events.push({ t_ms: manifest.camera_shake[0].start_ms ?? 0, kind: "camera_shake", see: "camera_shake in the sprite sheet JSON" });
+  // Every layer's events answer to that layer's on/off switch.
+  for (const e of events) if (e.layer) e.toggle = e.layer;
   events.sort((a, b) => a.t_ms - b.t_ms || (a.kind === "gesture" ? -1 : 0));
 
   return {
@@ -305,6 +307,7 @@ export function buildTimeline(src) {
       `Import ${files.glb} as a Humanoid (Unity: glTFast, or convert it to FBX with tools/blender_glb_to_fbx.py and set Rig > Animation Type to Humanoid; the mixamorig bone names map automatically).`,
       "Play its animation on your caster; it retargets onto any Humanoid character.",
       "For each event, at t_ms: a gesture is the arm movement (release_ms is when a throw lets go); a layer starts at its socket (a node on the caster's bones, follow it while the layer lasts) or at a world point, and stops at end_ms.",
+      "Build it one layer at a time in layer_toggles order: every layer gets its own on/off switch (a child object per layer, named by its id) and the driver skips events whose toggle is off. Switch each layer on alone and check it against its sheet before adding the next, and keep the switches in the finished spell.",
       "socket_tracks give every socket's position each frame, in case you place effects without the rig.",
       "Layers' looks (shader intent, colors, blend) are in the sprite sheet JSON and guide; the sheets show what each layer should look like.",
     ].join(" "),
@@ -333,6 +336,7 @@ export function buildTimeline(src) {
     },
     sockets,
     points: pointsOut,
+    layer_toggles: manifest.layer_toggles || null,
     events,
     socket_tracks: tracks,
   };
