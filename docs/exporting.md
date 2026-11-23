@@ -18,6 +18,8 @@ The sheets show timing, layering, composition and palette. They are not the effe
 
 Every guide has a build order (also `build_order` in the JSON): core hero layer first (highest z), then secondary layers (glow, crackle, ring, local flash), particles (sparks, smoke), decals, and a finish step for lights, screen flashes, camera shake, sound and a timing pass. After each step, compare that layer with its cells (`tools/sheet_cells.py contact <export> --sheet <layer>`) before adding the next.
 
+**Every layer gets an on/off switch.** The guide asks the builder to make each layer its own switchable part of the effect, named by its layer id: in Unity a child GameObject per layer under the spell's prefab with an enabled flag per layer on the root (plus Solo and All on), in Godot a child node per layer with an exported bool. Build with only the current layer on, compare it with its sheet, then switch on the earlier layers and check them together (the build table's **Switch on** column). The switches stay in the finished spell for tuning, debugging and cheaper variants. The JSON lists them in build order as `layer_toggles` (`id`, `type`, `stage`, `build_step`, `default_on`), each build step names its `toggle`, and every layer event in the caster timeline carries a `toggle` the driver checks before it plays.
+
 ## What you get
 
 | File | What it is |

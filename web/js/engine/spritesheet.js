@@ -298,7 +298,7 @@ function defaultBlend(l) {
 // layer first, then its support, then particles, then decals, then the
 // finishing tracks (lights, screen flashes, shake, sound) and the timing pass.
 export const BUILD_STAGES = [
-  { stage: "core", types: ["bolt", "beam", "orb", "eruption", "vortex", "wave", "motif", "coat"], about: "the hero shape that reads as the spell on its own" },
+  { stage: "core", types: ["bolt", "beam", "orb", "eruption", "vortex", "wave", "motif", "coat", "slash"], about: "the hero shape that reads as the spell on its own" },
   { stage: "secondary", types: ["glow", "crackle", "ring", "flash"], about: "glows, rings and crackle that support the core" },
   { stage: "particles", types: ["sparks", "smoke"], about: "sparks, spray and smoke" },
   { stage: "decals", types: ["decal"], about: "marks on the ground" },
@@ -308,9 +308,11 @@ export function buildOrder(template, layers) {
   const byId = Object.fromEntries(layers.map((l) => [l.id, l]));
   const steps = [];
   const finish = [];
+  const staged = new Set(BUILD_STAGES.flatMap((st) => st.types));
   for (const st of BUILD_STAGES) {
+    // A drawn layer of a type no stage names yet supports the core.
     const picked = (template.layers || [])
-      .filter((l) => st.types.includes(l.type) && layerKind(l) === "sprite")
+      .filter((l) => (st.types.includes(l.type) || (st.stage === "secondary" && !staged.has(l.type))) && layerKind(l) === "sprite")
       .map((l) => byId[l.id] || { id: l.id, type: l.type, z: l.z ?? 0, start_ms: layerWindow(template, l)?.start ?? 0 })
       .sort((a, b) => (st.stage === "core" ? (b.z ?? 0) - (a.z ?? 0) : 0) || (a.start_ms ?? 0) - (b.start_ms ?? 0) || (a.z ?? 0) - (b.z ?? 0));
     for (const l of picked) {
@@ -321,6 +323,8 @@ export function buildOrder(template, layers) {
         type: l.type,
         sheet: l.image ?? null,
         plays_ms: l.start_ms == null ? null : [l.start_ms, l.end_ms],
+        // The on/off switch this step builds (layer_toggles).
+        toggle: l.id,
         verify: l.image
           ? `Render ${l.id} alone and compare it with its cells (sheet ${l.image}, every view): same timing, footprint, motion and colors. Match the feel, not the pixels.`
           : `Not drawn in the exported views; check it against the beat table and its shader intent.`,
@@ -334,10 +338,41 @@ export function buildOrder(template, layers) {
     step: steps.length + 1,
     stage: "finish",
     layers: finish,
+    toggles: finish.slice(),
     about: "lights, screen flashes, camera shake and sound cues, then a timing pass over the whole spell",
     verify: "Play the whole spell next to all.png at the same frame rate, frame by frame through each beat, in every view your game uses.",
   });
   return steps;
+}
+
+/**
+ * One on/off switch per layer, in build order: { about, layers: [{ id, type,
+ * stage, build_step, default_on }] }. Every layer is its own switchable part
+ * of the rebuilt effect (sprites, lights, flashes, shakes and sounds alike),
+ * so it can be built and checked alone, then soloed or muted later.
+ */
+export function layerToggles(template, order) {
+  const stepOf = {};
+  const stageOf = {};
+  for (const st of order) {
+    for (const id of st.layer ? [st.layer] : st.layers || []) {
+      stepOf[id] = st.step;
+      stageOf[id] = st.stage;
+    }
+  }
+  const layers = (template.layers || []).map((l) => ({
+    id: l.id,
+    type: l.type,
+    stage: stageOf[l.id] || "finish",
+    build_step: stepOf[l.id] ?? null,
+    default_on: true,
+  }));
+  layers.sort((a, b) => (a.build_step ?? 1e9) - (b.build_step ?? 1e9));
+  return {
+    about:
+      "Give every layer its own on/off switch, named by its id: a child object per layer under the spell's root, with an enabled flag the timeline driver checks before it spawns or plays that layer. Build them in build_step order, each switched on alone first and checked against its sheet, then together. Keep the switches in the finished effect (solo one layer, mute another) for tuning and debugging.",
+    layers,
+  };
 }
 
 function shaderInfo(l, blend, style, params) {
@@ -433,6 +468,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
     how_to_use: HOW_TO_USE.join(" "),
     style: { id: style.id, label: st.label, about: st.about, look: st.look, source: style.from, notes: style.notes, unity: st.unity, godot: st.godot },
     build_order: buildOrder(template, layers),
+    layer_toggles: layerToggles(template, buildOrder(template, layers)),
     generator: `SpellDirector ${version}`.trim(),
     template: { id: template.id, name: template.name, element: template.element, archetype: template.archetype, description: template.description || "" },
     seed,
@@ -559,12 +595,24 @@ export function guideMarkdown(m, { files } = {}) {
     "",
     "After each step, crop that layer's cells and compare them with your render at the same moments and views: `python tools/sheet_cells.py contact <export folder> --sheet <layer>` (or the director's `look_at_sprite_sheet` tool). Fix it before moving on. Compare timing, footprint, motion and color, not exact pixels.",
     "",
+    "### Give every layer an on/off switch",
+    "",
+    "Make each layer its own switchable part of the effect, named by its layer id (the JSON's `layer_toggles` lists them in build order). While building, switch on only the layer you are working on and compare it with its sheet; then switch on the layers before it and check they still read together. Keep the switches in the finished spell: soloing or muting a layer is how you tune it, debug it, or make a cheaper version later.",
+    "",
+    "- **Unity**: one prefab for the spell, one child GameObject per layer named after the layer id (its VFX Graph, Particle System, light or audio source inside). Give the root a component with a `bool` per layer (or a list of layer ids with an enabled flag) shown in the Inspector, plus Solo and All on buttons; the script that plays the timeline skips a layer whose switch is off. Setting the child inactive is the simplest switch.",
+    "- **Godot**: one scene for the spell, one child node per layer named after the layer id, and an `@export` bool per layer on the root script (or toggle each child's `visible` / `emitting` / `playing`); the player skips layers that are off.",
+    "- **Any engine**: the switches live on the spell, not in the art, so turning one off never changes another layer's timing.",
+    "",
   );
   add(table(
-    ["Step", "Stage", "Layer", "Sheet", "Plays"],
-    m.build_order.map((st) => st.stage === "finish"
-      ? [st.step, "finish", st.layers.length ? st.layers.join(", ") : "(none)", "`all.png`", "whole spell"]
-      : [st.step, st.stage, `${st.layer} (${st.type})`, st.sheet ? `\`${st.sheet}\`` : "not drawn", st.plays_ms ? `${st.plays_ms[0]}–${st.plays_ms[1]} ms` : ""]),
+    ["Step", "Stage", "Layer (switch)", "Sheet", "Plays", "Switch on"],
+    m.build_order.map((st, i) => {
+      const before = m.build_order.slice(0, i).flatMap((x) => (x.layer ? [x.layer] : []));
+      const on = before.length ? `${st.layer || "these"} alone, then with ${before.length === 1 ? before[0] : `steps 1–${i}`}` : `${st.layer} alone`;
+      return st.stage === "finish"
+        ? [st.step, "finish", st.layers.length ? st.layers.join(", ") : "(none)", "`all.png`", "whole spell", "everything"]
+        : [st.step, st.stage, `${st.layer} (${st.type})`, st.sheet ? `\`${st.sheet}\`` : "not drawn", st.plays_ms ? `${st.plays_ms[0]}–${st.plays_ms[1]} ms` : "", on];
+    }),
   ), "");
   add(
     "- **core**: the hero shape that reads as the spell on its own. Get this right first.",
@@ -925,6 +973,7 @@ export function rigGuideLines(m) {
     "4. Put the clip in your caster's Animator (a Cast state, or an Animator Override Controller), and trigger it when the spell is cast. Any Humanoid character can play it.",
     "5. Add an empty child under the matching bone of *your* character for each socket in the timeline (`caster_hand` sits on `mixamorig:LeftHand` at `offset_m`), or use `Animator.GetBoneTransform(HumanBodyBones.LeftHand)` and add the offset.",
     "6. Drive the effects from the timeline's events: at `t_ms` spawn the layer (VFX Graph, Particle System or Shuriken) at its socket (parent it so it follows the hand) or at its world point, and stop it at `end_ms`. Animation Events on the clip, a Timeline asset or a coroutine all work; `release_ms` on a gesture is the moment a throw lets go.",
+    "7. Build the layers one at a time (see *Build it one layer at a time*): each layer is a child object with its own on/off switch, and the driver skips any event whose `toggle` is switched off. Get the animation and the first layer right together before adding the next.",
     "",
     "**Which hand:** the casting hand (SpellDirector's lead hand, `caster_hand`) is the caster's **left** hand. For a right-handed caster, tick **Mirror** on the clip and swap Left and Right in the socket bones.",
     "",

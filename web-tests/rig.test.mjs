@@ -247,3 +247,15 @@ test("sockets sit where the arms put the anchors", () => {
   assert.deepEqual(QI, [0, 0, 0, 1]);
   assert.ok(qconj);
 });
+
+test("timeline events answer to their layer's on/off switch", () => {
+  const b = bake([{ kind: "throw", at_ms: 0 }], "ready", null, 10, 300);
+  const toggles = { about: "x", layers: [{ id: "orb", type: "orb", stage: "core", build_step: 1, default_on: true }] };
+  const t = buildTimeline({
+    template: { id: "z", name: "Z" }, fps: 10, times: b.times, frames: b.frames,
+    manifest: { layer_toggles: toggles, layers: [{ id: "orb", type: "orb", start_ms: 0, end_ms: 200, anchor: "caster_hand" }], sounds: [{ at_ms: 100, cue: "zap", layer: "orb" }] },
+  });
+  assert.deepEqual(t.layer_toggles, toggles);
+  for (const e of t.events.filter((x) => x.layer)) assert.equal(e.toggle, e.layer);
+  assert.ok(!t.events.find((x) => x.kind === "gesture")?.toggle);
+});
