@@ -1,0 +1,1000 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "earth-sundering-pound",
+  "name": "Sundering Pound",
+  "description": "A targetless ground pound that tears the earth open in a wide cone ahead of the caster: the slam splits the ground into deep fissures that race out nine metres across a 100 degree fan, rock bursts up row after row, and the chasms stay open, glowing faintly from deep inside and breathing dust, before they cool and close over.",
+  "element": "earth",
+  "archetype": "nova",
+  "tags": [
+    "ground",
+    "slam",
+    "cone",
+    "frontal",
+    "fissures",
+    "chasm",
+    "parallax",
+    "lingering",
+    "targetless",
+    "melee",
+    "area"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Ground pound should be usable with no target, be a larger area frontal cone, leave better ground marks with a parallax effect so it looks as if the ground has opened up, and be castable while moving."
+  },
+  "timing": {
+    "duration_ms": 6400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "point",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "arc",
+      "length": 5.0,
+      "angle_deg": 100,
+      "distribution": "edge_weighted"
+    }
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Over the shoulder the cone runs away from the camera: fissures race ahead and the rows of rock climb toward the far end of the 9 m fan. The open chasms keep reading as dark recessed slots with a warm glint at the bottom as the camera moves (parallax), not flat paint.",
+      "side": "The staircase of rock grows left to right and the ground drops away into the cracks: lips of the fissures are lit, the walls fall into shadow, dust breathes up out of them during the linger.",
+      "top": "The ground story is the hero here: a 100 degree fan of deep branching fissures and a crater at the caster's feet, the shock arc sweeping out ahead of the rock rows, embers cooling in the cracks, dust seeping out, then the whole fan fading.",
+      "three_quarter": "Hero view. A widening fan of torn ground: rows of rock burst up toward the far tip, the fissures stay open behind them with visible depth and a cooling amber glow, then close over."
+    }
+  },
+  "palette": {
+    "core": "#F2E2C4",
+    "primary": "#8C6B4A",
+    "secondary": "#C4AC88",
+    "accent": "#E8892F",
+    "shadow": "#1E1712"
+  },
+  "beats": [
+    {
+      "id": "gather",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 600,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.15,
+        "to": 0.9
+      },
+      "intent": "The caster heaves the weapon up, still walking if they like: a low rumble builds, grit lifts off the ground around them and a dull amber glow swells in the hands."
+    },
+    {
+      "id": "hang",
+      "phase": "anticipation",
+      "start_ms": 600,
+      "end_ms": 680,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "A split second of stillness at the top of the swing: the pebbles hang in the air and the rumble holds. This hold is what makes the slam land."
+    },
+    {
+      "id": "slam",
+      "phase": "release",
+      "start_ms": 680,
+      "end_ms": 760,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "The fist slams down: a hard thud and boom, a warm pop of dust, chunks of ground knocked loose, a crater punched under the caster and a sharp camera jolt."
+    },
+    {
+      "id": "rupture",
+      "phase": "travel",
+      "start_ms": 720,
+      "end_ms": 1500,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.45,
+        "to": 1.0
+      },
+      "intent": "The ground splits open: fissures tear outward across a 100 degree cone, nine metres long, just ahead of six rows of rock that burst up bigger and a little later each time (crack, crack, CRACK). The cracks are deep: you can see down into them."
+    },
+    {
+      "id": "climax",
+      "phase": "impact",
+      "start_ms": 1400,
+      "end_ms": 1850,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "The far row is the biggest: towering spikes at the tip of the cone, a deep boom, heavy rocks hurled high and a tall dust plume. The strongest shake."
+    },
+    {
+      "id": "linger",
+      "phase": "dissipation",
+      "start_ms": 1800,
+      "end_ms": 4800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.6,
+        "to": 0.25
+      },
+      "intent": "The rocks crumble back down, but the ground stays torn open: deep fissures with a faint amber glow far down that slowly cools, little puffs of dust breathing up out of the cracks, grit trickling over the lips."
+    },
+    {
+      "id": "close",
+      "phase": "dissipation",
+      "start_ms": 4800,
+      "end_ms": 6400,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.25,
+        "to": 0.0
+      },
+      "intent": "The fissures lose their glow and fade away, the ground closing over as if it had settled back."
+    }
+  ],
+  "layers": [
+    {
+      "id": "chasm-fissures",
+      "type": "decal",
+      "beats": [
+        "rupture",
+        "climax",
+        "linger",
+        "close"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "fissures",
+        "radius_px": 520,
+        "arc_deg": 104,
+        "reveal_ms": 780,
+        "opacity": 0.95,
+        "fade_in_ms": 40,
+        "lifetime_ms": 4800,
+        "fade_ms": 1600,
+        "detail": 0.85,
+        "depth": 1.0
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Deep jagged fissures torn into the ground in a fan ahead of the caster. They read as real slots: lit lips, walls falling into shadow, darkest at the bottom, rubble on the edges.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 5,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.15
+        },
+        "lighting": "lit",
+        "notes": "Parallax-occlusion decal: height map (white = ground level, black = bottom of the crack), normal map from it, albedo with dark walls and dusty lips. Reveal outward with the wave; keep at full strength through the linger, then fade.",
+        "styles": {
+          "realistic": {
+            "look": "Torn ground with steep carved walls, the depth shifting with the camera."
+          }
+        }
+      }
+    },
+    {
+      "id": "slam-crater",
+      "type": "decal",
+      "beats": [
+        "slam",
+        "rupture",
+        "climax",
+        "linger",
+        "close"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 1,
+      "params": {
+        "shape": "crater",
+        "radius_px": {
+          "min": 80,
+          "max": 95
+        },
+        "opacity": 0.8,
+        "fade_in_ms": 30,
+        "grow_ms": 140,
+        "start_scale": 0.5,
+        "lifetime_ms": 4800,
+        "fade_ms": 1600,
+        "detail": 0.6,
+        "depth": 0.8
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A shallow dent punched into the ground where the fist landed, with a raised broken rim and grit.",
+        "technique": "decal",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.6
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gather-ring",
+      "type": "ring",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 120,
+        "end_radius_px": 22,
+        "thickness_px": 8,
+        "softness": 0.9
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A faint ring of grit and dust being drawn in toward the caster's feet as they gather strength.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "inward",
+          "speed": 1.5
+        },
+        "emissive": {
+          "hdr": 1,
+          "falloff": "soft"
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "slam-ring",
+      "type": "ring",
+      "beats": [
+        "slam"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "core",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 150,
+        "thickness_px": 16,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A quick puff of dust blasted out flat in every direction the instant the fist hits.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 6
+        },
+        "distortion": 0.3,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "shock-arc",
+      "type": "ring",
+      "beats": [
+        "rupture"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "color": "secondary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 50,
+        "end_radius_px": 480,
+        "thickness_px": 26,
+        "softness": 0.9,
+        "arc_deg": 100,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "The leading edge of the quake: a band of churned dust running across the ground in a frontal arc, just ahead of each row of rock.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "distortion": 0.4,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "stone-wave",
+      "type": "eruption",
+      "beats": [
+        "rupture",
+        "climax",
+        "linger"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 100,
+        "rows": 6,
+        "start_radius_px": 70,
+        "end_radius_px": 450,
+        "row_delay_ms": 130,
+        "delay_growth": 1.1,
+        "growth": {
+          "min": 1.34,
+          "max": 1.42
+        },
+        "height_px": 34,
+        "width_px": 16,
+        "spacing_px": 60,
+        "tilt_deg": 16,
+        "jitter": 0.4,
+        "rise_ms": 80,
+        "hold_ms": 320,
+        "sink_ms": 380,
+        "debris_count": 3,
+        "debris_speed": 300,
+        "debris_size_px": 6,
+        "gravity": 980,
+        "dust": 0.65,
+        "dust_size_px": 34,
+        "dust_life_ms": 1000
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Jagged spikes of rock that punch up out of the ground row after row, each row bigger than the last, leaning away from the caster, then crack and crumble back down. Faceted, matte, lighter on top where the light catches them.",
+        "technique": "mesh",
+        "noise": {
+          "type": "voronoi",
+          "scale": 4,
+          "speed": 0,
+          "contrast": 0.7
+        },
+        "dissolve": {
+          "pattern": "voronoi",
+          "edge_width": 0.12
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "lift-pebbles",
+      "type": "sparks",
+      "beats": [
+        "gather",
+        "hang"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": {
+          "min": 26,
+          "max": 32
+        },
+        "speed": 130,
+        "speed_spread": 0.6,
+        "gravity": -110,
+        "lifetime_ms": 820,
+        "size_px": 5,
+        "spread_deg": 170,
+        "drag": 0.3,
+        "emit_ms": 460,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Pebbles and grit lifting off the ground around the caster, hanging in the air as the strength builds.",
+        "technique": "particles",
+        "flow": {
+          "direction": "upward",
+          "speed": 0.3
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gather-dust",
+      "type": "smoke",
+      "beats": [
+        "gather"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "count": 6,
+        "rise_speed": 10,
+        "size_px": {
+          "min": 22,
+          "max": 28
+        },
+        "lifetime_ms": 620,
+        "opacity": 0.22
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Low dust stirring around the caster's feet, pulled inward.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "inward",
+          "speed": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "fist-glow",
+      "type": "glow",
+      "beats": [
+        "gather",
+        "hang",
+        "slam"
+      ],
+      "anchor": "caster_hand",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.8,
+        "pulse_hz": 6
+      },
+      "shader": {
+        "material": "stone",
+        "look": "A dull amber glow swelling in the raised fist: the earth's strength gathering, not fire.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 1.8,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "slam-flash",
+      "type": "flash",
+      "beats": [
+        "slam"
+      ],
+      "anchor": "caster",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 12,
+      "params": {
+        "scope": "local",
+        "radius_px": 70,
+        "peak": 0.5
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A short warm pop of light and dust where the fist meets the ground; not a white-out.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "slam-burst",
+      "type": "sparks",
+      "beats": [
+        "slam"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 10,
+      "params": {
+        "count": {
+          "min": 20,
+          "max": 26
+        },
+        "speed": 420,
+        "speed_spread": 0.5,
+        "gravity": 980,
+        "lifetime_ms": 950,
+        "size_px": 5,
+        "spread_deg": 120,
+        "drag": 0.15,
+        "emit_ms": 60,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chunks of ground knocked loose by the slam, thrown up and out, tumbling and landing around the caster.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "slam-dust",
+      "type": "smoke",
+      "beats": [
+        "slam",
+        "rupture"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "count": 10,
+        "rise_speed": 28,
+        "size_px": {
+          "min": 36,
+          "max": 44
+        },
+        "lifetime_ms": 950,
+        "opacity": 0.45
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A thick dust cloud bursting up around the caster from the impact and rolling outward.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.6,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 0.6
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.35
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "climax-debris",
+      "type": "sparks",
+      "beats": [
+        "climax"
+      ],
+      "anchor": "point",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": {
+          "min": 30,
+          "max": 36
+        },
+        "speed": 520,
+        "speed_spread": 0.5,
+        "gravity": 980,
+        "lifetime_ms": 1150,
+        "size_px": 7,
+        "spread_deg": 90,
+        "drag": 0.12,
+        "emit_ms": 140,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "The last and biggest row blows apart at the far end: heavy rocks hurled high that rain back down.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "climax-dust",
+      "type": "smoke",
+      "beats": [
+        "climax",
+        "linger"
+      ],
+      "anchor": "point",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "count": 12,
+        "rise_speed": 34,
+        "size_px": {
+          "min": 56,
+          "max": 66
+        },
+        "lifetime_ms": 1250,
+        "opacity": 0.45
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A tall billowing dust plume thrown up at the far end by the final eruption, hanging and drifting as it settles.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.2,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.4
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gather-tremor",
+      "type": "camera_shake",
+      "beats": [
+        "gather",
+        "hang"
+      ],
+      "params": {
+        "amplitude_px": 2,
+        "frequency_hz": 30,
+        "decay": 0.2
+      }
+    },
+    {
+      "id": "slam-shake",
+      "type": "camera_shake",
+      "beats": [
+        "slam"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 12,
+          "max": 15
+        },
+        "frequency_hz": 22,
+        "decay": 0.5
+      }
+    },
+    {
+      "id": "wave-shake",
+      "type": "camera_shake",
+      "beats": [
+        "rupture"
+      ],
+      "params": {
+        "amplitude_px": 9,
+        "frequency_hz": 18,
+        "decay": 0.3
+      }
+    },
+    {
+      "id": "climax-shake",
+      "type": "camera_shake",
+      "beats": [
+        "climax"
+      ],
+      "params": {
+        "amplitude_px": {
+          "min": 15,
+          "max": 18
+        },
+        "frequency_hz": 15,
+        "decay": 0.7
+      }
+    },
+    {
+      "id": "gather-sound",
+      "type": "sound_cue",
+      "beats": [
+        "gather"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.45,
+        "pitch": 0.85
+      }
+    },
+    {
+      "id": "swing-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hang"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.5,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "slam-sound",
+      "type": "sound_cue",
+      "beats": [
+        "slam"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "slam-boom",
+      "type": "sound_cue",
+      "beats": [
+        "slam"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.75,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "eruption-sound",
+      "type": "sound_cue",
+      "beats": [
+        "rupture"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.55,
+        "pitch": {
+          "min": 0.9,
+          "max": 1.1
+        },
+        "repeat_ms": 140
+      }
+    },
+    {
+      "id": "quake-sound",
+      "type": "sound_cue",
+      "beats": [
+        "rupture",
+        "climax"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.65,
+        "pitch": 0.75
+      }
+    },
+    {
+      "id": "climax-sound",
+      "type": "sound_cue",
+      "beats": [
+        "climax"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.7,
+          "max": 0.78
+        }
+      }
+    },
+    {
+      "id": "climax-crash",
+      "type": "sound_cue",
+      "beats": [
+        "climax"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.8,
+        "pitch": {
+          "min": 0.8,
+          "max": 0.9
+        }
+      }
+    },
+    {
+      "id": "settle-sound",
+      "type": "sound_cue",
+      "beats": [
+        "linger",
+        "close"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.3,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "chasm-glow",
+      "type": "decal",
+      "beats": [
+        "rupture",
+        "climax",
+        "linger"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "add",
+      "color": "accent",
+      "z": 0,
+      "params": {
+        "shape": "cracks",
+        "radius_px": 500,
+        "arc_deg": 100,
+        "reveal_ms": 780,
+        "opacity": 0.55,
+        "fade_in_ms": 60,
+        "lifetime_ms": 1400,
+        "fade_ms": 2400,
+        "detail": 0.8,
+        "depth": 1.0
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A faint amber glow far down inside the fissures, like heat from below; it cools to nothing over a few seconds.",
+        "technique": "decal",
+        "emissive": {
+          "hdr": 1.6,
+          "falloff": "exponential"
+        },
+        "notes": "Emissive only at the bottom of the cracks (where the height map is lowest); it must sit under the parallax walls.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "seep-dust",
+      "type": "smoke",
+      "beats": [
+        "linger"
+      ],
+      "anchor": "point",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 5,
+      "params": {
+        "count": 14,
+        "rise_speed": 14,
+        "size_px": {
+          "min": 30,
+          "max": 46
+        },
+        "lifetime_ms": 1600,
+        "opacity": 0.22
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Thin puffs of dust breathing up out of the open fissures along the cone, drifting and thinning.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.4,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.3
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "lip-grit",
+      "type": "sparks",
+      "beats": [
+        "linger"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "primary",
+      "z": 7,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 60,
+        "speed_spread": 0.6,
+        "gravity": 980,
+        "lifetime_ms": 700,
+        "size_px": 3,
+        "spread_deg": 100,
+        "drag": 0.2,
+        "emit_ms": 2400,
+        "look": "debris"
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Grit trickling over the lips of the fissures and dropping in.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "crumble-sound",
+      "type": "sound_cue",
+      "beats": [
+        "linger"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.3,
+        "pitch": {
+          "min": 0.6,
+          "max": 0.7
+        },
+        "repeat_ms": 600
+      }
+    },
+    {
+      "id": "rupture-crack",
+      "type": "sound_cue",
+      "beats": [
+        "rupture"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.6,
+        "pitch": {
+          "min": 0.55,
+          "max": 0.65
+        }
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Fissure pattern, spike placement, sizes, lean, row growth and debris vary per cast. The 0.6 s gather, the slam time, the row rhythm, the 9 m reach and the 100 degree cone stay fixed so the danger area is fair to read; the cone always points the way the caster faces at the slam."
+  },
+  "director_notes": "Revision of earth-ground-pound for Lisa's Sparkfall Ground Pound rework: no target (the cone is aimed by the caster's facing at the slam, destination 'point' marks the cone's far tip), castable while walking (the gather is an upper-body move), and a much bigger 9 m x 100 degree cone (footprint length 5 units = 9 m at Sparkfall's ~1.8 m character height). The new idea is the ground opening up: the fissures are a parallax-occlusion decal (style realistic, depth 1.0, exported with a height map) so they read as recessed slots with lit lips and dark walls from every camera, plus an additive 'cracks' decal that glows amber only at the bottom of the cracks and cools over ~3 s. Marks linger 4.8 s at full strength and fade over 1.6 s. Timeline: gather 0-600, hang 600-680, slam 680-760, rupture 720-1500 (six rows, row_delay 130, growth 1.1), climax 1400-1850 at the tip, linger 1800-4800 (seeping dust, trickling grit, quiet crackle), close 4800-6400. Sound: rumble -> whoosh -> impact + boom -> crack + crash every 140 ms over a rumble -> deep boom + crash -> quiet crackle and rumble. In Unity: URP decal projector with a custom parallax-occlusion decal shader (albedo, height, normal, emissive), Blender rock meshes for spikes and debris, dust as a world-space particle system.",
+  "style": {
+    "preset": "realistic",
+    "depth": 0.95,
+    "notes": "The ground must look torn open, not painted: fissures are carved deep with parallax and lit walls, darkest at the bottom, with a faint amber heat glow far down that cools over a few seconds. Rubble and dust sit on the lips of the cracks."
+  }
+}
