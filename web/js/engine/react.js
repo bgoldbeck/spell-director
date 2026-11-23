@@ -5,7 +5,7 @@
 // poses its figures with it. The viewer stays a pure function of time: a
 // pose depends only on the reaction and the ms since it started.
 
-export const REACTION_KINDS = ["knockback", "flinch", "cower", "cheer", "shout"];
+export const REACTION_KINDS = ["knockback", "flinch", "cower", "cheer", "shout", "lunge", "leap", "spin"];
 
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const easeOut = (u) => 1 - (1 - u) * (1 - u) * (1 - u);
@@ -13,10 +13,10 @@ const smooth = (u) => u * u * (3 - 2 * u);
 const DEG = Math.PI / 180;
 
 // The default length of each kind, in ms.
-const DURATION = { knockback: 520, flinch: 420, cower: 1400, cheer: 700, shout: 900 };
+const DURATION = { knockback: 520, flinch: 420, cower: 1400, cheer: 700, shout: 900, lunge: 600, leap: 700, spin: 600 };
 
 /** A rest pose: no push, no lean, no lift, full height. */
-export const REST = Object.freeze({ push: 0, lean: 0, lift: 0, squash: 1, shiver: 0 });
+export const REST = Object.freeze({ push: 0, lean: 0, lift: 0, squash: 1, shiver: 0, yaw: 0 });
 
 /**
  * The pose `ms` after a reaction started (negative = not yet).
@@ -25,8 +25,10 @@ export const REST = Object.freeze({ push: 0, lean: 0, lift: 0, squash: 1, shiver
  * - lean: radians, the top tipped away from the centre (negative leans in);
  * - lift: world units off the ground (a stagger hop, a cheer);
  * - squash: height scale (a crouch);
- * - shiver: world units sideways (trembling).
- * `react` is { kind, duration_ms, distance_px, lean_deg, lift_px, hops } with
+ * - shiver: world units sideways (trembling);
+ * - yaw: radians turned about the figure's own vertical axis (a spin).
+ * For the caster, "away" is backward, so a lunge's push is negative.
+ * `react` is { kind, duration_ms, distance_px, lean_deg, lift_px, hops, turns } with
  * template pixels (100 px = one world unit).
  */
 export function reactionPose(react, ms) {
@@ -85,6 +87,58 @@ export function reactionPose(react, ms) {
       pose.squash = 1 - 0.05 * back + 0.04 * fwd;
       break;
     }
+    case "lunge": {
+      // A step in toward the centre (the caster: forward) and a lean into
+      // it over the first 35%, held, then a step back over the last 30%.
+      const env = u < 0.35 ? easeOut(u / 0.35) : u < 0.7 ? 1 : 1 - smooth((u - 0.7) / 0.3);
+      pose.push = -px(react.distance_px, 45) * env;
+      pose.lean = -deg(react.lean_deg, 14) * env;
+      pose.squash = 1 - 0.07 * env;
+      break;
+    }
+    case "leap": {
+      // Up and in (the caster: forward) in an arc over the first 70%, a
+      // crouch on landing, then upright where they landed.
+      const a = clamp01(u / 0.7);
+      pose.push = -px(react.distance_px, 80) * smooth(a);
+      pose.lift = u < 0.7 ? px(react.lift_px, 45) * Math.sin(Math.PI * a) : 0;
+      pose.lean = -deg(react.lean_deg, 12) * Math.sin(Math.PI * a) * (u < 0.7 ? 1 : 0);
+      const land = u >= 0.7 ? Math.sin(Math.PI * clamp01((u - 0.7) / 0.3)) : 0;
+      pose.squash = 1 - 0.14 * land;
+      break;
+    }
+    case "spin": {
+      // Whole turns about the vertical axis (negative turns: clockwise seen
+      // from above), easing in and out, a little crouched while spinning.
+      // Up to speed over the first 12% and down over the last 12%, steady
+      // between, so a blade held out sweeps round at an even pace.
+      const turns = Number.isFinite(Number(react.turns)) ? Number(react.turns) : 1;
+      const a = 0.12;
+      const f = u < a ? (u * u) / (2 * a) : u > 1 - a ? 1 - a - (1 - u) * (1 - u) / (2 * a) : u - a / 2;
+      pose.yaw = 2 * Math.PI * turns * (f / (1 - a));
+      pose.squash = u < 1 ? 1 - 0.06 * Math.sin(Math.PI * u) : 1;
+      pose.lean = -deg(react.lean_deg, 0) * (u < 1 ? Math.sin(Math.PI * u) : 0);
+      break;
+    }
   }
   return pose;
+}
+
+/**
+ * Several reactions at once (a caster who lunges, then spins): their poses
+ * added together (push, lean, lift, shiver, yaw) and their squashes multiplied.
+ * `ats`: each reaction's start (ms). Returns a single pose like reactionPose.
+ */
+export function combinedPose(reacts, ats, ms) {
+  const out = { ...REST };
+  reacts.forEach((r, i) => {
+    const p = reactionPose(r, ms - (ats[i] || 0));
+    out.push += p.push;
+    out.lean += p.lean;
+    out.lift += p.lift;
+    out.shiver += p.shiver;
+    out.yaw += p.yaw;
+    out.squash *= p.squash;
+  });
+  return out;
 }

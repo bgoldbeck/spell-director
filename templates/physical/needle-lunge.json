@@ -1,0 +1,373 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "physical-needle-lunge",
+  "name": "Needle Lunge",
+  "line": "Swordsmanship",
+  "description": "A fencer's thrust: the caster draws the sword back to the hip, then lunges in and drives the point straight through the enemy. A narrow lance of light shoots out ahead of the point, a ring of air snaps open where it pierces and sparks spray out behind the enemy.",
+  "element": "physical",
+  "archetype": "strike",
+  "tags": [
+    "sword",
+    "melee",
+    "weapon",
+    "thrust",
+    "pierce",
+    "lunge",
+    "single-target"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Sword skills: a lunging thrust that pierces straight through (original, game-agnostic)."
+  },
+  "timing": {
+    "duration_ms": 1300,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 1.5
+    },
+    "caster_weapon": {
+      "kind": "sword"
+    },
+    "targets": {
+      "react": {
+        "kind": "flinch",
+        "at_ms": 500,
+        "lean_deg": 22,
+        "distance_px": 16
+      }
+    },
+    "caster_react": {
+      "kind": "lunge",
+      "at_ms": 300,
+      "duration_ms": 720,
+      "distance_px": 45,
+      "lean_deg": 16
+    },
+    "caster_gestures": [
+      {
+        "kind": "thrust",
+        "at_ms": 120,
+        "duration_ms": 380,
+        "hold_ms": 260,
+        "return_ms": 420
+      }
+    ]
+  },
+  "views": {
+    "hero": "side",
+    "reads": {
+      "front": "The point drives straight away from the lens; a ring snaps open around the enemy's chest and sparks burst out behind them.",
+      "side": "Hero: the caster lunges and a narrow lance of light shoots through the enemy's chest, sparks spraying out the far side.",
+      "top": "A straight bright line from the caster through the enemy, with the pierce ring standing across it.",
+      "three_quarter": "The draw, the lunge and the lance through the chest all read, with the ring and the spray behind."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#BFD4FF",
+    "secondary": "#7F93C2",
+    "accent": "#FFE7A8",
+    "shadow": "#1A1E29"
+  },
+  "beats": [
+    {
+      "id": "draw",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.7
+      },
+      "intent": "The sword is drawn back to the hip, point forward; light gathers on the point."
+    },
+    {
+      "id": "stab",
+      "phase": "release",
+      "start_ms": 350,
+      "end_ms": 520,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "The caster lunges and the point drives forward: a lance of light shoots ahead of it."
+    },
+    {
+      "id": "pierce",
+      "phase": "impact",
+      "start_ms": 480,
+      "end_ms": 640,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The point punches through: a ring of air snaps open and sparks burst out the back."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 560,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "The lance thins to a line and fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scuff",
+      "type": "decal",
+      "beats": [
+        "pierce",
+        "fade"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "slash",
+        "radius_px": {
+          "min": 34,
+          "max": 40
+        },
+        "opacity": 0.45,
+        "fade_in_ms": 40,
+        "lifetime_ms": 900,
+        "fade_ms": 450,
+        "rotation_deg": 90
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Faint scuffs scraped across the ground at the enemy's feet where the blade went through.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "point-glint",
+      "type": "glow",
+      "beats": [
+        "draw",
+        "stab"
+      ],
+      "anchor": "caster_blade_tip",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 8,
+      "params": {
+        "radius_px": 18,
+        "softness": 0.8,
+        "pulse_hz": 8
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A bright bead of light gathering on the sword's point.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "stab-lance",
+      "type": "slash",
+      "beats": [
+        "stab",
+        "fade"
+      ],
+      "anchor": "caster_blade",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "inner": 0.55,
+        "width_px": 6,
+        "softness": 0.4,
+        "trace_ms": 170,
+        "trail_ms": 150,
+        "reach_px": 40
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A narrow lance of light driven out ahead of the point: white core, pale steel-blue edges.",
+        "technique": "ribbon",
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "pierce-ring",
+      "type": "ring",
+      "beats": [
+        "pierce"
+      ],
+      "anchor": "target",
+      "plane": "vertical",
+      "blend": "add",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "start_radius_px": 6,
+        "end_radius_px": 45,
+        "thickness_px": 6,
+        "softness": 0.5
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A thin ring of air snapping open around the point where it pierces.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "pierce-flash",
+      "type": "flash",
+      "beats": [
+        "pierce"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 40,
+        "peak": 0.5
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A white pop where the point goes through.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "through-spray",
+      "type": "sparks",
+      "beats": [
+        "pierce"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 20,
+          "max": 26
+        },
+        "speed": 420,
+        "speed_spread": 0.6,
+        "gravity": 700,
+        "lifetime_ms": 360,
+        "size_px": 2.2,
+        "spread_deg": 360,
+        "drag": 0.25,
+        "emit_ms": 40,
+        "streak_ms": 55,
+        "height_px": 25
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "Sparks bursting out every way from the pierced chest, most of them carried on through.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "swing",
+      "type": "sound_cue",
+      "beats": [
+        "stab"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.6,
+        "pitch": {
+          "min": 1.5,
+          "max": 1.7
+        }
+      }
+    },
+    {
+      "id": "hit",
+      "type": "sound_cue",
+      "beats": [
+        "pierce"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.6,
+        "pitch": {
+          "min": 1.4,
+          "max": 1.55
+        }
+      }
+    },
+    {
+      "id": "ring",
+      "type": "sound_cue",
+      "beats": [
+        "pierce"
+      ],
+      "params": {
+        "cue": "shimmer",
+        "gain": 0.3,
+        "pitch": 1.8
+      }
+    },
+    {
+      "id": "pierce-shake",
+      "type": "camera_shake",
+      "beats": [
+        "pierce"
+      ],
+      "params": {
+        "amplitude_px": 3,
+        "frequency_hz": 34,
+        "decay": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Lance length and spark spray vary; the lunge distance and timing stay fixed."
+  },
+  "director_notes": "The thrust gesture draws back at 60% and the arm is fully out at 100% (120 + 380 = 500 ms). The lunge reaction carries the body 45 px forward over 300-550 ms, so the point arrives with the body. The slash layer with inner 0.55 and reach 40 px makes a narrow lance rather than a sheet."
+}

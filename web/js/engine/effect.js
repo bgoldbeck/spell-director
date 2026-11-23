@@ -1097,7 +1097,9 @@ class BoltLayer extends Layer {
       case "caster_off_hand":
       case "caster_fingertip":
       case "caster_off_fingertip":
-      case "caster_hands": {
+      case "caster_hands":
+      case "caster_blade":
+      case "caster_blade_tip": {
         // From the hand (or fingertip) where it is now: it follows the arm.
         const hand = st.anchor(this.def.anchor);
         if (tp.space.travel === "chain") {
@@ -4146,6 +4148,149 @@ class CoatLayer extends Layer {
   }
 }
 
+// ------------------------------------------------------------ slash
+
+// A sword trail: the sheet the caster's blade sweeps through the air (from
+// `inner` of the way up the blade to its point, plus `reach_px` beyond it),
+// brightest at the leading edge and fading behind, with a camera-facing
+// streak along the point's path so it reads edge-on too (a horizontal slash
+// seen from the side). It traces the blade from the layer's first beat for
+// `trace_ms`; with `trail_ms` only the last stretch shows and it wipes away
+// behind the blade, otherwise the whole stroke stays and fades with the
+// layer's intensity. Worked out fresh from the time: each sample is where
+// the blade was then (engine/gesture.js through the stage).
+const SLASH_VERTEX = /* glsl */ `
+attribute float age;
+attribute float across;
+varying float vAge;
+varying float vAcross;
+void main() {
+  vAge = age;
+  vAcross = across;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`;
+const SLASH_FRAGMENT = /* glsl */ `
+uniform vec3 core;
+uniform vec3 primary;
+uniform float opacity;
+uniform float softness;
+varying float vAge;
+varying float vAcross;
+void main() {
+  float fresh = pow(clamp(1.0 - vAge, 0.0, 1.0), 1.4);
+  // Fades in from the inner edge, a bright band at the outer edge.
+  float body = smoothstep(0.0, mix(0.15, 0.95, softness), vAcross);
+  float edge = smoothstep(0.55, 1.0, vAcross) * (1.0 - smoothstep(0.97, 1.0, vAcross) * 0.5);
+  vec3 c = mix(primary, core, clamp(edge * fresh * 1.3, 0.0, 1.0));
+  float a = (body * 0.45 + edge * 0.8) * fresh;
+  gl_FragColor = vec4(c, a * opacity);
+  #include <colorspace_fragment>
+}`;
+
+class SlashLayer extends Layer {
+  constructor(effect, def, instance) {
+    super(effect, def, instance);
+    this.N = 40;
+    const n = this.N + 1;
+    const geo = new THREE.BufferGeometry();
+    const attr = (k, size) => {
+      const a = new THREE.BufferAttribute(new Float32Array(n * 2 * size), size);
+      a.setUsage(THREE.DynamicDrawUsage);
+      geo.setAttribute(k, a);
+      return a;
+    };
+    this.pos = attr("position", 3);
+    this.age = attr("age", 1);
+    this.across = attr("across", 1);
+    const idx = [];
+    for (let i = 0; i < this.N; i++) {
+      const a = i * 2;
+      idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    }
+    geo.setIndex(idx);
+    for (let i = 0; i < n; i++) {
+      this.across.array[i * 2] = 0;
+      this.across.array[i * 2 + 1] = 1;
+    }
+    this.material = new THREE.ShaderMaterial({
+      vertexShader: SLASH_VERTEX,
+      fragmentShader: SLASH_FRAGMENT,
+      uniforms: {
+        core: { value: this.colors[0].clone() },
+        primary: { value: this.colors[1].clone() },
+        opacity: { value: 0 },
+        softness: { value: Math.max(0, Math.min(1, this.base.softness ?? 0.6)) },
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+    });
+    this.sheet = new THREE.Mesh(geo, this.material);
+    this.sheet.frustumCulled = false;
+    this.streak = new RibbonMesh(n, this.colors[0], 1, 1.6);
+    this.group.add(this.sheet, this.streak.mesh);
+  }
+
+  // The stretch of the stroke to draw at time t: [from, to] in spell ms, or null.
+  span(t) {
+    const w = this.window;
+    if (!w) return null;
+    const traceEnd = w.start + Math.max(1, this.p("trace_ms", t, w.end - w.start));
+    const to = Math.min(t, traceEnd);
+    const trail = this.p("trail_ms", t, 0);
+    const from = trail > 0 ? Math.max(w.start, t - trail) : w.start;
+    return to - from > 1 ? [from, to, trail] : null;
+  }
+
+  // Where the sheet's inner and outer edges are at spell time ts.
+  edgesAt(ts, inner, reach) {
+    const b = this.effect.stage.bladeAt(ts);
+    const d = new THREE.Vector3().subVectors(b.tip, b.guard);
+    const L = d.length();
+    if (L > 1e-6) d.multiplyScalar(1 / L);
+    return [b.guard.clone().addScaledVector(d, L * inner), b.tip.clone().addScaledVector(d, reach)];
+  }
+
+  update(t) {
+    const I = this.intensityAt(t);
+    const s = I > 0.001 ? this.span(t) : null;
+    this.group.visible = !!s;
+    if (!s) return;
+    const [from, to, trail] = s;
+    const inner = Math.max(0, Math.min(0.95, this.p("inner", t, 0.35)));
+    const reach = this.p("reach_px", t, 0) * PX;
+    const P = this.pos.array;
+    const A = this.age.array;
+    const tips = [];
+    const widths = [];
+    const len = to - from;
+    for (let i = 0; i <= this.N; i++) {
+      // i = 0 is the newest sample (the blade now), i = N the oldest.
+      const ts = to - (len * i) / this.N;
+      const [a, b] = this.edgesAt(ts, inner, reach);
+      a.toArray(P, i * 6);
+      b.toArray(P, i * 6 + 3);
+      // Age 0 at the blade, 1 at the far end of the trail (with trail_ms:
+      // by time, so it wipes away; without: along the stroke).
+      const age = trail > 0 ? Math.min(1, (t - ts) / trail) : (i / this.N) * 0.85;
+      A[i * 2] = A[i * 2 + 1] = age;
+      tips.push(b);
+      widths.push(Math.pow(Math.max(0, 1 - age), 1.2));
+    }
+    this.pos.needsUpdate = true;
+    this.age.needsUpdate = true;
+    this.material.uniforms.opacity.value = Math.min(1.2, I * this.p("opacity", t, 1));
+    this.streak.setPaths([{ pts: tips, w: widths }], this.p("width_px", t, 4) * PX * 0.5);
+    this.streak.opacity = Math.min(1, I * this.p("edge", t, 0.9));
+  }
+
+  points() {
+    const b = this.effect.stage.bladeAt(this.effect.stage.now);
+    return [b.tip];
+  }
+}
+
 class LightLayer extends Layer {
   constructor(effect, def, instance) {
     super(effect, def, instance);
@@ -4202,6 +4347,7 @@ const TYPES = {
   wave: WaveLayer,
   motif: MotifLayer,
   coat: CoatLayer,
+  slash: SlashLayer,
   light: LightLayer,
   camera_shake: ShakeLayer,
   sound_cue: SoundLayer,

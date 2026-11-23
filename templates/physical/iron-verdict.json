@@ -1,0 +1,440 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "physical-iron-verdict",
+  "name": "Iron Verdict",
+  "line": "Swordsmanship",
+  "description": "A two-step overhead chop: the caster lifts the sword high behind the head, steps in and brings it straight down on the enemy. A tall arc of cut air falls with the blade, the strike cracks the ground at the enemy's feet, throws up grit and dust and staggers them back.",
+  "element": "physical",
+  "archetype": "strike",
+  "tags": [
+    "sword",
+    "melee",
+    "weapon",
+    "slash",
+    "chop",
+    "overhead",
+    "heavy",
+    "single-target"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Sword skills: a heavy overhead chop that cracks the ground (original, game-agnostic)."
+  },
+  "timing": {
+    "duration_ms": 1500,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 1.3
+    },
+    "caster_weapon": {
+      "kind": "sword"
+    },
+    "targets": {
+      "react": {
+        "kind": "knockback",
+        "at_ms": 640,
+        "duration_ms": 520,
+        "distance_px": 24,
+        "lean_deg": 20
+      }
+    },
+    "caster_react": {
+      "kind": "lunge",
+      "at_ms": 300,
+      "duration_ms": 760,
+      "distance_px": 22,
+      "lean_deg": 14
+    },
+    "caster_gestures": [
+      {
+        "kind": "chop",
+        "at_ms": 100,
+        "duration_ms": 560,
+        "hold_ms": 280,
+        "return_ms": 450
+      }
+    ]
+  },
+  "views": {
+    "hero": "side",
+    "reads": {
+      "front": "The sword rises over the caster's head, then the tall falling arc drops on the enemy and the ground cracks.",
+      "side": "Hero for the shape: a tall falling crescent from over the head down to the enemy's feet, the crack, grit and dust.",
+      "top": "The falling arc is a straight bright line ending in the crack and a dust ring at the enemy's feet.",
+      "three_quarter": "The raise, the drop, the cracked ground and the dust read together."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#BFD4FF",
+    "secondary": "#7F93C2",
+    "accent": "#FFE7A8",
+    "shadow": "#1A1E29"
+  },
+  "beats": [
+    {
+      "id": "raise",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 410,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.7
+      },
+      "intent": "The sword goes up high behind the head; a hard glint runs to the point."
+    },
+    {
+      "id": "fall",
+      "phase": "release",
+      "start_ms": 410,
+      "end_ms": 680,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.7
+      },
+      "intent": "The blade comes straight down: a tall arc of cut air falls with it."
+    },
+    {
+      "id": "strike",
+      "phase": "impact",
+      "start_ms": 600,
+      "end_ms": 760,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Steel meets the enemy and the ground behind them: sparks, a flash, a crack."
+    },
+    {
+      "id": "settle",
+      "phase": "dissipation",
+      "start_ms": 680,
+      "end_ms": 1300,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "Dust rolls out, grit rains back down, the crack stays a moment."
+    }
+  ],
+  "layers": [
+    {
+      "id": "raise-glint",
+      "type": "glow",
+      "beats": [
+        "raise"
+      ],
+      "anchor": "caster_blade_tip",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 8,
+      "params": {
+        "radius_px": 16,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A hard star of light running up to the sword's point as it is raised.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fall-arc",
+      "type": "slash",
+      "beats": [
+        "fall",
+        "settle"
+      ],
+      "anchor": "caster_blade",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "inner": 0.25,
+        "width_px": 6,
+        "softness": 0.6,
+        "trace_ms": 280,
+        "trail_ms": 260,
+        "reach_px": 14
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A tall falling crescent of cut air, white at the edge, cold steel-blue behind.",
+        "technique": "ribbon",
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "strike-sparks",
+      "type": "sparks",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 18,
+          "max": 24
+        },
+        "speed": 360,
+        "speed_spread": 0.6,
+        "gravity": 900,
+        "lifetime_ms": 380,
+        "size_px": 2.5,
+        "spread_deg": 110,
+        "drag": 0.2,
+        "emit_ms": 50,
+        "streak_ms": 45,
+        "height_px": 25
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "Steel sparks sprayed off the enemy where the edge bites.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "strike-flash",
+      "type": "flash",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 48,
+        "peak": 0.55
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A short white pop where the edge bites.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "strike-cracks",
+      "type": "decal",
+      "beats": [
+        "strike",
+        "settle"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 55,
+          "max": 65
+        },
+        "opacity": 0.75,
+        "fade_in_ms": 40,
+        "lifetime_ms": 900,
+        "fade_ms": 500,
+        "detail": 0.6
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Short sharp cracks split into the ground where the chop landed.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "strike-dust",
+      "type": "ring",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 120,
+        "thickness_px": 14,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A flat ring of dust blasted out from the impact.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "strike-grit",
+      "type": "sparks",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 11,
+      "params": {
+        "look": "debris",
+        "count": {
+          "min": 12,
+          "max": 16
+        },
+        "speed": 330,
+        "speed_spread": 0.5,
+        "gravity": 980,
+        "lifetime_ms": 800,
+        "size_px": 3.5,
+        "spread_deg": 80,
+        "drag": 0.1,
+        "emit_ms": 60
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Chips of ground knocked up by the blow, tumbling back down.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "strike-smoke",
+      "type": "smoke",
+      "beats": [
+        "strike",
+        "settle"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 9,
+      "params": {
+        "count": 7,
+        "rise_speed": 18,
+        "size_px": {
+          "min": 26,
+          "max": 32
+        },
+        "lifetime_ms": 800,
+        "opacity": 0.3
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Dust puffing up and rolling out from the cracked ground.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "swing",
+      "type": "sound_cue",
+      "beats": [
+        "fall"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.75,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        }
+      }
+    },
+    {
+      "id": "hit",
+      "type": "sound_cue",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.9,
+        "pitch": {
+          "min": 0.95,
+          "max": 1.05
+        }
+      }
+    },
+    {
+      "id": "crack",
+      "type": "sound_cue",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 0.5,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "strike-shake",
+      "type": "camera_shake",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "amplitude_px": 8,
+        "frequency_hz": 22,
+        "decay": 0.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Crack pattern, grit and dust vary; the raise is always long enough to read as a telegraph."
+  },
+  "director_notes": "The chop gesture is high at 55% and the blade is level at 80% (100 + 448 = 548 ms), reaching the enemy just after, so the strike beat starts at 600 ms. Overhead blows read best from the side; the top view relies on the crack and dust ring."
+}

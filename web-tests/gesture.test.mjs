@@ -46,7 +46,9 @@ test("every gesture's end pose keeps the arm in one piece, hands on the right si
         assert.ok(fk.hand[1] > 0.1 && fk.hand[1] < 1.4, `${kind} ${side} hand height ${fk.hand[1]}`);
       }
       // Clapped hands meet in the middle; otherwise the lead hand is on its side.
-      if (kind !== "clap" && kind !== "spin_throw" && kind !== "throw") assert.ok(arms.lead.hand[2] < 0.06, `${kind}/${hand}: lead hand on -Z (${arms.lead.hand[2]})`);
+      // (Sword strokes that follow through across the body end on the far side.)
+      const across = ["clap", "spin_throw", "throw", "slash", "chop", "cleave", "sweep_both"];
+      if (!across.includes(kind)) assert.ok(arms.lead.hand[2] < 0.06, `${kind}/${hand}: lead hand on -Z (${arms.lead.hand[2]})`);
     }
   }
 });

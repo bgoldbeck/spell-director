@@ -1,0 +1,636 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "physical-threefold-flurry",
+  "name": "Threefold Flurry",
+  "line": "Swordsmanship",
+  "description": "A three-hit combo: a flat cut from the right, a backhand cut returning from the left, then a stepping overhead chop. Each stroke leaves its own arc of cut air, each hit bites with sparks, and the last one cracks the ground and staggers the enemy back.",
+  "element": "physical",
+  "archetype": "strike",
+  "tags": [
+    "sword",
+    "melee",
+    "weapon",
+    "slash",
+    "combo",
+    "chop",
+    "single-target"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Sword skills: a fast three-hit combo, slash, backslash, overhead finisher (original, game-agnostic)."
+  },
+  "timing": {
+    "duration_ms": 1900,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 1.3
+    },
+    "caster_weapon": {
+      "kind": "sword"
+    },
+    "targets": {
+      "react": [
+        {
+          "kind": "flinch",
+          "at_ms": 340,
+          "lean_deg": 12,
+          "distance_px": 4
+        },
+        {
+          "kind": "flinch",
+          "at_ms": 730,
+          "lean_deg": 14,
+          "distance_px": 4
+        },
+        {
+          "kind": "knockback",
+          "at_ms": 1230,
+          "duration_ms": 520,
+          "distance_px": 30,
+          "lean_deg": 22
+        }
+      ]
+    },
+    "caster_react": [
+      {
+        "kind": "lunge",
+        "at_ms": 80,
+        "duration_ms": 600,
+        "distance_px": 12,
+        "lean_deg": 6
+      },
+      {
+        "kind": "lunge",
+        "at_ms": 880,
+        "duration_ms": 760,
+        "distance_px": 24,
+        "lean_deg": 14
+      }
+    ],
+    "caster_gestures": [
+      {
+        "kind": "slash",
+        "at_ms": 40,
+        "duration_ms": 400,
+        "hold_ms": 0
+      },
+      {
+        "kind": "backslash",
+        "at_ms": 440,
+        "duration_ms": 380,
+        "hold_ms": 0
+      },
+      {
+        "kind": "chop",
+        "at_ms": 820,
+        "duration_ms": 480,
+        "hold_ms": 280,
+        "return_ms": 450
+      }
+    ]
+  },
+  "views": {
+    "hero": "top",
+    "reads": {
+      "front": "Three strokes in a row across the enemy: right to left, left to right, then straight down; three spark pops and a crack.",
+      "side": "The two flat cuts are quick bright lines through the chest, then the tall falling arc of the finisher and the enemy thrown back.",
+      "top": "Hero for the rhythm: two half-moons sweeping opposite ways in front of the caster, then a straight line and a crack at the enemy's feet.",
+      "three_quarter": "Each arc, each hit and the final stagger read in turn."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#BFD4FF",
+    "secondary": "#7F93C2",
+    "accent": "#FFE7A8",
+    "shadow": "#1A1E29"
+  },
+  "beats": [
+    {
+      "id": "cut1",
+      "phase": "release",
+      "start_ms": 200,
+      "end_ms": 460,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "First stroke: the blade sweeps flat from the right."
+    },
+    {
+      "id": "hit1",
+      "phase": "impact",
+      "start_ms": 330,
+      "end_ms": 430,
+      "intensity": {
+        "shape": "spike",
+        "from": 0.9,
+        "to": 0.3
+      },
+      "intent": "First bite: a small spark pop."
+    },
+    {
+      "id": "cut2",
+      "phase": "release",
+      "start_ms": 600,
+      "end_ms": 850,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "Second stroke: the blade comes back from the left."
+    },
+    {
+      "id": "hit2",
+      "phase": "impact",
+      "start_ms": 720,
+      "end_ms": 820,
+      "intensity": {
+        "shape": "spike",
+        "from": 0.9,
+        "to": 0.3
+      },
+      "intent": "Second bite: another spark pop."
+    },
+    {
+      "id": "cut3",
+      "phase": "release",
+      "start_ms": 1090,
+      "end_ms": 1360,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.7
+      },
+      "intent": "The finisher: a step in and the sword comes straight down."
+    },
+    {
+      "id": "hit3",
+      "phase": "impact",
+      "start_ms": 1210,
+      "end_ms": 1370,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The finisher lands: a big spark burst, a flash and a crack in the ground."
+    },
+    {
+      "id": "settle",
+      "phase": "dissipation",
+      "start_ms": 1300,
+      "end_ms": 1750,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "Dust rolls out and the last arc fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "cut1-arc",
+      "type": "slash",
+      "beats": [
+        "cut1"
+      ],
+      "anchor": "caster_blade",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "inner": 0.35,
+        "width_px": 4,
+        "softness": 0.6,
+        "trace_ms": 230,
+        "trail_ms": 180,
+        "reach_px": 6
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A bright arc of cut air swept by the blade: hot at the leading edge, fading to nothing behind it.",
+        "technique": "ribbon",
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hit1-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit1"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 12,
+          "max": 16
+        },
+        "speed": 360,
+        "speed_spread": 0.6,
+        "gravity": 900,
+        "lifetime_ms": 380,
+        "size_px": 2.5,
+        "spread_deg": 110,
+        "drag": 0.2,
+        "emit_ms": 50,
+        "streak_ms": 45,
+        "height_px": 25
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "Steel sparks sprayed off the enemy where the edge bites.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hit1-flash",
+      "type": "flash",
+      "beats": [
+        "hit1"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 38,
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A short white pop where the edge bites.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "cut2-arc",
+      "type": "slash",
+      "beats": [
+        "cut2"
+      ],
+      "anchor": "caster_blade",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "inner": 0.35,
+        "width_px": 4,
+        "softness": 0.6,
+        "trace_ms": 230,
+        "trail_ms": 180,
+        "reach_px": 6
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A bright arc of cut air swept by the blade: hot at the leading edge, fading to nothing behind it.",
+        "technique": "ribbon",
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hit2-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit2"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 12,
+          "max": 16
+        },
+        "speed": 360,
+        "speed_spread": 0.6,
+        "gravity": 900,
+        "lifetime_ms": 380,
+        "size_px": 2.5,
+        "spread_deg": 110,
+        "drag": 0.2,
+        "emit_ms": 50,
+        "streak_ms": 45,
+        "height_px": 25
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "Steel sparks sprayed off the enemy where the edge bites.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hit2-flash",
+      "type": "flash",
+      "beats": [
+        "hit2"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 38,
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A short white pop where the edge bites.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "cut3-arc",
+      "type": "slash",
+      "beats": [
+        "cut3",
+        "settle"
+      ],
+      "anchor": "caster_blade",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "inner": 0.25,
+        "width_px": 6,
+        "softness": 0.6,
+        "trace_ms": 260,
+        "trail_ms": 240,
+        "reach_px": 14
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "The finisher's tall falling crescent, wider and brighter than the first two.",
+        "technique": "ribbon",
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hit3-sparks",
+      "type": "sparks",
+      "beats": [
+        "hit3"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 20,
+          "max": 26
+        },
+        "speed": 360,
+        "speed_spread": 0.6,
+        "gravity": 900,
+        "lifetime_ms": 380,
+        "size_px": 2.5,
+        "spread_deg": 110,
+        "drag": 0.2,
+        "emit_ms": 50,
+        "streak_ms": 45,
+        "height_px": 25
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "Steel sparks sprayed off the enemy where the edge bites.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "hit3-flash",
+      "type": "flash",
+      "beats": [
+        "hit3"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 50,
+        "peak": 0.55
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A short white pop where the edge bites.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "finish-cracks",
+      "type": "decal",
+      "beats": [
+        "hit3",
+        "settle"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 45,
+          "max": 55
+        },
+        "opacity": 0.7,
+        "fade_in_ms": 40,
+        "lifetime_ms": 700,
+        "fade_ms": 400
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Short cracks split into the ground under the finisher.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "finish-dust",
+      "type": "ring",
+      "beats": [
+        "hit3"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 15,
+        "end_radius_px": 100,
+        "thickness_px": 12,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A flat ring of dust blasted out by the finisher.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "swing1",
+      "type": "sound_cue",
+      "beats": [
+        "cut1"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.6,
+        "pitch": 1.3
+      }
+    },
+    {
+      "id": "hit1-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit1"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.5,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "swing2",
+      "type": "sound_cue",
+      "beats": [
+        "cut2"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.6,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "hit2-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit2"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.5,
+        "pitch": 1.5
+      }
+    },
+    {
+      "id": "swing3",
+      "type": "sound_cue",
+      "beats": [
+        "cut3"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.75,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "hit3-sound",
+      "type": "sound_cue",
+      "beats": [
+        "hit3"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.9,
+        "pitch": 1.05
+      }
+    },
+    {
+      "id": "hit3-shake",
+      "type": "camera_shake",
+      "beats": [
+        "hit3"
+      ],
+      "params": {
+        "amplitude_px": 7,
+        "frequency_hz": 24,
+        "decay": 0.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Spark counts, crack pattern and dust vary; the rhythm (about 390 ms between hits) is fixed."
+  },
+  "director_notes": "Three gestures chained back to back (each with hold 0 so the next takes over): slash crosses the front at 40 + 300 = 340 ms, backslash at 440 + 285 = 725 ms, and the chop is level at 820 + 384 = 1204 ms. Each stroke has its own slash layer and beat, and targets.react is a list: two flinches and a knockback on the finisher."
+}

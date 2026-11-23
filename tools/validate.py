@@ -76,6 +76,7 @@ KNOWN_PARAMS = {
         "face", "bloom", "petals", "sparkle", "glint_hz", "trail_ms", "clarity", "fire", "glow", "encase", "fill", "stretch",
         "emblem", "wave", "wave_hz",
     },
+    "slash": {"trace_ms", "trail_ms", "inner", "reach_px", "width_px", "softness", "opacity", "edge"},
     "light": {"radius", "energy", "height_px", "forward_px", "side_px", "orbit_hz", "tint"},
     "camera_shake": {"amplitude_px", "frequency_hz", "decay"},
     "sound_cue": {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms"},
@@ -144,7 +145,14 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
     splash = targets.get("layout") == "splash"
     if targets.get("side") == "allies" and not splash:
         warnings.append("space.targets.side is 'allies', but space.targets.layout isn't 'splash', so no allies stand round the caster")
-    for where, react in (("space.targets.react", targets.get("react")), ("space.caster_react", doc["space"].get("caster_react"))):
+    caster_reacts = doc["space"].get("caster_react") or []
+    if isinstance(caster_reacts, dict):
+        caster_reacts = [caster_reacts]
+    target_reacts = targets.get("react") or []
+    if isinstance(target_reacts, dict):
+        target_reacts = [target_reacts]
+    reacts = [("space.targets.react", r) for r in target_reacts] + [("space.caster_react", r) for r in caster_reacts]
+    for where, react in reacts:
         at = (react or {}).get("at_ms")
         if isinstance(at, (int, float)) and at > duration:
             warnings.append(f"{where}: starts at {at} ms, after the spell ends ({duration} ms)")

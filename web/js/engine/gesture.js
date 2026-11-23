@@ -35,6 +35,14 @@ export const GESTURE_KINDS = [
   "guard",
   "flail",
   "cheer",
+  "slash",
+  "backslash",
+  "chop",
+  "rising_slash",
+  "thrust",
+  "blade_out",
+  "cleave",
+  "sweep_both",
 ];
 
 export const HANDS = ["lead", "off", "both"];
@@ -42,7 +50,9 @@ export const HANDS = ["lead", "off", "both"];
 // Anchors on the caster's hands: they follow the arms. caster_hand is the
 // lead (casting) hand's palm; caster_fingertip its index fingertip;
 // caster_hands the point between both palms.
-export const HAND_ANCHORS = ["caster_hand", "caster_off_hand", "caster_fingertip", "caster_off_fingertip", "caster_hands"];
+// caster_blade and caster_blade_tip are the middle and the point of the
+// caster's held blade (space.caster_weapon; without one, where a sword would be).
+export const HAND_ANCHORS = ["caster_hand", "caster_off_hand", "caster_fingertip", "caster_off_fingertip", "caster_hands", "caster_blade", "caster_blade_tip"];
 export const isHandAnchor = (name) => HAND_ANCHORS.includes(name);
 
 // Finger curl (0 straight, 1 fully curled) for thumb, index, middle, ring,
@@ -104,6 +114,24 @@ const POSES = {
   channel: { w: [0.36, 0.7, 0.1], aim: [1, 0.1, 0], palm: [0.6, -0.8, 0], shape: "claw" },
   orb_hold: { w: [0.25, 0.68, 0.2], aim: [1, 0, 0], palm: [0, 1, 0], shape: "cup" },
   flail: { w: [0.25, 0.95, 0.32], aim: [0.5, 1, 0.3], palm: [1, 0, 0], shape: "spread" },
+  // Sword poses: a fist round the grip, and `blade`, the way the blade points.
+  blade_ready: { w: [0.2, 0.52, 0.22], aim: [1, -0.5, 0], palm: [0, 0, -1], blade: [0.7, 0.7, -0.12], shape: "fist" },
+  slash_wind: { w: [0.0, 0.8, 0.4], aim: [0.2, 0.2, 1], palm: [0, -1, 0], blade: [-0.55, 0.15, 0.82], shape: "fist" },
+  slash_mid: { w: [0.37, 0.72, 0.08], aim: [1, 0, 0.2], palm: [0, -1, 0], blade: [1, 0.04, 0], shape: "fist" },
+  slash_end: { w: [0.26, 0.68, -0.08], aim: [0.5, 0, -1], palm: [0, -1, 0], blade: [0.12, -0.04, -1], shape: "fist" },
+  back_end: { w: [0.12, 0.74, 0.4], aim: [0.4, 0, 1], palm: [0, 1, 0], blade: [-0.25, 0.08, 1], shape: "fist" },
+  chop_high: { w: [0.0, 1.02, 0.18], aim: [0, 1, 0.1], palm: [1, 0, 0], blade: [-0.4, 0.92, 0], shape: "fist" },
+  chop_mid: { w: [0.3, 0.86, 0.12], aim: [1, 0.4, 0], palm: [0, -1, 0], blade: [1, 0.35, 0], shape: "fist" },
+  chop_end: { w: [0.33, 0.42, 0.12], aim: [0.6, -0.8, 0], palm: [0, 0, -1], blade: [0.72, -0.68, 0], shape: "fist" },
+  rise_low: { w: [0.16, 0.34, 0.28], aim: [0.3, -1, 0], palm: [0, 0, -1], blade: [0.42, -0.86, 0.12], shape: "fist" },
+  rise_mid: { w: [0.36, 0.66, 0.13], aim: [1, 0, 0], palm: [0, 0, -1], blade: [1, 0.12, 0], shape: "fist" },
+  rise_end: { w: [0.14, 1.0, 0.17], aim: [0.2, 1, 0], palm: [0, 0, -1], blade: [0.25, 1, -0.05], shape: "fist" },
+  thrust_draw: { w: [-0.04, 0.58, 0.3], aim: [0, -0.3, -1], palm: [0, -1, 0], blade: [1, 0.06, -0.08], shape: "fist" },
+  thrust_out: { w: [0.4, 0.68, 0.07], aim: [0, -0.3, -1], palm: [0, -1, 0], blade: [1, 0.02, -0.03], shape: "fist" },
+  blade_out: { w: [0.24, 0.68, 0.31], aim: [0.6, 0, 0.8], palm: [0, -1, 0], blade: [0.55, 0.02, 0.84], shape: "fist" },
+  cleave_high: { w: [-0.02, 1.0, 0.05], aim: [0, 1, 0], palm: [0, 0, -1], blade: [-0.45, 0.9, 0], shape: "fist" },
+  cleave_end: { w: [0.36, 0.45, 0.05], aim: [0.6, -0.8, 0], palm: [0, 0, -1], blade: [0.8, -0.6, 0], shape: "fist" },
+  sweep_both: { w: [0.33, 0.62, 0.06], aim: [1, 0, 0], palm: [0, 0, -1], blade: [0.35, 0, 0.94], shape: "fist" },
 };
 
 // Each gesture: a default length, and keys [u, pose, ease] where u is the
@@ -134,6 +162,25 @@ const GESTURES = {
   guard: { ms: 250, both: true, keys: [[1, "guard"]] },
   flail: { ms: 300, both: true, keys: [[1, "flail", "out"]] },
   cheer: { ms: 350, both: true, keys: [[1, "fist_high"]] },
+  // Sword strokes (with space.caster_weapon the blade rides in the lead
+  // hand). The blade crosses the front of the caster at about 75% of a
+  // slash; a chop, rising slash or thrust lands at its end.
+  slash: { ms: 520, keys: [[0.45, "slash_wind"], [0.75, "slash_mid", "in"], [1, "slash_end", "out"]], other: [[0.45, "aim_fwd"], [1, "tuck", "in"]] },
+  backslash: { ms: 480, keys: [[0.4, "slash_end"], [0.75, "slash_mid", "in"], [1, "back_end", "out"]], other: [[0.4, "tuck"], [1, "counter_back", "in"]] },
+  chop: { ms: 520, keys: [[0.55, "chop_high"], [0.8, "chop_mid", "in"], [1, "chop_end", "out"]], other: [[0.55, "aim_fwd"], [1, "tuck", "in"]] },
+  rising_slash: { ms: 480, keys: [[0.45, "rise_low"], [0.75, "rise_mid", "in"], [1, "rise_end", "out"]], other: [[1, "counter_back", "in"]] },
+  thrust: { ms: 420, keys: [[0.6, "thrust_draw"], [1, "thrust_out", "in"]], other: [[0.6, "aim_fwd"], [1, "counter_back", "in"]] },
+  blade_out: { ms: 300, keys: [[1, "blade_out"]], other: [[1, "wide"]] },
+  cleave: { ms: 620, both: true, keys: [[0.55, "cleave_high"], [1, "cleave_end", "in"]] },
+  sweep_both: { ms: 350, both: true, keys: [[1, "sweep_both"]] },
+};
+
+// What the caster can hold (space.caster_weapon): blade length and width,
+// grip length, in world units (the figure is one unit tall).
+export const WEAPONS = {
+  sword: { length: 0.5, width: 0.034, grip: 0.07 },
+  greatsword: { length: 0.74, width: 0.05, grip: 0.12 },
+  dagger: { length: 0.24, width: 0.028, grip: 0.05 },
 };
 
 /** Gesture kind -> { duration_ms, two_handed } (for docs and the director). */
@@ -168,10 +215,19 @@ function shapeOf(name) {
   return { curl: s.curl.slice(), spread: s.spread };
 }
 
+// The way a held blade points when a pose doesn't say: out of the thumb
+// side of the fist, tipped a little toward the knuckles.
+function defaultBlade(aim, palm) {
+  const n = norm(sub(palm, mul(aim, dot(palm, aim))), [0, 0, -1]);
+  return norm(add(mul(cross(aim, n), 0.85), mul(aim, 0.35)));
+}
+
 function poseNamed(name, shape) {
   const p = POSES[name] || POSES.hang;
   const sh = shapeOf(shape || p.shape);
-  return { w: p.w.slice(), aim: norm(p.aim), palm: norm(p.palm), curl: sh.curl, spread: sh.spread };
+  const aim = norm(p.aim);
+  const palm = norm(p.palm);
+  return { w: p.w.slice(), aim, palm, blade: p.blade ? norm(p.blade) : defaultBlade(aim, palm), curl: sh.curl, spread: sh.spread };
 }
 
 function blend(a, b, u) {
@@ -179,14 +235,15 @@ function blend(a, b, u) {
     w: lerp3(a.w, b.w, u),
     aim: norm(lerp3(a.aim, b.aim, u), b.aim),
     palm: norm(lerp3(a.palm, b.palm, u), b.palm),
+    blade: norm(lerp3(a.blade, b.blade, u), b.blade),
     curl: a.curl.map((c, i) => lerp(c, b.curl[i], u)),
     spread: lerp(a.spread, b.spread, u),
   };
 }
 
-/** The rest pose of an arm: "ready" (the caster's casting hand up in front) or "hang". */
+/** The rest pose of an arm: "ready" (the caster's casting hand up in front), "blade" (a sword held up in guard) or "hang". */
 export function restPose(rest) {
-  return poseNamed(rest === "ready" ? "ready" : "hang");
+  return poseNamed(rest === "ready" ? "ready" : rest === "blade" ? "blade_ready" : "hang");
 }
 
 // ------------------------------------------------------------ timeline
@@ -338,6 +395,29 @@ export function armFK(pose, side) {
     fingers,
     hand: add(center, mul(n, 0.025)),
     tip: fingers[1][2],
+    // The way a blade held in this hand points (see bladeFK).
+    blade: norm(mirror(pose.blade || defaultBlade(norm(pose.aim), norm(pose.palm)), s)),
+  };
+}
+
+/**
+ * A blade held in a hand (armFK's result): { pommel, guard, mid, tip, dir }
+ * in body coords. weapon: { kind, length } with kind a WEAPONS name (sword by
+ * default) and length (world units) overriding its blade length.
+ */
+export function bladeFK(fk, weapon) {
+  const w = WEAPONS[weapon?.kind] || WEAPONS.sword;
+  const L = Number(weapon?.length) > 0 ? Number(weapon.length) : w.length;
+  const d = fk.blade;
+  const guard = add(fk.palm.center, mul(d, BODY.palmWidth * 0.62));
+  const tip = add(guard, mul(d, L));
+  return {
+    pommel: add(fk.palm.center, mul(d, -w.grip)),
+    guard,
+    mid: add(guard, mul(d, L * 0.55)),
+    tip,
+    dir: d,
+    width: w.width,
   };
 }
 
@@ -346,11 +426,11 @@ export function armFK(pose, side) {
  * lead arm's rest pose ("ready" for a caster, "hang" otherwise; the off arm
  * always hangs). Returns { lead, off } from armFK (body coords).
  */
-export function armsAt(tracks, t, rest = "hang") {
-  return {
-    lead: armFK(armPose(tracks?.lead, rest, t), -1),
-    off: armFK(armPose(tracks?.off, "hang", t), 1),
-  };
+export function armsAt(tracks, t, rest = "hang", weapon = null) {
+  const lead = armFK(armPose(tracks?.lead, rest, t), -1);
+  const arms = { lead, off: armFK(armPose(tracks?.off, "hang", t), 1) };
+  if (weapon) arms.blade = bladeFK(lead, weapon);
+  return arms;
 }
 
 /**
@@ -370,6 +450,12 @@ export function reactionGestures(react, at = 0) {
       return [{ kind: "guard", at_ms: at, hold_ms: Math.max(0, (d || 1400) - 550), return_ms: 300 }];
     case "cheer":
       return [{ kind: "cheer", at_ms: at, duration_ms: 200, hold_ms: Math.max(0, (d || 700) - 300) }];
+    case "lunge":
+      return [{ kind: "push", at_ms: at, duration_ms: 220, hold_ms: Math.max(0, (d || 600) * 0.4) }];
+    case "leap":
+      return [{ kind: "flail", at_ms: at, hold_ms: Math.max(0, (d || 700) * 0.5) }];
+    case "spin":
+      return [{ kind: "flail", at_ms: at, duration_ms: 200, hold_ms: Math.max(0, (d || 600) - 300) }];
     case "shout": {
       const dur = d || 900;
       return [{ kind: "roar", at_ms: at, duration_ms: dur * 0.52, hold_ms: dur * 0.25 }];

@@ -44,6 +44,21 @@ export function splashLayout(space, seed) {
   // (others are already in order round it), a ricochet.
   const sequence = t.order === "sequence";
   const ripple = resolveValue(t.ripple_ms, seed, "targets.ripple") ?? 120;
+  // sweep: each one is hit as a blade sweeping round the centre reaches
+  // them, starting at sweep_start_deg (0 = the cast direction, positive
+  // toward +Z, the off-hand side) and taking sweep_ms per turn (negative:
+  // the other way round).
+  if (t.order === "sweep") {
+    const per = resolveValue(t.sweep_ms, seed, "targets.sweep") ?? 600;
+    const start = ((resolveValue(t.sweep_start_deg, seed, "targets.sweep_start") ?? -90) * Math.PI) / 180;
+    const TAU = Math.PI * 2;
+    const delays = others.map((p) => {
+      const a = Math.atan2(p.z - primary.z, p.x - primary.x);
+      const turn = ((((per >= 0 ? a - start : start - a) % TAU) + TAU) % TAU) / TAU;
+      return turn * Math.abs(per);
+    });
+    return { primary, others, delays, centered, ground };
+  }
   const delays = others.map((p, k) => (sequence
     ? (k + 1) * (resolveValue(t.hop_delay_ms, seed, "hop", k) ?? 90)
     : Math.hypot(p.x - primary.x, p.z - primary.z) * ripple));

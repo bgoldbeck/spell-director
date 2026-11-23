@@ -71,7 +71,57 @@ function poseArm(arm, fk) {
   });
 }
 
-function standIn(color, facing = 1) {
+// A crude sword: a diamond-section blade with a point, a crossguard, a
+// wrapped grip and a pommel, placed each frame from engine/gesture.js
+// bladeFK (so caster_blade_tip sits on the point drawn here).
+function makeSword(kind) {
+  const g = new THREE.Group();
+  const steel = new THREE.MeshStandardMaterial({ color: "#d9dee8", metalness: 0.75, roughness: 0.28, emissive: "#2a2f3a" });
+  const dark = new THREE.MeshStandardMaterial({ color: "#4a3426", roughness: 0.8 });
+  const brass = new THREE.MeshStandardMaterial({ color: "#b8954a", metalness: 0.6, roughness: 0.4 });
+  // The blade in a unit frame: base at y 0, point at y 1, width along x,
+  // thickness along z; scaled to the weapon's length and width.
+  const blade = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.86, 4, 1), steel);
+  body.position.y = 0.43;
+  const point = new THREE.Mesh(new THREE.CylinderGeometry(0, 1, 0.14, 4, 1), steel);
+  point.position.y = 0.93;
+  blade.add(body, point);
+  const guard = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), brass);
+  const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.016, 1, 6, 1), dark);
+  const pommel = new THREE.Mesh(new THREE.SphereGeometry(kind === "greatsword" ? 0.03 : 0.022, 8, 6), brass);
+  g.add(blade, guard, grip, pommel);
+  g.userData.parts = { blade, guard, grip, pommel };
+  return g;
+}
+
+function poseSword(sword, b, palm) {
+  const p = sword.userData.parts;
+  _y.fromArray(b.dir);
+  // The blade's edge runs the way the knuckles point (or, when they point
+  // along the blade, across the palm).
+  _x.fromArray(palm.aim);
+  _x.addScaledVector(_y, -_x.dot(_y));
+  if (_x.lengthSq() < 0.05) {
+    _x.fromArray(palm.normal);
+    _x.addScaledVector(_y, -_x.dot(_y));
+  }
+  if (_x.lengthSq() < 1e-6) _x.set(0, 1, 0).addScaledVector(_y, -_y.y);
+  _x.normalize();
+  _z.crossVectors(_x, _y);
+  _basis.makeBasis(_x, _y, _z);
+  const len = Math.hypot(b.tip[0] - b.guard[0], b.tip[1] - b.guard[1], b.tip[2] - b.guard[2]);
+  p.blade.quaternion.setFromRotationMatrix(_basis);
+  p.blade.position.fromArray(b.guard);
+  p.blade.scale.set(b.width / 2, len, b.width * 0.22);
+  p.guard.quaternion.copy(p.blade.quaternion);
+  p.guard.position.fromArray(b.guard);
+  p.guard.scale.set(b.width * 3.6, 0.018, 0.026);
+  placeSegment(p.grip, b.pommel, b.guard);
+  p.pommel.position.fromArray(b.pommel);
+}
+
+function standIn(color, facing = 1, weapon = null) {
   // A simple figure, 1 unit tall, like the stand-ins in a motion study,
   // with crude arms and hands (posed by setArms).
   const g = new THREE.Group();
@@ -90,6 +140,11 @@ function standIn(color, facing = 1) {
   const lead = makeArm(mat, skin);
   const off = makeArm(mat, skin);
   rig.add(lead, off);
+  if (weapon) {
+    const sword = makeSword(weapon.kind);
+    rig.add(sword);
+    g.userData.sword = sword;
+  }
   g.add(rig);
   g.userData.arms = { lead, off };
   return g;
@@ -101,6 +156,7 @@ function setArms(figure, arms) {
   if (!a || !arms) return;
   poseArm(a.lead, arms.lead);
   poseArm(a.off, arms.off);
+  if (figure.userData.sword && arms.blade) poseSword(figure.userData.sword, arms.blade, arms.lead.palm);
 }
 
 function disposeTree(obj) {
@@ -158,7 +214,7 @@ export function makeStudio() {
       props.add(f);
       return;
     }
-    const casterFig = standIn("#8c90a0", 1);
+    const casterFig = standIn("#8c90a0", 1, stage.weapon);
     posed.push({ g: pivot(casterFig, 0, 0, new THREE.Vector3(-1, 0, 0)), caster: true, fig: casterFig });
     // Allies (a rallying shout, a battle-fury aura) wear a blue tint and a
     // green ring at their feet; enemies stay grey.
@@ -198,6 +254,7 @@ export function makeStudio() {
   // lifted, crouched and leaning, all worked out fresh from t.
   const axis = new THREE.Vector3();
   const UP = new THREE.Vector3(0, 1, 0);
+  const spinQ = new THREE.Quaternion();
   function update(t) {
     if (!current) return;
     for (const { g, i, caster, fig } of posed) {
@@ -211,6 +268,7 @@ export function makeStudio() {
       // at right angles to the away direction.
       axis.crossVectors(UP, away).normalize();
       g.quaternion.setFromAxisAngle(axis, pose.lean);
+      if (pose.yaw) g.quaternion.multiply(spinQ.setFromAxisAngle(UP, pose.yaw));
       g.scale.set(1, pose.squash, 1);
     }
   }  return {

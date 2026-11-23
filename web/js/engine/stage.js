@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { resolveValue, rng, seedFor } from "./timeline.js";
 import { isSplash, splashLayout } from "./splash.js";
 import { isStatus } from "./status.js";
-import { reactionPose, REST } from "./react.js";
+import { combinedPose, REST } from "./react.js";
 import { HAND_ANCHORS, armsAt, gestureTracks, isHandAnchor, reactionGestures } from "./gesture.js";
 
 export { isStatus };
@@ -32,11 +32,14 @@ const _m = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
 const _ax = new THREE.Vector3();
 const _UP = new THREE.Vector3(0, 1, 0);
+const _qy = new THREE.Quaternion();
 export function bodyToWorld(local, pose, x, z, away) {
   const v = new THREE.Vector3(local[0], local[1], local[2]);
   if (!pose) return v.add(new THREE.Vector3(x, 0, z));
   _ax.crossVectors(_UP, away).normalize();
   _q.setFromAxisAngle(_ax, pose.lean);
+  // A spin turns the figure about its own vertical axis under the lean.
+  if (pose.yaw) _q.multiply(_qy.setFromAxisAngle(_UP, pose.yaw));
   _m.compose(
     new THREE.Vector3(x + away.x * pose.push - away.z * pose.shiver, pose.lift, z + away.z * pose.push + away.x * pose.shiver),
     _q,
@@ -119,9 +122,22 @@ export function buildStage(template, seed) {
   // react (engine/react.js): space.targets.react for the targets, delayed
   // like their splash layers, and space.caster_react for the caster.
   const side = space.targets?.side === "allies" ? "allies" : "enemies";
-  const targetReact = space.targets?.react || null;
-  const casterReact = space.caster_react || null;
-  const reactAt = (r) => resolveValue(r?.at_ms, seed, "react.at") ?? 0;
+  // targets.react: one reaction, or a list (staggered by each hit of a combo).
+  const targetReacts = [].concat(space.targets?.react || []).filter(Boolean);
+  const targetReact = targetReacts[0] || null;
+  // caster_react: one reaction, or a list played together (a lunge, then a spin).
+  const casterReacts = [].concat(space.caster_react || []).filter(Boolean);
+  const casterReact = casterReacts[0] || null;
+  const reactAt = (r, i = 0) => resolveValue(r?.at_ms, seed, i ? `react.at.${i}` : "react.at") ?? 0;
+  const casterAts = casterReacts.map((r, i) => reactAt(r, i));
+  const targetAts = targetReacts.map((r, i) => reactAt(r, i));
+  // A held weapon (space.caster_weapon): the blade rides in the lead hand,
+  // and the casting hand rests holding it up in guard.
+  const weaponDef = space.caster_weapon || null;
+  const weapon = weaponDef
+    ? { kind: weaponDef.kind || "sword", length: (resolveValue(weaponDef.length_px, seed, "weapon.length") ?? 0) * PX || undefined }
+    : null;
+  const casterRest = weapon ? "blade" : "ready";
   const firstSplash = splash && !splashCentered && !splashCentre ? 1 : 0;
   const targetDelay = (i) => {
     const k = i - firstSplash;
@@ -134,11 +150,13 @@ export function buildStage(template, seed) {
   const casterTracks = gestureTracks(
     space.caster_gestures ? resolveGestures(space.caster_gestures, seed) : casterReact ? reactionGestures(casterReact, reactAt(casterReact)) : [],
   );
-  const targetTracks = targets.map((_, i) => (targetReact && !status ? gestureTracks(reactionGestures(targetReact, reactAt(targetReact) + targetDelay(i))) : null));
+  const targetTracks = targets.map((_, i) => (targetReact && !status
+    ? gestureTracks(targetReacts.flatMap((r, j) => reactionGestures(r, targetAts[j] + targetDelay(i))))
+    : null));
   let armsMemo = null;
   const casterArms = (t) => {
     const tt = Number.isFinite(t) ? t : 0;
-    if (!armsMemo || armsMemo.t !== tt) armsMemo = { t: tt, arms: armsAt(casterTracks, tt, "ready") };
+    if (!armsMemo || armsMemo.t !== tt) armsMemo = { t: tt, arms: armsAt(casterTracks, tt, casterRest, weapon || {}) };
     return armsMemo.arms;
   };
 
@@ -147,12 +165,13 @@ export function buildStage(template, seed) {
     hand,
     status,
     side,
+    weapon,
     // Target i's pose at time t (its reaction, delayed like its splash
     // layers), and the unit ground direction it is pushed along: away from
     // the spell's centre (from the caster for the primary target).
     targetPose(i, t) {
       if (!targetReact || status) return { ...REST };
-      return reactionPose(targetReact, t - reactAt(targetReact) - targetDelay(i));
+      return combinedPose(targetReacts, targetAts, t - targetDelay(i));
     },
     targetAway(i) {
       const p = targets[i];
@@ -163,7 +182,7 @@ export function buildStage(template, seed) {
     },
     casterPose(t) {
       if (!casterReact || status) return { ...REST };
-      return reactionPose(casterReact, t - reactAt(casterReact));
+      return combinedPose(casterReacts, casterAts, t);
     },
     // Arms in body coords (engine/gesture.js armsAt) for a figure at time t:
     // who is "caster", a target index, or "status" (the afflicted figure).
@@ -184,8 +203,19 @@ export function buildStage(template, seed) {
         : which === "tip" ? a.lead.tip
         : which === "off_tip" ? a.off.tip
         : which === "both" ? a.lead.hand.map((v, j) => (v + a.off.hand[j]) / 2)
+        : which === "blade" ? a.blade.mid
+        : which === "blade_tip" ? a.blade.tip
         : a.lead.hand;
       return bodyToWorld(local, casterReact ? this.casterPose(t ?? 0) : null, 0, 0, new THREE.Vector3(-1, 0, 0));
+    },
+    // The caster's blade at time t (world): { guard, tip }. Without a
+    // caster_weapon, where a sword in the casting hand would be.
+    bladeAt(t = this.now) {
+      if (status) return { guard: hand.clone(), tip: hand.clone().add(new THREE.Vector3(0.5, 0, 0)) };
+      const a = casterArms(t);
+      const pose = casterReact ? this.casterPose(t ?? 0) : null;
+      const back = new THREE.Vector3(-1, 0, 0);
+      return { guard: bodyToWorld(a.blade.guard, pose, 0, 0, back), tip: bodyToWorld(a.blade.tip, pose, 0, 0, back) };
     },
     // The effect's current time (set by Effect.update each frame), so
     // anchors on the hands follow the arms.
@@ -242,6 +272,10 @@ export function buildStage(template, seed) {
           return this.handAt(t, "off_tip");
         case "caster_hands":
           return this.handAt(t, "both");
+        case "caster_blade":
+          return this.handAt(t, "blade");
+        case "caster_blade_tip":
+          return this.handAt(t, "blade_tip");
         case "sky":
           return sky.clone();
         case "ground":

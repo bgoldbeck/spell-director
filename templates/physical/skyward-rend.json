@@ -1,0 +1,453 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "physical-skyward-rend",
+  "name": "Skyward Rend",
+  "line": "Swordsmanship",
+  "description": "The caster drops the blade low and rips it upward through the enemy: a tall arc of cut air rises from the ground to over the caster's head, sparks and grit fly upward and the enemy is popped off their feet into a short hang before landing in a crouch.",
+  "element": "physical",
+  "archetype": "strike",
+  "tags": [
+    "sword",
+    "melee",
+    "weapon",
+    "slash",
+    "rising",
+    "launcher",
+    "single-target"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Sword skills: an upward slash that launches the enemy (original, game-agnostic)."
+  },
+  "timing": {
+    "duration_ms": 1400,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 1.25
+    },
+    "caster_weapon": {
+      "kind": "sword"
+    },
+    "targets": {
+      "react": {
+        "kind": "leap",
+        "at_ms": 430,
+        "duration_ms": 820,
+        "distance_px": 0,
+        "lift_px": 55,
+        "lean_deg": -16
+      }
+    },
+    "caster_react": {
+      "kind": "lunge",
+      "at_ms": 80,
+      "duration_ms": 760,
+      "distance_px": 16,
+      "lean_deg": 10
+    },
+    "caster_gestures": [
+      {
+        "kind": "rising_slash",
+        "at_ms": 80,
+        "duration_ms": 460,
+        "hold_ms": 240,
+        "return_ms": 420
+      }
+    ]
+  },
+  "views": {
+    "hero": "side",
+    "reads": {
+      "front": "The blade comes up from the floor through the enemy; the arc stands tall and the enemy lifts off the ground.",
+      "side": "Hero for the shape: a tall upward crescent beside the enemy's chest and the enemy rising on the sparks and grit.",
+      "top": "The rising arc is a short bright line from the caster to the enemy; a ring of dust kicks out under the enemy as they leave the ground.",
+      "three_quarter": "The dip, the tall rising arc and the launch read together, with the dust ring below."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#BFD4FF",
+    "secondary": "#7F93C2",
+    "accent": "#FFE7A8",
+    "shadow": "#1A1E29"
+  },
+  "beats": [
+    {
+      "id": "dip",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 290,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.6
+      },
+      "intent": "The blade drops low behind the caster's knee, edge up; a glint at the point."
+    },
+    {
+      "id": "rise",
+      "phase": "release",
+      "start_ms": 290,
+      "end_ms": 560,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.7
+      },
+      "intent": "The blade rips upward: a tall arc of cut air climbs from the ground."
+    },
+    {
+      "id": "bite",
+      "phase": "impact",
+      "start_ms": 410,
+      "end_ms": 560,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "The edge catches the enemy and lifts them: sparks and grit thrown upward."
+    },
+    {
+      "id": "lift",
+      "phase": "impact",
+      "start_ms": 430,
+      "end_ms": 1050,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.8,
+        "to": 0.0
+      },
+      "intent": "The enemy hangs in the air on a streaming updraft, then drops."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 540,
+      "end_ms": 1000,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "The arc wipes away upward and the dust settles."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scuff",
+      "type": "decal",
+      "beats": [
+        "bite",
+        "lift",
+        "fade"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "slash",
+        "radius_px": {
+          "min": 34,
+          "max": 40
+        },
+        "opacity": 0.45,
+        "fade_in_ms": 40,
+        "lifetime_ms": 900,
+        "fade_ms": 450,
+        "rotation_deg": 90
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Faint scuffs scraped across the ground at the enemy's feet where the blade went through.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "dip-glint",
+      "type": "glow",
+      "beats": [
+        "dip"
+      ],
+      "anchor": "caster_blade_tip",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 8,
+      "params": {
+        "radius_px": 14,
+        "softness": 0.8
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A hard glint at the point as the blade drops low.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "rise-arc",
+      "type": "slash",
+      "beats": [
+        "rise",
+        "fade"
+      ],
+      "anchor": "caster_blade",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "inner": 0.3,
+        "width_px": 5,
+        "softness": 0.6,
+        "trace_ms": 270,
+        "trail_ms": 230,
+        "reach_px": 12
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A tall pale crescent of cut air rising from the ground, white at the edge, steel-blue behind.",
+        "technique": "ribbon",
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bite-sparks",
+      "type": "sparks",
+      "beats": [
+        "bite"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 16,
+          "max": 20
+        },
+        "speed": 360,
+        "speed_spread": 0.6,
+        "gravity": 900,
+        "lifetime_ms": 380,
+        "size_px": 2.5,
+        "spread_deg": 110,
+        "drag": 0.2,
+        "emit_ms": 50,
+        "streak_ms": 45,
+        "height_px": 25
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "Steel sparks sprayed off the enemy where the edge bites.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "bite-flash",
+      "type": "flash",
+      "beats": [
+        "bite"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 38,
+        "peak": 0.45
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A short white pop where the edge bites.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "updraft",
+      "type": "sparks",
+      "beats": [
+        "lift"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "add",
+      "color": "primary",
+      "z": 13,
+      "params": {
+        "count": {
+          "min": 14,
+          "max": 18
+        },
+        "speed": 320,
+        "speed_spread": 0.4,
+        "gravity": -200,
+        "lifetime_ms": 420,
+        "size_px": 1.8,
+        "spread_deg": 20,
+        "drag": 0.1,
+        "emit_ms": 360,
+        "streak_ms": 90,
+        "emit_radius_px": 26
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "Thin pale streaks of air rushing up past the launched enemy.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "grit",
+      "type": "sparks",
+      "beats": [
+        "bite"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 12,
+      "params": {
+        "look": "debris",
+        "count": {
+          "min": 10,
+          "max": 14
+        },
+        "speed": 300,
+        "speed_spread": 0.5,
+        "gravity": 980,
+        "lifetime_ms": 700,
+        "size_px": 3,
+        "spread_deg": 50,
+        "drag": 0.1,
+        "emit_ms": 60
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Grit and pebbles flicked up off the ground by the blade.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "launch-ring",
+      "type": "ring",
+      "beats": [
+        "bite"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 10,
+        "end_radius_px": 90,
+        "thickness_px": 10,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A puff of dust blown flat out from under the enemy as they leave the ground.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "swing",
+      "type": "sound_cue",
+      "beats": [
+        "rise"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.7,
+        "pitch": {
+          "min": 1.05,
+          "max": 1.2
+        }
+      }
+    },
+    {
+      "id": "hit",
+      "type": "sound_cue",
+      "beats": [
+        "bite"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.7,
+        "pitch": {
+          "min": 1.15,
+          "max": 1.3
+        }
+      }
+    },
+    {
+      "id": "lift-wind",
+      "type": "sound_cue",
+      "beats": [
+        "lift"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.3,
+        "pitch": 1.4
+      }
+    },
+    {
+      "id": "hit-shake",
+      "type": "camera_shake",
+      "beats": [
+        "bite"
+      ],
+      "params": {
+        "amplitude_px": 4,
+        "frequency_hz": 28,
+        "decay": 0.7
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Launch height, spark spray and grit vary; the rise always lands at the same moment so it can open a juggle."
+  },
+  "director_notes": "A launcher, so the read is vertical: the rising_slash gesture crosses the front at 75% (80 + 345 = 425 ms) and the target's leap reaction (distance 0, lift 55) starts there. The side view is the hero for the arc shape; the top view relies on the dust ring."
+}

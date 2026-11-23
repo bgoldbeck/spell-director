@@ -8,6 +8,11 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ### Added
 
+- **Sword skills** (line Swordsmanship): twelve melee templates. Slashes: **Keen Sweep** (the everyday cut), **Skyward Rend** (a rising launcher), **Iron Verdict** (an overhead chop that cracks the ground). Thrust: **Needle Lunge**. Combos: **Threefold Flurry** (slash, backhand, overhead finisher) and **Cascade of Cuts** (four cuts that cage the enemy in golden arcs, then a thrust that bursts them). Heavy: **Colossus Cleave** (a two-handed greatsword blow that throws back a group). Spins: **Whirling Steel**, **Cyclone Reaver** (a greatsword whirlwind that becomes a cyclone) and **Emberwheel** (a wheel of fire). Elemental: **Stormsplitter** (a leaping lightning chop that forks through the group) and **Galecleave** (a cut that flies as a crescent of wind).
+- The caster can hold a **weapon** (`space.caster_weapon`: sword, greatsword, dagger), swung by eight new sword gestures (`slash`, `backslash`, `chop`, `rising_slash`, `thrust`, `blade_out`, `cleave`, `sweep_both`), with new anchors `caster_blade` and `caster_blade_tip` on the blade.
+- New **`slash`** layer: the trail of cut air a blade sweeps through, for cuts, combo arcs, thrust lances and whirlwind rings.
+- Body moves for the caster and targets: **`lunge`**, **`leap`** and **`spin`** reactions, and `caster_react` / `targets.react` can be lists (a flinch on every hit of a combo). Splash targets can be hit in turn as a blade sweeps round (`targets.order: "sweep"`).
+
 - **Sundering Pound** template (earth): a targetless ground pound that tears the ground open in a wide frontal cone. Deep carved fissures (realistic style, depth 1, exported with a height map) race out across a 100 degree fan with six rows of rock, glow faintly amber from deep inside, breathe dust and trickle grit for a few seconds, then fade and close over.
 - **Gravecall Bolt** template (shadow, Necromancer): a fast necrotic bolt, the dark counterpart of Sanctified Bolt. Grave-cold rises into the hand over a green sigil, a pale green head trails black grave-mist, and it breaks in a cold flash with falling bone shards, a gout of black mist and a rotting sigil.
 - **Arms and hands**: the stand-ins have crude arms with hands and fingers, and spells drive the caster's with **gestures** (`space.caster_gestures`): throw, spinning throw, push palm-out, point a finger, channel, call from the sky, gather, summon, slam, clap, roar and more (22 in all, with 10 hand shapes). Every spell with a caster now has a casting animation timed to its release. Effects leave the hands where they are: `caster_hand` follows the arm, thrown orbs ride in the hand until they are let go, and new anchors `caster_off_hand`, `caster_fingertip`, `caster_off_fingertip` and `caster_hands` emit from the other hand, the fingertips or between the palms. Enemies and allies raise their arms when knocked back, cowering or cheering.
@@ -33,6 +38,7 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ### Fixed
 
+- **Sundering Pound** now has a casting animation (a two-handed slam landing on the slam beat), like every other spell with a caster.
 - A keyframed value no longer flickers back to its starting value for one frame exactly at its first keyframe.
 
 ## [0.12.0] - 2026-11-17
