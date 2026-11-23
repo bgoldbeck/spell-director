@@ -15,6 +15,7 @@ import { decalBlend, decalFillState, decalPlan, decalState } from "./decal.js";
 import { HOW_TO_USE, describeShader, engineRecipe, shaderFor } from "./shader.js";
 import { DECAL_FILLS, STYLES, decalRender, resolveStyle, shaderForStyle, styleGuideLines, styleRecipe } from "./style.js";
 import { SIXWAY_EXPORT_PX, SIXWAY_FRAMES, smokeLighting } from "./sixway.js";
+import { TRACKING, resolveReadability, trackingFor } from "./readability.js";
 
 export const FORMAT = "spelldirector.spritesheet/1";
 export const SHEET_VIEWS = ["front", "side", "top", "three_quarter"];
@@ -447,6 +448,9 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
       z: l.z ?? 0,
       anchor: l.anchor || "target",
       attach_to: l.attach_to || null,
+      // How it moves when the actor it sits on moves (engine/readability.js).
+      tracking: trackingFor(l),
+      tracking_source: l.tracking ? "template" : "default",
       plane: l.plane || DEFAULT_PLANE[l.type] || "volume",
       loop,
       // Columns of this layer's sheet that loop with the aura (end exclusive).
@@ -499,12 +503,28 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
     })),
     palette: template.palette || {},
     reactions: reactionsOut(template),
+    readability: readabilityOut(template),
+    tracking_kinds: TRACKING,
     // The caster's arm and hand movements (engine/gesture.js): the casting
     // animation, for the engine's caster.
     caster_gestures: template.space?.caster_gestures?.length ? template.space.caster_gestures : null,
     decals,
     six_way_smoke: sixWay,
     ...tracksOut,
+  };
+}
+
+// The quality target: the distance the look is judged at, the must-read
+// cues and the key frames (tools/range_guide.py measures them).
+function readabilityOut(template) {
+  const r = resolveReadability(template);
+  return {
+    reference_distance: r.reference_distance,
+    reference_source: r.reference_source,
+    view_distances: r.view_distances,
+    must_read: r.must_read,
+    key_frames: r.key_frames,
+    authored: r.authored,
   };
 }
 
@@ -568,6 +588,30 @@ function auraGuideLines(m) {
     "",
   );
   return lines;
+}
+
+// The guide's "Quality target" section: what must read, the key frames to
+// check the rebuild against, and which layers move with the actors.
+export function readabilityGuideLines(m) {
+  const r = m.readability;
+  if (!r) return [];
+  const out = ["## Quality target", ""];
+  out.push(`Judge the look from **${r.reference_distance} units** away (1 unit = one character height; from ${r.reference_source}), then check it still reads at ${r.view_distances.join(", ")} units. \`tools/range_guide.py ${m.template.id}\` measures how wide each part reads at those distances.`, "");
+  if (r.must_read.length) {
+    out.push("**Must read** (protect these when simplifying for performance or distance):", "");
+    for (const c of r.must_read) out.push(`- **${c.cue}** (layers ${c.layers.map((x) => `\`${x}\``).join(", ")}${c.beat ? `, in beat \`${c.beat}\`` : ""}${c.at_ms != null ? ` at ${c.at_ms} ms` : ""})${c.why ? `: ${c.why}` : ""}`);
+    out.push("");
+  }
+  out.push(`**Key frames**${r.key_frames[0]?.source === "derived" ? " (from the beats; the template doesn't name its own)" : ""}: compare the rebuild with the viewer at these moments.`, "");
+  for (const k of r.key_frames) out.push(`- **${k.label}**, ${k.t_ms} ms${k.note ? `: ${k.note}` : ""}`);
+  out.push("");
+  const groups = Object.keys(TRACKING).map((kind) => [kind, m.layers.filter((l) => l.tracking === kind).map((l) => `\`${l.id}\``)]).filter(([, ids]) => ids.length);
+  if (groups.length) {
+    out.push("**When an actor moves** (pushed back, walking, dodging), layers either ride on it, leave their particles behind, or stay where they landed:", "");
+    for (const [kind, ids] of groups) out.push(`- ${TRACKING[kind].label}: ${ids.join(", ")}. ${TRACKING[kind].unity}`);
+    out.push("");
+  }
+  return out;
 }
 
 export function guideMarkdown(m, { files } = {}) {
@@ -691,6 +735,7 @@ export function guideMarkdown(m, { files } = {}) {
   const empty = m.layers.filter((l) => l.empty);
   if (empty.length) add(`Not visible in any exported view, so no sheet: ${empty.map((l) => `\`${l.id}\``).join(", ")}.`, "");
 
+  add(...readabilityGuideLines(m));
   add("## Timeline (beats)", "");
   add("Beats are the phases of the spell. Layers switch on and off with them.", "");
   add(table(
@@ -708,6 +753,10 @@ export function guideMarkdown(m, { files } = {}) {
       `Color: \`${l.color_slot}\` ${l.colors.join(" → ")}.`,
       `Sits at: ${l.anchor}${l.attach_to ? `, follows \`${l.attach_to}\`` : ""}; plane ${l.plane}. ${l.loop ? "Loops with the spell." : "One-shot."}`,
     ];
+    if (l.tracking) {
+      const k = TRACKING[l.tracking];
+      bits.push(`When the actor moves: **${k.label}**${l.tracking_source === "default" ? " (default for this layer type)" : ""}. Unity: ${k.unity} Godot 4: ${k.godot}`);
+    }
     add(...bits.map((b) => `- ${b}`));
     const params = Object.entries(l.params || {});
     if (params.length) add(`- Settings for this seed: ${params.map(([k, v]) => `${k} ${typeof v === "number" ? r3(v) : v}`).join(", ")}.`);

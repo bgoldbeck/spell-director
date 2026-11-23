@@ -28,6 +28,20 @@
       "three_quarter": "The cone's width and length together, gust lines rushing through it, leaves and dust kicked up at the far end over a fan of swept streaks."
     }
   },
+  "readability": {
+    "reference_distance": 3.4,
+    "view_distances": [6, 12, 20],
+    "must_read": [
+      {"cue": "the gust cone", "layers": ["gale"], "beat": "gust", "measure": "thickness", "why": "Moving air is mostly see-through: its streaks must still read as a cone at gameplay distance or the spell looks like nothing."},
+      {"cue": "dust wave at the target", "layers": ["dust-wave", "blown-leaves", "grit"], "beat": "buffet", "at_ms": 560, "measure": "size", "why": "The hit is shown by what the wind moves; it carries the impact on its own."},
+      {"cue": "dust puff at the feet", "layers": ["foot-puff"], "beat": "thrust", "measure": "size", "why": "The thrust's tell: shows where the gust starts."}
+    ],
+    "key_frames": [
+      {"label": "thrust", "t_ms": 360, "note": "A sharp puff of dust off the caster's feet and the cone just leaving the palm."},
+      {"label": "first contact", "t_ms": 520, "note": "The gust reaches the target: dust rolls out in a wave, leaves and grit blown up and away."},
+      {"label": "shutdown", "t_ms": 1200, "note": "The gust dies off from the hand outward; dust hangs and drifts down, and swept streaks stay on the ground."}
+    ]
+  },
   "palette": {
     "core": "#F4F8F6",
     "primary": "#B9CBC6",

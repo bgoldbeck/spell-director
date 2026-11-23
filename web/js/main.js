@@ -7,6 +7,7 @@ import { SoundPlayer } from "./audio.js";
 import { VIEWS, VIEW_LABELS, viewCamera } from "./engine/stage.js";
 import { advancePlayhead, beatsAt, loopRange, phaseColor } from "./engine/timeline.js";
 import { exportSpriteSheets } from "./exporter.js";
+import { rangeGuide } from "./rangeguide.js";
 import { STYLE_IDS, resolveStyle } from "./engine/style.js";
 import { makeZip } from "./zip.js";
 import { makeStudio, quadViewports, screenOverlays, shakeCamera } from "./engine/studio.js";
@@ -819,12 +820,20 @@ ui.gifGo.onclick = async () => {
 
 // For tools/export_sprites.py: export a template (the current one, or one
 // passed in) and return the files as base64.
-// With opts.kind "gif" (tools/export_gif.py) it exports GIFs instead.
+// With opts.kind "gif" (tools/export_gif.py) it exports GIFs instead, and with
+// "range_guide" (tools/range_guide.py) it measures the spell's readability and
+// renders the frames for its range guide.
 window.spellDirectorExport = async (opts = {}) => {
   const tpl = opts.template || (opts.id ? state.templates.find((t) => t.id === opts.id) : playTemplate(state.template));
   if (!tpl) throw new Error(`unknown template ${opts.id ?? ""}`.trim());
   await ensureClips([tpl]);
-  const run = opts.kind === "gif"
+  const run = opts.kind === "range_guide"
+    ? async () => {
+      const { images, ...manifest } = await rangeGuide(tpl, { ...opts, seed: opts.seed ?? state.seed });
+      manifest.images = Object.fromEntries(Object.entries(images).map(([k, v]) => [k, { ...v, data: undefined, file: `${k}.png` }]));
+      return { manifest, files: Object.entries(images).map(([k, v]) => ({ name: `${k}.png`, data: v.data })) };
+    }
+    : opts.kind === "gif"
     ? async () => {
       const { files, plan } = await exportGifs(tpl, { ...opts, seed: opts.seed ?? state.seed });
       const manifest = { template: { id: tpl.id, name: tpl.name }, ...plan, times: undefined, delays: undefined, frame_count: plan.times.length,

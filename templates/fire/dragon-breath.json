@@ -50,6 +50,67 @@
       "three_quarter": "Hero view. The cone reads as a 3D wedge receding to the target, the sweep is visible as the far end swings, billows rise tall, and the scorch swath reads as a long ellipse across the line of fire."
     }
   },
+  "readability": {
+    "reference_distance": 3.6,
+    "view_distances": [
+      6,
+      12,
+      20
+    ],
+    "must_read": [
+      {
+        "cue": "the cone widening from the mouth",
+        "layers": [
+          "flame-stream"
+        ],
+        "beat": "breath",
+        "measure": "thickness",
+        "why": "A breath is a cone, not a jet: it must visibly widen from the mouth to the target, or it reads as Flame Jet."
+      },
+      {
+        "cue": "ignition flare at the mouth",
+        "layers": [
+          "ignite-flash",
+          "ignite-burst"
+        ],
+        "beat": "ignite",
+        "measure": "size",
+        "why": "Marks the end of the long inhale: the moment to dodge is over."
+      },
+      {
+        "cue": "burning swath on the ground",
+        "layers": [
+          "scorch-swath",
+          "burning-ground"
+        ],
+        "beat": "smolder",
+        "measure": "size",
+        "why": "Shows where the breath swept after it has gone; the top and 3/4 views rely on it."
+      }
+    ],
+    "key_frames": [
+      {
+        "label": "inhale",
+        "t_ms": 380,
+        "note": "Fire building in the mouth, smoke curling off it, air pulled in round the caster: a clear tell before the breath."
+      },
+      {
+        "label": "ignition",
+        "t_ms": 540,
+        "note": "Bright yellow flare and a spray of sparks at the mouth; the cone already attached to it."
+      },
+      {
+        "label": "first contact",
+        "t_ms": 790,
+        "note": "The cone has reached the target and splashes up in billows; it is several times wider at the target than at the mouth."
+      },
+      {
+        "label": "shutdown",
+        "t_ms": 1560,
+        "note": "The stream thins from the mouth; the ground keeps burning in a swath and smoke rises where it stays."
+      }
+    ]
+  },
   "palette": {
     "core": "#FFF3C4",
     "primary": "#FF8A1F",
