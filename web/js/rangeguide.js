@@ -176,7 +176,12 @@ export async function rangeGuide(template, opts = {}) {
     const kind = c.measure || (elongated ? "thickness" : "size");
     const size = kind === "core" ? m.core : kind === "thickness" ? m.envelope : kind === "start" ? m.stations[0].envelope
       : m.box ? Math.max(m.box.w, m.box.h) : null;
-    cues.push({ ...c, t_ms: t, window_ms: b ? [b.start_ms, b.end_ms] : [t, t], measure: kind, size, box: m.box, stations: m.stations });
+    // Marks flat on the ground have no thickness side-on: judge them in the top view.
+    const flat = c.layers.length && c.layers.every((id) => {
+      const l = (template.layers || []).find((x) => x.id === id);
+      return l && (l.type === "decal" || l.plane === "ground");
+    });
+    cues.push({ ...c, t_ms: t, flat_on_ground: !!flat, window_ms: b ? [b.start_ms, b.end_ms] : [t, t], measure: kind, size, box: m.box, stations: m.stations });
   }
 
   // Display images: the peak and each key frame, with bloom, on black.

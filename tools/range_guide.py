@@ -86,7 +86,8 @@ def features(m: dict) -> list[dict]:
         out.append({"label": "Plume at the target (width)", "size": peak["plume"]["w"], "note": "everything within reach of the target"})
         out.append({"label": "Plume at the target (height)", "size": peak["plume"]["h"], "note": ""})
     for c in m["cues"]:
-        out.append({"label": f"Must read: {c['cue']}", "size": c["size"], "note": f"{c['measure']} at {c['t_ms']} ms"})
+        label = f"Must read: {c['cue']}" + (" (flat on the ground: check the top view)" if c.get("flat_on_ground") else "")
+        out.append({"label": label, "size": c["size"], "note": f"{c['measure']} at {c['t_ms']} ms"})
     return out
 
 
