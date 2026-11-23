@@ -76,3 +76,46 @@ def test_export_writes_layer_sheets_json_and_guide(tmp_path):
         assert w.getnchannels() == 2 and w.getframerate() == 44100
         assert w.getnframes() / 44100 >= 1.1
     assert "## Sound" in guide and "sound-crack.wav" in guide
+
+
+def test_zip_folder_packs_the_export_under_its_folder_name(tmp_path):
+    folder = tmp_path / "spell-seed1"
+    (folder / "render").mkdir(parents=True)
+    (folder / "all.png").write_bytes(b"png")
+    (folder / "render" / "PORTING.md").write_text("# port", encoding="utf-8")
+    import zipfile
+
+    z = export_sprites.zip_folder(folder)
+    assert z == tmp_path / "spell-seed1-sprites.zip"
+    with zipfile.ZipFile(z) as f:
+        assert sorted(f.namelist()) == ["spell-seed1/all.png", "spell-seed1/render/PORTING.md"]
+        assert f.read("spell-seed1/render/PORTING.md") == b"# port"
+    # A folder target gets <folder>-sprites.zip; a .zip target is used as is.
+    assert export_sprites.zip_folder(folder, tmp_path / "unity" / "imports") == tmp_path / "unity" / "imports" / "spell-seed1-sprites.zip"
+    assert export_sprites.zip_folder(folder, tmp_path / "x.zip").is_file()
+    assert not list(tmp_path.rglob("*.part"))
+
+
+def test_export_spell_zip_refuses_unknown_template():
+    with pytest.raises(library.LibraryError):
+        library.export_spell_zip("no-such-spell")
+
+
+@pytest.mark.skipif(not _browser_available(), reason="needs Playwright and a browser")
+def test_export_spell_zip_has_everything(tmp_path, monkeypatch):
+    import zipfile
+
+    monkeypatch.setattr(export_sprites, "EXPORTS", tmp_path / "exports")
+    res = library.export_spell_zip("lightning-chain-arc", seed=2, frame=48, fps=10, views=["front"],
+                                   out_path=str(tmp_path / "out"))
+    z = tmp_path / "out" / "lightning-chain-arc-seed2-sprites.zip"
+    assert res["zip"] == str(z) and z.stat().st_size == res["size_bytes"]
+    assert res["read_first"] == ["lightning-chain-arc.guide.md", "render/PORTING.md"]
+    with zipfile.ZipFile(z) as f:
+        names = set(f.namelist())
+    pre = "lightning-chain-arc-seed2/"
+    for n in ("all.png", "lightning-chain-arc.guide.md", "lightning-chain-arc.spritesheet.json",
+              "lightning-chain-arc.template.json", "lightning-chain-arc.caster.glb",
+              "lightning-chain-arc.timeline.json", "render/PORTING.md", "render/arc.md"):
+        assert pre + n in names, n
+    assert {pre + c for c in res["contents"]} == names

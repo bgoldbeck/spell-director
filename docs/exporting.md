@@ -6,7 +6,8 @@ SpellDirector exports a spell as sprite sheets plus an assembly guide, so it can
 
 - **Viewer:** pick the spell and seed, click **Export sprites…**, choose views, cell size and frame rate, then **Export .zip**. Works in the Windows app too.
 - **Command line:** `python tools/export_sprites.py lightning-sky-strike --seed 7 --frame 256` writes to `exports/<id>-seed<seed>/` (git-ignored). Needs `pip install -r requirements-export.txt` and a browser: `python -m playwright install chromium`, or an installed Chrome or Edge (found automatically), or a Chromium path in `SPELLDIRECTOR_CHROMIUM`.
-- **Director (MCP):** the `export_sprites` tool does the same as the command line.
+- **One .zip:** add `--zip` to the command line (`--zip <folder or file.zip>` to choose where; by default `exports/<id>-seed<seed>-sprites.zip`). It holds the whole export under one `<id>-seed<seed>/` folder, the same layout as the viewer's download.
+- **Director (MCP):** the `export_sprites` tool does the same as the command line, and `export_spell_zip` does it and packs the zip: give it a template id (from `list_templates`), optionally `seed`, `frame`, `fps`, `views`, `style` and `out_path` (a `.zip` path, or a folder such as a game project's import folder). It returns the zip path, its size, the file list and `read_first` (the guide and `render/PORTING.md`). An AI working in Unity or Godot with the SpellDirector MCP server connected can call it to fetch a spell, unzip it and start from the guide.
 
 Options: views (default all four), cell size in px (default 192), frame rate (default the template's `fps_hint`, else 30), seed, whether to make a sheet per layer, and whether to bake the bloom glow in (default on; `--no-bloom`).
 
