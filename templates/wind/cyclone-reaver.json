@@ -1,0 +1,536 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "wind-cyclone-reaver",
+  "name": "Cyclone Reaver",
+  "line": "Swordsmanship",
+  "description": "A greatsword whirlwind: the caster grips the huge blade in both hands, holds it out and spins four times, faster and faster. The blade whips the air into a howling green-white cyclone that drags grit and leaves round with it, and on the last turn every enemy standing close is flung away.",
+  "element": "wind",
+  "archetype": "nova",
+  "tags": [
+    "sword",
+    "melee",
+    "weapon",
+    "spin",
+    "whirlwind",
+    "greatsword",
+    "two-handed",
+    "point-blank",
+    "area",
+    "cyclone"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Sword skills: a long greatsword whirlwind that becomes a small cyclone and flings everyone away (original, game-agnostic)."
+  },
+  "timing": {
+    "duration_ms": 2700,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.8,
+      "distribution": "even"
+    },
+    "caster_weapon": {
+      "kind": "greatsword"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 6,
+        "max": 7
+      },
+      "radius": {
+        "min": 1.5,
+        "max": 1.7
+      },
+      "order": "sweep",
+      "sweep_ms": 375,
+      "sweep_start_deg": -80,
+      "react": [
+        {
+          "kind": "cower",
+          "at_ms": 600,
+          "duration_ms": 1050,
+          "lean_deg": 16,
+          "distance_px": 10
+        },
+        {
+          "kind": "knockback",
+          "at_ms": 1700,
+          "duration_ms": 640,
+          "distance_px": {
+            "min": 110,
+            "max": 130
+          },
+          "lean_deg": 34
+        }
+      ]
+    },
+    "caster_react": {
+      "kind": "spin",
+      "at_ms": 350,
+      "duration_ms": 1700,
+      "turns": -4
+    },
+    "caster_gestures": [
+      {
+        "kind": "sweep_both",
+        "at_ms": 80,
+        "duration_ms": 260,
+        "hold_ms": 1720,
+        "return_ms": 480
+      }
+    ]
+  },
+  "views": {
+    "hero": "top",
+    "reads": {
+      "front": "A green-white cyclone stands round the spinning caster; enemies lean away from the wind, then fly outward on the last turn.",
+      "side": "The cyclone's walls rise round the caster, the blade's trail a bright band at waist height inside them; enemies tumble away at the end.",
+      "top": "Hero: the blade's trail ring and the spiral of wind, leaves and grit round the caster, then the enemies flung straight out one after another.",
+      "three_quarter": "The rising cyclone, the spinning blade and the final fling all read together."
+    }
+  },
+  "palette": {
+    "core": "#F4FFFB",
+    "primary": "#9FE8D2",
+    "secondary": "#5FB8A4",
+    "accent": "#E9FFC9",
+    "shadow": "#12201C"
+  },
+  "beats": [
+    {
+      "id": "brace",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 350,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.6
+      },
+      "intent": "Both hands on the grip, blade out to the side; the air starts to stir."
+    },
+    {
+      "id": "spin",
+      "phase": "release",
+      "start_ms": 350,
+      "end_ms": 2050,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "Four turns, the blade's trail chasing round the caster."
+    },
+    {
+      "id": "gale",
+      "phase": "release",
+      "start_ms": 500,
+      "end_ms": 2150,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.3,
+        "to": 1.0
+      },
+      "intent": "The air is whipped into a cyclone that grows with every turn."
+    },
+    {
+      "id": "fling",
+      "phase": "impact",
+      "start_ms": 1700,
+      "end_ms": 1900,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Last turn: the edge catches each enemy and flings them out."
+    },
+    {
+      "id": "burst",
+      "phase": "impact",
+      "start_ms": 2000,
+      "end_ms": 2300,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "The cyclone bursts outward as the spin stops."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 2050,
+      "end_ms": 2600,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "The wind dies; leaves and grit drift down."
+    }
+  ],
+  "layers": [
+    {
+      "id": "spin-trail",
+      "type": "slash",
+      "beats": [
+        "spin",
+        "fade"
+      ],
+      "anchor": "caster_blade",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "inner": 0.25,
+        "width_px": 6,
+        "softness": 0.6,
+        "trace_ms": 1700,
+        "trail_ms": 300,
+        "reach_px": 22
+      },
+      "shader": {
+        "material": "airy",
+        "look": "A wide ribbon of pale green cut air chasing the greatsword round the caster.",
+        "technique": "ribbon",
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "cyclone",
+      "type": "vortex",
+      "beats": [
+        "gale"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "height_px": 150,
+        "base_radius_px": 95,
+        "top_radius_px": 150,
+        "spin_hz": 2.6,
+        "strands": 7,
+        "twist": 0.8,
+        "turbulence": 0.4,
+        "grow_ms": 700,
+        "opacity": 0.45
+      },
+      "keyframes": [
+        {
+          "t_ms": 600,
+          "param": "spin_hz",
+          "value": 1.4
+        },
+        {
+          "t_ms": 1900,
+          "param": "spin_hz",
+          "value": 3.2,
+          "ease": "ease_in"
+        }
+      ],
+      "shader": {
+        "material": "airy",
+        "look": "Pale green-white streaks of wind wrapping round the caster in a short wide funnel, spinning with the blade.",
+        "technique": "mesh",
+        "flow": {
+          "direction": "swirl",
+          "speed": 6
+        },
+        "distortion": 0.4,
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "swept-leaves",
+      "type": "sparks",
+      "beats": [
+        "gale"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "leaf",
+        "count": {
+          "min": 26,
+          "max": 32
+        },
+        "speed": 60,
+        "speed_spread": 0.5,
+        "gravity": -40,
+        "lifetime_ms": 900,
+        "size_px": 4,
+        "spread_deg": 120,
+        "drag": 0.4,
+        "emit_ms": 1400,
+        "emit_radius_px": 120,
+        "orbit_hz": -1.6
+      },
+      "shader": {
+        "material": "foliage",
+        "look": "Leaves and grit dragged round the caster by the cyclone.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "scoured",
+      "type": "decal",
+      "beats": [
+        "gale",
+        "fade"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 0,
+      "params": {
+        "shape": "swirl",
+        "radius_px": 170,
+        "opacity": 0.55,
+        "fade_in_ms": 500,
+        "lifetime_ms": 1500,
+        "fade_ms": 600
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "The ground round the caster scoured into a spiral by the cyclone.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "fling-hit-sparks",
+      "type": "sparks",
+      "beats": [
+        "fling"
+      ],
+      "anchor": "splash",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 10,
+          "max": 13
+        },
+        "speed": 360,
+        "speed_spread": 0.6,
+        "gravity": 900,
+        "lifetime_ms": 380,
+        "size_px": 2.5,
+        "spread_deg": 110,
+        "drag": 0.2,
+        "emit_ms": 50,
+        "streak_ms": 45,
+        "height_px": 25
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "Steel sparks sprayed off the enemy where the edge bites.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fling-hit-flash",
+      "type": "flash",
+      "beats": [
+        "fling"
+      ],
+      "anchor": "splash",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 36,
+        "peak": 0.4
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A short white pop where the edge bites.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "burst-ring",
+      "type": "ring",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 60,
+        "end_radius_px": 260,
+        "thickness_px": 20,
+        "softness": 0.7,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "airy",
+        "look": "The cyclone bursting outward in a ring of wind across the ground.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "burst-dust",
+      "type": "smoke",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 9,
+      "params": {
+        "count": 10,
+        "rise_speed": 20,
+        "size_px": {
+          "min": 34,
+          "max": 40
+        },
+        "lifetime_ms": 800,
+        "opacity": 0.3,
+        "spread_speed": 120
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Dust thrown out as the cyclone breaks.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "gale-wind",
+      "type": "sound_cue",
+      "beats": [
+        "gale"
+      ],
+      "params": {
+        "cue": "wind",
+        "gain": 0.6,
+        "pitch": {
+          "min": 0.95,
+          "max": 1.05
+        }
+      }
+    },
+    {
+      "id": "spin-swish",
+      "type": "sound_cue",
+      "beats": [
+        "spin"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.55,
+        "pitch": {
+          "min": 0.85,
+          "max": 0.95
+        },
+        "repeat_ms": 210
+      }
+    },
+    {
+      "id": "fling-sound",
+      "type": "sound_cue",
+      "beats": [
+        "fling"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 0.8,
+        "pitch": 0.9,
+        "repeat_ms": 70
+      }
+    },
+    {
+      "id": "burst-sound",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.8,
+        "pitch": 0.7
+      }
+    },
+    {
+      "id": "spin-tremor",
+      "type": "camera_shake",
+      "beats": [
+        "gale"
+      ],
+      "params": {
+        "amplitude_px": 2,
+        "frequency_hz": 26,
+        "decay": 0.2
+      }
+    },
+    {
+      "id": "fling-shake",
+      "type": "camera_shake",
+      "beats": [
+        "fling"
+      ],
+      "params": {
+        "amplitude_px": 7,
+        "frequency_hz": 22,
+        "decay": 0.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Enemy count and spacing, leaves and grit vary; four turns and the fling on the last turn are fixed."
+  },
+  "director_notes": "Greatsword held two-handed out to the side (sweep_both) for the whole 1.7 s spin (turns -4, about 375 ms a turn at full speed). targets.react is a list: they cower against the wind, then each is knocked back as the blade passes on the last turn (order sweep, sweep_ms 375). The vortex spin speeds up with keyframes so the cyclone grows with the spin."
+}

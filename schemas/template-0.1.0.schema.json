@@ -251,9 +251,10 @@
             "order": {
               "enum": [
                 "ripple",
-                "sequence"
+                "sequence",
+                "sweep"
               ],
-              "description": "splash: ripple (default) delays each splash target by its distance from the primary; sequence hits them one after another, hop_delay_ms apart, going round the primary (a ricochet)."
+              "description": "splash: ripple (default) delays each splash target by its distance from the primary; sequence hits them one after another, hop_delay_ms apart, going round the primary (a ricochet). sweep: each is hit as a blade sweeping round the centre reaches them (sweep_ms per turn from sweep_start_deg): a whirlwind, a wide cleave."
             },
             "side": {
               "enum": [
@@ -263,14 +264,46 @@
               "description": "splash: who stands round the centre. enemies (default) or allies (a rallying shout, a battle-fury aura: blue stand-ins with a green ring)."
             },
             "react": {
-              "$ref": "#/$defs/reaction",
-              "description": "How each target reacts, starting at_ms plus its splash delay."
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/reaction"
+                },
+                {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 8,
+                  "items": {
+                    "$ref": "#/$defs/reaction"
+                  }
+                }
+              ],
+              "description": "How each target reacts, starting at_ms plus its splash delay. A list plays several, each from its own at_ms (a flinch for every hit of a combo, then a knockback)."
+            },
+            "sweep_ms": {
+              "$ref": "#/$defs/number_or_range",
+              "description": "order sweep: ms the sweep takes per full turn (default 600; negative = the other way round, from +Z toward -Z)."
+            },
+            "sweep_start_deg": {
+              "$ref": "#/$defs/number_or_range",
+              "description": "order sweep: where the sweep starts, degrees from the cast direction, positive toward +Z (the caster's off-hand side). Default -90: the casting hand's side."
             }
           }
         },
         "caster_react": {
-          "$ref": "#/$defs/reaction",
-          "description": "How the caster moves (kind shout: rear back, then shout)."
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reaction"
+            },
+            {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 8,
+              "items": {
+                "$ref": "#/$defs/reaction"
+              }
+            }
+          ],
+          "description": "How the caster's body moves (shout: rear back, then shout; lunge, leap, spin for weapon skills). A list plays several together, each from its own at_ms (a lunge, then a spin)."
         },
         "caster_gestures": {
           "type": "array",
@@ -279,6 +312,28 @@
             "$ref": "#/$defs/gesture"
           },
           "description": "The caster's arm and hand movements, in order: raise, throw, push palm-out, point a finger, slam, roar... Anchors on the hands (caster_hand, caster_fingertip, ...) follow them. See docs/template-format.md#gestures."
+        },
+        "caster_weapon": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "description": "A weapon held in the caster's lead hand (a crude stand-in): the casting hand rests holding it up in guard, sword gestures swing it, slash layers trace it, and the anchors caster_blade and caster_blade_tip ride on it. See docs/template-format.md#sword-skills.",
+          "properties": {
+            "kind": {
+              "enum": [
+                "sword",
+                "greatsword",
+                "dagger"
+              ],
+              "description": "sword (default length 50 px), greatsword (74 px, wider), dagger (24 px)."
+            },
+            "length_px": {
+              "$ref": "#/$defs/number_or_range",
+              "description": "Blade length instead of the kind's own."
+            }
+          }
         }
       }
     },
@@ -477,6 +532,7 @@
               "vortex",
               "wave",
               "coat",
+              "slash",
               "ring",
               "decal",
               "smoke",
@@ -1105,6 +1161,8 @@
         "caster_fingertip",
         "caster_off_fingertip",
         "caster_hands",
+        "caster_blade",
+        "caster_blade_tip",
         "sky",
         "ground",
         "target",
@@ -1442,9 +1500,12 @@
             "flinch",
             "cower",
             "cheer",
-            "shout"
+            "shout",
+            "lunge",
+            "leap",
+            "spin"
           ],
-          "description": "knockback: shoved back off their feet and stays pushed. flinch: rocked back and upright again. cower: crouched, leaning away and trembling, then straightening. cheer: hopping on the spot. shout: the caster rears back and throws the chest forward."
+          "description": "knockback: shoved back off their feet and stays pushed. flinch: rocked back and upright again. cower: crouched, leaning away and trembling, then straightening. cheer: hopping on the spot. shout: the caster rears back and throws the chest forward. lunge: a step in toward the centre (the caster: forward) and back. leap: up and in in an arc, landing crouched. spin: whole turns on the spot (turns)."
         },
         "at_ms": {
           "$ref": "#/$defs/number_or_range",
@@ -1455,18 +1516,22 @@
         },
         "distance_px": {
           "$ref": "#/$defs/number_or_range",
-          "description": "knockback: how far they are pushed away from the centre (default 90)."
+          "description": "knockback: how far they are pushed away from the centre (default 90). lunge, leap: how far they step or jump in (45, 80)."
         },
         "lean_deg": {
           "$ref": "#/$defs/number_or_range"
         },
         "lift_px": {
           "$ref": "#/$defs/number_or_range",
-          "description": "cheer: hop height (default 14)."
+          "description": "cheer: hop height (default 14). leap: jump height (default 45)."
         },
         "hops": {
           "$ref": "#/$defs/int_or_range",
           "description": "cheer: how many hops (default 2)."
+        },
+        "turns": {
+          "$ref": "#/$defs/number_or_range",
+          "description": "spin: how many whole turns (default 1; negative = clockwise seen from above)."
         }
       }
     },
@@ -1502,9 +1567,17 @@
             "ground_press",
             "guard",
             "flail",
-            "cheer"
+            "cheer",
+            "slash",
+            "backslash",
+            "chop",
+            "rising_slash",
+            "thrust",
+            "blade_out",
+            "cleave",
+            "sweep_both"
           ],
-          "description": "One-handed: raise, point, push, throw, spin_throw, sky_point, sign, channel, hold_orb (rest returns that arm to rest). Two-handed: raise_both, push_both, channel_both, gather, summon, slam, clap, roar, flex, ground_press, guard, flail, cheer."
+          "description": "One-handed: raise, point, push, throw, spin_throw, sky_point, sign, channel, hold_orb (rest returns that arm to rest). Two-handed: raise_both, push_both, channel_both, gather, summon, slam, clap, roar, flex, ground_press, guard, flail, cheer. Sword strokes (the blade rides in the lead hand with space.caster_weapon): slash (wound back on the lead side, swept across the front; the blade crosses the front at about 75%), backslash (the return sweep), chop (overhead, down), rising_slash (low to high), thrust (drawn back to the hip, stabbed forward), blade_out (arm and blade held straight out to the side, for a spin); two-handed: cleave (a two-handed overhead chop), sweep_both (both hands on the grip, blade held out to the side)."
         },
         "at_ms": {
           "$ref": "#/$defs/number_or_range",

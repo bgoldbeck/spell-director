@@ -1,0 +1,565 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "physical-colossus-cleave",
+  "name": "Colossus Cleave",
+  "line": "Swordsmanship",
+  "description": "A greatsword finisher: the caster heaves a huge blade up with both hands, holds it at the top, then brings it down on the enemy in front. The ground splits, a ring of rock and dust bursts out and everyone standing round the struck enemy is thrown back.",
+  "element": "physical",
+  "archetype": "strike",
+  "tags": [
+    "sword",
+    "melee",
+    "weapon",
+    "slash",
+    "chop",
+    "greatsword",
+    "two-handed",
+    "heavy",
+    "splash",
+    "area"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Sword skills: a two-handed greatsword cleave that hits a group (original, game-agnostic)."
+  },
+  "timing": {
+    "duration_ms": 1900,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 1.6
+    },
+    "caster_weapon": {
+      "kind": "greatsword"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 4,
+        "max": 5
+      },
+      "radius": {
+        "min": 1.0,
+        "max": 1.15
+      },
+      "ripple_ms": 110,
+      "react": {
+        "kind": "knockback",
+        "at_ms": 790,
+        "duration_ms": 560,
+        "distance_px": {
+          "min": 45,
+          "max": 60
+        },
+        "lean_deg": 28
+      }
+    },
+    "caster_react": {
+      "kind": "lunge",
+      "at_ms": 420,
+      "duration_ms": 900,
+      "distance_px": 26,
+      "lean_deg": 18
+    },
+    "caster_gestures": [
+      {
+        "kind": "cleave",
+        "at_ms": 120,
+        "duration_ms": 660,
+        "hold_ms": 320,
+        "return_ms": 520
+      }
+    ]
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The huge blade rises overhead, holds, then crashes down on the enemy; rock bursts up and the group is thrown back.",
+      "side": "Hero for the swing: a tall heavy falling arc, the rock and dust erupting at the enemy's feet.",
+      "top": "Hero for the area: the split ground and the shock ring rolling out from the struck enemy through the group.",
+      "three_quarter": "The heave, the drop, the eruption and the group flung back all read."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#CBD6F0",
+    "secondary": "#9A8A72",
+    "accent": "#FFB866",
+    "shadow": "#191510"
+  },
+  "beats": [
+    {
+      "id": "heave",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 480,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.8
+      },
+      "intent": "The greatsword goes up in both hands; grit lifts at the caster's feet."
+    },
+    {
+      "id": "hang",
+      "phase": "anticipation",
+      "start_ms": 480,
+      "end_ms": 560,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "A split second at the top: everything holds."
+    },
+    {
+      "id": "fall",
+      "phase": "release",
+      "start_ms": 560,
+      "end_ms": 800,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.8,
+        "to": 1.0
+      },
+      "intent": "The blade comes down: a heavy wide arc of cut air falls with it."
+    },
+    {
+      "id": "smash",
+      "phase": "impact",
+      "start_ms": 760,
+      "end_ms": 920,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "It lands: a flash, the ground splits, rock bursts up."
+    },
+    {
+      "id": "shock",
+      "phase": "impact",
+      "start_ms": 780,
+      "end_ms": 1300,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.0
+      },
+      "intent": "A shock ring and dust roll out through the group."
+    },
+    {
+      "id": "settle",
+      "phase": "dissipation",
+      "start_ms": 900,
+      "end_ms": 1700,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "Rock sinks back, dust hangs and thins."
+    }
+  ],
+  "layers": [
+    {
+      "id": "heave-glow",
+      "type": "glow",
+      "beats": [
+        "heave",
+        "hang"
+      ],
+      "anchor": "caster_blade",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.8,
+        "pulse_hz": 5
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A dull warm glow building along the raised blade.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "heave-grit",
+      "type": "sparks",
+      "beats": [
+        "heave"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 7,
+      "params": {
+        "look": "debris",
+        "count": {
+          "min": 12,
+          "max": 16
+        },
+        "speed": 110,
+        "speed_spread": 0.5,
+        "gravity": -120,
+        "lifetime_ms": 600,
+        "size_px": 3,
+        "spread_deg": 160,
+        "drag": 0.3,
+        "emit_ms": 380,
+        "emit_radius_px": 40
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Pebbles lifting off the ground around the caster as they heave.",
+        "technique": "particles",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "fall-arc",
+      "type": "slash",
+      "beats": [
+        "fall",
+        "smash",
+        "settle"
+      ],
+      "anchor": "caster_blade",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "inner": 0.2,
+        "width_px": 8,
+        "softness": 0.5,
+        "trace_ms": 300,
+        "trail_ms": 320,
+        "reach_px": 24
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A heavy, wide falling crescent of cut air: white edge, steel body, dragging behind the huge blade.",
+        "technique": "ribbon",
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "smash-flash",
+      "type": "flash",
+      "beats": [
+        "smash"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 70,
+        "peak": 0.6
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A hard white pop where the greatsword lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "smash-split",
+      "type": "decal",
+      "beats": [
+        "smash",
+        "shock",
+        "settle"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "fissures",
+        "radius_px": {
+          "min": 120,
+          "max": 140
+        },
+        "opacity": 0.85,
+        "fade_in_ms": 40,
+        "lifetime_ms": 1200,
+        "fade_ms": 600,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "stone",
+        "look": "The ground split open in short jagged fissures from the point of impact.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "rock-burst",
+      "type": "eruption",
+      "beats": [
+        "smash",
+        "shock",
+        "settle"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 6,
+      "params": {
+        "shape": "spikes",
+        "arc_deg": 360,
+        "rows": 2,
+        "start_radius_px": 35,
+        "end_radius_px": 95,
+        "row_delay_ms": 70,
+        "growth": 1.2,
+        "height_px": 26,
+        "width_px": 12,
+        "spacing_px": 34,
+        "tilt_deg": 22,
+        "jitter": 0.4,
+        "rise_ms": 70,
+        "hold_ms": 260,
+        "sink_ms": 340,
+        "debris_count": 2,
+        "debris_speed": 260,
+        "debris_size_px": 5,
+        "gravity": 980,
+        "dust": 0.5,
+        "dust_size_px": 26,
+        "dust_life_ms": 800
+      },
+      "shader": {
+        "material": "stone",
+        "look": "Shards of ground punched up in a ring around the impact, leaning outward, then sinking back.",
+        "technique": "mesh",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "shock-ring",
+      "type": "ring",
+      "beats": [
+        "shock"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "secondary",
+      "z": 2,
+      "params": {
+        "start_radius_px": 30,
+        "end_radius_px": 200,
+        "thickness_px": 18,
+        "softness": 0.7,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "A ring of dust and force rolling out across the ground through the group.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "splash-hit",
+      "type": "sparks",
+      "beats": [
+        "smash"
+      ],
+      "anchor": "splash",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 8,
+          "max": 10
+        },
+        "speed": 300,
+        "speed_spread": 0.6,
+        "gravity": 900,
+        "lifetime_ms": 420,
+        "size_px": 2.4,
+        "spread_deg": 120,
+        "drag": 0.2,
+        "emit_ms": 50,
+        "height_px": 25
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A burst of grit and sparks off each enemy as the shock reaches them.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "smash-dust",
+      "type": "smoke",
+      "beats": [
+        "smash",
+        "shock",
+        "settle"
+      ],
+      "anchor": "target",
+      "blend": "alpha",
+      "color": "secondary",
+      "z": 9,
+      "params": {
+        "count": 9,
+        "rise_speed": 22,
+        "size_px": {
+          "min": 34,
+          "max": 42
+        },
+        "lifetime_ms": 950,
+        "opacity": 0.4
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Thick dust bursting up from the impact and rolling out.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "heave-rumble",
+      "type": "sound_cue",
+      "beats": [
+        "heave"
+      ],
+      "params": {
+        "cue": "rumble",
+        "gain": 0.35,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "swing",
+      "type": "sound_cue",
+      "beats": [
+        "fall"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.85,
+        "pitch": {
+          "min": 0.6,
+          "max": 0.7
+        }
+      }
+    },
+    {
+      "id": "smash-hit",
+      "type": "sound_cue",
+      "beats": [
+        "smash"
+      ],
+      "params": {
+        "cue": "impact",
+        "gain": 1.0,
+        "pitch": {
+          "min": 0.75,
+          "max": 0.85
+        }
+      }
+    },
+    {
+      "id": "smash-boom",
+      "type": "sound_cue",
+      "beats": [
+        "smash"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.7,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "rock",
+      "type": "sound_cue",
+      "beats": [
+        "shock"
+      ],
+      "params": {
+        "cue": "crash",
+        "gain": 0.5,
+        "pitch": 0.95
+      }
+    },
+    {
+      "id": "smash-shake",
+      "type": "camera_shake",
+      "beats": [
+        "smash"
+      ],
+      "params": {
+        "amplitude_px": 13,
+        "frequency_hz": 20,
+        "decay": 0.6
+      }
+    },
+    {
+      "id": "shock-shake",
+      "type": "camera_shake",
+      "beats": [
+        "shock"
+      ],
+      "params": {
+        "amplitude_px": 5,
+        "frequency_hz": 18,
+        "decay": 0.4
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Group size and spacing, split pattern, rock spikes and dust vary; the heave and the hang are fixed so the blow is always telegraphed."
+  },
+  "director_notes": "Greatsword (caster_weapon kind greatsword, 74 px). The two-handed cleave gesture is high at 55% (483 ms) and lands at its end (780 ms); a beat of hold at the top sells the weight. Splash layout: the struck enemy plus 3-4 standing round it, knocked back 110 ms per unit outward from the impact."
+}

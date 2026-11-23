@@ -1,0 +1,570 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-emberwheel",
+  "name": "Emberwheel",
+  "line": "Swordsmanship",
+  "description": "The blade catches fire as the caster swings it out, then they spin twice and the flame draws a wheel of fire round them. Enemies close by are seared as it passes, a burning ring is left scorched into the ground and the wheel bursts outward into a wave of flame when the spin stops.",
+  "element": "fire",
+  "archetype": "nova",
+  "tags": [
+    "sword",
+    "melee",
+    "weapon",
+    "spin",
+    "whirlwind",
+    "fire",
+    "point-blank",
+    "area",
+    "imbued"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Sword skills: a fire-imbued spin attack that leaves a burning ring (original, game-agnostic)."
+  },
+  "timing": {
+    "duration_ms": 2000,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "caster",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "circle",
+      "radius": 1.5,
+      "distribution": "even"
+    },
+    "caster_weapon": {
+      "kind": "sword"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 5,
+        "max": 6
+      },
+      "radius": {
+        "min": 1.2,
+        "max": 1.35
+      },
+      "order": "sweep",
+      "sweep_ms": 450,
+      "sweep_start_deg": -60,
+      "react": [
+        {
+          "kind": "flinch",
+          "at_ms": 420,
+          "lean_deg": 18,
+          "distance_px": 8
+        },
+        {
+          "kind": "knockback",
+          "at_ms": 1330,
+          "duration_ms": 520,
+          "distance_px": 50,
+          "lean_deg": 26
+        }
+      ]
+    },
+    "caster_react": {
+      "kind": "spin",
+      "at_ms": 360,
+      "duration_ms": 1000,
+      "turns": -2
+    },
+    "caster_gestures": [
+      {
+        "kind": "sign",
+        "hand": "off",
+        "at_ms": 0,
+        "duration_ms": 220,
+        "hold_ms": 60
+      },
+      {
+        "kind": "blade_out",
+        "at_ms": 160,
+        "duration_ms": 220,
+        "hold_ms": 1000,
+        "return_ms": 400
+      }
+    ]
+  },
+  "views": {
+    "hero": "top",
+    "reads": {
+      "front": "A wheel of fire wraps round the spinning caster at waist height, then a ring of flame bursts out along the ground.",
+      "side": "A flat band of flame round the caster, embers streaming off it; the burst rolls out both ways.",
+      "top": "Hero: the wheel of fire chasing round the caster, the burning ring scorched on the ground and the flame wave rolling out.",
+      "three_quarter": "Ignition, the wheel of fire, the seared enemies and the burst all read."
+    }
+  },
+  "palette": {
+    "core": "#FFF6D0",
+    "primary": "#FF8A1E",
+    "secondary": "#C42A0C",
+    "accent": "#FFD25A",
+    "shadow": "#1E0E08"
+  },
+  "beats": [
+    {
+      "id": "ignite",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 380,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.2,
+        "to": 1.0
+      },
+      "intent": "The off hand passes over the blade and it bursts into flame."
+    },
+    {
+      "id": "spin",
+      "phase": "release",
+      "start_ms": 360,
+      "end_ms": 1360,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0,
+        "to": 1.0
+      },
+      "intent": "Two turns: the burning blade draws a wheel of fire."
+    },
+    {
+      "id": "sear",
+      "phase": "impact",
+      "start_ms": 420,
+      "end_ms": 560,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Each enemy is seared as the flame passes."
+    },
+    {
+      "id": "ring",
+      "phase": "impact",
+      "start_ms": 500,
+      "end_ms": 1800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "A ring of fire burns into the ground under the wheel."
+    },
+    {
+      "id": "burst",
+      "phase": "impact",
+      "start_ms": 1320,
+      "end_ms": 1600,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.2
+      },
+      "intent": "The spin stops and the wheel bursts outward in a wave of flame."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 1400,
+      "end_ms": 1950,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "Embers drift up, the scorched ring cools."
+    }
+  ],
+  "layers": [
+    {
+      "id": "blade-fire",
+      "type": "glow",
+      "beats": [
+        "ignite",
+        "spin"
+      ],
+      "anchor": "caster_blade",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "radius_px": 34,
+        "softness": 0.8,
+        "pulse_hz": 9
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Flame running along the whole blade.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fire-wheel",
+      "type": "slash",
+      "beats": [
+        "spin",
+        "fade"
+      ],
+      "anchor": "caster_blade",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "inner": 0.15,
+        "width_px": 7,
+        "softness": 0.5,
+        "trace_ms": 1000,
+        "trail_ms": 320,
+        "reach_px": 30
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A wheel of fire chasing the blade: white-yellow at the edge, orange and red trailing behind.",
+        "technique": "ribbon",
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "wheel-embers",
+      "type": "sparks",
+      "beats": [
+        "spin"
+      ],
+      "anchor": "caster",
+      "plane": "volume",
+      "blend": "add",
+      "color": "accent",
+      "z": 10,
+      "params": {
+        "look": "ember",
+        "count": {
+          "min": 30,
+          "max": 36
+        },
+        "speed": 120,
+        "speed_spread": 0.5,
+        "gravity": -150,
+        "lifetime_ms": 800,
+        "size_px": 2.6,
+        "spread_deg": 150,
+        "drag": 0.3,
+        "emit_ms": 950,
+        "emit_radius_px": 100,
+        "emit_ring": true,
+        "height_px": 30,
+        "orbit_hz": -1.2
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Embers flung off the spinning flame, floating up.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "burning-ring",
+      "type": "ring",
+      "beats": [
+        "ring"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 1,
+      "params": {
+        "start_radius_px": 125,
+        "end_radius_px": 125,
+        "thickness_px": 22,
+        "softness": 0.8,
+        "steady": true
+      },
+      "shader": {
+        "material": "molten",
+        "look": "A ring of fire burning in the ground right under the path of the blade, cooling as it fades.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "scorch-ring",
+      "type": "decal",
+      "beats": [
+        "ring",
+        "fade"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 150,
+        "opacity": 0.4,
+        "fade_in_ms": 500,
+        "lifetime_ms": 1300,
+        "fade_ms": 500
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "Soot left behind round the caster as the burning ring cools.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "sear-burst",
+      "type": "sparks",
+      "beats": [
+        "sear"
+      ],
+      "anchor": "splash",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 10,
+          "max": 12
+        },
+        "speed": 220,
+        "speed_spread": 0.5,
+        "gravity": -200,
+        "lifetime_ms": 500,
+        "size_px": 3,
+        "spread_deg": 120,
+        "drag": 0.3,
+        "emit_ms": 60,
+        "height_px": 25,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "Flames and embers bursting off each enemy as the wheel passes.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sear-flash",
+      "type": "flash",
+      "beats": [
+        "sear"
+      ],
+      "anchor": "splash",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "accent",
+      "z": 15,
+      "params": {
+        "scope": "local",
+        "radius_px": 34,
+        "peak": 0.35
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A hot orange pop on each seared enemy.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "flame-wave",
+      "type": "ring",
+      "beats": [
+        "burst"
+      ],
+      "anchor": "caster",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 4,
+      "params": {
+        "start_radius_px": 50,
+        "end_radius_px": 260,
+        "thickness_px": 26,
+        "softness": 0.7,
+        "ease": "linear"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A wave of flame rolling out along the ground from the wheel.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "burst-smoke",
+      "type": "smoke",
+      "beats": [
+        "burst",
+        "fade"
+      ],
+      "anchor": "caster",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 8,
+      "params": {
+        "count": 9,
+        "rise_speed": 40,
+        "size_px": {
+          "min": 30,
+          "max": 38
+        },
+        "lifetime_ms": 900,
+        "opacity": 0.35,
+        "spread_speed": 90
+      },
+      "shader": {
+        "material": "dusty",
+        "look": "Dark smoke billowing up behind the flame wave.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "fire-light",
+      "type": "light",
+      "beats": [
+        "spin",
+        "burst"
+      ],
+      "anchor": "caster",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "radius": 4,
+        "energy": 3,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A brief light thrown on the figures by the bright cut.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "ignite-sound",
+      "type": "sound_cue",
+      "beats": [
+        "ignite"
+      ],
+      "params": {
+        "cue": "ignite",
+        "gain": 0.7,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "fire-roar",
+      "type": "sound_cue",
+      "beats": [
+        "spin"
+      ],
+      "params": {
+        "cue": "fire",
+        "gain": 0.6,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "spin-swish",
+      "type": "sound_cue",
+      "beats": [
+        "spin"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.5,
+        "pitch": {
+          "min": 1.0,
+          "max": 1.1
+        },
+        "repeat_ms": 230
+      }
+    },
+    {
+      "id": "sear-sound",
+      "type": "sound_cue",
+      "beats": [
+        "sear"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.5,
+        "pitch": 1.2,
+        "repeat_ms": 90
+      }
+    },
+    {
+      "id": "burst-sound",
+      "type": "sound_cue",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.7,
+        "pitch": 1.1
+      }
+    },
+    {
+      "id": "burst-shake",
+      "type": "camera_shake",
+      "beats": [
+        "burst"
+      ],
+      "params": {
+        "amplitude_px": 7,
+        "frequency_hz": 22,
+        "decay": 0.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Enemy count and spacing, embers, smoke and the scorch vary; two turns and the burst at the end are fixed."
+  },
+  "director_notes": "A fire-imbued spin: an off-hand sign lights the blade, then blade_out with a two-turn spin (1000 ms, about 450 ms a turn). The wheel is a slash layer with a long trail and a low inner edge so it reads as a solid ribbon of flame; the burning ring is a steady ground ring at the blade's radius over a faint scorch. Enemies flinch as the flame passes (sweep order), then are knocked back by the burst."
+}

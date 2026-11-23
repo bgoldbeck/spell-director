@@ -153,6 +153,7 @@ Unknown params are allowed (the validator warns) so the director can experiment,
 | `smoke` | `count` (max 64), `rise_speed` (negative sinks), `size_px`, `lifetime_ms`, `opacity`, `spread_px` (how far around the anchor the puffs are scattered, default 15; widen it for a cloud or a smoke bank), `spread_speed` (px/s the puffs also roll outward along the ground, evenly around the centre and slowing as they go: a dust wave or a spreading fireball; default 0). With the layer's `blend: add` the puffs glow instead of shading: billows of flame. With `attach_to` a `vortex` they swirl around its foot (a dust skirt). `height_px`: puffs start this far above the anchor (a ball of black smoke at a target's chest; default 0). Shader intent `lighting: "six_way"` draws alpha smoke as six-way lit smoke (relit by the scene's and the spell's lights; the Realistic style does this for all alpha smoke not marked `unlit`), see [vocabulary.md](vocabulary.md#six-way-lit-smoke). |
 | `motif` | Small modeled things that act out a buff's story: `shape` (`leaf`, `petal`, `feather`, `droplet`, `blossom`, `gem`, `banner`), `cut` for gems (`brilliant`, `emerald`, `cabochon`, `marquise`, `heart`, `prism`, `cocoon`), `count`, `tints` (a list of `#RRGGBB`, one per item, cycled), `size_px`, `scale`, `opacity`, placement (`height_px`, `forward_px`, `side_px`, orbit `orbit_radius_px`, `orbit_hz`, `orbit_tilt_deg`, `orbit_phase_deg`, `weave_px`, `bob_px`, `bob_hz`, `sway_px`, `sway_hz`, `stack_px`), timing (`stagger_ms`, `appear_ms`), pose (`spin_hz`, `yaw_deg`, `tilt_deg`, `roll_deg`, `face`), `bloom`, `petals`, `sparkle`, `glint_hz`, `trail_ms`, `clarity`, `fire`, `glow`; banners take `emblem`, `wave` and `wave_hz`; gem shells take `encase`, `fill` and `stretch`. See [Motifs](#motifs). |
 | `coat` | A skin over the afflicted character in a status effect. See [Coat](#coat). |
+| `slash` | A sword trail traced by the caster's blade. See [Sword skills](#sword-skills). `trace_ms`, `trail_ms`, `inner`, `reach_px`, `width_px`, `softness`, `opacity`, `edge`. |
 | `light` | `radius` (world units, default 6), `energy` (default 2), `height_px` (above the ground, default 80; negative = under the ground), `forward_px` (along the cast direction from the anchor), `side_px` (positive = left of the cast direction), `orbit_hz` (circles the anchor at its forward/side distance, counter-clockwise from above), `tint` (`#RRGGBB`, a light color outside the palette: neon stage or rim lights). Place lights round a `six_way` smoke layer to light it from a side. |
 | `camera_shake` | `amplitude_px`, `frequency_hz`, `decay` (0–1) |
 | `sound_cue` | `cue` (one of the cues in [`web/sounds/cues.json`](../web/sounds/cues.json): `charge`, `hum`, `buzz`, `crackle`, `sizzle`, `zap`, `crack`, `boom`, `rumble`, `impact`, `crash`, `shatter`, `ignite`, `fire`, `whoosh`, `wind`, `shimmer`, `splash`, `stream`, `freeze`, `squelch`, `heartbeat`, `whisper`, `drain`, `drone`), `gain` (0–1, default 0.8), `pitch` (playback-rate multiplier 0.5–2, default 1), `offset_ms` (delay after the beat starts), `duration_ms` (override length), `repeat_ms` (retrigger every N ms inside each beat; a sustained cue then plays for its own length each time) |
@@ -252,6 +253,14 @@ The caster has crude arms with hands and fingers, and `space.caster_gestures` mo
 | `flail` | two | arms flung up |
 | `cheer` | two | fists raised |
 | `rest` | one | back to rest |
+| `slash` | one | sword: wound back on the lead side, swept flat across the front (the blade crosses the front at 75%), followed through to the off side |
+| `backslash` | one | sword: the return sweep, from the off side back across to the lead side |
+| `chop` | one | sword: raised high behind the head (55%), level in front (80%), down at the end |
+| `rising_slash` | one | sword: dropped low (45%), ripped upward through the front (75%) to overhead |
+| `thrust` | one | sword: drawn back to the hip (60%), stabbed straight forward at the end |
+| `blade_out` | one | sword: arm and blade held straight out to the side (hold it through a spin) |
+| `cleave` | two | both hands on the grip: raised overhead (55%), then a heavy chop down at the end (a greatsword) |
+| `sweep_both` | two | both hands on the grip, blade held out to the side (a greatsword spin) |
 
 At rest the casting hand is up in front of the chest (where `caster_hand` always was) and the off hand hangs. Gestures are worked out fresh from the time, like everything else in the viewer.
 
@@ -260,6 +269,33 @@ At rest the casting hand is up in front of the chest (where `caster_hand` always
 The stand-ins round the caster have arms too: they follow their reaction (`flail` when knocked back, `guard` when they flinch or cower, `cheer`). A caster with `caster_react` `shout` and no gestures swings into a `roar`.
 
 In an engine, gestures are the caster's casting animation: the export lists them with their times.
+
+## Sword skills
+
+Melee weapon skills: slashes, combos, thrusts and spins. Give the caster a weapon, swing it with sword gestures, move the body with `caster_react` and draw the cut with a `slash` layer. Put them in `line: "Swordsmanship"` and tag them `sword` (the viewer lists the line under **Type**).
+
+```json
+"space": {
+  "origin": "caster", "destination": "target", "travel": "instant", "footprint": { "shape": "line", "length": 1.25 },
+  "caster_weapon": { "kind": "sword" },
+  "targets": { "react": [ { "kind": "flinch", "at_ms": 340 }, { "kind": "knockback", "at_ms": 1230, "distance_px": 30 } ] },
+  "caster_react": [ { "kind": "lunge", "at_ms": 80, "duration_ms": 600, "distance_px": 12 } ],
+  "caster_gestures": [ { "kind": "slash", "at_ms": 40, "duration_ms": 400, "hold_ms": 0 } ]
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `caster_weapon` | `kind`: `sword` (a 50 px blade), `greatsword` (74 px, wider) or `dagger` (24 px); `length_px` overrides the blade. It rides in the lead hand, the casting hand rests holding it up in guard, and the anchors `caster_blade` (the middle of the blade) and `caster_blade_tip` (its point) ride on it. Without a weapon those anchors are where a sword would be. |
+| `caster_react` | One reaction or a list played together, each from its own `at_ms`: `lunge` to step into a cut, `leap` for a jumping strike, `spin` (with `turns`) for a whirlwind. |
+| `targets.react` | One reaction or a list: a `flinch` for each hit of a combo, then a `knockback` on the finisher. |
+| `targets.order: "sweep"` | Splash targets hit one by one as a blade sweeping round the centre reaches them: `sweep_ms` per turn (negative: the other way), starting at `sweep_start_deg` (0 = the cast direction, positive toward +Z, the off-hand side; default -90, the lead side). Match `sweep_ms` to the spin: a `spin` of `turns` *n* over *d* ms takes about 0.88 *d* / *n* ms per turn at full speed. |
+
+The `slash` layer is the trail: the sheet the blade sweeps through the air, from `inner` (0–1, default 0.35) of the way up the blade to its point plus `reach_px` beyond it, brightest at the leading edge (the layer's first color) and fading behind (its second), with a camera-facing streak `width_px` wide along the point's path (brightness `edge`, 0–1) so a flat cut still reads edge-on. It traces the blade from its first beat's start for `trace_ms` (default: the whole layer). With `trail_ms` only the last stretch shows and it wipes away behind the blade (a quick cut, a spin); without it the whole stroke stays and fades with the layer's intensity (an arc that lingers). `softness` (0–1) fades the sheet in from its inner edge; `opacity` scales it. A long `reach_px` with `inner` about 0.55 makes a thrust's lance; a spin's slash with `trail_ms` about half a turn draws a ring. Anchor it at `caster_blade`.
+
+Time it to the stroke: put a slash layer's beat on its gesture's swing (the slash crosses the front at 75% of its duration, a chop is level at 80%, a thrust lands at the end), and the hit beat where the blade reaches the enemy. Chain combo strokes back to back with `hold_ms: 0`, one slash layer and one hit beat per stroke. A sword wave is an `orb` `look: crescent` anchored at `caster_blade` in a `projectile` spell.
+
+Examples: `templates/physical/keen-sweep.json` (a single cut), `threefold-flurry.json` and `cascade-of-cuts.json` (combos), `needle-lunge.json` (a thrust), `colossus-cleave.json` (a greatsword), `whirling-steel.json` (a spin), `templates/wind/cyclone-reaver.json`, `templates/fire/emberwheel.json`, `templates/lightning/stormsplitter.json`, `templates/wind/galecleave.json`.
 
 ## Warcries
 
@@ -289,6 +325,9 @@ A reaction has a `kind`, `at_ms` and `duration_ms` (default per kind), and:
 | `cower` | crouched, leaning away and trembling, then straightening up at the end; a negative `lean_deg` with `distance_px: 0` is a brace | `lean_deg` (14), `distance_px` (12) |
 | `cheer` | hopping on the spot | `hops` (2), `lift_px` (14), `lean_deg` (6) |
 | `shout` | the caster rears back drawing breath (the first 40%), then throws the chest forward with the shout and settles | `lean_deg` (16) |
+| `lunge` | a step in toward the centre (the caster: forward) and a lean into it over the first 35%, held, then a step back over the last 30% | `distance_px` (45), `lean_deg` (14) |
+| `leap` | up and in in an arc over the first 70%, landing crouched, staying where they land | `distance_px` (80), `lift_px` (45), `lean_deg` (12) |
+| `spin` | whole turns on the spot, quickly up to speed and steady between short ramps | `turns` (1; negative = clockwise seen from above, the way a slash follows through) |
 
 Push and lean are away from the caster (the caster's own lean is backward). The pose is worked out fresh from the time, like everything else in the viewer. `coat` layers ride on the figure they cover, so a skin stays on a body that crouches or hops; other layers stay where they were anchored. In an engine these are hit reactions and animations: the export lists them.
 

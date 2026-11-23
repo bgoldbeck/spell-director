@@ -90,6 +90,7 @@ An effect is a stack of layers. Each layer has one job.
 | `decal` | Mark on the ground: scorch, burn, cracks, crater, puddle, splash, frost, rune circle, warning ring (telegraph), fissures. Fades in, stays, fades out; can outlive the spell. |
 | `smoke` | Soft alpha volume, slow drift. |
 | `motif` | A small modeled thing that acts out part of the story: a leaf, petal, feather, water drop, a blossom that opens, or a faceted gem. One or many, placed by hand (keyframed paths) or circling the anchor. |
+| `slash` | A sword trail: the sheet of cut air the caster's blade sweeps through, bright at the edge and fading behind (a cut, a combo arc, a whirlwind ring, a thrust's lance). |
 | `coat` | A skin over an afflicted character (status effects): flames, frost, stone, ooze, shadow, static, a sheen, or a block of ice round them. |
 | `light` | Dynamic light cast on the environment. |
 | `camera_shake` | Screen shake. |
@@ -355,6 +356,21 @@ The caster has arms with hands and fingers; `space.caster_gestures` is the casti
 | roar, outburst, nova | fists up, then flung wide | `flex` then `roar` (warcries, novas) |
 | sign, mudra, incantation | two fingers up before the face | `sign` |
 | press, root, earthbind | palms pressed at the ground | `ground_press` |
+
+### Sword skills
+
+| Words | Means | Use |
+|---|---|---|
+| slash, cut, sweep | a flat cut across the enemy | `slash` gesture, `slash` layer with `trail_ms`, sparks and a pop on the target |
+| backhand, return cut | the cut back the other way | `backslash` right after a `slash` (`hold_ms: 0`) |
+| chop, overhead, cleave | a blow straight down | `chop` (or two-handed `cleave` with a greatsword), cracks and dust at the target |
+| uppercut, launcher, rising | an upward cut that lifts the enemy | `rising_slash`, the target's `leap` reaction with `distance_px: 0` |
+| thrust, stab, lunge, pierce | a straight stab | `thrust` plus a `lunge`, a narrow `slash` lance (`inner` 0.55, long `reach_px`), a vertical ring on the target |
+| combo, flurry, chain | several strokes in a row | gestures back to back, one slash layer and hit beat per stroke, a list of `targets.react` |
+| whirlwind, spin, cyclone | spinning with the blade out, hitting everyone round | `blade_out` or `sweep_both` held, a `spin` reaction, point-blank splash with `order: "sweep"`, a slash with a long `trace_ms` |
+| leap strike, jump attack | jumping in on the enemy | a `leap` reaction landing with a `chop` |
+| sword wave, air slash | a cut that flies | an `orb` `look: crescent` anchored at `caster_blade` |
+| flaming, storm, frost blade | an imbued weapon | a `glow` or `crackle` at `caster_blade` and the slash in the element's colors |
 
 ### Warcries
 

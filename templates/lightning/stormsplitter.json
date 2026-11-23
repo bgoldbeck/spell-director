@@ -1,0 +1,643 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "lightning-stormsplitter",
+  "name": "Stormsplitter",
+  "line": "Swordsmanship",
+  "description": "The caster raises a crackling sword and leaps at the enemy; at the top of the leap lightning slams down out of the sky onto the enemy, pinning them, and the caster drives the charged blade into them as they land. The charge erupts out of the struck enemy and forks to everyone standing round them, knocking the whole group back over a scorched star of cracks.",
+  "element": "lightning",
+  "archetype": "strike",
+  "tags": [
+    "sword",
+    "melee",
+    "weapon",
+    "slash",
+    "chop",
+    "leap",
+    "lightning",
+    "imbued",
+    "splash",
+    "area"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "Sword skills: a leaping lightning chop that forks to the group around the target (original, game-agnostic)."
+  },
+  "timing": {
+    "duration_ms": 2100,
+    "fps_hint": 30
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "line",
+      "length": 2.1
+    },
+    "caster_weapon": {
+      "kind": "sword"
+    },
+    "targets": {
+      "layout": "splash",
+      "count": {
+        "min": 5,
+        "max": 6
+      },
+      "radius": {
+        "min": 1.2,
+        "max": 1.4
+      },
+      "ripple_ms": 90,
+      "react": {
+        "kind": "knockback",
+        "at_ms": 790,
+        "duration_ms": 560,
+        "distance_px": {
+          "min": 55,
+          "max": 75
+        },
+        "lean_deg": 30
+      }
+    },
+    "caster_react": {
+      "kind": "leap",
+      "at_ms": 140,
+      "duration_ms": 860,
+      "distance_px": 85,
+      "lift_px": 55,
+      "lean_deg": 14
+    },
+    "caster_gestures": [
+      {
+        "kind": "chop",
+        "at_ms": 240,
+        "duration_ms": 540,
+        "hold_ms": 320,
+        "return_ms": 450
+      }
+    ]
+  },
+  "views": {
+    "hero": "side",
+    "reads": {
+      "front": "The caster leaps toward the enemy, a bolt drops onto the enemy, then the landing chop and lightning forking out through the group.",
+      "side": "Hero for the leap: the arc of the jump, the bolt from the sky onto the enemy, the falling chop and the enemy blown back.",
+      "top": "Hero for the area: the star of scorched cracks under the enemy and the forks reaching out to every enemy round them.",
+      "three_quarter": "The leap, the sky bolt, the chop and the forks all read in order."
+    }
+  },
+  "palette": {
+    "core": "#FFFFFF",
+    "primary": "#8FC8FF",
+    "secondary": "#4A6BFF",
+    "accent": "#E6F2FF",
+    "shadow": "#0E1226"
+  },
+  "beats": [
+    {
+      "id": "crouch",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 200,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.1,
+        "to": 0.5
+      },
+      "intent": "The caster crouches; static crawls up the blade."
+    },
+    {
+      "id": "leap",
+      "phase": "release",
+      "start_ms": 200,
+      "end_ms": 720,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 0.5,
+        "to": 1.0
+      },
+      "intent": "Up and forward: the blade crackles overhead."
+    },
+    {
+      "id": "call",
+      "phase": "impact",
+      "start_ms": 500,
+      "end_ms": 640,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "At the top of the leap a bolt slams down from the sky onto the enemy, pinning them."
+    },
+    {
+      "id": "fall",
+      "phase": "release",
+      "start_ms": 560,
+      "end_ms": 800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 1.0,
+        "to": 0.8
+      },
+      "intent": "The charged blade comes down with the landing: a crackling arc falls with it."
+    },
+    {
+      "id": "strike",
+      "phase": "impact",
+      "start_ms": 760,
+      "end_ms": 940,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.3
+      },
+      "intent": "Blade into the enemy: a blinding flash and the charge erupts."
+    },
+    {
+      "id": "forks",
+      "phase": "impact",
+      "start_ms": 780,
+      "end_ms": 1100,
+      "intensity": {
+        "shape": "flicker",
+        "from": 1.0,
+        "to": 0.4
+      },
+      "intent": "Lightning forks from the struck enemy to everyone round them."
+    },
+    {
+      "id": "fade",
+      "phase": "dissipation",
+      "start_ms": 940,
+      "end_ms": 1800,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.7,
+        "to": 0.0
+      },
+      "intent": "Static crawls over the scorched cracks and fades."
+    }
+  ],
+  "layers": [
+    {
+      "id": "blade-crackle",
+      "type": "crackle",
+      "beats": [
+        "crouch",
+        "leap",
+        "fall"
+      ],
+      "anchor": "caster_blade",
+      "plane": "volume",
+      "blend": "add",
+      "color": "primary",
+      "z": 9,
+      "params": {
+        "count": 4,
+        "length_px": 22,
+        "jaggedness": 0.7,
+        "regen_ms": 60,
+        "radius_px": 26
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Small blue-white arcs crawling up and down the blade.",
+        "technique": "ribbon",
+        "noise": {
+          "type": "ridged",
+          "scale": 6,
+          "speed": 6,
+          "contrast": 0.8
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "blade-charge",
+      "type": "glow",
+      "beats": [
+        "leap",
+        "call",
+        "fall"
+      ],
+      "anchor": "caster_blade",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "primary",
+      "z": 8,
+      "params": {
+        "radius_px": 30,
+        "softness": 0.8,
+        "pulse_hz": 12
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A blue-white charge glowing along the blade.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 2,
+          "falloff": "soft"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "sky-bolt",
+      "type": "bolt",
+      "beats": [
+        "call"
+      ],
+      "anchor": "sky",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "segments": 14,
+        "jaggedness": 0.6,
+        "width_px": 6,
+        "taper": 0.4,
+        "branch_chance": 0.3,
+        "branch_depth": 1,
+        "regen_ms": 50,
+        "glow_px": 14
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A thick bolt slamming down out of the sky onto the enemy as the caster leaps at them.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 6,
+          "falloff": "exponential",
+          "core_ratio": 0.3
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fall-arc",
+      "type": "slash",
+      "beats": [
+        "fall",
+        "fade"
+      ],
+      "anchor": "caster_blade",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "inner": 0.2,
+        "width_px": 7,
+        "softness": 0.6,
+        "trace_ms": 260,
+        "trail_ms": 260,
+        "reach_px": 18
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A crackling falling crescent of blue-white light behind the charged blade.",
+        "technique": "ribbon",
+        "flow": {
+          "direction": "along_path",
+          "speed": 6
+        },
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential",
+          "core_ratio": 0.25
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "strike-flash",
+      "type": "flash",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "target",
+      "plane": "billboard",
+      "blend": "add",
+      "color": "core",
+      "z": 16,
+      "params": {
+        "scope": "local",
+        "radius_px": 120,
+        "peak": 0.8
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A blinding blue-white flash as the charge erupts out of the enemy.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "fork",
+      "type": "bolt",
+      "beats": [
+        "forks"
+      ],
+      "anchor": "splash",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 13,
+      "params": {
+        "segments": 10,
+        "jaggedness": 0.65,
+        "width_px": 3.5,
+        "taper": 0.5,
+        "branch_chance": 0.25,
+        "branch_depth": 1,
+        "regen_ms": 55,
+        "glow_px": 10,
+        "from": "primary"
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Lightning forking from the struck enemy to each enemy round them.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "scorch-star",
+      "type": "decal",
+      "beats": [
+        "strike",
+        "forks",
+        "fade"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 0,
+      "params": {
+        "shape": "cracks",
+        "radius_px": {
+          "min": 110,
+          "max": 130
+        },
+        "opacity": 0.8,
+        "fade_in_ms": 40,
+        "lifetime_ms": 1000,
+        "fade_ms": 700,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A star of glowing blue cracks burnt into the ground under the enemy, cooling dark.",
+        "technique": "decal",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "strike",
+        "forks",
+        "fade"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 0,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 70,
+        "opacity": 0.6,
+        "fade_in_ms": 40,
+        "lifetime_ms": 1100,
+        "fade_ms": 600
+      },
+      "shader": {
+        "material": "ashen",
+        "look": "Soot blown out under the struck enemy.",
+        "technique": "decal",
+        "lighting": "lit"
+      }
+    },
+    {
+      "id": "strike-ring",
+      "type": "ring",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "target",
+      "plane": "ground",
+      "blend": "add",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "start_radius_px": 20,
+        "end_radius_px": 200,
+        "thickness_px": 14,
+        "softness": 0.7
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "A ring of blue-white force rolling out across the ground from the strike.",
+        "technique": "procedural",
+        "flow": {
+          "direction": "outward",
+          "speed": 5
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
+      "id": "strike-sparks",
+      "type": "sparks",
+      "beats": [
+        "strike"
+      ],
+      "anchor": "target",
+      "plane": "volume",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 14,
+      "params": {
+        "count": {
+          "min": 28,
+          "max": 34
+        },
+        "speed": 480,
+        "speed_spread": 0.6,
+        "gravity": 700,
+        "lifetime_ms": 450,
+        "size_px": 2.4,
+        "spread_deg": 200,
+        "drag": 0.2,
+        "emit_ms": 50,
+        "height_px": 20
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Blue-white sparks thrown every way from the strike.",
+        "technique": "particles",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "victim-static",
+      "type": "crackle",
+      "beats": [
+        "forks",
+        "fade"
+      ],
+      "anchor": "splash",
+      "plane": "volume",
+      "blend": "add",
+      "color": "primary",
+      "z": 11,
+      "params": {
+        "count": 3,
+        "length_px": 18,
+        "jaggedness": 0.7,
+        "regen_ms": 70,
+        "radius_px": 22,
+        "height_px": 50
+      },
+      "shader": {
+        "material": "ionized",
+        "look": "Static crawling over each enemy the forks reached.",
+        "technique": "ribbon",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "strike-light",
+      "type": "light",
+      "beats": [
+        "call",
+        "strike",
+        "forks"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 3,
+      "params": {
+        "radius": 4,
+        "energy": 4,
+        "height_px": 80
+      },
+      "shader": {
+        "material": "metallic",
+        "look": "A brief light thrown on the figures by the bright cut.",
+        "technique": "light",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "charge-sound",
+      "type": "sound_cue",
+      "beats": [
+        "crouch",
+        "leap"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.4,
+        "pitch": 1.2
+      }
+    },
+    {
+      "id": "call-sound",
+      "type": "sound_cue",
+      "beats": [
+        "call"
+      ],
+      "params": {
+        "cue": "zap",
+        "gain": 0.8,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "swing",
+      "type": "sound_cue",
+      "beats": [
+        "fall"
+      ],
+      "params": {
+        "cue": "whoosh",
+        "gain": 0.7,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "strike-sound",
+      "type": "sound_cue",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "cue": "crack",
+        "gain": 1.0,
+        "pitch": 0.9
+      }
+    },
+    {
+      "id": "strike-boom",
+      "type": "sound_cue",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "cue": "boom",
+        "gain": 0.8,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "forks-sound",
+      "type": "sound_cue",
+      "beats": [
+        "forks"
+      ],
+      "params": {
+        "cue": "zap",
+        "gain": 0.6,
+        "pitch": 1.2,
+        "repeat_ms": 90
+      }
+    },
+    {
+      "id": "strike-shake",
+      "type": "camera_shake",
+      "beats": [
+        "strike"
+      ],
+      "params": {
+        "amplitude_px": 12,
+        "frequency_hz": 24,
+        "decay": 0.6
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Group size and spacing, fork paths, crack pattern and sparks vary; the leap arc and the strike time are fixed."
+  },
+  "director_notes": "The leap reaction carries the caster 85 px forward and lands at 70% (140 + 602 = 742 ms); the chop is high at 537 ms (as the sky bolt pins the enemy) and lands at 780 ms with the landing. Splash layout: bolts anchored at 'splash' fork from the primary enemy to each of the others with a 90 ms per unit ripple, and all of them are knocked back."
+}
