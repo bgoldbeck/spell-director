@@ -22,7 +22,11 @@ def test_cue_library_entries_are_complete():
         assert cue["duration_ms"] > 0
         assert cue["words"] and set(cue["phases"]) <= PHASES
         for sample in cue["samples"]:
-            assert (ROOT / "web" / "sounds" / sample).is_file(), sample
+            path = sample["file"] if isinstance(sample, dict) else sample
+            assert (ROOT / "web" / "sounds" / path).is_file(), path
+            if isinstance(sample, dict):
+                assert sample["size"] in {"small", "medium", "large"}
+                assert sample["duration_ms"] > 0
 
 
 def test_generic_categories_are_covered():
@@ -38,10 +42,57 @@ def test_every_cue_has_a_placeholder_recipe():
 
 
 def test_samples_are_credited():
+    # Generated bank files are covered by one row; every recording needs its own.
     credits = (ROOT / "web" / "sounds" / "CREDITS.md").read_text(encoding="utf-8")
+    assert "`bank/`" in credits
     for cue in CUES.values():
         for sample in cue["samples"]:
-            assert Path(sample).name in credits, sample
+            path = sample["file"] if isinstance(sample, dict) else sample
+            if not path.startswith("bank/"):
+                assert Path(path).name in credits, path
+
+
+def test_every_cue_has_a_full_sound_bank():
+    import soundbank
+
+    assert set(soundbank.RECIPES) == set(CUES)
+    for cue_id, cue in CUES.items():
+        bank = [s for s in cue["samples"] if isinstance(s, dict) and s["file"].startswith("bank/")]
+        assert {s["size"] for s in bank} == {"small", "medium", "large"}, cue_id
+        assert len(bank) >= 6, cue_id
+        files = {p.name for p in (ROOT / "web" / "sounds" / "bank" / cue_id).iterdir()}
+        assert files == {Path(s["file"]).name for s in bank}, cue_id
+
+
+def test_sound_bank_renders_clean_takes():
+    import numpy as np
+    import soundbank
+
+    for cue_id in ("crack", "fire", "charge", "swing"):
+        cue = CUES[cue_id]
+        a = soundbank.render(cue_id, cue["kind"], cue["duration_ms"], "m", 1)
+        b = soundbank.render(cue_id, cue["kind"], cue["duration_ms"], "m", 1)
+        c = soundbank.render(cue_id, cue["kind"], cue["duration_ms"], "m", 2)
+        assert np.array_equal(a, b)  # deterministic
+        assert not np.array_equal(a[:1000], c[:1000])  # takes differ
+        assert abs(np.max(np.abs(a)) - 10 ** (-1 / 20)) < 1e-6  # -1 dBFS peak
+        assert not np.isnan(a).any()
+    one_shot = soundbank.render("crack", "one_shot", 450, "m", 1)
+    assert np.max(np.abs(one_shot[:64])) > 0.05  # transient on the first samples
+    small = soundbank.render("boom", "one_shot", 1200, "s", 1)
+    large = soundbank.render("boom", "one_shot", 1200, "l", 1)
+    assert len(large) > len(small)
+
+
+def test_validator_checks_sound_size():
+    doc = _with_cue("crack")
+    layer = next(x for x in doc["layers"] if x["type"] == "sound_cue")
+    layer["params"]["size"] = "large"
+    errors, warnings = validate.check(doc)
+    assert not errors and not any("size" in w for w in warnings)
+    layer["params"]["size"] = "huge"
+    _, warnings = validate.check(doc)
+    assert any("size 'huge'" in w for w in warnings)
 
 
 def test_cue_vocabulary_is_documented():
@@ -71,7 +122,7 @@ def test_get_sound_cues():
     out = library.get_sound_cues()
     assert set(out["cues"]) == set(CUES)
     assert "electric" in out["categories"] and "fire" in out["categories"]
-    assert {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms"} == set(out["params"])
+    assert {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms", "size"} == set(out["params"])
     assert set(out["params"]) == validate.KNOWN_PARAMS["sound_cue"]
     assert out["cues"]["splash"]["character"]["envelope"]
     assert "blood" in out["flavors"] and "dark" in out["flavors"]

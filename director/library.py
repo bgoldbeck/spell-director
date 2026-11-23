@@ -174,6 +174,7 @@ def get_sound_cues(category: str | None = None) -> dict:
             "offset_ms": "delay after the beat starts, default 0",
             "duration_ms": "override length; sustained cues otherwise last the layer's beats",
             "repeat_ms": "one-shots only: retrigger every N ms inside each beat (hops, restrikes)",
+            "size": "small | medium | large: which sound bank recording plays. small is shorter, higher and lighter (a spark, a dagger), large longer, deeper and heavier (a big AoE, a greatsword). Default: medium, or the closest length when duration_ms is set",
         },
     }
 

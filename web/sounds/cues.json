@@ -105,7 +105,53 @@
         "magic charge",
         "sci-fi riser"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/charge/charge-s-1.ogg",
+          "size": "small",
+          "duration_ms": 520
+        },
+        {
+          "file": "bank/charge/charge-s-2.ogg",
+          "size": "small",
+          "duration_ms": 520
+        },
+        {
+          "file": "bank/charge/charge-s-3.ogg",
+          "size": "small",
+          "duration_ms": 520
+        },
+        {
+          "file": "bank/charge/charge-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 800
+        },
+        {
+          "file": "bank/charge/charge-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 800
+        },
+        {
+          "file": "bank/charge/charge-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 800
+        },
+        {
+          "file": "bank/charge/charge-l-1.ogg",
+          "size": "large",
+          "duration_ms": 1280
+        },
+        {
+          "file": "bank/charge/charge-l-2.ogg",
+          "size": "large",
+          "duration_ms": 1280
+        },
+        {
+          "file": "bank/charge/charge-l-3.ogg",
+          "size": "large",
+          "duration_ms": 1280
+        }
+      ]
     },
     "hum": {
       "label": "Low hum",
@@ -145,7 +191,53 @@
         "drone loop",
         "power hum"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/hum/hum-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/hum/hum-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/hum/hum-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/hum/hum-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/hum/hum-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/hum/hum-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/hum/hum-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/hum/hum-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/hum/hum-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "buzz": {
       "label": "Electric buzz",
@@ -186,7 +278,53 @@
         "transformer hum",
         "taser buzz"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/buzz/buzz-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/buzz/buzz-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/buzz/buzz-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/buzz/buzz-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/buzz/buzz-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/buzz/buzz-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/buzz/buzz-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/buzz/buzz-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/buzz/buzz-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "crackle": {
       "label": "Electric crackle",
@@ -225,7 +363,53 @@
         "spark crackle",
         "static discharge"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/crackle/crackle-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/crackle/crackle-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/crackle/crackle-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/crackle/crackle-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/crackle/crackle-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/crackle/crackle-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/crackle/crackle-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/crackle/crackle-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/crackle/crackle-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "sizzle": {
       "label": "Sizzle",
@@ -265,7 +449,53 @@
         "electric sizzle",
         "steam hiss"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/sizzle/sizzle-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/sizzle/sizzle-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/sizzle/sizzle-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/sizzle/sizzle-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/sizzle/sizzle-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/sizzle/sizzle-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/sizzle/sizzle-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/sizzle/sizzle-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/sizzle/sizzle-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "zap": {
       "label": "Zap",
@@ -305,7 +535,53 @@
         "shock",
         "laser zap"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/zap/zap-s-1.ogg",
+          "size": "small",
+          "duration_ms": 437
+        },
+        {
+          "file": "bank/zap/zap-s-2.ogg",
+          "size": "small",
+          "duration_ms": 447
+        },
+        {
+          "file": "bank/zap/zap-s-3.ogg",
+          "size": "small",
+          "duration_ms": 455
+        },
+        {
+          "file": "bank/zap/zap-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 491
+        },
+        {
+          "file": "bank/zap/zap-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 462
+        },
+        {
+          "file": "bank/zap/zap-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 481
+        },
+        {
+          "file": "bank/zap/zap-l-1.ogg",
+          "size": "large",
+          "duration_ms": 502
+        },
+        {
+          "file": "bank/zap/zap-l-2.ogg",
+          "size": "large",
+          "duration_ms": 490
+        },
+        {
+          "file": "bank/zap/zap-l-3.ogg",
+          "size": "large",
+          "duration_ms": 535
+        }
+      ]
     },
     "crack": {
       "label": "Sharp crack",
@@ -345,7 +621,53 @@
         "whip crack",
         "thunderclap"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/crack/crack-s-1.ogg",
+          "size": "small",
+          "duration_ms": 1114
+        },
+        {
+          "file": "bank/crack/crack-s-2.ogg",
+          "size": "small",
+          "duration_ms": 1099
+        },
+        {
+          "file": "bank/crack/crack-s-3.ogg",
+          "size": "small",
+          "duration_ms": 1085
+        },
+        {
+          "file": "bank/crack/crack-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 1317
+        },
+        {
+          "file": "bank/crack/crack-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 1310
+        },
+        {
+          "file": "bank/crack/crack-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 1304
+        },
+        {
+          "file": "bank/crack/crack-l-1.ogg",
+          "size": "large",
+          "duration_ms": 1686
+        },
+        {
+          "file": "bank/crack/crack-l-2.ogg",
+          "size": "large",
+          "duration_ms": 1758
+        },
+        {
+          "file": "bank/crack/crack-l-3.ogg",
+          "size": "large",
+          "duration_ms": 1599
+        }
+      ]
     },
     "boom": {
       "label": "Deep boom",
@@ -385,7 +707,53 @@
         "explosion boom",
         "deep impact"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/boom/boom-s-1.ogg",
+          "size": "small",
+          "duration_ms": 1661
+        },
+        {
+          "file": "bank/boom/boom-s-2.ogg",
+          "size": "small",
+          "duration_ms": 1565
+        },
+        {
+          "file": "bank/boom/boom-s-3.ogg",
+          "size": "small",
+          "duration_ms": 1615
+        },
+        {
+          "file": "bank/boom/boom-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 2143
+        },
+        {
+          "file": "bank/boom/boom-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 2165
+        },
+        {
+          "file": "bank/boom/boom-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 2114
+        },
+        {
+          "file": "bank/boom/boom-l-1.ogg",
+          "size": "large",
+          "duration_ms": 3025
+        },
+        {
+          "file": "bank/boom/boom-l-2.ogg",
+          "size": "large",
+          "duration_ms": 2891
+        },
+        {
+          "file": "bank/boom/boom-l-3.ogg",
+          "size": "large",
+          "duration_ms": 2917
+        }
+      ]
     },
     "rumble": {
       "label": "Low rumble",
@@ -425,7 +793,53 @@
         "low rumble loop",
         "distant thunder"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/rumble/rumble-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/rumble/rumble-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/rumble/rumble-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/rumble/rumble-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/rumble/rumble-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/rumble/rumble-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/rumble/rumble-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/rumble/rumble-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/rumble/rumble-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "impact": {
       "label": "Thud",
@@ -463,7 +877,53 @@
         "thud",
         "heavy hit"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/impact/impact-s-1.ogg",
+          "size": "small",
+          "duration_ms": 558
+        },
+        {
+          "file": "bank/impact/impact-s-2.ogg",
+          "size": "small",
+          "duration_ms": 609
+        },
+        {
+          "file": "bank/impact/impact-s-3.ogg",
+          "size": "small",
+          "duration_ms": 601
+        },
+        {
+          "file": "bank/impact/impact-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 663
+        },
+        {
+          "file": "bank/impact/impact-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 672
+        },
+        {
+          "file": "bank/impact/impact-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 607
+        },
+        {
+          "file": "bank/impact/impact-l-1.ogg",
+          "size": "large",
+          "duration_ms": 710
+        },
+        {
+          "file": "bank/impact/impact-l-2.ogg",
+          "size": "large",
+          "duration_ms": 661
+        },
+        {
+          "file": "bank/impact/impact-l-3.ogg",
+          "size": "large",
+          "duration_ms": 591
+        }
+      ]
     },
     "crash": {
       "label": "Crash",
@@ -502,7 +962,53 @@
         "wall break",
         "stone smash"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/crash/crash-s-1.ogg",
+          "size": "small",
+          "duration_ms": 1143
+        },
+        {
+          "file": "bank/crash/crash-s-2.ogg",
+          "size": "small",
+          "duration_ms": 1177
+        },
+        {
+          "file": "bank/crash/crash-s-3.ogg",
+          "size": "small",
+          "duration_ms": 1143
+        },
+        {
+          "file": "bank/crash/crash-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 1616
+        },
+        {
+          "file": "bank/crash/crash-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 1540
+        },
+        {
+          "file": "bank/crash/crash-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 1541
+        },
+        {
+          "file": "bank/crash/crash-l-1.ogg",
+          "size": "large",
+          "duration_ms": 2077
+        },
+        {
+          "file": "bank/crash/crash-l-2.ogg",
+          "size": "large",
+          "duration_ms": 2244
+        },
+        {
+          "file": "bank/crash/crash-l-3.ogg",
+          "size": "large",
+          "duration_ms": 2314
+        }
+      ]
     },
     "shatter": {
       "label": "Shatter",
@@ -541,7 +1047,53 @@
         "crystal shatter",
         "glass debris"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/shatter/shatter-s-1.ogg",
+          "size": "small",
+          "duration_ms": 907
+        },
+        {
+          "file": "bank/shatter/shatter-s-2.ogg",
+          "size": "small",
+          "duration_ms": 1044
+        },
+        {
+          "file": "bank/shatter/shatter-s-3.ogg",
+          "size": "small",
+          "duration_ms": 989
+        },
+        {
+          "file": "bank/shatter/shatter-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 1178
+        },
+        {
+          "file": "bank/shatter/shatter-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 1156
+        },
+        {
+          "file": "bank/shatter/shatter-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 1089
+        },
+        {
+          "file": "bank/shatter/shatter-l-1.ogg",
+          "size": "large",
+          "duration_ms": 1470
+        },
+        {
+          "file": "bank/shatter/shatter-l-2.ogg",
+          "size": "large",
+          "duration_ms": 1545
+        },
+        {
+          "file": "bank/shatter/shatter-l-3.ogg",
+          "size": "large",
+          "duration_ms": 1471
+        }
+      ]
     },
     "ignite": {
       "label": "Ignite",
@@ -581,7 +1133,53 @@
         "flame burst",
         "torch ignite"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/ignite/ignite-s-1.ogg",
+          "size": "small",
+          "duration_ms": 889
+        },
+        {
+          "file": "bank/ignite/ignite-s-2.ogg",
+          "size": "small",
+          "duration_ms": 989
+        },
+        {
+          "file": "bank/ignite/ignite-s-3.ogg",
+          "size": "small",
+          "duration_ms": 922
+        },
+        {
+          "file": "bank/ignite/ignite-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 1127
+        },
+        {
+          "file": "bank/ignite/ignite-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 1092
+        },
+        {
+          "file": "bank/ignite/ignite-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 1076
+        },
+        {
+          "file": "bank/ignite/ignite-l-1.ogg",
+          "size": "large",
+          "duration_ms": 1447
+        },
+        {
+          "file": "bank/ignite/ignite-l-2.ogg",
+          "size": "large",
+          "duration_ms": 1421
+        },
+        {
+          "file": "bank/ignite/ignite-l-3.ogg",
+          "size": "large",
+          "duration_ms": 1436
+        }
+      ]
     },
     "fire": {
       "label": "Burning fire",
@@ -623,7 +1221,53 @@
         "campfire crackle",
         "torch burning loop"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/fire/fire-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/fire/fire-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/fire/fire-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/fire/fire-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/fire/fire-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/fire/fire-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/fire/fire-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/fire/fire-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/fire/fire-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "whoosh": {
       "label": "Whoosh",
@@ -636,7 +1280,6 @@
         "swoosh",
         "swish",
         "fly by",
-        "swing",
         "dash"
       ],
       "phases": [
@@ -662,7 +1305,53 @@
         "swing whoosh",
         "fly by"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/whoosh/whoosh-s-1.ogg",
+          "size": "small",
+          "duration_ms": 549
+        },
+        {
+          "file": "bank/whoosh/whoosh-s-2.ogg",
+          "size": "small",
+          "duration_ms": 547
+        },
+        {
+          "file": "bank/whoosh/whoosh-s-3.ogg",
+          "size": "small",
+          "duration_ms": 545
+        },
+        {
+          "file": "bank/whoosh/whoosh-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 663
+        },
+        {
+          "file": "bank/whoosh/whoosh-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 680
+        },
+        {
+          "file": "bank/whoosh/whoosh-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 680
+        },
+        {
+          "file": "bank/whoosh/whoosh-l-1.ogg",
+          "size": "large",
+          "duration_ms": 894
+        },
+        {
+          "file": "bank/whoosh/whoosh-l-2.ogg",
+          "size": "large",
+          "duration_ms": 908
+        },
+        {
+          "file": "bank/whoosh/whoosh-l-3.ogg",
+          "size": "large",
+          "duration_ms": 885
+        }
+      ]
     },
     "wind": {
       "label": "Wind",
@@ -703,7 +1392,53 @@
         "storm wind",
         "whirlwind"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/wind/wind-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/wind/wind-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/wind/wind-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/wind/wind-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/wind/wind-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/wind/wind-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/wind/wind-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/wind/wind-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/wind/wind-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "shimmer": {
       "label": "Shimmer",
@@ -744,7 +1479,53 @@
         "twinkle",
         "fairy dust"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/shimmer/shimmer-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/shimmer/shimmer-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/shimmer/shimmer-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/shimmer/shimmer-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/shimmer/shimmer-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/shimmer/shimmer-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/shimmer/shimmer-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/shimmer/shimmer-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/shimmer/shimmer-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "splash": {
       "label": "Splash",
@@ -783,7 +1564,53 @@
         "wet impact",
         "water slap"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/splash/splash-s-1.ogg",
+          "size": "small",
+          "duration_ms": 703
+        },
+        {
+          "file": "bank/splash/splash-s-2.ogg",
+          "size": "small",
+          "duration_ms": 695
+        },
+        {
+          "file": "bank/splash/splash-s-3.ogg",
+          "size": "small",
+          "duration_ms": 667
+        },
+        {
+          "file": "bank/splash/splash-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 863
+        },
+        {
+          "file": "bank/splash/splash-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 842
+        },
+        {
+          "file": "bank/splash/splash-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 802
+        },
+        {
+          "file": "bank/splash/splash-l-1.ogg",
+          "size": "large",
+          "duration_ms": 1334
+        },
+        {
+          "file": "bank/splash/splash-l-2.ogg",
+          "size": "large",
+          "duration_ms": 1208
+        },
+        {
+          "file": "bank/splash/splash-l-3.ogg",
+          "size": "large",
+          "duration_ms": 1296
+        }
+      ]
     },
     "stream": {
       "label": "Water rush",
@@ -825,7 +1652,53 @@
         "river torrent",
         "water jet"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/stream/stream-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/stream/stream-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/stream/stream-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/stream/stream-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/stream/stream-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/stream/stream-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/stream/stream-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/stream/stream-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/stream/stream-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "freeze": {
       "label": "Freeze",
@@ -866,7 +1739,53 @@
         "freeze magic",
         "ice creak"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/freeze/freeze-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/freeze/freeze-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/freeze/freeze-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/freeze/freeze-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/freeze/freeze-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/freeze/freeze-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/freeze/freeze-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/freeze/freeze-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/freeze/freeze-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "squelch": {
       "label": "Squelch",
@@ -908,7 +1827,53 @@
         "mud squelch",
         "flesh impact"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/squelch/squelch-s-1.ogg",
+          "size": "small",
+          "duration_ms": 292
+        },
+        {
+          "file": "bank/squelch/squelch-s-2.ogg",
+          "size": "small",
+          "duration_ms": 292
+        },
+        {
+          "file": "bank/squelch/squelch-s-3.ogg",
+          "size": "small",
+          "duration_ms": 292
+        },
+        {
+          "file": "bank/squelch/squelch-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 450
+        },
+        {
+          "file": "bank/squelch/squelch-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 450
+        },
+        {
+          "file": "bank/squelch/squelch-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 450
+        },
+        {
+          "file": "bank/squelch/squelch-l-1.ogg",
+          "size": "large",
+          "duration_ms": 720
+        },
+        {
+          "file": "bank/squelch/squelch-l-2.ogg",
+          "size": "large",
+          "duration_ms": 720
+        },
+        {
+          "file": "bank/squelch/squelch-l-3.ogg",
+          "size": "large",
+          "duration_ms": 720
+        }
+      ]
     },
     "heartbeat": {
       "label": "Heartbeat",
@@ -948,7 +1913,53 @@
         "heartbeat slow",
         "pulse throb"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/heartbeat/heartbeat-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/heartbeat/heartbeat-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/heartbeat/heartbeat-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/heartbeat/heartbeat-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/heartbeat/heartbeat-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/heartbeat/heartbeat-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/heartbeat/heartbeat-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/heartbeat/heartbeat-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/heartbeat/heartbeat-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "whisper": {
       "label": "Whispers",
@@ -991,7 +2002,53 @@
         "dark whispers",
         "creepy voices"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/whisper/whisper-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/whisper/whisper-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/whisper/whisper-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/whisper/whisper-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/whisper/whisper-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/whisper/whisper-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/whisper/whisper-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/whisper/whisper-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/whisper/whisper-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
     },
     "drain": {
       "label": "Life drain",
@@ -1033,7 +2090,53 @@
         "suck inhale",
         "reverse swell"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/drain/drain-s-1.ogg",
+          "size": "small",
+          "duration_ms": 650
+        },
+        {
+          "file": "bank/drain/drain-s-2.ogg",
+          "size": "small",
+          "duration_ms": 650
+        },
+        {
+          "file": "bank/drain/drain-s-3.ogg",
+          "size": "small",
+          "duration_ms": 650
+        },
+        {
+          "file": "bank/drain/drain-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 1000
+        },
+        {
+          "file": "bank/drain/drain-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 1000
+        },
+        {
+          "file": "bank/drain/drain-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 1000
+        },
+        {
+          "file": "bank/drain/drain-l-1.ogg",
+          "size": "large",
+          "duration_ms": 1600
+        },
+        {
+          "file": "bank/drain/drain-l-2.ogg",
+          "size": "large",
+          "duration_ms": 1600
+        },
+        {
+          "file": "bank/drain/drain-l-3.ogg",
+          "size": "large",
+          "duration_ms": 1600
+        }
+      ]
     },
     "drone": {
       "label": "Dark drone",
@@ -1077,7 +2180,226 @@
         "ominous drone",
         "evil ambience"
       ],
-      "samples": []
+      "samples": [
+        {
+          "file": "bank/drone/drone-s-1.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/drone/drone-s-2.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/drone/drone-s-3.ogg",
+          "size": "small",
+          "duration_ms": 2000
+        },
+        {
+          "file": "bank/drone/drone-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/drone/drone-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/drone/drone-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 3000
+        },
+        {
+          "file": "bank/drone/drone-l-1.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/drone/drone-l-2.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        },
+        {
+          "file": "bank/drone/drone-l-3.ogg",
+          "size": "large",
+          "duration_ms": 4000
+        }
+      ]
+    },
+    "swing": {
+      "label": "Blade swing",
+      "category": "metal",
+      "kind": "one_shot",
+      "duration_ms": 380,
+      "describes": "A blade or weapon cutting fast through the air: a thin, high swish that peaks early.",
+      "words": [
+        "swing",
+        "sword swing",
+        "blade",
+        "swish",
+        "slash",
+        "cut",
+        "swipe",
+        "cleave"
+      ],
+      "phases": [
+        "release",
+        "travel"
+      ],
+      "character": {
+        "texture": "airy, thin, a faint metallic edge",
+        "pitch": "high (1-4 kHz), sweeping up to a peak and back down fast",
+        "envelope": "snappy rise to a peak at about 30-40% of its length, then a quicker fall",
+        "layers": [
+          "air: white noise through a narrow band-pass sweeping 900 Hz to 4 kHz and back",
+          "edge: a very quiet inharmonic metal ring following the swell"
+        ],
+        "tail": "short",
+        "space": "close, dry"
+      },
+      "sfx_prompt": "fast sword swing cutting the air, thin sharp swish, quick and close, no impact, no clang, no music",
+      "synth": "White noise through a narrow band-pass (about 0.3 octave) sweeping 900 Hz to 4 kHz and back over the first 35% of the length, gain shaped the same way, plus a faint inharmonic ring at about 2.2 kHz.",
+      "search": [
+        "sword swing",
+        "blade swish",
+        "weapon whoosh",
+        "katana swing"
+      ],
+      "samples": [
+        {
+          "file": "bank/swing/swing-s-1.ogg",
+          "size": "small",
+          "duration_ms": 362
+        },
+        {
+          "file": "bank/swing/swing-s-2.ogg",
+          "size": "small",
+          "duration_ms": 360
+        },
+        {
+          "file": "bank/swing/swing-s-3.ogg",
+          "size": "small",
+          "duration_ms": 352
+        },
+        {
+          "file": "bank/swing/swing-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 447
+        },
+        {
+          "file": "bank/swing/swing-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 441
+        },
+        {
+          "file": "bank/swing/swing-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 451
+        },
+        {
+          "file": "bank/swing/swing-l-1.ogg",
+          "size": "large",
+          "duration_ms": 590
+        },
+        {
+          "file": "bank/swing/swing-l-2.ogg",
+          "size": "large",
+          "duration_ms": 593
+        },
+        {
+          "file": "bank/swing/swing-l-3.ogg",
+          "size": "large",
+          "duration_ms": 580
+        }
+      ]
+    },
+    "clang": {
+      "label": "Clang",
+      "category": "metal",
+      "kind": "one_shot",
+      "duration_ms": 900,
+      "describes": "Metal striking metal: a sharp strike and a long, bright, inharmonic ring. Parries, blade clashes, armor hits.",
+      "words": [
+        "clang",
+        "clash",
+        "parry",
+        "ring",
+        "metal hit",
+        "block",
+        "anvil"
+      ],
+      "phases": [
+        "impact"
+      ],
+      "character": {
+        "texture": "metallic, ringing, bright",
+        "pitch": "mid-high, inharmonic partials over a 400-600 Hz fundamental",
+        "envelope": "instant attack, long ringing decay (0.3-1 s)",
+        "layers": [
+          "strike: a 5 ms high-passed noise tick",
+          "ring: inharmonic partials (1, 2.76, 5.4, 8.93 ...) with slight beating",
+          "clank: a short band-passed noise body"
+        ],
+        "tail": "long ring",
+        "space": "room"
+      },
+      "sfx_prompt": "sword blades clashing, sharp metal clang with a bright ringing tail, single hit, no music",
+      "synth": "High-passed noise tick (5 ms) plus inharmonic sine partials at 1, 2.76, 5.40, 8.93 and 13.34 times a 400-600 Hz fundamental, each decaying faster the higher it is, slightly detuned so they beat, plus a short band-passed noise clank around 1.4 kHz.",
+      "search": [
+        "sword clash",
+        "metal clang",
+        "blade parry",
+        "metal impact ring"
+      ],
+      "samples": [
+        {
+          "file": "bank/clang/clang-s-1.ogg",
+          "size": "small",
+          "duration_ms": 817
+        },
+        {
+          "file": "bank/clang/clang-s-2.ogg",
+          "size": "small",
+          "duration_ms": 852
+        },
+        {
+          "file": "bank/clang/clang-s-3.ogg",
+          "size": "small",
+          "duration_ms": 831
+        },
+        {
+          "file": "bank/clang/clang-m-1.ogg",
+          "size": "medium",
+          "duration_ms": 1034
+        },
+        {
+          "file": "bank/clang/clang-m-2.ogg",
+          "size": "medium",
+          "duration_ms": 1117
+        },
+        {
+          "file": "bank/clang/clang-m-3.ogg",
+          "size": "medium",
+          "duration_ms": 1184
+        },
+        {
+          "file": "bank/clang/clang-l-1.ogg",
+          "size": "large",
+          "duration_ms": 1731
+        },
+        {
+          "file": "bank/clang/clang-l-2.ogg",
+          "size": "large",
+          "duration_ms": 1593
+        },
+        {
+          "file": "bank/clang/clang-l-3.ogg",
+          "size": "large",
+          "duration_ms": 1597
+        }
+      ]
     }
   }
 }
