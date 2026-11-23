@@ -75,7 +75,7 @@ Claude Code picks it up from [`.mcp.json`](.mcp.json) when opened in this repo. 
 
 | Tools | Resources | Prompts |
 |---|---|---|
-| `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif`, `export_sprites`, `export_gif`, `look_at_sprite_sheet` | `spelldirector://docs/{vocabulary, template-format, sound-design, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
+| `list_templates`, `get_template`, `get_vocabulary`, `get_template_format`, `get_sound_cues`, `validate_template`, `save_template`, `breakdown_gif`, `export_sprites`, `export_spell_zip`, `export_gif`, `look_at_sprite_sheet` | `spelldirector://docs/{vocabulary, template-format, sound-design, director-playbook, gif-breakdown-playbook}`, `spelldirector://schema/0.1.0` | `direct_spell`, `direct_from_gif`, `grow_library` |
 
 `save_template` validates, writes `templates/<element>/<name>.json`, rebuilds the index, and won't replace an existing template unless asked to. Run `python tools/serve.py` (or the app) to open the links it returns. The director follows [docs/director-playbook.md](docs/director-playbook.md).
 

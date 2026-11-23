@@ -135,6 +135,25 @@ def export_sprites(template_id: str, seed: int = 1, frame: int = 192, fps: int |
 
 
 @mcp.tool(annotations=ToolAnnotations(destructiveHint=False, idempotentHint=True, openWorldHint=False))
+def export_spell_zip(template_id: str, seed: int = 1, frame: int = 192, fps: int | None = None,
+                     views: list[str] | None = None, style: str | None = None,
+                     out_path: str | None = None) -> dict[str, Any]:
+    """Export a spell as one .zip, ready to hand to a game engine or to an AI
+    building it in Unity or Godot. Inside, under one <id>-seed<seed> folder:
+    all.png and a sheet per layer (frames across, views down), the assembly
+    guide (<id>.guide.md, read it first) and its JSON, the template, the sound
+    cue sheet and sound files, the caster rig (<id>.caster.glb with a
+    Mixamo-named skeleton and the casting animation, <id>.timeline.json with
+    every event keyed to a bone socket or world point) and render/ (per layer:
+    the viewer code, materials, blend state as Unity ShaderLab, GLSL shaders;
+    render/PORTING.md maps them to Unity and Godot). `out_path` is a .zip
+    path or a folder (for example the game project's import folder); by
+    default the zip goes next to the export folder. Same options as
+    export_sprites. Returns the zip path, its size and the file list."""
+    return _call(library.export_spell_zip, template_id, seed, frame, fps, views, style, out_path)
+
+
+@mcp.tool(annotations=ToolAnnotations(destructiveHint=False, idempotentHint=True, openWorldHint=False))
 def export_gif(template_id: str, views: list[str] | None = None, seed: int = 1, width: int = 480, fps: int = 20,
                speed: float = 1.0, length: str | None = None, style: str | None = None) -> dict[str, Any]:
     """Export looping animated GIFs of a spell as the viewer shows it (set,

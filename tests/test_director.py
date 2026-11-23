@@ -136,7 +136,8 @@ def test_mcp_server_end_to_end(lib, new_template):
         async with Client(mcp) as c:
             tools = {t.name for t in (await c.list_tools()).tools}
             assert {"list_templates", "get_template", "get_vocabulary", "validate_template",
-                    "save_template", "breakdown_gif", "get_sound_cues", "export_sprites", "export_gif"} <= tools
+                    "save_template", "breakdown_gif", "get_sound_cues", "export_sprites", "export_spell_zip",
+                    "export_gif"} <= tools
             uris = {str(r.uri) for r in (await c.list_resources()).resources}
             assert "spelldirector://docs/director-playbook" in uris
             prompt = await c.get_prompt("direct_spell", {"request": "heavy boss lightning"})

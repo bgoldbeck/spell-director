@@ -340,6 +340,32 @@ def export_sprites(template_id: str, seed: int = 1, frame: int = 192, fps: int |
     }
 
 
+def export_spell_zip(template_id: str, seed: int = 1, frame: int = 192, fps: int | None = None,
+                     views: list[str] | None = None, style: str | None = None, out_path: str | None = None) -> dict:
+    """Export a spell as one .zip for a game engine: everything export_sprites
+    writes (sheets per layer, guide, JSON, template, sounds, the caster rig
+    GLB, timeline and clip, and render/ notes with the code and shaders that
+    drew each layer) packed as <folder>/<files>. `out_path` is a .zip path or
+    a folder to put <folder>-sprites.zip in (default: next to the export
+    folder). Returns the zip's path plus what's inside."""
+    res = export_sprites(template_id, seed, frame, fps, views, True, style)
+    zpath = _export_sprites.zip_folder(res["out_dir"], out_path)
+    folder = Path(res["out_dir"])
+    rel = [Path(f).relative_to(folder).as_posix() for f in res["files"]]
+    return {
+        "zip": str(zpath),
+        "size_bytes": zpath.stat().st_size,
+        "out_dir": res["out_dir"],
+        "guide": Path(res["guide"]).relative_to(folder).as_posix() if res["guide"] else None,
+        "read_first": [r for r in rel if r.endswith(".guide.md")] + [r for r in rel if r == "render/PORTING.md"],
+        "contents": rel,
+        "frame_count": res["frame_count"],
+        "fps": res["fps"],
+        "view_rows": res["view_rows"],
+        "style": res["style"],
+    }
+
+
 def export_gif(template_id: str, views: list[str] | None = None, seed: int = 1, width: int = 480, fps: int = 20,
                speed: float = 1.0, length: str | None = None, style: str | None = None) -> dict:
     """Export animated GIFs of the spell as the viewer shows it, one per view

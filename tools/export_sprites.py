@@ -5,6 +5,8 @@ assembly guide (Markdown) for rebuilding the spell in a game engine.
     python tools/export_sprites.py lightning-sky-strike --seed 7 --frame 256 --fps 24
     python tools/export_sprites.py my-spell.json --views front,three_quarter --out exports/test
     python tools/export_sprites.py fire-meteor-strike --style realistic
+    python tools/export_sprites.py lightning-chain-arc --zip            # also exports/<folder>-sprites.zip
+    python tools/export_sprites.py lightning-chain-arc --zip D:/Unity/MyGame/Imports
 
 Writes to exports/<template id>-seed<seed>/ by default: all.png (the whole
 spell), layer-<layer id>.png for each drawn layer (columns are frames, rows are
@@ -28,6 +30,7 @@ import json
 import os
 import shutil
 import subprocess
+import zipfile
 import sys
 import tempfile
 import threading
@@ -107,6 +110,29 @@ def export(template: str | dict, *, seed: int = 1, frame: int = 192, fps: int | 
         path.write_bytes(base64.b64decode(f["base64"]))
         written.append(str(path))
     return {"out": str(folder), "files": written, "manifest": manifest}
+
+
+def zip_folder(folder: Path | str, zip_path: Path | str | None = None) -> Path:
+    """Pack an export folder into one .zip, laid out like the viewer's download
+    (<folder name>/<files>). `zip_path` is a .zip file, or a folder to put
+    <folder name>-sprites.zip in; by default it goes next to the folder."""
+    folder = Path(folder)
+    name = f"{folder.name}-sprites.zip"
+    if zip_path is None:
+        target = folder.parent / name
+    else:
+        target = Path(zip_path).expanduser()
+        if target.suffix.lower() != ".zip":
+            target = target / name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_name(target.name + ".part")
+    with zipfile.ZipFile(tmp, "w", compression=zipfile.ZIP_DEFLATED) as z:
+        for path in sorted(p for p in folder.rglob("*") if p.is_file()):
+            # PNG, OGG and GLB are compressed already; store them as they are.
+            kind = zipfile.ZIP_STORED if path.suffix.lower() in {".png", ".ogg", ".glb"} else zipfile.ZIP_DEFLATED
+            z.write(path, f"{folder.name}/{path.relative_to(folder).as_posix()}", compress_type=kind)
+    tmp.replace(target)
+    return target
 
 
 def run_in_page(template: str | dict, opts: dict, timeout_s: float = 300) -> dict:
@@ -250,6 +276,9 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--no-bloom", action="store_true", help="don't bake the bloom glow into the sprites")
     ap.add_argument("--style", choices=STYLES, help="art style: stylized, realistic, toon or pixel (default: the template's)")
     ap.add_argument("--out", help="output folder (default exports/<id>-seed<seed>, plus -<style> for non-stylized)")
+    ap.add_argument("--zip", nargs="?", const="", metavar="PATH",
+                    help="also pack the export into one .zip (a .zip path, or a folder for <folder>-sprites.zip; "
+                         "default next to the output folder)")
     args = ap.parse_args(argv)
     try:
         res = export(args.template, seed=args.seed, frame=args.frame, fps=args.fps,
@@ -263,6 +292,8 @@ def main(argv: list[str]) -> int:
           f"{len(m['sheets'])} sheets (whole spell + one per layer), rows: {', '.join(m['view_rows'])}")
     for f in res["files"]:
         print(f"  {f}")
+    if args.zip is not None:
+        print(f"zip: {zip_folder(res['out'], args.zip or None)}")
     return 0
 
 
