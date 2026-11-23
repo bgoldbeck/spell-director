@@ -96,6 +96,11 @@
             <option value="pixel">Pixel art</option>
           </select>
         </label>
+        <label title="Caster animation: the template's gestures (or its clip), or a Mixamo animation you loaded. Exports bake whichever plays.">Animation
+          <select id="clip-select"><option value="">Template's</option></select>
+        </label>
+        <label class="btn file-btn" title="Load a Mixamo animation (FBX or GLB with mixamorig bones) to play on the caster. It is saved in the clips folder.">Load Mixamo…<input id="clip-file" type="file" accept=".fbx,.glb,.gltf,.json" hidden></label>
+        <label class="check" title="Mirror the animation: a right-handed Mixamo throw thrown with the caster's casting (left) hand"><input id="clip-mirror" type="checkbox"> Mirror</label>
         <label class="check" title="Bloom: bright light glows past its edges (B)"><input id="bloom" type="checkbox" checked> Bloom</label>
         <label>Seed <input id="seed" type="number" min="0" step="1" value="1"></label>
         <button id="reroll" class="btn" title="New random seed: same template, different cast">New cast</button>

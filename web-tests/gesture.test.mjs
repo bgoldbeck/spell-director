@@ -76,9 +76,9 @@ test("raise lifts the hand overhead; slam drives both fists down; point straight
   const slam = at({ kind: "slam" });
   assert.ok(slam.lead.hand[1] < 0.45 && slam.off.hand[1] < 0.45);
   const p = at({ kind: "point" }).lead;
-  const reach = (i) => dist(p.fingers[i][2], p.wrist);
+  const reach = (i) => dist(p.fingers[i][3], p.wrist);
   assert.ok(reach(1) > reach(2) + 0.03, "index out further than the curled middle finger");
-  assert.ok(dist(p.tip, p.fingers[1][2]) < 1e-12);
+  assert.ok(dist(p.tip, p.fingers[1][3]) < 1e-12);
 });
 
 test("poses change smoothly: no jumps between frames, even when one gesture cuts into another", () => {

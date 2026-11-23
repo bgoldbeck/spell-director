@@ -268,7 +268,32 @@ At rest the casting hand is up in front of the chest (where `caster_hand` always
 
 The stand-ins round the caster have arms too: they follow their reaction (`flail` when knocked back, `guard` when they flinch or cower, `cheer`). A caster with `caster_react` `shout` and no gestures swings into a `roar`.
 
-In an engine, gestures are the caster's casting animation: the export lists them with their times.
+In an engine, gestures are the caster's casting animation: the export lists them with their times, and bakes them onto a Mixamo-named skeleton (see [Exporting: caster rig](exporting.md#caster-rig-and-animation-unity-humanoid)).
+
+## Mixamo clips
+
+The caster's skeleton matches Mixamo's: the same bones (`Hips`, `Spine`, `Spine1`, `Spine2`, `Neck`, `Head`, `LeftShoulder`, `LeftArm`, `LeftForeArm`, `LeftHand`, `LeftHandThumb1`–`4`, `LeftHandIndex1`–`4` ... and the right side and legs) with the same names. Its arm joints are those bones (shoulder = `Arm`, elbow = `ForeArm`, wrist = `Hand`, a finger's knuckle, two joints and tip = its bones 1–4). **The casting (lead) hand is the left hand.** So animation moves both ways:
+
+- **In:** in the viewer, **Load Mixamo…** takes a Mixamo FBX (Download, Format FBX Binary, With Skin) or any GLB/glTF with Mixamo bone names, converts it to a clip (`spelldirector.clip/1`) and saves it in the library's `clips/` folder under the file's name (`Standing 2H Magic Attack 01.fbx` becomes `standing-2h-magic-attack-01`). **Animation** picks it for the spell on screen (and exports bake it); **Mirror** plays a right-handed animation with the left, casting hand. Mixamo's animations stay on your computer: `clips/` is not part of the repo.
+- **In a template:** `space.caster_clip` plays a clip on the caster:
+
+```json
+"caster_clip": { "clip": "standing-2h-magic-attack-01", "at_ms": 0, "from_ms": 300, "speed": 1.2, "mirror": true }
+```
+
+| Field | Meaning |
+|---|---|
+| `clip` | The clip's name (its file in `clips/` without `.json`). |
+| `at_ms` | When it starts, spell time (default 0). |
+| `from_ms`, `to_ms` | The part of the clip to play (default all of it). |
+| `speed` | Playback speed (default 1). |
+| `mirror` | Swap sides: a right-handed animation with the casting hand (default false). |
+| `blend_ms` | Blend in from the gestures before `at_ms`, and back out after the end (default 150). |
+| `hold_ms` | Hold the last pose this long before blending out (default 0). |
+
+While it plays the clip moves the arms, hands, fingers, hips and chest, and every hand anchor follows it. **Keep `caster_gestures` too**: they play whenever the clip isn't there (someone else's computer, a fresh install) and before and after it. Line the clip up with the beats like a gesture: find the frame where the throw lets go (scrub the viewer) and set `at_ms` (or `from_ms`) so it lands on the release beat.
+
+- **Out:** every sprite export also writes the caster rig (`<id>.caster.glb`), its animation as a clip and a timeline of every event keyed to a bone socket: see [Exporting](exporting.md#caster-rig-and-animation-unity-humanoid).
 
 ## Sword skills
 

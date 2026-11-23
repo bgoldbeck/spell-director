@@ -162,6 +162,15 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
         at = gesture.get("at_ms")
         if isinstance(at, (int, float)) and at > duration:
             warnings.append(f"space.caster_gestures[{i}] ({gesture['kind']}): starts at {at} ms, after the spell ends ({duration} ms)")
+    clip = doc["space"].get("caster_clip")
+    if clip:
+        at = clip.get("at_ms", 0)
+        if isinstance(at, (int, float)) and at > duration:
+            warnings.append(f"space.caster_clip ({clip['clip']}): starts at {at} ms, after the spell ends ({duration} ms)")
+        if not doc["space"].get("caster_gestures"):
+            warnings.append(f"space.caster_clip ({clip['clip']}): no caster_gestures to fall back on when the clip isn't loaded")
+        if doc.get("archetype") == "status":
+            warnings.append(f"space.caster_clip ({clip['clip']}): a status effect has no caster")
     no_caster = doc.get("archetype") == "status"
     for layer in doc["layers"]:
         lid = layer["id"]

@@ -23,7 +23,9 @@ plus the user's, and a user template with the same path wins.
 
 from __future__ import annotations
 
+import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -123,3 +125,43 @@ def find_template_file(rel: str, dirs: list[Path] | None = None) -> Path | None:
         if base in target.parents and target.is_file():
             return target
     return None
+
+
+# Animation clips ("spelldirector.clip/1", web/js/engine/rig.js): Mixamo
+# animations converted in the viewer, saved in the library's clips/ folder.
+# They are the user's own files (Mixamo's terms don't allow sharing the
+# animations themselves), so the repo ships none and ignores the folder.
+CLIP_NAME = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
+
+
+def user_clips() -> Path:
+    return library_root() / "clips"
+
+
+def clip_index() -> dict:
+    """The viewer's clip list: every clip name (file name without .json)."""
+    folder = user_clips()
+    names = sorted(p.stem for p in folder.glob("*.json") if CLIP_NAME.match(p.stem)) if folder.is_dir() else []
+    return {"clips": names}
+
+
+def find_clip_file(name: str) -> Path | None:
+    """The clip file for a name, or None (bad name or no such file)."""
+    if not CLIP_NAME.match(name or ""):
+        return None
+    target = user_clips() / f"{name}.json"
+    return target if target.is_file() else None
+
+
+def save_clip(name: str, clip: dict) -> Path:
+    """Write a clip into the library's clips/ folder. Raises ValueError for a bad name or clip."""
+    if not CLIP_NAME.match(name or ""):
+        raise ValueError("clip names are lowercase letters, digits, - and _ (up to 64)")
+    if not isinstance(clip, dict) or clip.get("format") != "spelldirector.clip/1" or not isinstance(clip.get("rotations"), dict):
+        raise ValueError("not a spelldirector.clip/1 clip")
+    folder = user_clips()
+    folder.mkdir(parents=True, exist_ok=True)
+    target = folder / f"{name}.json"
+    target.write_text(json.dumps(clip, separators=(",", ":")) + "\n", encoding="utf-8")
+    return target
+

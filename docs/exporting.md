@@ -31,6 +31,7 @@ Every guide has a build order (also `build_order` in the JSON): core hero layer 
 | `<id>.sounds.json` | The sound cue sheet (format `spelldirector-sounds-1`): every sound event (time, frame, file, beat, role, volume, pitch) and, per cue, what it should sound like, a text-to-SFX prompt with duration and loop settings, a synthesis recipe and library search terms. See [Sound](#sound). |
 | `<id>.preview.wav` | The whole spell's placeholder sound mix, starting at 0 ms: a timing reference to play under `all.png`. |
 | `sound-<cue>.wav` | One placeholder sound per cue, peak-normalized to -1 dBFS. Replace each with a real sound of the same name. |
+| `<id>.caster.glb`, `<id>.timeline.json`, `<id>.caster.clip.json` | The caster rig (Mixamo bone names) with the casting animation, and every event tied to a bone socket or a world point. See [Caster rig](#caster-rig-and-animation-unity-humanoid). |
 
 ### Sheet layout
 
@@ -81,6 +82,29 @@ Smoke layers drawn six-way lit (shader intent `lighting: "six_way"`, or any alph
 ### Sound
 
 Yes, sound is exported. The viewer's sounds are procedural placeholders: the timing and rough character are right, the quality isn't final. The export carries them as WAV files so the engine side can be wired up straight away, plus everything needed to make the real ones: the guide's **Sound** section (a beat-by-beat summary, an event table, per-cue briefs with text-to-SFX prompts, recipes and search terms, a copy-paste prompt for Claude or GPT, and Unity/Godot steps) and `<id>.sounds.json`. Final sounds come from a text-to-SFX generator, an AI-written synthesizer, a sound library or your own recordings; save them under the same file names. The vocabulary behind the briefs is [sound-design.md](sound-design.md).
+
+## Caster rig and animation (Unity Humanoid)
+
+Every export also carries the caster, so a person or an AI can rebuild the spell around a real character in Unity (or any engine):
+
+| File | What it is |
+|---|---|
+| `<id>.caster.glb` | The caster's skeleton with **Mixamo bone names** (`mixamorig:Hips`, `mixamorig:LeftArm`, `mixamorig:LeftHandIndex1`...), rest pose a T-pose, a crude stick mesh skinned to it, **socket** empties on the bones where effects attach (`socket_caster_hand`, `socket_caster_fingertip`, `socket_caster_blade_tip`...), the spell's world **points** (`point_primary_target`, `point_target_0`, `point_sky`...) and the casting animation baked at the export's frame rate. Meters (one character height = 1.8 m), the caster facing +Z. |
+| `<id>.timeline.json` | Format `spelldirector.timeline/1`. `events`: every gesture (with `release_ms`, when a throw lets go), beat, layer, light, screen flash and sound, at `t_ms`, each tied to a `socket` on the bones or a world `point`, with `end_ms`. `sockets`: each one's bone and offset. `points`: positions in glTF and Unity space. `socket_tracks`: every socket's position at every frame. |
+| `<id>.caster.clip.json` | The same animation as a SpellDirector clip (`spelldirector.clip/1`), to play it again in SpellDirector (`space.caster_clip`). |
+
+**Why this split:** the animation travels as an animation (the GLB), because Unity retargets a Humanoid clip onto any character; the effects travel as data (the timeline), keyed to bone names Unity already knows (`HumanBodyBones.LeftHand` is `mixamorig:LeftHand`), so whoever builds the spell attaches each effect to the right bone at the right time instead of guessing from pixels. The sprite sheets stay the visual reference for what each layer looks like.
+
+The animation is whatever the viewer plays: the template's gestures, its `caster_clip`, or a Mixamo animation picked under **Animation** (see [template-format.md](template-format.md#mixamo-clips)).
+
+### In Unity
+
+1. Convert the GLB to FBX with Blender: `blender -b -P tools/blender_glb_to_fbx.py -- <id>.caster.glb <id>.caster.fbx` (or import the GLB with the glTFast package).
+2. FBX import settings, **Rig**: Animation Type **Humanoid**, Avatar Definition **Create From This Model**. The mixamorig bones map on their own.
+3. **Animation**: the clip has the spell's id. Untick Loop Time for a one-shot.
+4. Play the clip from your caster's Animator (any Humanoid character), and spawn each timeline event's effect at its time: parent it to the socket's bone (`Animator.GetBoneTransform(HumanBodyBones.LeftHand)` plus `offset_m`) or place it at the world point, and stop it at `end_ms`.
+
+**The casting hand is the left hand** (`caster_hand` = `mixamorig:LeftHand`). For a right-handed caster, tick **Mirror** on the clip and swap Left and Right in the sockets. Positions are glTF space; Unity's importers flip x, so Unity = (-x, y, z) (the timeline's `unity_position_m`). The stand-in's squash in a reaction isn't exported (a skeleton can't squash); push, lift, lean and spin are, on the hips.
 
 ## Letting an AI model check the sheets
 

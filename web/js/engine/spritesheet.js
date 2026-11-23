@@ -890,12 +890,48 @@ export function guideMarkdown(m, { files } = {}) {
     "",
   );
 
+  if (m.caster_rig) add(...rigGuideLines(m));
+
   add("## Machine-readable data", "");
   add(
     `The JSON file has everything above in format \`${m.format}\`: \`sheets\` (image, first_frame, frame_count, start_ms, end_ms, columns, rows), \`view_rows\` and \`views\` (row, pivots, px_per_unit), \`layers\` (blend, colors, z, anchor, params for this seed), \`beats\`, \`decals\` (texture, size, timing and per-frame opacity, scale and rotation), \`screen_flashes\`, \`camera_shake\`, \`lights\` and \`sounds\`. Curves have one value per spell frame. An importer script can build the whole effect from it.`,
     "",
   );
   return lines.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
+// ------------------------------------------------------------ caster rig guide
+
+// The guide's caster rig section (engine/rigexport.js): the animation, the
+// sockets the effects hang from, and how to set it up in Unity.
+export function rigGuideLines(m) {
+  const r = m.caster_rig;
+  const lines = [
+    "## Caster rig and animation (Unity Humanoid)",
+    "",
+    `The caster's skeleton uses **Mixamo bone names** (\`mixamorig:Hips\`, \`mixamorig:LeftArm\`, \`mixamorig:LeftHandIndex1\`...), and its casting animation (${r.driven_by === "gestures" ? "from the template's gestures" : `from the clip \`${r.driven_by.replace(/^clip: /, "")}\``}) is baked at ${m.fps} fps. Unity maps those names to a Humanoid avatar automatically, so the animation plays on any Humanoid character: a Mixamo character, or your own.`,
+    "",
+    table(["File", "What it is"], [
+      [`\`${r.glb}\``, "The caster: skeleton (T-pose rest), a crude stick mesh, socket nodes where effects attach (`socket_caster_hand`...), the spell's world points (`point_target_0`...) and the animation. Meters, the caster facing +Z."],
+      [`\`${r.timeline}\``, "Format `spelldirector.timeline/1`: every gesture, beat, layer, light, flash and sound as an event at `t_ms`, each tied to a socket on the bones or to a world point, plus every socket's position per frame (`socket_tracks`)."],
+      [`\`${r.clip}\``, "The same animation as a SpellDirector clip (`spelldirector.clip/1`), to play it again in SpellDirector."],
+    ]),
+    "",
+    "### Set it up in Unity",
+    "",
+    `1. Get the rig in as FBX (the most reliable route to a Humanoid): in Blender, run \`blender -b -P tools/blender_glb_to_fbx.py -- ${r.glb} ${r.glb.replace(/\.glb$/, ".fbx")}\`. (Or install the glTFast package and import the .glb directly; set its animation import to Mecanim.)`,
+    "2. Select the FBX. **Rig** tab: Animation Type **Humanoid**, Avatar Definition **Create From This Model**, Apply. The mixamorig bones map on their own.",
+    "3. **Animation** tab: the clip is named after the spell. Untick Loop Time for a one-shot. Leave Root Transform Rotation and Position baked into pose (the caster casts in place).",
+    "4. Put the clip in your caster's Animator (a Cast state, or an Animator Override Controller), and trigger it when the spell is cast. Any Humanoid character can play it.",
+    "5. Add an empty child under the matching bone of *your* character for each socket in the timeline (`caster_hand` sits on `mixamorig:LeftHand` at `offset_m`), or use `Animator.GetBoneTransform(HumanBodyBones.LeftHand)` and add the offset.",
+    "6. Drive the effects from the timeline's events: at `t_ms` spawn the layer (VFX Graph, Particle System or Shuriken) at its socket (parent it so it follows the hand) or at its world point, and stop it at `end_ms`. Animation Events on the clip, a Timeline asset or a coroutine all work; `release_ms` on a gesture is the moment a throw lets go.",
+    "",
+    "**Which hand:** the casting hand (SpellDirector's lead hand, `caster_hand`) is the caster's **left** hand. For a right-handed caster, tick **Mirror** on the clip and swap Left and Right in the socket bones.",
+    "",
+    "**Coordinates:** the GLB and the timeline are in glTF space (meters, +Y up, the caster at the origin facing +Z, +X its left). Unity's importers flip x, so a Unity position is (-x, y, z); the timeline gives `unity_position_m` for the world points. One SpellDirector unit (a character's height) is 1.8 m.",
+    "",
+  ];
+  return lines;
 }
 
 // ------------------------------------------------------------ sound guide

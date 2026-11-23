@@ -6,7 +6,9 @@ import { resolveValue, rng, seedFor } from "./timeline.js";
 import { isSplash, splashLayout } from "./splash.js";
 import { isStatus } from "./status.js";
 import { combinedPose, REST } from "./react.js";
-import { HAND_ANCHORS, armsAt, gestureTracks, isHandAnchor, reactionGestures } from "./gesture.js";
+import { HAND_ANCHORS, armsAt, bladeFK, gestureTracks, isHandAnchor, reactionGestures } from "./gesture.js";
+import { applyRoot, armsFromRig, blendRig, clipPlayback, isClip, rigFromArms, rootOf, sampleClip } from "./rig.js";
+import { getClip } from "./clips.js";
 
 export { isStatus };
 
@@ -15,7 +17,7 @@ export const PX = 0.01; // template pixel sizes -> world units
 export { HAND_ANCHORS, isHandAnchor };
 
 // The caster's gestures with their numbers resolved (ranges picked by seed).
-function resolveGestures(list, seed) {
+export function resolveGestures(list, seed) {
   return [].concat(list || []).map((g, i) => ({
     ...g,
     at_ms: resolveValue(g.at_ms, seed, "gesture.at", i) ?? 0,
@@ -153,12 +155,32 @@ export function buildStage(template, seed) {
   const targetTracks = targets.map((_, i) => (targetReact && !status
     ? gestureTracks(targetReacts.flatMap((r, j) => reactionGestures(r, targetAts[j] + targetDelay(i))))
     : null));
+  // A Mixamo-style clip (space.caster_clip, engine/rig.js) drives the
+  // caster's arms while it plays, blended in from and back out to the
+  // gestures. Without the clip loaded, the gestures play as usual.
+  const clipDef = !status && space.caster_clip?.clip ? space.caster_clip : null;
+  const clip = clipDef ? getClip(clipDef.clip) : null;
+  const clipOn = isClip(clip);
   let armsMemo = null;
-  const casterArms = (t) => {
+  const casterPosed = (t) => {
     const tt = Number.isFinite(t) ? t : 0;
-    if (!armsMemo || armsMemo.t !== tt) armsMemo = { t: tt, arms: armsAt(casterTracks, tt, casterRest, weapon || {}) };
-    return armsMemo.arms;
+    if (!armsMemo || armsMemo.t !== tt) {
+      const arms = armsAt(casterTracks, tt, casterRest, weapon || {});
+      let rig = null;
+      let out = arms;
+      if (clipOn) {
+        const pb = clipPlayback(clipDef, clip, tt);
+        if (pb.weight > 0) {
+          rig = blendRig(rigFromArms(arms), sampleClip(clip, pb.ms, { mirror: !!clipDef.mirror }), pb.weight);
+          out = armsFromRig(rig);
+          out.blade = bladeFK(out.lead, weapon || {});
+        }
+      }
+      armsMemo = { t: tt, arms: out, rig };
+    }
+    return armsMemo;
   };
+  const casterArms = (t) => casterPosed(t).arms;
 
   return {
     caster,
@@ -191,6 +213,16 @@ export function buildStage(template, seed) {
       if (who === "status" || status) return armsAt(null, t, "hang");
       return armsAt(targetTracks[who], t, "hang");
     },
+    // The caster's skeleton at time t (engine/rig.js), its reaction folded
+    // into the hips: what the rig export bakes.
+    rigAt(t) {
+      const p = casterPosed(t);
+      const rig = p.rig || rigFromArms(p.arms);
+      return casterReact && !status ? applyRoot(rig, rootOf(this.casterPose(t), [-1, 0, 0])) : rig;
+    },
+    // Whether a clip (space.caster_clip) drives the caster: its name, or null.
+    clip: clipOn ? String(clipDef.clip) : null,
+    clipMissing: clipDef && !clipOn ? String(clipDef.clip) : null,
     // Where the caster's hand is at time t (world). which: "lead" (the
     // casting hand, caster_hand), "off", "tip" (the lead index fingertip),
     // "off_tip", or "both" (between the palms). Before the effect has a time,
