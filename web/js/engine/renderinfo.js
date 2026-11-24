@@ -389,6 +389,8 @@ export function portingMarkdown({ templateId, layers = [] } = {}) {
     "",
     "Use the code as a recipe, not a spec: it was written to look right in a browser preview from four fixed cameras. Match the sprite sheets (timing, footprint, color) first; the code tells you how we got there.",
     "",
+    "This page is one of the references, not all of them. Read the guide's **Use every reference (required)** checklist first, and check your build against every item on it (all four views, the sheets, beats, must-read cues, key frames, range guide, rig and timeline, sounds) before calling it done.",
+    "",
     "## How the viewer is put together",
     "",
     "- One `Effect` holds the spell's layers. Each layer is a class with a Three.js `group` and an `update(t)` that sets every vertex, uniform, color and visibility from the layer's time `t` (ms), its params (`this.p(name, t)`, with keyframes already applied) and a seeded RNG. Nothing is carried from frame to frame, so you can scrub to any time.",

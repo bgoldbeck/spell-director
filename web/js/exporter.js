@@ -26,6 +26,7 @@ import { soundEvents, soundSheet } from "./engine/sound.js";
 import { renderExportAudio } from "./audio.js";
 import { rigExportFiles, rigFileNames } from "./engine/rigexport.js";
 import { resolveGestures } from "./engine/stage.js";
+import { readmeMarkdown, referenceChecklist } from "./engine/references.js";
 import { PORTING_FILE, collectSource, describeGroup, portingMarkdown, renderFileName, renderMarkdown, renderSummary } from "./engine/renderinfo.js";
 
 const VISIBLE = 3; // a pixel channel more than this (0-255) away from the empty background counts as drawn
@@ -355,6 +356,7 @@ export async function exportSpriteSheets(template, opts = {}) {
       { name: `${base}.spritesheet.json`, about: "The same data as this guide, machine-readable" },
       { name: `${base}.guide.md`, about: "This guide" },
       { name: `${base}.template.json`, about: "The SpellDirector template the sheets were made from" },
+      { name: "README.md", about: "Start here: points to this guide and says to use every reference" },
     ];
     // Sound: the cue sheet plus placeholder WAVs (the whole mix and one per cue).
     const cueLibrary = opts.cueLibrary || { cues: {} };
@@ -448,9 +450,13 @@ export async function exportSpriteSheets(template, opts = {}) {
         files.push({ name: w.negative_map, data: neg });
       }
     }
+    // Last, once the rig, sound and render notes are in: every reference this
+    // export has, and how to check the build against it.
+    manifest.reference_checklist = referenceChecklist(manifest);
     files.push({ name: extra[0].name, data: `${JSON.stringify(manifest, null, 2)}\n` });
     files.push({ name: extra[1].name, data: guideMarkdown(manifest, { files: extra }) });
     files.push({ name: extra[2].name, data: `${JSON.stringify(template, null, 2)}\n` });
+    files.push({ name: "README.md", data: readmeMarkdown(manifest, manifest.reference_checklist) });
     if (sheet.events.length) files.push({ name: soundSheetName(base), data: `${JSON.stringify(sheet, null, 2)}\n` });
     files.push(...audio);
     files.push(...rigFiles);

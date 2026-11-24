@@ -110,12 +110,27 @@ def test_export_spell_zip_has_everything(tmp_path, monkeypatch):
                                    out_path=str(tmp_path / "out"))
     z = tmp_path / "out" / "lightning-chain-arc-seed2-sprites.zip"
     assert res["zip"] == str(z) and z.stat().st_size == res["size_bytes"]
-    assert res["read_first"] == ["lightning-chain-arc.guide.md", "render/PORTING.md"]
+    assert res["read_first"] == ["README.md", "lightning-chain-arc.guide.md", "render/PORTING.md"]
     with zipfile.ZipFile(z) as f:
         names = set(f.namelist())
     pre = "lightning-chain-arc-seed2/"
     for n in ("all.png", "lightning-chain-arc.guide.md", "lightning-chain-arc.spritesheet.json",
               "lightning-chain-arc.template.json", "lightning-chain-arc.caster.glb",
-              "lightning-chain-arc.timeline.json", "render/PORTING.md", "render/arc.md"):
+              "lightning-chain-arc.timeline.json", "render/PORTING.md", "render/arc.md",
+              "range-guide/lightning-chain-arc-range-guide.png", "range-guide/lightning-chain-arc-range-guide.md"):
         assert pre + n in names, n
     assert {pre + c for c in res["contents"]} == names
+    assert "every reference" in res["instructions"] and "warnings" not in res
+    with zipfile.ZipFile(z) as f:
+        guide = f.read(pre + "lightning-chain-arc.guide.md").decode("utf-8")
+        data = json.loads(f.read(pre + "lightning-chain-arc.spritesheet.json"))
+        readme = f.read(pre + "README.md").decode("utf-8")
+    assert "lightning-chain-arc.guide.md" in readme and "do not be lazy" in readme
+    assert guide.index("## Use every reference (required)") < guide.index("## How to use this export")
+    ids = {it["id"] for it in data["reference_checklist"]}
+    assert {"view-front", "sheet-all", "range-guide", "render-notes", "caster-rig"} <= ids
+    for it in data["reference_checklist"]:
+        for fname in it["files"]:
+            if "/" in fname or fname.endswith((".png", ".json", ".md", ".glb", ".wav", ".ogg")):
+                if " " not in fname:
+                    assert pre + fname in names, f"checklist names {fname}, which is not in the zip"
