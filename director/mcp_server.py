@@ -146,7 +146,12 @@ def export_spell_zip(template_id: str, seed: int = 1, frame: int = 192, fps: int
     Mixamo-named skeleton and the casting animation, <id>.timeline.json with
     every event keyed to a bone socket or world point) and render/ (per layer:
     the viewer code, materials, blend state as Unity ShaderLab, GLSL shaders;
-    render/PORTING.md maps them to Unity and Godot). `out_path` is a .zip
+    render/PORTING.md maps them to Unity and Godot) and range-guide/ (annotated
+    key frames, sizes at gameplay distances). The guide opens with a required
+    checklist: whoever builds the spell must use every reference (all four
+    views, every sheet, beats, must-read cues, key frames, range guide, render
+    notes, rig, timeline, sounds) and check the build against each before
+    calling it done. Pass that on. `out_path` is a .zip
     path or a folder (for example the game project's import folder); by
     default the zip goes next to the export folder. Same options as
     export_sprites. Returns the zip path, its size and the file list."""

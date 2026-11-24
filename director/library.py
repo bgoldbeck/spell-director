@@ -36,6 +36,7 @@ import breakdown as _breakdown  # noqa: E402
 import build_index as _build_index  # noqa: E402
 import export_gif as _export_gif  # noqa: E402
 import export_sprites as _export_sprites  # noqa: E402
+import range_guide as _range_guide  # noqa: E402
 import sheet_cells as _sheet_cells  # noqa: E402
 import validate as _validate  # noqa: E402
 
@@ -340,30 +341,56 @@ def export_sprites(template_id: str, seed: int = 1, frame: int = 192, fps: int |
     }
 
 
+# Told to whoever opens the zip (the receiving AI reads the tool result too).
+USE_EVERY_REFERENCE = (
+    "Read the guide first and follow its 'Use every reference (required)' checklist: study every "
+    "reference in this export (all four camera views, the whole-spell and per-layer sheets, beats, "
+    "must-read cues, key frames, the range guide, render notes, caster rig and timeline, sounds), "
+    "build one layer at a time, and check the build against each item before calling it done. "
+    "Report each checklist item with what was compared and the result."
+)
+
+
 def export_spell_zip(template_id: str, seed: int = 1, frame: int = 192, fps: int | None = None,
-                     views: list[str] | None = None, style: str | None = None, out_path: str | None = None) -> dict:
+                     views: list[str] | None = None, style: str | None = None, out_path: str | None = None,
+                     range_guide: bool = True) -> dict:
     """Export a spell as one .zip for a game engine: everything export_sprites
     writes (sheets per layer, guide, JSON, template, sounds, the caster rig
     GLB, timeline and clip, and render/ notes with the code and shaders that
-    drew each layer) packed as <folder>/<files>. `out_path` is a .zip path or
-    a folder to put <folder>-sprites.zip in (default: next to the export
-    folder). Returns the zip's path plus what's inside."""
+    drew each layer), plus the range guide (range-guide/: annotated key
+    frames and how wide each part reads at gameplay distances), packed as
+    <folder>/<files>. `out_path` is a .zip path or a folder to put
+    <folder>-sprites.zip in (default: next to the export folder). Returns the
+    zip's path plus what's inside."""
     res = export_sprites(template_id, seed, frame, fps, views, True, style)
-    zpath = _export_sprites.zip_folder(res["out_dir"], out_path)
     folder = Path(res["out_dir"])
+    warnings = []
+    if range_guide:
+        try:
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                rg = pool.submit(_range_guide.guide, template_id, seed=seed, style=style,
+                                 out=folder / "range-guide").result()
+            res["files"] = res["files"] + rg["files"]
+        except Exception as exc:  # noqa: BLE001 - the sheets are still worth handing over
+            warnings.append(f"no range guide in the zip ({exc}); make one with: python tools/range_guide.py {template_id}")
+    zpath = _export_sprites.zip_folder(res["out_dir"], out_path)
     rel = [Path(f).relative_to(folder).as_posix() for f in res["files"]]
-    return {
+    out = {
         "zip": str(zpath),
         "size_bytes": zpath.stat().st_size,
         "out_dir": res["out_dir"],
         "guide": Path(res["guide"]).relative_to(folder).as_posix() if res["guide"] else None,
-        "read_first": [r for r in rel if r.endswith(".guide.md")] + [r for r in rel if r == "render/PORTING.md"],
+        "read_first": [r for r in rel if r == "README.md"] + [r for r in rel if r.endswith(".guide.md")] + [r for r in rel if r == "render/PORTING.md"],
+        "instructions": USE_EVERY_REFERENCE,
         "contents": rel,
         "frame_count": res["frame_count"],
         "fps": res["fps"],
         "view_rows": res["view_rows"],
         "style": res["style"],
     }
+    if warnings:
+        out["warnings"] = warnings
+    return out
 
 
 def export_gif(template_id: str, views: list[str] | None = None, seed: int = 1, width: int = 480, fps: int = 20,

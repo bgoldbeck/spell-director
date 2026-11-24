@@ -4,6 +4,7 @@
 // default per layer type, marked as a guess.
 
 export const HOW_TO_USE = [
+  "Use every reference in this export, not just one: all four camera views, the whole-spell and per-layer sheets, the beats, the must-read cues and key frames, the range guide, the render notes, the caster rig and timeline, and the sounds. Check the build against each one before calling it done (see \"Use every reference\" at the top of the guide).",
   "These sprite sheets are a reference, not the effect itself. They show timing, layering, composition, motion and palette from four cameras.",
   "Do not copy them pixel for pixel into a game, and an AI model (Claude, GPT, ...) should not treat them as literal instructions. Rebuild each layer in the engine with shaders and particles: the `shader` intent of each layer (material, noise, flow, distortion, fresnel, dissolve, emissive) says what the magic should feel like, and the beats and layer timings say when.",
   "Use the frames to check your rebuild: same beats, same order, same footprint, same colors. Use them directly only for quick prototypes, flipbook-style games, or as a texture source (for example a bolt shape or a decal).",

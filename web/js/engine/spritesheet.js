@@ -16,6 +16,7 @@ import { HOW_TO_USE, describeShader, engineRecipe, shaderFor } from "./shader.js
 import { DECAL_FILLS, STYLES, decalRender, resolveStyle, shaderForStyle, styleGuideLines, styleRecipe } from "./style.js";
 import { SIXWAY_EXPORT_PX, SIXWAY_FRAMES, smokeLighting } from "./sixway.js";
 import { TRACKING, resolveReadability, trackingFor } from "./readability.js";
+import { referenceChecklist, referenceChecklistLines } from "./references.js";
 
 export const FORMAT = "spelldirector.spritesheet/1";
 export const SHEET_VIEWS = ["front", "side", "top", "three_quarter"];
@@ -630,7 +631,8 @@ export function guideMarkdown(m, { files } = {}) {
     "",
   );
 
-  add("## How to use this export (read this first)", "");
+  add(...referenceChecklistLines(m, m.reference_checklist || referenceChecklist(m)));
+  add("## How to use this export", "");
   add(...HOW_TO_USE.map((x) => `> ${x}`).flatMap((x) => [x, ">"]).slice(0, -1), "");
   if (m.style) add(...styleGuideLines({ id: m.style.id, from: m.style.source, notes: m.style.notes }));
   add("## Build it one layer at a time", "");
@@ -945,7 +947,7 @@ export function guideMarkdown(m, { files } = {}) {
   const exCol = exK % exSheet.columns;
   const exRow = Math.floor(exK / exSheet.columns) * nViews + exV;
   add(
-    "First, the rule from the top of this guide: the sheets are a timing and composition reference, not literal instructions. Look at cells to understand when and where each layer happens and how it reads; build the actual look from each layer's shader intent.",
+    "First, the rules from the top of this guide: use every reference, and treat the sheets as a timing and composition reference, not literal instructions. Look at cells to understand when and where each layer happens and how it reads, in every view, not only the hero view; build the actual look from each layer's shader intent and render notes.",
     "",
     "The sheets have no numbers or gridlines drawn on them, so the engine gets clean pixels. The JSON file is the map. Don't try to read a whole sheet as one image: it gets scaled down, the cells blur together and you can't tell which column is which frame. Instead, use the map to cut out the cells you need and look at those.",
     "",
