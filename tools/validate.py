@@ -43,7 +43,8 @@ KNOWN_PARAMS = {
         "width_px", "wobble", "wobble_hz", "jaggedness", "regen_ms", "grow_ms", "style", "flow_speed", "turbulence",
         "foam", "churn", "shed_count", "shed_speed", "shed_size_px", "shed_life_ms", "spread", "sweep_px", "sweep_ms",
         "puff_count", "puff_size_px", "spiral_count", "spiral_pitch_px", "spiral_speed", "spiral_radius",
-        "spiral_width_px", "line_count", "line_length",
+        "spiral_width_px", "line_count", "line_length", "edge_softness", "far_heat", "puff_spread", "puff_rise",
+        "ground_clearance_px",
     },
     "vortex": {
         "height_px", "base_radius_px", "top_radius_px", "flare", "spin_hz", "strands", "twist", "turbulence",
@@ -77,7 +78,7 @@ KNOWN_PARAMS = {
         "emblem", "wave", "wave_hz",
     },
     "slash": {"trace_ms", "trail_ms", "inner", "reach_px", "width_px", "softness", "opacity", "edge"},
-    "light": {"radius", "energy", "height_px", "forward_px", "side_px", "orbit_hz", "tint"},
+    "light": {"radius", "energy", "height_px", "forward_px", "side_px", "orbit_hz", "tint", "along", "along_swing", "along_hz"},
     "camera_shake": {"amplitude_px", "frequency_hz", "decay"},
     "sound_cue": {"cue", "gain", "pitch", "offset_ms", "duration_ms", "repeat_ms", "size"},
 }

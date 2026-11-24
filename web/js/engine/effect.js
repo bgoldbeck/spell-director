@@ -21,6 +21,7 @@ import { decalDepthMaps, drawDecal } from "./decaltex.js";
 import { makeDecalMaterial } from "./decalmat.js";
 import { decalRender, resolveStyle, shaderForStyle } from "./style.js";
 import { shaderFor } from "./shader.js";
+import { groundLift } from "./beamground.js";
 import { smokeLighting, sixwayFrame } from "./sixway.js";
 import { makeSixWayMaterial } from "./sixwaymat.js";
 import { lightOffset } from "./lights.js";
@@ -358,6 +359,8 @@ uniform float noiseScale;
 uniform float lick;      // sideways licking speed
 uniform float total;     // ribbon length in world units (to cool the far end)
 uniform float seed;
+uniform float soft;      // 0..1: longer, smoother tongues and a feathered silhouette
+uniform float coolEnd;   // heat multiplier at the far end (0.5: half as hot as the mouth)
 uniform vec3 hot;        // white-yellow core
 uniform vec3 mid;        // orange body
 uniform vec3 cool;       // red edges
@@ -380,18 +383,25 @@ void main() {
   // sideways, tear the edges into tongues, and map heat to a ramp from the
   // white-yellow core through orange to red. The far end runs cooler.
   float u = clamp(vAlong / max(0.001, total), 0.0, 1.0);
-  vec2 q = vec2(vAlong * noiseScale - time * flow, vSide * 1.7 - time * lick);
+  // soft stretches the noise along the stream (long tongues, not a saw
+  // edge) and slows the sideways lick.
+  vec2 q = vec2(vAlong * noiseScale * (1.0 - 0.45 * soft) - time * flow, (vSide * 1.7 - time * lick) * (1.0 - 0.5 * soft));
   float n = fbm(q);
   float n2 = fbm(q * 2.3 + vec2(-time * flow * 0.8, 5.2));
-  float edge = max(0.12, 1.0 - noiseAmt * (0.1 + 0.8 * n));
+  // The silhouette follows smoother, low-frequency noise as soft rises, so
+  // the edge has no fine repeating teeth.
+  float ne = mix(n, vnoise(q * 0.7 + vec2(3.1, 7.7)), 0.7 * soft);
+  float edge = max(0.12, 1.0 - noiseAmt * (0.1 + 0.8 * ne));
   float xe = x / edge;
   float body = xe >= 1.0 ? 0.0 : pow(1.0 - xe * xe, hardness);
   // Hot pockets come and go; the cone cools with distance from the mouth.
-  float heat = body * (0.35 + 1.2 * n2 * n2 + 0.2 * n) * mix(1.25, 0.5, u);
+  float heat = body * (0.35 + 1.2 * n2 * n2 + 0.2 * n) * mix(1.25, coolEnd, u);
   heat = clamp(heat, 0.0, 1.4);
   vec3 c = mix(cool, mid, smoothstep(0.15, 0.55, heat));
   c = mix(c, hot, smoothstep(0.75, 1.15, heat));
   float a = smoothstep(0.02, 0.25, heat);
+  // Feather the sides whatever the noise does: no hard-cut card edge.
+  a *= 1.0 - soft * smoothstep(0.3, 1.0, x);
   gl_FragColor = vec4(c * (0.45 + 0.45 * heat), a * opacity);
 #elif defined(FLUID)
   // Noise scrolls along the ribbon (flow), eats into the edges (a ragged,
@@ -469,6 +479,8 @@ class RibbonMesh {
           lick: { value: opts.fire.lick ?? 1.5 },
           total: { value: 1 },
           seed: { value: opts.fire.seed ?? 0 },
+          soft: { value: opts.fire.soft ?? 0 },
+          coolEnd: { value: opts.fire.coolEnd ?? 0.5 },
           hot: { value: new THREE.Color(opts.fire.hot ?? "#fff6d0") },
           mid: { value: new THREE.Color(opts.fire.mid ?? "#ff8a1e") },
           cool: { value: new THREE.Color(opts.fire.cool ?? "#c42a0c") },
@@ -2201,8 +2213,13 @@ class SmokeLayer extends Layer {
     const ro = this.rng("spread");
     const attached = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
     const vx = attached instanceof VortexLayer && attached.shape ? attached : null;
+    // attach_to a beam: puffs rise off the stream itself, each from a seeded
+    // point along it (faint smoke trailing up off a jet of flame).
+    const beamPath = attached instanceof BeamLayer && attached.fullPath?.length > 1 ? attached.fullPath : null;
+    const ra = this.rng("along");
     const scatter = this.p("spread_px", 0, 15) * PX;
     this.sprites.forEach((s, i) => {
+      const from = beamPath ? beamPath[Math.round(ra.range(0.25, 0.95) * (beamPath.length - 1))] : origin;
       const ang = ((i + ro.range(-0.35, 0.35)) / Math.max(1, count)) * Math.PI * 2;
       const kOut = ro.range(0.75, 1.2);
       let born = r.range(0, this.loop ? this.loop.len : Math.max(1, (w.end - w.start) * 0.5));
@@ -2229,7 +2246,7 @@ class SmokeLayer extends Layer {
         const a = turn * Math.PI * 2;
         s.position.set(sh.base.x + Math.cos(a) * out, 0.06 + rise * age * (life / 1000) * 2, sh.base.z + Math.sin(a) * out);
       } else {
-        s.position.set(origin.x + dx * (1 + age), origin.y + 0.1 + rise * age * (life / 1000) * 3, origin.z + dz * (1 + age));
+        s.position.set(from.x + dx * (1 + age), from.y + (beamPath ? 0 : 0.1) + rise * age * (life / 1000) * 3, from.z + dz * (1 + age));
       }
       if (outward) {
         const secs = (age * life) / 1000;
@@ -2887,6 +2904,16 @@ class BeamLayer extends Layer {
       const j = r.range(-1, 1) * jag * 0.06 * env;
       pts.push(a.clone().addScaledVector(dir, len * u).addScaledVector(p1, s + j).addScaledVector(p2, s2 + r.range(-1, 1) * jag * 0.04 * env));
     }
+    // ground_clearance_px: tilt the beam up from the hand just enough that its
+    // widest surge stays this far above the ground at every point (a target
+    // standing on the ground, a camera low enough to see the beam's
+    // underside). Off (0) by default.
+    const clear = this.p("ground_clearance_px", t, 0) * PX;
+    this.lift = 0;
+    if (clear > 0) {
+      const w0 = this.p("width_px", t, 14) * PX;
+      this.lift = groundLift(pts, (u) => this.edgeReach(t, u, w0), clear);
+    }
     // Reach full length over grow_ms (default 60 ms: snaps out). A slower
     // grow reads as a jet travelling to the target.
     const grow = Math.min(1, Math.max(0.05, this.local(t) / Math.max(1, this.p("grow_ms", t, 60))));
@@ -2940,12 +2967,42 @@ class BeamLayer extends Layer {
     this.updateShed(t, width, I);
   }
 
+  // How far the beam's widest part can reach from its centre line at u (0 at
+  // the hand, 1 at the target), in world units: the outer body at its
+  // biggest surge. ground_clearance_px keeps this above the ground.
+  edgeReach(t, u, width) {
+    const churn = this.p("churn", t, this.fire ? 0.3 : this.ice ? 0.1 : 0.35);
+    if (this.fire) {
+      const spread = this.p("spread", t, 3);
+      const profile = 0.3 + (spread - 0.3) * Math.pow(u, 0.75);
+      const flare = 1 + 0.35 * Math.exp(-(1 - u) * 8);
+      const end = Math.min(1, (1 - u) * 9 + 0.3);
+      return width * 0.75 * profile * (1 + churn) * flare * end;
+    }
+    if (this.wind) {
+      const spread = this.p("spread", t, 2.5);
+      return width * 0.6 * (0.35 + (spread - 0.35) * Math.pow(u, 0.8)) * 1.2;
+    }
+    if (this.water || this.ice) return width * 0.62 * (1 + churn) * (1 + 0.35 * Math.exp(-u * 12) + 0.45 * Math.exp(-(1 - u) * 10));
+    return width * 0.55;
+  }
+
   // Fire: the cone widens from the mouth to `spread` times its width at the
   // far end, surges travel down it (churn), and it flares where it hits.
+  // edge_softness (0-1) stretches the flame noise along the stream and
+  // feathers the sides, so the edge reads as soft licks instead of a jagged,
+  // hard-cut strip; far_heat (default 0.5) is how hot the far end burns
+  // relative to the mouth (lower: deeper red toward the target).
   updateFire(t, width, I, n, len, sec, grow) {
     const churn = this.p("churn", t, 0.3);
     const flow = this.p("flow_speed", t, 5);
     const spread = this.p("spread", t, 3);
+    const soft = Math.max(0, Math.min(1, this.p("edge_softness", t, 0)));
+    const farHeat = Math.max(0, Math.min(1.25, this.p("far_heat", t, 0.5)));
+    for (const m of [this.outer, this.core]) {
+      m.material.uniforms.soft.value = soft;
+      m.material.uniforms.coolEnd.value = farHeat;
+    }
     const profile = (u) => 0.3 + (spread - 0.3) * Math.pow(u, 0.75);
     const w = this.path.map((_, i) => {
       const u = i / n;
@@ -3033,9 +3090,15 @@ class BeamLayer extends Layer {
   // Billowing flame puffs that ride the stream from the mouth to the target,
   // swelling and cooling from white-yellow to orange to red, then rolling up
   // where the stream breaks on the target. Seeded per puff, a function of t.
+  // puff_spread (default 1) scales how far puffs ride off the centre line and
+  // puff_rise (default 1) how high they climb, so a tight jet keeps its
+  // puffs hugging the core. Puffs never dip into the ground.
   updatePuffs(t, width, I, len, flow, spread, profile, grow) {
     const count = Math.min(this.puffs.length, Math.round(this.p("puff_count", t, 24)));
     const size = this.p("puff_size_px", t, 0) * PX || width * 0.9;
+    const puffSpread = Math.max(0, this.p("puff_spread", t, 1));
+    const puffRise = Math.max(0, this.p("puff_rise", t, 1));
+    const clear = this.p("ground_clearance_px", t, 0) * PX;
     const local = this.local(t);
     const span = Math.max(1, (this.window?.end ?? 0) - (this.window?.start ?? 0));
     const r = this.rng("puffs");
@@ -3062,11 +3125,14 @@ class BeamLayer extends Layer {
       const at = path[j].clone().lerp(path[j + 1], f - j);
       const dir = new THREE.Vector3().subVectors(path[j + 1], path[j]).normalize();
       const [p1, p2] = perpendiculars(dir);
-      const lateral = width * 0.3 * profile(u) * (1 + extra * 2);
+      const lateral = width * 0.3 * profile(u) * (1 + extra * 2) * puffSpread;
       at.addScaledVector(p1, offA * lateral).addScaledVector(p2, offB * lateral * 0.7);
-      at.y += 0.15 * u * u + extra * 0.9;
+      at.y += (0.15 * u * u + extra * 0.9) * puffRise;
+      const scale = size * k * (0.5 + profile(u) * 0.55 + extra * 1.5);
+      // A sprite reaches about 0.35 of its size from its centre (soft cloud).
+      if (clear > 0) at.y = Math.max(at.y, scale * 0.35 + clear);
       sp.position.copy(at);
-      sp.scale.setScalar(size * k * (0.5 + profile(u) * 0.55 + extra * 1.5));
+      sp.scale.setScalar(scale);
       sp.material.rotation = spin0 + age * 0.002;
       if (u < 0.5) tmp.copy(hot).lerp(this.midColor, u * 2);
       else tmp.copy(this.midColor).lerp(this.coolColor, Math.min(1, (u - 0.5) * 2 + extra * 2));
@@ -4301,6 +4367,24 @@ class LightLayer extends Layer {
 
   update(t) {
     const I = this.intensityAt(t);
+    // attach_to a beam: the light rides the beam, at `along` (0 = hand, 1 =
+    // target, default 0.5) swinging back and forth by along_swing at along_hz,
+    // so the glow it throws on the ground runs up and down the stream.
+    const host = this.def.attach_to && this.effect.layerById(this.def.attach_to, this.instance);
+    if (host instanceof BeamLayer) {
+      const path = host.fullPath || [];
+      const sec = Math.max(0, this.local(t)) / 1000;
+      const u = Math.max(0, Math.min(1, this.p("along", t, 0.5) + this.p("along_swing", t, 0) * Math.sin(Math.PI * 2 * this.p("along_hz", t, 1) * sec)));
+      if (path.length > 1) {
+        const f = u * (path.length - 1);
+        const j = Math.min(path.length - 2, Math.floor(f));
+        this.light.position.copy(path[j]).lerp(path[j + 1], f - j);
+        this.light.position.y = Math.max(0.05, this.light.position.y + this.p("height_px", t, 0) * PX);
+      }
+      this.light.distance = this.p("radius", t, 6);
+      this.light.intensity = path.length > 1 && host.group.visible ? I * this.p("energy", t, 2) * 3 : 0;
+      return;
+    }
     const [x, y, z] = lightOffset({
       forward: this.p("forward_px", t, 0),
       side: this.p("side_px", t, 0),
