@@ -1,0 +1,404 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "fire-campfire",
+  "name": "Campfire",
+  "description": "A small, natural campfire in a ring of stones: the kindling catches with a soft whoosh, settles into a steady, crackling burn with licking flames, drifting embers and a thin smoke column, then dies down to glowing coals.",
+  "element": "fire",
+  "archetype": "aura",
+  "tags": [
+    "campfire",
+    "cozy",
+    "looping",
+    "natural",
+    "survival",
+    "rest",
+    "embers"
+  ],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A campfire a player lights from kindling: phases ignite, steady burn loop, dying embers; flames, embers/sparks, smoke, ground glow; warm palette; crackle sound."
+  },
+  "timing": {
+    "duration_ms": 9600,
+    "fps_hint": 30,
+    "loop_range": {
+      "start_ms": 2000,
+      "end_ms": 6900
+    }
+  },
+  "space": {
+    "origin": "caster",
+    "destination": "point",
+    "travel": "none",
+    "scale": 1.0,
+    "footprint": {
+      "shape": "point",
+      "length": 1.0
+    },
+    "caster_gestures": [
+      {
+        "kind": "summon",
+        "at_ms": 0,
+        "duration_ms": 600,
+        "hold_ms": 200
+      }
+    ]
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "Over the shoulder: the flames stand in the middle of the pit, embers rising past them and the smoke thinning out above.",
+      "side": "A clean silhouette: tongues of flame licking up out of the logs, white-yellow at the base and orange at the tips, the smoke leaning up behind them.",
+      "top": "Looking down into the pit: a bright ring of coals with flame tips flicking at its middle, the warm glow spreading over the ground around it.",
+      "three_quarter": "Hero view. The whole fire reads at once: glow on the ground, coals in the pit, flames, embers and smoke, sized for a camp."
+    }
+  },
+  "palette": {
+    "core": "#FFF3C4",
+    "primary": "#FF8A24",
+    "secondary": "#E0431B",
+    "accent": "#FFC34D",
+    "shadow": "#5C5752"
+  },
+  "beats": [
+    {
+      "id": "ignite",
+      "phase": "anticipation",
+      "start_ms": 0,
+      "end_ms": 1200,
+      "intensity": {
+        "shape": "ease_out",
+        "from": 0.0,
+        "to": 1.0
+      },
+      "intent": "The kindling catches: a puff of smoke, then small flames climb out of the twigs and spread to the logs."
+    },
+    {
+      "id": "burn",
+      "phase": "release",
+      "start_ms": 1200,
+      "end_ms": 7200,
+      "intensity": {
+        "shape": "hold",
+        "from": 1.0
+      },
+      "intent": "A steady, comfortable burn under a thin column of smoke, embers drifting up now and then. Seamless loop."
+    },
+    {
+      "id": "embers",
+      "phase": "dissipation",
+      "start_ms": 7200,
+      "end_ms": 9600,
+      "intensity": {
+        "shape": "ease_in",
+        "from": 1.0,
+        "to": 0.15
+      },
+      "intent": "Out of wood: the flames sink into the logs and the pit glows as red coals, a last wisp of smoke and the odd spark."
+    }
+  ],
+  "layers": [
+    {
+      "id": "scorch",
+      "type": "decal",
+      "beats": [
+        "ignite",
+        "burn",
+        "embers"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": -2,
+      "params": {
+        "shape": "scorch",
+        "radius_px": 70,
+        "opacity": 0.7,
+        "fade_in_ms": 900,
+        "lifetime_ms": 9600,
+        "fade_ms": 1000,
+        "detail": 0.5
+      },
+      "shader": {
+        "material": "ashen",
+        "technique": "decal",
+        "look": "Soot and ash darkening the ground inside the stone ring."
+      }
+    },
+    {
+      "id": "ground-glow",
+      "type": "decal",
+      "beats": [
+        "ignite",
+        "burn",
+        "embers"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "blend": "add",
+      "z": -1,
+      "params": {
+        "shape": "burn",
+        "radius_px": 46,
+        "opacity": 0.8,
+        "fade_in_ms": 900,
+        "grow_ms": 900,
+        "start_scale": 0.3,
+        "lifetime_ms": 9600,
+        "fade_ms": 1400,
+        "detail": 0.7
+      },
+      "shader": {
+        "material": "molten",
+        "technique": "decal",
+        "look": "A warm glow of coals in the pit spilling onto the ground; it stays when the flames are gone.",
+        "emissive": {
+          "hdr": 2.5,
+          "falloff": "exponential"
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 6,
+          "speed": 0.4,
+          "contrast": 0.7
+        }
+      }
+    },
+    {
+      "id": "flames",
+      "type": "smoke",
+      "beats": [
+        "ignite",
+        "burn",
+        "embers"
+      ],
+      "anchor": "target",
+      "blend": "add",
+      "color": "gradient_core_to_primary",
+      "z": 6,
+      "params": {
+        "count": 18,
+        "rise_speed": 110,
+        "size_px": 18,
+        "lifetime_ms": 600,
+        "opacity": 0.85,
+        "spread_px": 13
+      },
+      "shader": {
+        "material": "fiery",
+        "technique": "flipbook",
+        "lighting": "unlit",
+        "look": "Soft tongues of flame licking up off the logs, white-yellow at the base, orange then red at the tips.",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 2,
+          "contrast": 0.7
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 2
+        }
+      }
+    },
+    {
+      "id": "flame-licks",
+      "type": "sparks",
+      "beats": [
+        "ignite",
+        "burn"
+      ],
+      "anchor": "target",
+      "color": "gradient_core_to_primary",
+      "z": 7,
+      "params": {
+        "count": 30,
+        "speed": 140,
+        "speed_spread": 0.4,
+        "gravity": -60,
+        "lifetime_ms": 340,
+        "size_px": 6,
+        "spread_deg": 16,
+        "drag": 1.0,
+        "emit_radius_px": 18,
+        "streak_ms": 150
+      },
+      "shader": {
+        "material": "fiery",
+        "technique": "particles",
+        "look": "Thin quick tongues of flame flicking up out of the fire.",
+        "emissive": {
+          "hdr": 4,
+          "falloff": "exponential"
+        },
+        "distortion": 0.3
+      }
+    },
+    {
+      "id": "embers",
+      "type": "sparks",
+      "beats": [
+        "ignite",
+        "burn",
+        "embers"
+      ],
+      "anchor": "target",
+      "color": "accent",
+      "z": 8,
+      "params": {
+        "look": "ember",
+        "count": 22,
+        "speed": 50,
+        "speed_spread": 0.6,
+        "gravity": -120,
+        "lifetime_ms": 1500,
+        "size_px": 2.2,
+        "spread_deg": 35,
+        "drag": 0.4,
+        "emit_radius_px": 22,
+        "streak_ms": 30
+      },
+      "shader": {
+        "material": "fiery",
+        "technique": "particles",
+        "look": "Embers drifting up on the heat and winking out as they cool.",
+        "emissive": {
+          "hdr": 3,
+          "falloff": "gaussian"
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 1.2
+        }
+      }
+    },
+    {
+      "id": "fire-glow",
+      "type": "glow",
+      "beats": [
+        "ignite",
+        "burn",
+        "embers"
+      ],
+      "anchor": "target",
+      "color": "primary",
+      "z": 5,
+      "params": {
+        "radius_px": 55,
+        "softness": 0.9,
+        "pulse_hz": 3
+      },
+      "shader": {
+        "material": "fiery",
+        "technique": "procedural",
+        "look": "A warm, flickering halo around the flames.",
+        "emissive": {
+          "hdr": 1.5,
+          "falloff": "soft"
+        }
+      }
+    },
+    {
+      "id": "smoke-column",
+      "type": "smoke",
+      "beats": [
+        "ignite",
+        "burn",
+        "embers"
+      ],
+      "anchor": "target",
+      "color": "shadow",
+      "z": 4,
+      "params": {
+        "count": 34,
+        "rise_speed": 45,
+        "size_px": 34,
+        "lifetime_ms": 1800,
+        "opacity": 0.4,
+        "spread_px": 14,
+        "height_px": 45
+      },
+      "shader": {
+        "material": "smoky",
+        "technique": "flipbook",
+        "lighting": "lit",
+        "look": "A thin grey-brown smoke column rolling up and spreading as it rises, lit warm from below by the fire.",
+        "noise": {
+          "type": "curl",
+          "scale": 1.5,
+          "speed": 0.5,
+          "contrast": 0.5
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.5
+        }
+      }
+    },
+    {
+      "id": "firelight",
+      "type": "light",
+      "beats": [
+        "ignite",
+        "burn",
+        "embers"
+      ],
+      "anchor": "target",
+      "params": {
+        "radius": 6,
+        "energy": 1.6,
+        "tint": "#FF8A24",
+        "height_px": 25
+      },
+      "shader": {
+        "technique": "light",
+        "lighting": "emits_light",
+        "look": "Warm orange firelight that flickers and lights the stones, the smoke and anyone sitting nearby."
+      }
+    },
+    {
+      "id": "catch",
+      "type": "sound_cue",
+      "beats": [
+        "ignite"
+      ],
+      "params": {
+        "cue": "ignite",
+        "gain": 0.5,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "crackling",
+      "type": "sound_cue",
+      "beats": [
+        "burn"
+      ],
+      "params": {
+        "cue": "crackle",
+        "gain": 0.4,
+        "pitch": 1.0
+      }
+    },
+    {
+      "id": "settling",
+      "type": "sound_cue",
+      "beats": [
+        "embers"
+      ],
+      "params": {
+        "cue": "sizzle",
+        "gain": 0.2,
+        "pitch": 0.8
+      }
+    }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Flame licks, ember paths and smoke puffs change per seed; the timing of the three phases does not."
+  },
+  "director_notes": "A natural, cozy fire for a survival/camping skill, not a spell: no magic colors, no big burst. Ignite is a gentle 1.2 s ease-out so lighting feels earned. The burn beat loops seamlessly between 2.0 s and 6.9 s, which is what a game holds for as long as the fire has fuel; the embers beat is played once when it runs out (the coals glow and the smoke thins, flames gone). Hero view is three-quarter because players see campfires from a third-person camera. Smoke is kept thin and low-opacity so it never hides players sitting by the fire. Built for Sparkfall's Camping skill (Unity, URP): the flames layer's side-view burn frames are the flame flipbook; embers, smoke, glow and light are rebuilt as particle systems and a point light."
+}
