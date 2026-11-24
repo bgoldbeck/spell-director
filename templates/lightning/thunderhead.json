@@ -314,6 +314,7 @@
           "edge_width": 0.4
         },
         "lighting": "lit",
+        "volumetric": true,
         "notes": "Big soft cloud sprites (or a volumetric) clustered above the target; light them from inside with the cloud-flicker glow and the strike."
       }
     },

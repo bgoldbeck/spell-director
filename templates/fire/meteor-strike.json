@@ -446,6 +446,7 @@
           "core_ratio": 0.35
         },
         "lighting": "emits_light",
+        "volumetric": true,
         "notes": "Rock mesh with an emissive map for the seams plus a fresnel heat shell; trail = a flame particle stream (alpha-over-life ramp hot to red) and a slower smoke ribbon or particle trail that outlives the rock. Heat haze behind it is distortion only; the viewer doesn't draw it."
       }
     },
@@ -566,7 +567,8 @@
           "hdr": 4,
           "falloff": "soft"
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {

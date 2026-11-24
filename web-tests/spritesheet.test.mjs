@@ -189,3 +189,21 @@ test("every drawn layer of every template has a build step", async () => {
     for (const l of toggles.layers) assert.ok(l.build_step, `${t.id}: ${l.id} has no build step`);
   }
 });
+
+test("volumetric layers get thickness steps per technique and a guide section", async () => {
+  const { engineRecipe, describeShader } = await import("../web/js/engine/shader.js");
+  const ribbon = engineRecipe({ type: "beam" }, { technique: "ribbon", volumetric: true }, "add");
+  assert.ok(ribbon.unity.some((x) => x.startsWith("Volumetric:") && x.includes("crossed")));
+  assert.ok(ribbon.unity.some((x) => x.includes("all four views")));
+  assert.ok(ribbon.godot.some((x) => x.startsWith("Volumetric:")));
+  assert.ok(engineRecipe({ type: "orb" }, { technique: "procedural", volumetric: true }, "add").unity.some((x) => x.includes("sphere")));
+  assert.ok(!engineRecipe({ type: "beam" }, { technique: "ribbon" }, "add").unity.some((x) => x.startsWith("Volumetric:")));
+  assert.ok(describeShader({ volumetric: true }).includes("volumetric"));
+
+  const jet = load("../templates/fire/flame-jet.json");
+  assert.equal(jet.layers.find((l) => l.id === "jet").shader.volumetric, true);
+  const md = guideMarkdown(fakeManifest(jet), { files: [] });
+  assert.ok(md.includes("## Volumetric layers"));
+  assert.ok(md.includes("`jet`"));
+  assert.ok(!guideMarkdown(fakeManifest(sky), { files: [] }).includes("## Volumetric layers"));
+});

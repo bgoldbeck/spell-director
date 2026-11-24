@@ -478,6 +478,7 @@
           "core_ratio": 0.1
         },
         "lighting": "lit",
+        "volumetric": true,
         "notes": "Build as a scrolling-UV mesh or a vertex-animated wave strip; foam on the crest from a height mask; spray as a particle system emitting from the crest."
       }
     },

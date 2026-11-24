@@ -520,6 +520,7 @@ Rendered frames show *when* and *where* things happen. They don't carry the magi
 | `emissive.falloff` | `hard`, `soft`, `exponential`, `gaussian` | How brightness drops from the center line or center point. |
 | `emissive.core_ratio` | 0–1 | How much of the width is white-hot core. |
 | `lighting` | `unlit`, `lit`, `emits_light`, `six_way` | Whether scene lights affect it, and whether it lights the scene. `six_way` (smoke): relit from six baked directions, see [Six-way lit smoke](#six-way-lit-smoke). |
+| `volumetric` | `true` | The layer must read as a thick body from every angle, not a flat card or strip. See [Volumetric](#volumetric). |
 | `look` | one sentence | What it should feel like, in plain words ("a wet, glassy jet that refracts what's behind it"). |
 | `notes` | text | Anything else an engine artist should know. |
 
@@ -537,6 +538,32 @@ Rendered frames show *when* and *where* things happen. They don't carry the magi
 | fresnel | Fresnel Effect node | `pow(1.0 - dot(NORMAL, VIEW), p)` |
 | dissolve | Alpha Clip with Step/Smoothstep | `smoothstep` into ALPHA |
 | emissive HDR | HDR color × intensity, with Bloom | EMISSION × intensity, with Glow |
+
+### Volumetric
+
+**Volumetric** means an effect reads as having real depth and thickness from every angle: walk the camera round it and it stays a body (a column, a ball, a cloud), never collapsing into a line, a ribbon seen edge-on or a paper cutout. Its opposite is **flat**: a single card or strip that looks fine from one view and falls apart from the others (a flame jet that looks like a stretched orange strip from the side). It's a general word, for any element: fire, smoke and clouds, ooze and water, auras and shields, beams and jets, energy balls.
+
+In a template, `"shader": { "volumetric": true }` on a layer. Use it when the layer is meant to have a body: a jet or breath of fire or water, a fireball or energy orb, billows and clouds, an ooze blob, a wind funnel, a thick beam. Leave it off for things that really are thin: bolts and crackle, hairline rays, sparks, ground decals, rings, flashes.
+
+How to build it (the export guide turns this into Unity and Godot steps per technique):
+
+| Technique | Means |
+|---|---|
+| crossed cards | 2–3 strips or quads crossed around the axis, so one is always face-on to the camera. |
+| camera-facing layers | strips billboarded around their path axis, or quads stacked at different depths, so each view sees width. |
+| core + shell | a bright, dense inner core inside a wider, softer, darker outer shell. The core sells heat or energy, the shell sells volume. |
+| soft edges | the silhouette fades out through fresnel and noise instead of ending in a hard line or a visible quad edge (see `edge_softness` on fire beams). |
+| soft particles | fade where the layer meets the ground or a character instead of cutting a straight line. |
+| many puffs | a cloud is many overlapping puffs of different size and rotation, denser in the middle, not one big sprite. |
+| real mesh | a sphere, tube or closed shell with thickness, both sides drawn, edges faded by fresnel. |
+
+**Check it in all four views.** A volumetric layer must look thick from the front, the side, the top and 3/4. If one view shows a line, a strip edge-on or a cutout, it isn't volumetric yet. The viewer's ribbons and puffs are already camera-facing, so they read thick in every view; an engine rebuild has to do the same on purpose.
+
+| Word | Means |
+|---|---|
+| volumetric, has body, thick, chunky | reads as a 3D mass from every side |
+| flat, card, cutout, paper, strip | the opposite: one plane that breaks when the camera moves |
+| raymarched | the real thing, computed through a 3D noise volume in the shader; costly, for hero effects only |
 
 ## 12. Styles
 

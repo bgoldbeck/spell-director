@@ -108,7 +108,7 @@ Each drawn layer may have a `shader` object: what it's made of and how its surfa
 }
 ```
 
-Fields: `material`, `look`, `technique`, `noise` (`type`, `scale`, `speed`, `contrast`), `flow` (`direction`, `speed`), `distortion`, `fresnel`, `dissolve` (`pattern`, `edge_width`, `edge_color`), `emissive` (`hdr`, `falloff`, `core_ratio`), `lighting` (`unlit`, `lit`, `emits_light`, or `six_way` for six-way lit smoke), `notes`. All optional. `sound_cue` and `camera_shake` layers take none.
+Fields: `material`, `look`, `technique`, `noise` (`type`, `scale`, `speed`, `contrast`), `flow` (`direction`, `speed`), `distortion`, `fresnel`, `dissolve` (`pattern`, `edge_width`, `edge_color`), `emissive` (`hdr`, `falloff`, `core_ratio`), `lighting` (`unlit`, `lit`, `emits_light`, or `six_way` for six-way lit smoke), `volumetric` (`true`: the layer must read as a thick body from every angle, never a flat card; see [vocabulary.md](vocabulary.md#volumetric)), `notes`. All optional. `sound_cue` and `camera_shake` layers take none.
 
 ## Style
 

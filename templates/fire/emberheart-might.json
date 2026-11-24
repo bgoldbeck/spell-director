@@ -257,7 +257,8 @@
           "falloff": "gaussian",
           "core_ratio": 0.4
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {

@@ -332,7 +332,8 @@
           "hdr": 2,
           "falloff": "gaussian"
         },
-        "lighting": "unlit"
+        "lighting": "unlit",
+        "volumetric": true
       }
     },
     {

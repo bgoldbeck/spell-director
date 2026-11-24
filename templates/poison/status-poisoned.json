@@ -176,7 +176,8 @@
         "emissive": {
           "hdr": 1.2,
           "falloff": "soft"
-        }
+        },
+        "volumetric": true
       }
     },
     {

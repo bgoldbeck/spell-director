@@ -277,7 +277,8 @@
           "hdr": 1.5,
           "falloff": "gaussian"
         },
-        "lighting": "lit"
+        "lighting": "lit",
+        "volumetric": true
       }
     },
     {
@@ -314,7 +315,8 @@
           "hdr": 1.2,
           "falloff": "gaussian"
         },
-        "lighting": "lit"
+        "lighting": "lit",
+        "volumetric": true
       }
     },
     {
@@ -373,7 +375,8 @@
           "hdr": 1.5,
           "falloff": "gaussian"
         },
-        "lighting": "lit"
+        "lighting": "lit",
+        "volumetric": true
       }
     },
     {
