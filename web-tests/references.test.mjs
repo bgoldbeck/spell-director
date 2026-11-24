@@ -80,3 +80,13 @@ test("the README says start with the guide and use every reference", () => {
   assert.ok(/front, side, top, 3\/4/.test(md) && /do not be lazy/.test(md));
   for (const it of referenceChecklist(m)) assert.ok(md.includes(it.ref), it.ref);
 });
+
+test("volumetric layers get their own item, checked in all four views", () => {
+  const m = manifest(boss);
+  const ids = referenceChecklist(m).map((i) => i.id);
+  assert.ok(!ids.includes("volumetric") || m.layers.some((l) => l.shader?.volumetric));
+  m.layers[0].shader = { ...(m.layers[0].shader || {}), volumetric: true };
+  const it = referenceChecklist(m).find((i) => i.id === "volumetric");
+  assert.ok(it && it.files.includes("Volumetric layers section of this guide"));
+  assert.ok(it.check.includes(m.layers[0].id) && /front, side, top, 3\/4/.test(it.check));
+});

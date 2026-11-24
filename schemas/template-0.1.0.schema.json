@@ -1652,6 +1652,10 @@
           ],
           "description": "unlit: draws its own light; lit: shaded by the scene's lights; emits_light: also lights the scene; six_way: smoke relit from six baked directions (six-way lightmaps), see docs/vocabulary.md#six-way-lit-smoke."
         },
+        "volumetric": {
+          "type": "boolean",
+          "description": "The layer must read as a body with real depth and thickness from every angle (front, side, top, 3/4), not a flat card or strip: crossed or camera-facing layers, an inner core inside a softer outer shell, edges faded by fresnel and noise, soft particles. See docs/vocabulary.md#volumetric."
+        },
         "notes": {
           "type": "string"
         },

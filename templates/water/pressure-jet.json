@@ -413,7 +413,8 @@
           "falloff": "soft",
           "core_ratio": 0.1
         },
-        "lighting": "lit"
+        "lighting": "lit",
+        "volumetric": true
       }
     },
     {
@@ -508,7 +509,8 @@
           "falloff": "soft",
           "core_ratio": 0.2
         },
-        "lighting": "lit"
+        "lighting": "lit",
+        "volumetric": true
       }
     },
     {
@@ -553,7 +555,8 @@
           "falloff": "gaussian",
           "core_ratio": 0.5
         },
-        "lighting": "lit"
+        "lighting": "lit",
+        "volumetric": true
       }
     },
     {

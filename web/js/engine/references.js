@@ -71,6 +71,12 @@ export function referenceChecklist(m) {
   item("layers", `Layer notes and shader intent (${(m.layers || []).length})`, ["Layers section of this guide"],
     "Per layer: blend, color, anchor, plane, tracking, settings for this seed, shader intent and the Unity and Godot recipes.",
     "Every layer exists in your build, with its own switch, and uses the blend, color, anchor and shader intent listed for it.");
+  const vol = (m.layers || []).filter((l) => l.shader?.volumetric);
+  if (vol.length) {
+    item("volumetric", `Volumetric layers (${vol.length})`, ["Volumetric layers section of this guide", ...vol.map((l) => l.image).filter(Boolean)],
+      `These must read as a thick body with real depth from every angle, never a flat card or strip: ${vol.map((l) => l.id).join(", ")}. The section says how (crossed or camera-facing layers, core and shell, soft edges, many puffs).`,
+      `Look at each of ${vol.map((l) => l.id).join(", ")} in all four views (front, side, top, 3/4) next to its sheet: it looks thick in every one, and never turns into a line, an edge-on ribbon or a paper cutout from the side or top.`);
+  }
   const r = m.readability;
   if (r?.must_read?.length) {
     item("must-read", `Must-read cues (${r.must_read.length})`, ["Quality target section of this guide", `readability.must_read in ${id}.spritesheet.json`],

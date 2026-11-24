@@ -189,6 +189,7 @@
           "speed": 0.6,
           "contrast": 0.3
         },
+        "volumetric": true,
         "notes": "Refractive sphere with a fresnel rim; vertex wobble."
       }
     },

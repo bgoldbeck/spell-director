@@ -6,7 +6,7 @@
 export const HOW_TO_USE = [
   "Use every reference in this export, not just one: all four camera views, the whole-spell and per-layer sheets, the beats, the must-read cues and key frames, the range guide, the render notes, the caster rig and timeline, and the sounds. Check the build against each one before calling it done (see \"Use every reference\" at the top of the guide).",
   "These sprite sheets are a reference, not the effect itself. They show timing, layering, composition, motion and palette from four cameras.",
-  "Do not copy them pixel for pixel into a game, and an AI model (Claude, GPT, ...) should not treat them as literal instructions. Rebuild each layer in the engine with shaders and particles: the `shader` intent of each layer (material, noise, flow, distortion, fresnel, dissolve, emissive) says what the magic should feel like, and the beats and layer timings say when.",
+  "Do not copy them pixel for pixel into a game, and an AI model (Claude, GPT, ...) should not treat them as literal instructions. Rebuild each layer in the engine with shaders and particles: the `shader` intent of each layer (material, noise, flow, distortion, fresnel, dissolve, emissive, volumetric) says what the magic should feel like, and the beats and layer timings say when.",
   "Use the frames to check your rebuild: same beats, same order, same footprint, same colors. Use them directly only for quick prototypes, flipbook-style games, or as a texture source (for example a bolt shape or a decal).",
   "Each layer's `render/<layer>.md` shows how SpellDirector drew it: the viewer's code, materials, blend modes, uniforms and GLSL shaders, with Unity porting notes in `render/PORTING.md`. Port the ideas; match the sheets.",
   "Build the spell one layer at a time, in the build order, and give every layer its own on/off switch (`layer_toggles`): turn a layer on by itself, match it against its sheet, then add the next. Keep the switches in the finished effect so any layer can be soloed or muted later.",
@@ -65,6 +65,7 @@ export function describeShader(sh) {
   if (sh.dissolve) bits.push(`dissolves with ${sh.dissolve.pattern || "noise"}${sh.dissolve.edge_width ? `, edge ${sh.dissolve.edge_width}` : ""}${sh.dissolve.edge_color ? ` in ${sh.dissolve.edge_color}` : ""}`);
   if (sh.emissive) bits.push(`emissive HDR ×${sh.emissive.hdr ?? 1}${sh.emissive.falloff ? `, ${sh.emissive.falloff} falloff` : ""}${sh.emissive.core_ratio ? `, core ${Math.round(sh.emissive.core_ratio * 100)}%` : ""}`);
   if (sh.lighting) bits.push(sh.lighting === "six_way" ? "six-way lit (relit by every scene light from six baked directions)" : sh.lighting.replace("_", " "));
+  if (sh.volumetric) bits.push("volumetric (must read as a thick body from every angle, never a flat card)");
   return bits.join("; ");
 }
 
@@ -92,6 +93,34 @@ const GODOT_TECH = {
 
 const UNITY_NOISE = { perlin: "Gradient Noise", simplex: "Simple Noise", fbm: "Gradient Noise summed over 3-4 octaves", ridged: "1 - abs(Gradient Noise), sharpened with Power", voronoi: "Voronoi", curl: "a curl-noise texture or VFX Graph Turbulence", streaks: "Gradient Noise with UVs stretched along the flow" };
 const GODOT_NOISE = { perlin: "a NoiseTexture2D (FastNoiseLite Perlin)", simplex: "a NoiseTexture2D (Simplex Smooth)", fbm: "a NoiseTexture2D with Fractal FBM", ridged: "a NoiseTexture2D with Fractal Ridged", voronoi: "a NoiseTexture2D (Cellular)", curl: "turbulence in ParticleProcessMaterial or a curl-noise texture", streaks: "a NoiseTexture2D sampled with stretched UVs" };
+
+// How to give a layer real thickness, per technique (vocabulary "Volumetric").
+const VOLUMETRIC = {
+  ribbon: {
+    unity: "Volumetric: never one flat strip on a fixed plane (it turns into a line or a stretched card from the side or top). Use a Line Renderer with Alignment View, or a VFX Graph strip facing the camera, plus 2-3 strips crossed around the path axis (or a tapered tube mesh), each with its edges faded by Fresnel and noise so no hard rim shows; an inner core strip inside a wider, softer outer shell; Soft Particles / depth fade where it meets geometry.",
+    godot: "Volumetric: never one flat strip on a fixed plane. Billboard the strip around the path axis (or use 2-3 crossed strips or a tapered tube mesh), fade the edges by `pow(1.0 - dot(NORMAL, VIEW), p)` times noise, put an inner core strip inside a wider, softer outer shell, and turn on `proximity_fade_enabled` where it meets geometry.",
+  },
+  particles: {
+    unity: "Volumetric: many overlapping soft puffs (random rotation and size, not one big sprite) so the cloud has depth from every side; Soft Particles on; denser, brighter puffs in the middle and thinner ones outside; edges eroded by noise.",
+    godot: "Volumetric: many overlapping soft puffs with random rotation and scale; `proximity_fade_enabled`; a denser core of puffs inside thinner outer ones; noise-eroded edges.",
+  },
+  flipbook: {
+    unity: "Volumetric: several camera-facing flipbook quads at different depths and rotations, not one card; Soft Particles on; denser in the middle.",
+    godot: "Volumetric: several billboard flipbook quads at different depths and rotations, not one card; `proximity_fade_enabled`.",
+  },
+  procedural: {
+    unity: "Volumetric: a sphere (or stretched sphere) mesh with a Fresnel-faded, noise-eroded edge, or 3-5 stacked camera-facing quads at different depths; an inner core inside a softer outer shell; Soft Particles on.",
+    godot: "Volumetric: a SphereMesh with a fresnel-faded, noise-eroded edge, or 3-5 stacked billboard quads at different depths; an inner core inside a softer outer shell; `proximity_fade_enabled`.",
+  },
+  mesh: {
+    unity: "Volumetric: a closed mesh with thickness (not a single-sided plane), Cull Off or a back-face pass, Fresnel and noise fading its silhouette, a brighter inner shell inside a softer outer one.",
+    godot: "Volumetric: a closed mesh with thickness (not a single-sided plane), `cull_disabled`, fresnel and noise fading its silhouette, a brighter inner shell inside a softer outer one.",
+  },
+};
+const VOLUMETRIC_CHECK = {
+  unity: "Check it in all four views (front, side, top, 3/4): it should look thick in each, never a line, a ribbon edge-on or a paper cutout.",
+  godot: "Check it in all four views (front, side, top, 3/4): it should look thick in each, never a line, a ribbon edge-on or a paper cutout.",
+};
 
 // Short per-engine build steps for a layer.
 export function engineRecipe(layer, sh, blend) {
@@ -132,6 +161,11 @@ export function engineRecipe(layer, sh, blend) {
   if (sh.emissive) {
     unity.push(`Emission: color × ${sh.emissive.hdr ?? 1} (HDR) so Bloom picks it up${sh.emissive.falloff ? `; ${sh.emissive.falloff} falloff from the center line` : ""}.`);
     godot.push(`Emission: EMISSION = color × ${sh.emissive.hdr ?? 1}; turn on Glow in the WorldEnvironment.`);
+  }
+  if (sh.volumetric) {
+    const v = VOLUMETRIC[tech] || VOLUMETRIC.procedural;
+    unity.push(v.unity, VOLUMETRIC_CHECK.unity);
+    godot.push(v.godot, VOLUMETRIC_CHECK.godot);
   }
   if (sh.lighting === "emits_light" && tech !== "light") {
     unity.push("Add a small point light that follows the layer's intensity, or rely on the template's light layer.");

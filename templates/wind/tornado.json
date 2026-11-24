@@ -357,6 +357,7 @@
           "edge_width": 0.25
         },
         "lighting": "lit",
+        "volumetric": true,
         "notes": "Build as a tapered, open cylinder mesh whose rings follow a snaking spine (bone chain or vertex offset by height). Scroll the streak noise around and up (UV.x + UV.y * twist - time * spin). Alpha = noise * fresnel so the edges read dense. Dissolve the streaks out from the top as it ropes out."
       }
     },

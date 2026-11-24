@@ -374,7 +374,8 @@
           "edge_width": 0.25
         },
         "lighting": "lit",
-        "look": "A low, very wide outer band of wind sweeping round the storm: faint, streaky, see-through."
+        "look": "A low, very wide outer band of wind sweeping round the storm: faint, streaky, see-through.",
+        "volumetric": true
       }
     },
     {
@@ -518,6 +519,7 @@
         },
         "lighting": "lit",
         "look": "A broad, towering wall of storm wind around a calm eye: pale streaks spiral up over a dark, rain-heavy body, densest at the silhouette.",
+        "volumetric": true,
         "notes": "Like the tornado's funnel but much wider and shorter for its width: an open, flared cylinder mesh with a hole down the middle (the eye). Scroll streak noise around and up; alpha from noise times fresnel. A second, lower and wider band turns slower outside it."
       }
     },

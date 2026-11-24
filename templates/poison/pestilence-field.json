@@ -458,7 +458,8 @@
           "hdr": 2,
           "falloff": "soft"
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {

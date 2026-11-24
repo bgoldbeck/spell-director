@@ -441,7 +441,8 @@
           "falloff": "soft",
           "core_ratio": 0.45
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {

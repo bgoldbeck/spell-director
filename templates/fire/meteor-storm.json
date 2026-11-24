@@ -461,7 +461,8 @@
           "falloff": "exponential",
           "core_ratio": 0.3
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -659,7 +660,8 @@
           "falloff": "exponential",
           "core_ratio": 0.3
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -857,7 +859,8 @@
           "falloff": "exponential",
           "core_ratio": 0.3
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -1055,7 +1058,8 @@
           "falloff": "exponential",
           "core_ratio": 0.3
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -1253,7 +1257,8 @@
           "falloff": "exponential",
           "core_ratio": 0.3
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -1451,7 +1456,8 @@
           "falloff": "exponential",
           "core_ratio": 0.3
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -1649,7 +1655,8 @@
           "falloff": "exponential",
           "core_ratio": 0.3
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -1833,7 +1840,8 @@
           "hdr": 3,
           "falloff": "soft"
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {

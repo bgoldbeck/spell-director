@@ -399,7 +399,8 @@
           "falloff": "soft",
           "core_ratio": 0.35
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -616,7 +617,8 @@
           "hdr": 4,
           "falloff": "soft"
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {

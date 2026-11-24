@@ -843,6 +843,9 @@ export function guideMarkdown(m, { files } = {}) {
 
   if ((m.six_way_smoke || []).length) add(...sixWayGuideLines(m.six_way_smoke), "");
 
+  const volumetric = m.layers.filter((l) => l.shader?.volumetric);
+  if (volumetric.length) add(...volumetricGuideLines(volumetric), "");
+
   add("## Not in the sheets: flashes, shake, lights and sound", "");
   add("These are better done by the engine than baked into pixels. Their per-frame curves are in the JSON file (one value per spell frame).", "");
   if (m.screen_flashes.length) {
@@ -1133,6 +1136,23 @@ export function soundGuide(m) {
 }
 
 // Guide section for six-way lit smoke layers.
+// Layers marked volumetric (docs/vocabulary.md#volumetric): the target the
+// rebuild has to hit in every view.
+export function volumetricGuideLines(layers) {
+  return [
+    "## Volumetric layers",
+    "",
+    `These layers must read as a body with real depth and thickness from every angle, not a flat card or strip: ${layers.map((l) => `\`${l.id}\``).join(", ")}. The sprite sheets show them from four cameras; the rebuild has to look thick in all four.`,
+    "",
+    "- **Never one flat strip or quad on a fixed plane.** From the side or top it turns into a line, a ribbon edge-on or a stretched paper cutout.",
+    "- **Crossed or camera-facing layers:** 2-3 strips or quads crossed around the axis, or strips billboarded around their path, or quads stacked at different depths; for a ball, a sphere mesh or stacked camera-facing quads.",
+    "- **Core + shell:** a bright, dense inner core inside a wider, softer outer shell.",
+    "- **Soft edges:** fade the silhouette with fresnel and noise so no hard rim or quad edge shows; soft particles (depth fade) where it meets the ground or a character.",
+    "- **Clouds and billows:** many overlapping puffs of different size and rotation, denser in the middle, not one big sprite.",
+    "- **Check all four views** (front, side, top, 3/4) against the sheets before moving to the next layer. Each layer's Unity and Godot steps above say how for its technique.",
+  ];
+}
+
 export function sixWayGuideLines(list) {
   const lines = [
     "## Six-way lit smoke",
