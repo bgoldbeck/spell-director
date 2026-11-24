@@ -253,7 +253,8 @@
           "pattern": "fbm",
           "edge_width": 0.2,
           "edge_color": "accent"
-        }
+        },
+        "volumetric": true
       }
     },
     {
@@ -388,7 +389,8 @@
           "pattern": "fbm",
           "edge_width": 0.2,
           "edge_color": "accent"
-        }
+        },
+        "volumetric": true
       }
     },
     {

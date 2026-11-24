@@ -227,6 +227,7 @@
           "core_ratio": 0.3
         },
         "lighting": "emits_light",
+        "volumetric": true,
         "notes": "A second skin over the character: scrolling flame noise masked into tongues, with flame particles on top."
       }
     },
@@ -263,7 +264,8 @@
         "emissive": {
           "hdr": 2.5,
           "falloff": "soft"
-        }
+        },
+        "volumetric": true
       }
     },
     {

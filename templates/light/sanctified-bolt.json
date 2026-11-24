@@ -251,6 +251,7 @@
           "contrast": 0.3
         },
         "fresnel": 0.5,
+        "volumetric": true,
         "notes": "Head: a soft sphere sprite; tail: a camera-facing ribbon that fades from white to gold to nothing along its length.",
         "emissive": {
           "hdr": 6,

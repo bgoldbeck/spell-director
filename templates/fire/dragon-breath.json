@@ -446,7 +446,8 @@
           "falloff": "soft",
           "core_ratio": 0.35
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -656,6 +657,7 @@
           "core_ratio": 0.3
         },
         "lighting": "emits_light",
+        "volumetric": true,
         "notes": "Build it as a cone mesh or ribbon with scrolling fBm, plus a particle stream of flame sprites riding it (the puffs) so it has volume from every side. Distort the scene behind it for heat haze."
       }
     },
@@ -726,7 +728,8 @@
           "hdr": 3,
           "falloff": "soft"
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {

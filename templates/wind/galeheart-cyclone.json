@@ -311,7 +311,8 @@
           "direction": "swirl",
           "speed": 4
         },
-        "lighting": "unlit"
+        "lighting": "unlit",
+        "volumetric": true
       }
     },
     {
