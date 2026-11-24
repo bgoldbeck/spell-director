@@ -336,7 +336,8 @@
           "falloff": "soft",
           "core_ratio": 0.35
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -469,7 +470,8 @@
           "falloff": "soft",
           "core_ratio": 0.45
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {
@@ -550,6 +552,7 @@
           "core_ratio": 0.35
         },
         "lighting": "emits_light",
+        "volumetric": true,
         "notes": "A narrow cone or ribbon mesh with fast-scrolling fBm, plus a few flame sprites riding it for volume. Keep it tight: it should read as aimed, not as a spray. Edges: stretch the noise along the stream and feather the sides (edge_softness) so the silhouette is soft licks, never a repeating saw-tooth or a hard-cut card; puffs stay close to the core (puff_spread, puff_rise). Ground: the beam tilts up from the hand just enough that its widest surge stays ground_clearance_px above the ground (engine/beamground.js groundLift), so aiming at a target's feet never buries the far end; aim at the target's chest or pivot plus half its height when the engine allows."
       }
     },
@@ -688,7 +691,8 @@
           "hdr": 3,
           "falloff": "soft"
         },
-        "lighting": "emits_light"
+        "lighting": "emits_light",
+        "volumetric": true
       }
     },
     {

@@ -216,6 +216,7 @@
         "fresnel": 0.3,
         "dissolve": { "pattern": "streaks", "edge_width": 0.25 },
         "lighting": "unlit",
+        "volumetric": true,
         "notes": "Build the cone as a stretched mesh or a few crossed ribbons with streak noise and screen distortion; the gust lines are a separate stretched-billboard particle system flowing toward the target."
       }
     },
