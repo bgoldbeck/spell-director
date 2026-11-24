@@ -590,6 +590,18 @@ function auraGuideLines(m) {
   return lines;
 }
 
+// The bar every 3D rebuild must clear. The sheets are drawn from fixed views, so a rebuild
+// that copies them onto a flat card looks right from one angle and flat from every other.
+export const ENGINE_QUALITY_BAR = [
+  "**3D rebuild bar** (a 3D game sees the spell from every side; flat copies of these frames read as cardboard):",
+  "",
+  "- **No flat cards.** Build each body from crossed or camera-facing layered ribbons, several overlapping volumes with their own noise, flow speed and seed, or real meshes. Shade them as volumes: dense hot centre, thin soft rim, darker far edge.",
+  "- **HDR emissive, tuned for bloom.** Only the hottest parts go above the bloom threshold (core well above 1, mid tones near it, fringe below), so bloom catches the heart without washing out the shape.",
+  "- **Soft edges where it touches the world.** Depth-fade every additive or alpha layer into the ground and bodies (soft particles or a scene-depth fade); no hard seams.",
+  "- **Light and air.** A flickering, shadowless light lights the ground and nearby actors; heat, cold or magic bends the air behind it (screen distortion) where the layer calls for it.",
+  "- **Check it in play from front, side, top and behind the caster**, on a dark and a bright background, and keep those captures with the review. Fix anything that goes flat or vanishes from one of those angles before calling it done.",
+];
+
 // The guide's "Quality target" section: what must read, the key frames to
 // check the rebuild against, and which layers move with the actors.
 export function readabilityGuideLines(m) {
@@ -605,6 +617,7 @@ export function readabilityGuideLines(m) {
   out.push(`**Key frames**${r.key_frames[0]?.source === "derived" ? " (from the beats; the template doesn't name its own)" : ""}: compare the rebuild with the viewer at these moments.`, "");
   for (const k of r.key_frames) out.push(`- **${k.label}**, ${k.t_ms} ms${k.note ? `: ${k.note}` : ""}`);
   out.push("");
+  out.push(...ENGINE_QUALITY_BAR, "");
   const groups = Object.keys(TRACKING).map((kind) => [kind, m.layers.filter((l) => l.tracking === kind).map((l) => `\`${l.id}\``)]).filter(([, ids]) => ids.length);
   if (groups.length) {
     out.push("**When an actor moves** (pushed back, walking, dodging), layers either ride on it, leave their particles behind, or stay where they landed:", "");

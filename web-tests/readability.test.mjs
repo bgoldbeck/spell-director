@@ -76,6 +76,8 @@ test("the export carries tracking and the quality target into its JSON and guide
   assert.equal(m.readability.reference_distance, 3.4);
   const md = guideMarkdown(m, { files: [] });
   assert.match(md, /## Quality target/);
+  assert.match(md, /3D rebuild bar/);
+  assert.match(md, /front, side, top and behind the caster/);
   assert.match(md, /thin hot core/);
   assert.match(md, /stays where it landed: `scorch`, `burn-patch`/);
   assert.match(md, /Simulation Space to World/);

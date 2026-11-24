@@ -9,6 +9,7 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ### Added
 
+- **3D rebuild bar** in every export guide's Quality target section: no flat cards (layered volumes with their own noise and flow), HDR emission tuned for bloom, depth fade into the ground and bodies, a flickering light and heat distortion where they fit, and play-mode checks from front, side, top and behind the caster.
 - **Caster model picker**: the viewer's new **Caster** list (or `?model=<file>`) plays the caster with a rigged character instead of the stand-in: any Mixamo-named skeleton (a Mixamo character downloaded as FBX, or a GLB), posed every frame from the same gestures or clip. Models are your own files: put them in the library's `models/` folder (or a source checkout's `assets/` folder, which git ignores); they're never shipped.
 - **Maul** weapon (`caster_weapon` kind `maul`: a two-handed hammer with an iron head; `caster_blade` sits in the head) and **Anvilfall**, an overhead maul slam with a crater, a double shockwave and the group blown back.
 - **`export_spell_zip` MCP tool** and `--zip` for `tools/export_sprites.py`: export a spell and pack everything (sheets, guide, JSON, template, sounds, caster rig GLB and timeline, render notes) into one .zip, saved where you choose (a .zip path or a folder such as a game project's import folder). Returns the zip path, size, file list and which files to read first, so an AI building the spell in Unity or Godot can fetch it itself.
