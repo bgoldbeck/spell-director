@@ -363,3 +363,37 @@ def test_clips_are_saved_listed_and_served_from_the_library(tmp_path, monkeypatc
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_caster_models_are_listed_and_served_from_the_library_and_assets(tmp_path, monkeypatch):
+    import app_paths
+
+    monkeypatch.setenv("SPELLDIRECTOR_LIBRARY", str(tmp_path / "lib"))
+    models = tmp_path / "lib" / "models"
+    models.mkdir(parents=True)
+    (models / "Y Bot.fbx").write_bytes(b"fbx")
+    (models / "notes.txt").write_text("not a model")
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    (assets / "Y Bot.fbx").write_bytes(b"shadowed")
+    (assets / "hero.glb").write_bytes(b"glb")
+    monkeypatch.setattr(app_paths, "model_dirs", lambda: [models, assets])
+    assert app_paths.model_index() == {"models": ["Y Bot.fbx", "hero.glb"]}
+    assert app_paths.find_model_file("Y Bot.fbx") == models / "Y Bot.fbx"
+    assert app_paths.find_model_file("hero.glb") == assets / "hero.glb"
+    for bad in ["../secret.fbx", "notes.txt", "missing.fbx", ""]:
+        assert app_paths.find_model_file(bad) is None, bad
+    server, base = _serve(tmp_path, monkeypatch)
+    try:
+        with urllib.request.urlopen(base + "/models/index.json") as resp:
+            assert json.loads(resp.read()) == {"models": ["Y Bot.fbx", "hero.glb"]}
+        with urllib.request.urlopen(base + "/models/Y%20Bot.fbx") as resp:
+            assert resp.read() == b"fbx"
+        try:
+            urllib.request.urlopen(base + "/models/..%2Fsecret.fbx")
+            raise AssertionError("bad model name served")
+        except urllib.error.HTTPError as err:
+            assert err.code == 404
+    finally:
+        server.shutdown()
+        server.server_close()

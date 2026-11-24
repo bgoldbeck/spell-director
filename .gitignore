@@ -7,3 +7,8 @@ dist/
 build/
 exports/
 clips/
+
+# Caster models (Mixamo characters etc.): the owner's own files, never committed
+# (Mixamo's terms do not allow redistributing the characters). The viewer
+# serves them locally from here (tools/app_paths.py model_dirs).
+/assets/

@@ -126,7 +126,60 @@ function poseSword(sword, b, palm) {
   p.pommel.position.fromArray(b.pommel);
 }
 
-function standIn(color, facing = 1, weapon = null) {
+// A crude two-handed maul: a long wooden haft with a pommel cap and a heavy
+// iron block head at its end, set across the haft with its striking face
+// toward the knuckles (the way the swing goes). Placed from bladeFK like the
+// sword, so caster_blade sits in the head and caster_blade_tip on its top.
+function makeMaul() {
+  const g = new THREE.Group();
+  const iron = new THREE.MeshStandardMaterial({ color: "#7d838f", metalness: 0.7, roughness: 0.45, emissive: "#1d2027" });
+  const wood = new THREE.MeshStandardMaterial({ color: "#5a3e2b", roughness: 0.85 });
+  const haft = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.017, 1, 7, 1), wood);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), iron);
+  const band = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), iron);
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 6), iron);
+  g.add(haft, head, band, cap);
+  g.userData.parts = { haft, head, band, cap };
+  g.userData.pose = poseMaul;
+  return g;
+}
+
+function poseMaul(maul, b, palm) {
+  const p = maul.userData.parts;
+  _y.fromArray(b.dir);
+  _x.fromArray(palm.aim);
+  _x.addScaledVector(_y, -_x.dot(_y));
+  if (_x.lengthSq() < 0.05) {
+    _x.fromArray(palm.normal);
+    _x.addScaledVector(_y, -_x.dot(_y));
+  }
+  if (_x.lengthSq() < 1e-6) _x.set(0, 1, 0).addScaledVector(_y, -_y.y);
+  _x.normalize();
+  _z.crossVectors(_x, _y);
+  _basis.makeBasis(_x, _y, _z);
+  const len = Math.hypot(b.tip[0] - b.pommel[0], b.tip[1] - b.pommel[1], b.tip[2] - b.pommel[2]);
+  const h = b.head || 0.16;
+  placeSegment(p.haft, b.pommel, b.tip);
+  p.cap.position.fromArray(b.pommel);
+  // The head: centred in the last stretch of the haft, longer across it
+  // (the striking axis) than along it.
+  p.head.quaternion.setFromRotationMatrix(_basis);
+  p.head.position.fromArray(b.mid);
+  p.head.scale.set(h * 1.3, h * 0.85, h * 0.72);
+  // A collar where the haft meets the head.
+  p.band.quaternion.copy(p.head.quaternion);
+  p.band.position.fromArray(b.tip).addScaledVector(_y, -Math.min(len, h + 0.025));
+  p.band.scale.set(0.045, 0.025, 0.045);
+}
+
+function makeWeapon(kind) {
+  if (kind === "maul") return makeMaul();
+  const g = makeSword(kind);
+  g.userData.pose = poseSword;
+  return g;
+}
+
+function standIn(color, facing = 1, weapon = null, model = null) {
   // A simple figure, 1 unit tall, like the stand-ins in a motion study,
   // with crude arms and hands (posed by setArms).
   const g = new THREE.Group();
@@ -154,12 +207,21 @@ function standIn(color, facing = 1, weapon = null) {
   const off = makeArm(mat, skin);
   rig.add(lead, off);
   if (weapon) {
-    const sword = makeSword(weapon.kind);
+    const sword = makeWeapon(weapon.kind);
     rig.add(sword);
     g.userData.sword = sword;
   }
   g.add(rig);
   g.userData.arms = { lead, off };
+  // A rigged character (engine/castermodel.js) stands in for the crude body
+  // and arms: they stay (the arms still carry the weapon's hand) but hide.
+  if (model) {
+    torso.visible = false;
+    lead.visible = false;
+    off.visible = false;
+    g.add(model.object);
+    g.userData.model = model;
+  }
   return g;
 }
 
@@ -179,7 +241,8 @@ function setArms(figure, arms) {
   }
   poseArm(a.lead, arms.lead);
   poseArm(a.off, arms.off);
-  if (figure.userData.sword && arms.blade) poseSword(figure.userData.sword, arms.blade, arms.lead.palm);
+  const w = figure.userData.sword;
+  if (w && arms.blade) w.userData.pose(w, arms.blade, arms.lead.palm);
 }
 
 function disposeTree(obj) {
@@ -189,7 +252,7 @@ function disposeTree(obj) {
   });
 }
 
-/** {scene, props, setStage(stage), dispose()} */
+/** {scene, props, setStage(stage), update(t), setCasterModel(model), dispose()} */
 export function makeStudio() {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(STUDIO_BACKGROUND);
@@ -216,6 +279,10 @@ export function makeStudio() {
   // lift and crouch it for a reaction (engine/react.js) without state.
   let posed = [];
   let current = null;
+  // A rigged caster model (engine/castermodel.js), or null for the stand-in.
+  // The studio poses it but doesn't own it: setCasterModel(null) or another
+  // model hands it back, and the caller disposes it.
+  let casterModel = null;
   const pivot = (figure, x, z, away) => {
     const g = new THREE.Group();
     g.position.set(x, 0, z);
@@ -225,6 +292,7 @@ export function makeStudio() {
     return g;
   };
   function setStage(stage) {
+    if (casterModel) casterModel.object.removeFromParent();
     disposeTree(props);
     props.clear();
     posed = [];
@@ -237,7 +305,7 @@ export function makeStudio() {
       props.add(f);
       return;
     }
-    const casterFig = standIn("#8c90a0", 1, stage.weapon);
+    const casterFig = standIn("#8c90a0", 1, stage.weapon, casterModel);
     posed.push({ g: pivot(casterFig, 0, 0, new THREE.Vector3(-1, 0, 0)), caster: true, fig: casterFig });
     // Allies (a rallying shout, a battle-fury aura) wear a blue tint and a
     // green ring at their feet; enemies stay grey.
@@ -282,6 +350,7 @@ export function makeStudio() {
     if (!current) return;
     for (const { g, i, caster, fig } of posed) {
       setArms(fig, current.armsLocal?.(caster ? "caster" : i, t));
+      if (caster && fig.userData.model) fig.userData.model.pose(current.casterRig?.(t) || null);
       const pose = caster ? current.casterPose?.(t) : current.targetPose?.(i, t);
       if (!pose) continue;
       const { x, z, away } = g.userData;
@@ -299,7 +368,17 @@ export function makeStudio() {
     props,
     setStage,
     update,
+    setCasterModel(model) {
+      if (model === casterModel) return;
+      if (casterModel) casterModel.object.removeFromParent();
+      casterModel = model || null;
+      if (current) setStage(current);
+    },
+    get casterModel() {
+      return casterModel;
+    },
     dispose() {
+      if (casterModel) casterModel.object.removeFromParent();
       scene.remove(props);
       disposeTree(scene);
     },

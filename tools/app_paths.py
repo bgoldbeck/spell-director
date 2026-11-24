@@ -165,3 +165,46 @@ def save_clip(name: str, clip: dict) -> Path:
     target.write_text(json.dumps(clip, separators=(",", ":")) + "\n", encoding="utf-8")
     return target
 
+
+# Caster models: rigged characters with a Mixamo-named skeleton (a Mixamo
+# character downloaded as FBX, or a GLB) that the viewer can pose as the
+# caster (web/js/engine/castermodel.js). Like clips they are the user's own
+# files (Mixamo's terms don't allow sharing the characters themselves), so the
+# repo ships none: they live in the library's models/ folder, or, in a source
+# checkout, the repo's assets/ folder (which git ignores).
+MODEL_SUFFIXES = {".fbx", ".glb", ".gltf"}
+MODEL_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 ._()-]{0,95}$")
+
+
+def user_models() -> Path:
+    return library_root() / "models"
+
+
+def model_dirs() -> list[Path]:
+    """Where caster models are looked for: the library's models/ folder, then the checkout's assets/."""
+    dirs = [user_models()]
+    if not getattr(sys, "frozen", False):
+        dirs.append(Path(__file__).resolve().parent.parent / "assets")
+    return dirs
+
+
+def model_index() -> dict:
+    """The viewer's caster model list: file names (with extension), first folder wins."""
+    seen: dict[str, None] = {}
+    for folder in model_dirs():
+        if folder.is_dir():
+            for f in sorted(folder.iterdir()):
+                if f.is_file() and f.suffix.lower() in MODEL_SUFFIXES and MODEL_NAME.match(f.name):
+                    seen.setdefault(f.name, None)
+    return {"models": list(seen)}
+
+
+def find_model_file(name: str) -> Path | None:
+    """The caster model file for a file name, or None (bad name or no such file)."""
+    if not MODEL_NAME.match(name or "") or Path(name).suffix.lower() not in MODEL_SUFFIXES or ".." in name:
+        return None
+    for folder in model_dirs():
+        target = folder / name
+        if target.is_file():
+            return target
+    return None

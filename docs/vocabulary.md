@@ -364,6 +364,7 @@ The caster has arms with hands and fingers; `space.caster_gestures` is the casti
 | slash, cut, sweep | a flat cut across the enemy | `slash` gesture, `slash` layer with `trail_ms`, sparks and a pop on the target |
 | backhand, return cut | the cut back the other way | `backslash` right after a `slash` (`hold_ms: 0`) |
 | chop, overhead, cleave | a blow straight down | `chop` (or two-handed `cleave` with a greatsword), cracks and dust at the target |
+| hammer, mace, maul, slam, smash | a heavy two-handed blow into the ground | `caster_weapon` `maul` swung with `cleave`, a `crater` decal, a bright shock `ring` then a slow dust `ring`, `eruption` `slabs`, `knockback` |
 | uppercut, launcher, rising | an upward cut that lifts the enemy | `rising_slash`, the target's `leap` reaction with `distance_px: 0` |
 | thrust, stab, lunge, pierce | a straight stab | `thrust` plus a `lunge`, a narrow `slash` lance (`inner` 0.55, long `reach_px`), a vertical ring on the target |
 | combo, flurry, chain | several strokes in a row | gestures back to back, one slash layer and hit beat per stroke, a list of `targets.react` |

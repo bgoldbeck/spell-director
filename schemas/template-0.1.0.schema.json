@@ -375,9 +375,10 @@
               "enum": [
                 "sword",
                 "greatsword",
-                "dagger"
+                "dagger",
+                "maul"
               ],
-              "description": "sword (default length 50 px), greatsword (74 px, wider), dagger (24 px)."
+              "description": "sword (default length 50 px), greatsword (74 px, wider), dagger (24 px), maul (a two-handed hammer: a 66 px haft with a heavy iron head at its end; caster_blade sits in the head)."
             },
             "length_px": {
               "$ref": "#/$defs/number_or_range",

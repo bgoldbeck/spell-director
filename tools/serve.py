@@ -43,6 +43,11 @@ folder and GET /clips/<name>.json serves one; POST /api/clips?name=<name>
 (header X-SpellDirector: clip, localhost only) saves a clip the viewer
 converted from a Mixamo FBX or GLB.
 
+GET /models/index.json lists the caster models (rigged characters with a
+Mixamo-named skeleton, .fbx/.glb/.gltf) in the library's models/ folder and,
+in a source checkout, the repo's assets/ folder; GET /models/<file> serves
+one. The viewer's Caster model picker (or ?model=<file>) poses it as the caster.
+
 Serves web/ at / and the templates at /templates/: the repo's templates/,
 or in the exe the built-in ones plus the user's library folder (see
 tools/app_paths.py). The template index is rebuilt on every request, so new
@@ -268,6 +273,9 @@ class Handler(SimpleHTTPRequestHandler):
         if clean.startswith("/clips/") and clean.endswith(".json") and clean != "/clips/index.json":
             target = app_paths.find_clip_file(urllib.parse.unquote(clean[len("/clips/"):-len(".json")]))
             return str(target) if target else str(ROOT / "web" / "404")
+        if clean.startswith("/models/") and clean != "/models/index.json":
+            target = app_paths.find_model_file(urllib.parse.unquote(clean[len("/models/"):]))
+            return str(target) if target else str(ROOT / "web" / "404")
         if clean.startswith("/templates/"):
             # The user's library first (the exe's saved spells), then the built-in templates.
             target = app_paths.find_template_file(urllib.parse.unquote(clean[len("/templates/"):]))
@@ -296,6 +304,9 @@ class Handler(SimpleHTTPRequestHandler):
             return
         if clean == "/clips/index.json":
             self.send_json(app_paths.clip_index())
+            return
+        if clean == "/models/index.json":
+            self.send_json(app_paths.model_index())
             return
         if clean == "/templates/index.json":
             body = json.dumps(app_paths.template_index()).encode()

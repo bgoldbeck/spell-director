@@ -80,3 +80,25 @@ test("every sword skill holds a weapon, swings it and draws a slash or a blade e
     assert.equal(t.line, "Swordsmanship", t.id);
   }
 });
+
+test("a maul is a long haft with its head at the end, and caster_blade sits in the head", () => {
+  const arms = armsAt(gestureTracks([]), 0, "blade", { kind: "maul" });
+  const b = arms.blade;
+  assert.ok(Math.abs(dist(b.guard, b.tip) - WEAPONS.maul.length) < 1e-9);
+  assert.ok(b.head > 0, "the maul has a head");
+  assert.ok(Math.abs(dist(b.mid, b.tip) - WEAPONS.maul.head / 2) < 1e-9, "caster_blade is the middle of the head");
+  // A sword's caster_blade stays the middle of the blade.
+  const s = bladeFK(arms.lead, { kind: "sword" });
+  assert.ok(Math.abs(dist(s.guard, s.mid) - WEAPONS.sword.length * 0.55) < 1e-9);
+});
+
+test("the maul slam lifts the head overhead and brings it down to the ground in front", () => {
+  const t = index.find((x) => x.id === "physical-anvilfall");
+  assert.ok(t, "anvilfall is in the index");
+  assert.equal(t.space.caster_weapon.kind, "maul");
+  assert.ok(t.space.caster_gestures?.length, "the caster swings it");
+  const tracks = gestureTracks(t.space.caster_gestures);
+  const head = (ms) => armsAt(tracks, ms, "blade", t.space.caster_weapon).blade.mid;
+  assert.ok(head(520)[1] > 1.0, `overhead at the hang ${head(520)}`);
+  assert.ok(head(820)[1] < 0.25 && head(820)[0] > 0.6, `down in front at the smash ${head(820)}`);
+});
