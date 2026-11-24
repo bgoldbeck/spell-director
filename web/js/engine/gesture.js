@@ -181,6 +181,9 @@ export const WEAPONS = {
   sword: { length: 0.5, width: 0.034, grip: 0.07 },
   greatsword: { length: 0.74, width: 0.05, grip: 0.12 },
   dagger: { length: 0.24, width: 0.028, grip: 0.05 },
+  // A two-handed maul: a long haft with a heavy block head at its end. head
+  // is the head's length along the haft; caster_blade sits in the head.
+  maul: { length: 0.66, width: 0.03, grip: 0.16, head: 0.17 },
 };
 
 /** Gesture kind -> { duration_ms, two_handed } (for docs and the director). */
@@ -420,10 +423,11 @@ export function bladeFK(fk, weapon) {
   return {
     pommel: add(fk.palm.center, mul(d, -w.grip)),
     guard,
-    mid: add(guard, mul(d, L * 0.55)),
+    mid: add(guard, mul(d, w.head ? L - w.head / 2 : L * 0.55)),
     tip,
     dir: d,
     width: w.width,
+    head: w.head || 0,
   };
 }
 

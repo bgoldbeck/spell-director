@@ -101,6 +101,9 @@
         </label>
         <label class="btn file-btn" title="Load a Mixamo animation (FBX or GLB with mixamorig bones) to play on the caster. It is saved in the clips folder.">Load Mixamo…<input id="clip-file" type="file" accept=".fbx,.glb,.gltf,.json" hidden></label>
         <label class="check" title="Mirror the animation: a right-handed Mixamo throw thrown with the caster's casting (left) hand"><input id="clip-mirror" type="checkbox"> Mirror</label>
+        <label title="Who plays the caster: the crude stand-in, or a rigged character (a Mixamo character FBX/GLB in the library's models folder, or the checkout's assets folder), posed by the same animation. Exports always bake the stand-in's skeleton.">Caster
+          <select id="model-select"><option value="">Stand-in</option></select>
+        </label>
         <label class="check" title="Bloom: bright light glows past its edges (B)"><input id="bloom" type="checkbox" checked> Bloom</label>
         <label>Seed <input id="seed" type="number" min="0" step="1" value="1"></label>
         <button id="reroll" class="btn" title="New random seed: same template, different cast">New cast</button>

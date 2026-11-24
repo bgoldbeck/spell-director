@@ -314,6 +314,7 @@ In an engine, gestures are the caster's casting animation: the export lists them
 The caster's skeleton matches Mixamo's: the same bones (`Hips`, `Spine`, `Spine1`, `Spine2`, `Neck`, `Head`, `LeftShoulder`, `LeftArm`, `LeftForeArm`, `LeftHand`, `LeftHandThumb1`–`4`, `LeftHandIndex1`–`4` ... and the right side and legs) with the same names. Its arm joints are those bones (shoulder = `Arm`, elbow = `ForeArm`, wrist = `Hand`, a finger's knuckle, two joints and tip = its bones 1–4). **The casting (lead) hand is the left hand.** So animation moves both ways:
 
 - **In:** in the viewer, **Load Mixamo…** takes a Mixamo FBX (Download, Format FBX Binary, With Skin) or any GLB/glTF with Mixamo bone names, converts it to a clip (`spelldirector.clip/1`) and saves it in the library's `clips/` folder under the file's name (`Standing 2H Magic Attack 01.fbx` becomes `standing-2h-magic-attack-01`). **Animation** picks it for the spell on screen (and exports bake it); **Mirror** plays a right-handed animation with the left, casting hand. Mixamo's animations stay on your computer: `clips/` is not part of the repo.
+- **A character as the caster:** the viewer's **Caster** list (or `?model=<file>`) swaps the stand-in for a rigged character: a Mixamo character (Download, Format FBX Binary, T-pose) or any FBX/GLB with Mixamo bone names, in the library's `models/` folder or a source checkout's `assets/` folder. The viewer poses it each frame from the caster's skeleton (gestures or clip) and scales it to the stand-in's height; the weapon and every hand anchor still follow the gestures, so proportions that differ from the stand-in's may put the hands a little off the grip. Viewer only: exports bake the skeleton, not the model. Characters stay on your computer (`assets/` is ignored by git).
 - **In a template:** `space.caster_clip` plays a clip on the caster:
 
 ```json
@@ -350,7 +351,7 @@ Melee weapon skills: slashes, combos, thrusts and spins. Give the caster a weapo
 
 | Field | Meaning |
 |---|---|
-| `caster_weapon` | `kind`: `sword` (a 50 px blade), `greatsword` (74 px, wider) or `dagger` (24 px); `length_px` overrides the blade. It rides in the lead hand, the casting hand rests holding it up in guard, and the anchors `caster_blade` (the middle of the blade) and `caster_blade_tip` (its point) ride on it. Without a weapon those anchors are where a sword would be. |
+| `caster_weapon` | `kind`: `sword` (a 50 px blade), `greatsword` (74 px, wider), `dagger` (24 px) or `maul` (a two-handed hammer: a 66 px haft with a heavy iron head at its end; swing it with `cleave` for an overhead slam, and `caster_blade` sits in the head); `length_px` overrides the blade. It rides in the lead hand, the casting hand rests holding it up in guard, and the anchors `caster_blade` (the middle of the blade) and `caster_blade_tip` (its point) ride on it. Without a weapon those anchors are where a sword would be. |
 | `caster_react` | One reaction or a list played together, each from its own `at_ms`: `lunge` to step into a cut, `leap` for a jumping strike, `spin` (with `turns`) for a whirlwind. |
 | `targets.react` | One reaction or a list: a `flinch` for each hit of a combo, then a `knockback` on the finisher. |
 | `targets.order: "sweep"` | Splash targets hit one by one as a blade sweeping round the centre reaches them: `sweep_ms` per turn (negative: the other way), starting at `sweep_start_deg` (0 = the cast direction, positive toward +Z, the off-hand side; default -90, the lead side). Match `sweep_ms` to the spin: a `spin` of `turns` *n* over *d* ms takes about 0.88 *d* / *n* ms per turn at full speed. |
@@ -359,7 +360,7 @@ The `slash` layer is the trail: the sheet the blade sweeps through the air, from
 
 Time it to the stroke: put a slash layer's beat on its gesture's swing (the slash crosses the front at 75% of its duration, a chop is level at 80%, a thrust lands at the end), and the hit beat where the blade reaches the enemy. Chain combo strokes back to back with `hold_ms: 0`, one slash layer and one hit beat per stroke. A sword wave is an `orb` `look: crescent` anchored at `caster_blade` in a `projectile` spell.
 
-Examples: `templates/physical/keen-sweep.json` (a single cut), `threefold-flurry.json` and `cascade-of-cuts.json` (combos), `needle-lunge.json` (a thrust), `colossus-cleave.json` (a greatsword), `whirling-steel.json` (a spin), `templates/wind/cyclone-reaver.json`, `templates/fire/emberwheel.json`, `templates/lightning/stormsplitter.json`, `templates/wind/galecleave.json`.
+Examples: `templates/physical/keen-sweep.json` (a single cut), `threefold-flurry.json` and `cascade-of-cuts.json` (combos), `needle-lunge.json` (a thrust), `colossus-cleave.json` (a greatsword), `anvilfall.json` (a maul slam with a shockwave), `whirling-steel.json` (a spin), `templates/wind/cyclone-reaver.json`, `templates/fire/emberwheel.json`, `templates/lightning/stormsplitter.json`, `templates/wind/galecleave.json`.
 
 ## Warcries
 

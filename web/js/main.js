@@ -28,7 +28,7 @@ const ui = {
   gifBtn: $("export-gif"), gifDialog: $("gif-dialog"), gifForm: $("gif-form"), gifGo: $("gif-go"), gifStatus: $("gif-status"),
   gifLength: $("gif-length"),
   bloom: $("bloom"), styleSelect: $("style-select"),
-  clipSelect: $("clip-select"), clipFile: $("clip-file"), clipMirror: $("clip-mirror"),
+  clipSelect: $("clip-select"), clipFile: $("clip-file"), clipMirror: $("clip-mirror"), modelSelect: $("model-select"),
   mute: $("mute"), flash: $("flash"), dim: $("dim"), quadLabels: $("quad-labels"), viewRead: $("view-read"), error: $("error"),
 };
 
@@ -42,6 +42,8 @@ const state = {
   // of the template's own animation ("" = the template's), and whether to mirror it.
   clip: "",
   clipMirror: false,
+  // The rigged character playing the caster (a file in models/index.json), or "" for the stand-in.
+  model: "",
   seed: 1,
   t: 0,
   playing: true,
@@ -682,6 +684,65 @@ if (ui.clipSelect) {
   };
 }
 
+// ------------------------------------------------------------ caster model
+
+// A rigged character (engine/castermodel.js) in place of the stand-in. The
+// models are the user's own files, served from the library's models/ folder
+// or the checkout's assets/ folder; the choice is remembered in this browser.
+const MODEL_PREF = "spelldirector.casterModel";
+let modelLoad = 0;
+
+async function loadModelList() {
+  if (!ui.modelSelect) return [];
+  let names = [];
+  try {
+    const res = await fetch("models/index.json");
+    if (res.ok) names = (await res.json()).models || [];
+  } catch {
+    // Opened without the server: the stand-in only.
+  }
+  ui.modelSelect.replaceChildren(new Option("Stand-in", ""), ...names.map((n) => new Option(n.replace(/\.[^.]+$/, ""), n)));
+  return names;
+}
+
+async function setCasterModel(name, { remember = true } = {}) {
+  const token = ++modelLoad;
+  state.model = name || "";
+  if (ui.modelSelect) ui.modelSelect.value = state.model;
+  if (remember) {
+    try {
+      localStorage.setItem(MODEL_PREF, state.model);
+    } catch {
+      // No storage (private window): not remembered.
+    }
+  }
+  const old = studio.casterModel;
+  if (!state.model) {
+    studio.setCasterModel(null);
+    old?.dispose();
+    return;
+  }
+  try {
+    const res = await fetch(`models/${encodeURIComponent(state.model)}`);
+    if (!res.ok) throw new Error(`not found (${res.status})`);
+    const { loadCasterModel } = await import("./engine/castermodel.js");
+    const model = await loadCasterModel(await res.arrayBuffer(), state.model);
+    if (token !== modelLoad) return model.dispose();
+    studio.setCasterModel(model);
+    old?.dispose();
+    studio.update(state.t);
+  } catch (err) {
+    console.error(err);
+    if (token === modelLoad) {
+      showError(`Could not load the caster model ${state.model}: ${err.message}`);
+      state.model = "";
+      if (ui.modelSelect) ui.modelSelect.value = "";
+    }
+  }
+}
+
+if (ui.modelSelect) ui.modelSelect.onchange = () => setCasterModel(ui.modelSelect.value);
+
 // ------------------------------------------------------------ export
 
 function exportOptions(form) {
@@ -905,6 +966,22 @@ async function boot() {
     state.clipMirror = params.get("mirror") === "1";
     buildClipSelect();
     if (ui.clipMirror) ui.clipMirror.checked = state.clipMirror;
+  }
+  // ?model=<file> picks the caster model for this visit (not remembered);
+  // otherwise the last one picked in this browser.
+  const models = await loadModelList();
+  const urlModel = params.get("model");
+  let savedModel = "";
+  try {
+    savedModel = localStorage.getItem(MODEL_PREF) || "";
+  } catch {
+    // No storage.
+  }
+  const wantModel = urlModel !== null ? urlModel : savedModel;
+  if (wantModel && models.includes(wantModel)) {
+    await setCasterModel(wantModel, { remember: false });
+  } else if (urlModel) {
+    showError(`No caster model called ${urlModel} (put it in the library's models folder or the checkout's assets folder).`);
   }
   const start = resolveStart(state.groups, { template: params.get("template"), type: params.get("type") });
   if (start.error) showError(start.error);

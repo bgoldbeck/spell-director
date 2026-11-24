@@ -1,0 +1,116 @@
+{
+  "schema": "spelldirector.template/0.1.0",
+  "id": "physical-anvilfall",
+  "name": "Anvilfall",
+  "line": "Swordsmanship",
+  "description": "A two-handed maul slam: the caster hauls a heavy iron-headed maul up over their head, holds it, then drives it straight down onto the enemy in front. The ground caves into a crater, a hard shockwave and a rolling wall of dust ring out from the hit, rock heaves up and everyone close by is blown off their feet.",
+  "element": "physical",
+  "archetype": "strike",
+  "tags": ["maul", "hammer", "mace", "melee", "weapon", "slam", "overhead", "two-handed", "heavy", "shockwave", "splash", "area"],
+  "source": {
+    "kind": "director_text",
+    "prompt": "A two-handed mace or hammer overhead swing: a heavy slam with an impact shockwave (original, game-agnostic)."
+  },
+  "timing": { "duration_ms": 2000, "fps_hint": 30 },
+  "space": {
+    "origin": "caster",
+    "destination": "target",
+    "travel": "instant",
+    "scale": 1.0,
+    "footprint": { "shape": "circle", "length": 1.25, "radius": 1.1 },
+    "caster_weapon": { "kind": "maul" },
+    "targets": {
+      "layout": "splash",
+      "count": { "min": 4, "max": 6 },
+      "radius": { "min": 0.72, "max": 0.85 },
+      "ripple_ms": 90,
+      "react": { "kind": "knockback", "at_ms": 840, "duration_ms": 600, "distance_px": { "min": 55, "max": 70 }, "lean_deg": 34 }
+    },
+    "caster_react": { "kind": "lunge", "at_ms": 460, "duration_ms": 1000, "distance_px": 22, "lean_deg": 20 },
+    "caster_gestures": [
+      { "kind": "cleave", "at_ms": 100, "duration_ms": 720, "hold_ms": 380, "return_ms": 620 }
+    ]
+  },
+  "views": {
+    "hero": "three_quarter",
+    "reads": {
+      "front": "The maul rises overhead, hangs, then drops onto the enemy; a flash, a crater and a ring of rock, and the group is blown back.",
+      "side": "Hero for the swing: the tall heavy fall of the maul head and the rock and dust jumping up where it lands.",
+      "top": "Hero for the area: the crater, then two rings rolling out from the hit through the group, a sharp one then a slow dust wall.",
+      "three_quarter": "The heave, the fall, the crater, both shockwaves and the group thrown clear all read."
+    }
+  },
+  "palette": { "core": "#FFF6E8", "primary": "#E3D3B4", "secondary": "#8C7A62", "accent": "#FF9A4A", "shadow": "#16120D" },
+  "beats": [
+    { "id": "heave", "phase": "anticipation", "start_ms": 0, "end_ms": 520, "intensity": { "shape": "ease_in", "from": 0.1, "to": 0.8 }, "intent": "The maul comes up in both hands; grit lifts at the caster's feet." },
+    { "id": "hang", "phase": "anticipation", "start_ms": 520, "end_ms": 600, "intensity": { "shape": "hold", "from": 1.0, "to": 1.0 }, "intent": "The maul hangs at the top for a breath: the tell." },
+    { "id": "fall", "phase": "release", "start_ms": 600, "end_ms": 840, "intensity": { "shape": "ease_in", "from": 0.8, "to": 1.0 }, "intent": "It comes down hard: a short, heavy smear of air behind the head." },
+    { "id": "smash", "phase": "impact", "start_ms": 810, "end_ms": 980, "intensity": { "shape": "spike", "from": 1.0, "to": 0.3 }, "intent": "It lands: a hot flash, the ground caves in, a sharp shock ring snaps out." },
+    { "id": "shock", "phase": "impact", "start_ms": 830, "end_ms": 1420, "intensity": { "shape": "ease_out", "from": 1.0, "to": 0.0 }, "intent": "Rock heaves up in a ring and a wall of dust rolls out through the group." },
+    { "id": "settle", "phase": "dissipation", "start_ms": 960, "end_ms": 1850, "intensity": { "shape": "ease_out", "from": 0.7, "to": 0.0 }, "intent": "Rock sinks back, the crater stays, dust hangs and thins." }
+  ],
+  "layers": [
+    {
+      "id": "heave-glint", "type": "glow", "beats": ["heave", "hang"], "anchor": "caster_blade", "plane": "billboard", "blend": "add", "color": "accent", "z": 8,
+      "params": { "radius_px": 26, "softness": 0.8, "pulse_hz": 4 },
+      "shader": { "material": "metallic", "look": "A dull warm glint gathering on the raised iron head.", "technique": "procedural", "emissive": { "hdr": 2, "falloff": "soft" }, "lighting": "emits_light" }
+    },
+    {
+      "id": "heave-grit", "type": "sparks", "beats": ["heave"], "anchor": "caster", "plane": "volume", "blend": "alpha", "color": "secondary", "z": 7,
+      "params": { "look": "debris", "count": { "min": 12, "max": 16 }, "speed": 110, "speed_spread": 0.5, "gravity": -120, "lifetime_ms": 600, "size_px": 3, "spread_deg": 160, "drag": 0.3, "emit_ms": 400, "emit_radius_px": 40 },
+      "shader": { "material": "stone", "look": "Pebbles lifting off the ground around the caster as they heave the maul up.", "technique": "particles", "lighting": "lit" }
+    },
+    {
+      "id": "fall-smear", "type": "slash", "beats": ["fall", "smash", "settle"], "anchor": "caster_blade", "blend": "add", "color": "gradient_core_to_primary", "z": 12,
+      "params": { "inner": 0.45, "width_px": 14, "softness": 0.65, "trace_ms": 260, "trail_ms": 240, "reach_px": 14 },
+      "shader": { "material": "metallic", "look": "A short, thick smear of displaced air dragging behind the maul head: blunt, not a cutting edge.", "technique": "ribbon", "flow": { "direction": "along_path", "speed": 5 }, "emissive": { "hdr": 1.8, "falloff": "exponential", "core_ratio": 0.3 }, "lighting": "emits_light" }
+    },
+    {
+      "id": "smash-flash", "type": "flash", "beats": ["smash"], "anchor": "target", "plane": "billboard", "blend": "add", "color": "accent", "z": 16,
+      "params": { "scope": "local", "radius_px": 80, "peak": 0.65 },
+      "shader": { "material": "metallic", "look": "A hot orange-white pop where iron meets ground.", "technique": "procedural", "emissive": { "hdr": 3, "falloff": "gaussian" }, "lighting": "emits_light" }
+    },
+    {
+      "id": "crater", "type": "decal", "beats": ["smash", "shock", "settle"], "anchor": "target", "plane": "ground", "blend": "alpha", "color": "shadow", "z": 0,
+      "params": { "shape": "crater", "radius_px": { "min": 95, "max": 110 }, "opacity": 0.9, "fade_in_ms": 40, "lifetime_ms": 1300, "fade_ms": 500, "detail": 0.7 },
+      "shader": { "material": "stone", "look": "A shallow round crater punched into the ground, a dusty rim and broken edges.", "technique": "decal", "lighting": "lit" }
+    },
+    {
+      "id": "shock-snap", "type": "ring", "beats": ["smash"], "anchor": "target", "plane": "ground", "blend": "add", "color": "core", "z": 3,
+      "params": { "start_radius_px": 20, "end_radius_px": 190, "thickness_px": 7, "softness": 0.35, "ease": "ease_out" },
+      "shader": { "material": "airy", "look": "A thin, bright pressure ring snapping out from the impact: the shockwave front.", "technique": "procedural", "flow": { "direction": "outward", "speed": 8 }, "emissive": { "hdr": 2.5, "falloff": "exponential" }, "lighting": "emits_light" }
+    },
+    {
+      "id": "rock-heave", "type": "eruption", "beats": ["smash", "shock", "settle"], "anchor": "target", "plane": "volume", "blend": "alpha", "color": "secondary", "z": 6,
+      "params": { "shape": "slabs", "arc_deg": 360, "rows": 2, "start_radius_px": 35, "end_radius_px": 85, "row_delay_ms": 80, "growth": 1.15, "height_px": 22, "width_px": 18, "spacing_px": 38, "tilt_deg": 30, "jitter": 0.35, "rise_ms": 80, "hold_ms": 240, "sink_ms": 360, "debris_count": 2, "debris_speed": 240, "debris_size_px": 5, "gravity": 980, "dust": 0.6, "dust_size_px": 28, "dust_life_ms": 850 },
+      "shader": { "material": "stone", "look": "Plates of ground levered up in a ring around the crater, tipping outward, then dropping back.", "technique": "mesh", "lighting": "lit" }
+    },
+    {
+      "id": "dust-wall", "type": "ring", "beats": ["shock"], "anchor": "target", "plane": "ground", "blend": "alpha", "color": "primary", "z": 2,
+      "params": { "start_radius_px": 40, "end_radius_px": 230, "thickness_px": 34, "softness": 0.8, "ease": "linear" },
+      "shader": { "material": "dusty", "look": "A thick, low wall of dust rolling out along the ground behind the shock front.", "technique": "procedural", "flow": { "direction": "outward", "speed": 4 }, "noise": { "type": "fbm", "scale": 2, "speed": 0.6, "contrast": 0.5 }, "lighting": "lit" }
+    },
+    {
+      "id": "splash-hit", "type": "sparks", "beats": ["smash"], "anchor": "splash", "plane": "volume", "blend": "alpha", "color": "secondary", "z": 14,
+      "params": { "look": "debris", "count": { "min": 8, "max": 10 }, "speed": 280, "speed_spread": 0.6, "gravity": 900, "lifetime_ms": 450, "size_px": 3, "spread_deg": 120, "drag": 0.2, "emit_ms": 50, "height_px": 20 },
+      "shader": { "material": "stone", "look": "Grit and stone chips kicked off each enemy as the shock reaches them.", "technique": "particles", "lighting": "lit" }
+    },
+    {
+      "id": "smash-dust", "type": "smoke", "beats": ["smash", "shock", "settle"], "anchor": "target", "blend": "alpha", "color": "primary", "z": 9,
+      "params": { "count": 10, "rise_speed": 20, "size_px": { "min": 36, "max": 46 }, "lifetime_ms": 1000, "opacity": 0.42 },
+      "shader": { "material": "dusty", "look": "A thick column of dust bursting up from the crater and slumping outward.", "technique": "particles", "noise": { "type": "curl", "scale": 1.5, "speed": 0.5, "contrast": 0.4 }, "lighting": "lit" }
+    },
+    { "id": "heave-rumble", "type": "sound_cue", "beats": ["heave"], "params": { "cue": "rumble", "gain": 0.3, "pitch": 0.85 } },
+    { "id": "swing", "type": "sound_cue", "beats": ["fall"], "params": { "cue": "swing", "gain": 0.8, "pitch": { "min": 0.5, "max": 0.6 }, "size": "large" } },
+    { "id": "smash-hit", "type": "sound_cue", "beats": ["smash"], "params": { "cue": "impact", "gain": 1.0, "pitch": { "min": 0.7, "max": 0.8 }, "size": "large" } },
+    { "id": "smash-boom", "type": "sound_cue", "beats": ["smash"], "params": { "cue": "boom", "gain": 0.8, "pitch": 0.85, "size": "large" } },
+    { "id": "rock", "type": "sound_cue", "beats": ["shock"], "params": { "cue": "crash", "gain": 0.5, "pitch": 0.9 } },
+    { "id": "smash-shake", "type": "camera_shake", "beats": ["smash"], "params": { "amplitude_px": 15, "frequency_hz": 18, "decay": 0.6 } },
+    { "id": "shock-shake", "type": "camera_shake", "beats": ["shock"], "params": { "amplitude_px": 5, "frequency_hz": 16, "decay": 0.4 } }
+  ],
+  "variation": {
+    "seeded": true,
+    "notes": "Group size and spacing, crater edge, rock plates and dust vary; the heave and the hang are fixed so the slam is always telegraphed."
+  },
+  "director_notes": "Two-handed maul (caster_weapon kind maul: a 66 px haft with a 17 px iron head; caster_blade sits in the head, caster_blade_tip on top of it). The cleave gesture is high at 55% (about 500 ms), hangs, and lands at 820 ms. Two shock rings: a thin bright front on the hit, then a slow dust wall that keeps pace with the rock plates. Splash layout: the struck enemy plus 3-5 round it, knocked back 90 ms per unit outward. Built to try a Mixamo character as the caster: pick it in the viewer's Caster list or open with ?model=<file>."
+}

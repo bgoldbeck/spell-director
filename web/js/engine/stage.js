@@ -220,6 +220,12 @@ export function buildStage(template, seed) {
       const rig = p.rig || rigFromArms(p.arms);
       return casterReact && !status ? applyRoot(rig, rootOf(this.casterPose(t), [-1, 0, 0])) : rig;
     },
+    // The caster's skeleton at time t without its reaction (the studio moves
+    // the whole figure for that): what a rigged caster model is posed from.
+    casterRig(t) {
+      const p = casterPosed(t);
+      return p.rig || rigFromArms(p.arms);
+    },
     // Whether a clip (space.caster_clip) drives the caster: its name, or null.
     clip: clipOn ? String(clipDef.clip) : null,
     clipMissing: clipDef && !clipOn ? String(clipDef.clip) : null,
