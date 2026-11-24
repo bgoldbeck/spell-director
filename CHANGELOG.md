@@ -6,6 +6,7 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+
 ### Added
 
 - **Caster model picker**: the viewer's new **Caster** list (or `?model=<file>`) plays the caster with a rigged character instead of the stand-in: any Mixamo-named skeleton (a Mixamo character downloaded as FBX, or a GLB), posed every frame from the same gestures or clip. Models are your own files: put them in the library's `models/` folder (or a source checkout's `assets/` folder, which git ignores); they're never shipped.
@@ -47,6 +48,10 @@ To release, see [docs/releasing.md](docs/releasing.md).
 - New `motif` layer: small modeled things for a spell's story (leaves, petals, feathers, water drops, a blossom that opens, faceted gems in six cuts) that follow keyframed paths or circle a character, with star glints and light trails.
 - Bubbles take `finish: soap` (clear film with swirling rainbow bands and window reflections) or `finish: glass` (a tinted glass dome), and `ripple`. Templates can ask to be framed close on the character (`views.frame: "close"`). Glows, rings and sparks take `height_px`.
 - Thrown weapons: orbs take `look: weapon`, a spinning hammer, axe, anvil, disc, spear, trident or rune-stone wrapped in the spell's energy. Bolts and orbs on splash targets can fork from the chosen enemy, chain from one enemy to the next (closing into a cage with `wrap`) or come down from the sky.
+
+### Changed
+
+- Flame Jet reworked after an in-game test: its licks hug the core with soft, feathered edges instead of a jagged, hard-cut strip, and it never sinks into the ground. It also gains a hot knot of flame in the palm, a light that rides the jet, faint smoke and slow embers off its top, a flash and spark burst on first contact, a bigger splash and scorch, and deeper reds toward the target. New params: beam `edge_softness`, `far_heat`, `puff_spread`, `puff_rise`, `ground_clearance_px`; lights and smoke can `attach_to` a beam (`along`, `along_swing`, `along_hz`).
 
 ### Fixed
 

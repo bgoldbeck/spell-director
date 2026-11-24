@@ -2,7 +2,7 @@
   "schema": "spelldirector.template/0.1.0",
   "id": "fire-flame-jet",
   "name": "Flame Jet",
-  "description": "Fire flickers up around the caster's hand, then a tight, fast jet of flame shoots straight at one target, surging as it pours, splashing into billows and sparks on the hit and guttering out from the hand.",
+  "description": "Fire flickers up around the caster's hand, then a tight, fast jet of flame shoots from a hot knot in the palm straight at one target, surging as it pours, hitting with a flash and a burst of sparks, splashing into billows and guttering out from the hand.",
   "element": "fire",
   "archetype": "beam",
   "tags": [
@@ -44,7 +44,7 @@
     "hero": "side",
     "reads": {
       "front": "The jet comes straight at the far target from just beside the camera: a bright flare at the hand, a short, fat-looking column foreshortened toward the target, and the splash of billows and sparks blooming at the far end.",
-      "side": "Hero view. The whole jet in profile: a tight white-yellow column leaving the hand, widening only a little and reddening toward the target, surges pulsing down it, and a splash of flame and sparks where it breaks on the target.",
+      "side": "Hero view. The whole jet in profile: a tight white-yellow column leaving a hot knot in the hand, starting thin, widening only a little and deepening to red toward the target, surges pulsing down it, faint smoke and embers drifting off its top, a flash and spark burst on first contact and a splash of flame where it breaks on the target.",
       "top": "A narrow straight line of fire from the caster to the target, its far end splashing into a round bloom; the ground story carries the hit: a hot burn patch that cools to a small scorch under the target, and sparks spraying out around it.",
       "three_quarter": "The jet reads as a tight column receding toward the target with the splash rising off it; the scorch reads as an ellipse under the target."
     }
@@ -62,6 +62,7 @@
         "layers": [
           "hand-fire",
           "hand-glow",
+          "muzzle-fire",
           "jet"
         ],
         "beat": "jet",
@@ -80,10 +81,12 @@
       {
         "cue": "clear first hit",
         "layers": [
+          "contact-flash",
+          "contact-burst",
           "splash-billows",
           "splash-sparks"
         ],
-        "beat": "splash",
+        "beat": "contact",
         "at_ms": 420,
         "measure": "size",
         "why": "One clean impact beat when the jet tip reaches the target, before the sustained splash, so the hit lands on a readable frame."
@@ -110,7 +113,7 @@
   "palette": {
     "core": "#FFF6D6",
     "primary": "#FF7A1A",
-    "secondary": "#C8290C",
+    "secondary": "#A8180A",
     "accent": "#FFB938",
     "shadow": "#2B211C"
   },
@@ -151,6 +154,18 @@
         "flicker_hz": 7
       },
       "intent": "A tight jet of flame hits the target in about a tenth of a second and keeps pouring, surging in pulses. White-yellow at the hand, orange in the body, red at its fringes."
+    },
+    {
+      "id": "contact",
+      "phase": "impact",
+      "start_ms": 330,
+      "end_ms": 440,
+      "intensity": {
+        "shape": "spike",
+        "from": 1.0,
+        "to": 0.6
+      },
+      "intent": "First contact: a hot white-orange flash and a burst of sparks where the jet tip lands, one clean hit frame before the sustained splash."
     },
     {
       "id": "splash",
@@ -194,8 +209,8 @@
       "params": {
         "shape": "scorch",
         "radius_px": {
-          "min": 38,
-          "max": 46
+          "min": 48,
+          "max": 56
         },
         "opacity": 0.8,
         "fade_in_ms": 200,
@@ -238,8 +253,8 @@
       "params": {
         "shape": "burn",
         "radius_px": {
-          "min": 32,
-          "max": 36
+          "min": 40,
+          "max": 46
         },
         "opacity": 0.9,
         "fade_in_ms": 100,
@@ -337,7 +352,7 @@
       "color": "primary",
       "z": 6,
       "params": {
-        "radius_px": 22,
+        "radius_px": 26,
         "softness": 0.9,
         "pulse_hz": 7
       },
@@ -405,8 +420,8 @@
       "z": 16,
       "params": {
         "scope": "local",
-        "radius_px": 50,
-        "peak": 0.5
+        "radius_px": 64,
+        "peak": 0.8
       },
       "shader": {
         "material": "fiery",
@@ -415,6 +430,44 @@
         "emissive": {
           "hdr": 5,
           "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "muzzle-fire",
+      "type": "orb",
+      "beats": [
+        "jet"
+      ],
+      "anchor": "caster_hand",
+      "tracking": "follow",
+      "color": "gradient_core_to_primary",
+      "z": 12,
+      "params": {
+        "radius_px": 5,
+        "pulse_hz": 9,
+        "wobble": 0.4,
+        "crackle_count": 0
+      },
+      "shader": {
+        "material": "plasma",
+        "look": "A hot white-yellow knot of flame in the palm where the jet leaves it, flickering the whole time it pours.",
+        "technique": "procedural",
+        "noise": {
+          "type": "fbm",
+          "scale": 3,
+          "speed": 3,
+          "contrast": 0.6
+        },
+        "flow": {
+          "direction": "outward",
+          "speed": 2
+        },
+        "emissive": {
+          "hdr": 5,
+          "falloff": "soft",
+          "core_ratio": 0.45
         },
         "lighting": "emits_light"
       }
@@ -450,25 +503,30 @@
           "min": 18,
           "max": 20
         },
-        "spread": 2.0,
+        "spread": 1.8,
         "wobble": 0.12,
         "wobble_hz": 4,
-        "jaggedness": 0.04,
+        "jaggedness": 0.02,
         "regen_ms": 70,
         "grow_ms": 110,
         "flow_speed": 8,
-        "turbulence": 0.5,
-        "churn": 0.6,
+        "turbulence": 0.35,
+        "churn": 0.4,
         "puff_count": 40,
-        "puff_size_px": 26,
-        "shed_count": 24,
-        "shed_speed": 80,
+        "puff_size_px": 20,
+        "shed_count": 30,
+        "shed_speed": 35,
         "shed_size_px": 2,
-        "shed_life_ms": 450
+        "shed_life_ms": 750,
+        "edge_softness": 0.75,
+        "far_heat": 0.35,
+        "puff_spread": 0.35,
+        "puff_rise": 0.35,
+        "ground_clearance_px": 6
       },
       "shader": {
         "material": "fiery",
-        "look": "A tight, fast jet of flame: a white-hot thread at the hand inside an orange column that only widens a little, red licks along its edges, surges racing down it.",
+        "look": "A tight, fast jet of flame: a white-hot thread at the hand inside an orange column that starts thin and only widens a little, soft licks hugging its edges that deepen to red toward the target, surges racing down it.",
         "technique": "ribbon",
         "noise": {
           "type": "fbm",
@@ -492,7 +550,7 @@
           "core_ratio": 0.35
         },
         "lighting": "emits_light",
-        "notes": "A narrow cone or ribbon mesh with fast-scrolling fBm, plus a few flame sprites riding it for volume. Keep it tight: it should read as aimed, not as a spray."
+        "notes": "A narrow cone or ribbon mesh with fast-scrolling fBm, plus a few flame sprites riding it for volume. Keep it tight: it should read as aimed, not as a spray. Edges: stretch the noise along the stream and feather the sides (edge_softness) so the silhouette is soft licks, never a repeating saw-tooth or a hard-cut card; puffs stay close to the core (puff_spread, puff_rise). Ground: the beam tilts up from the hand just enough that its widest surge stays ground_clearance_px above the ground (engine/beamground.js groundLift), so aiming at a target's feet never buries the far end; aim at the target's chest or pivot plus half its height when the engine allows."
       }
     },
     {
@@ -521,6 +579,72 @@
       "tracking": "follow"
     },
     {
+      "id": "jet-light",
+      "type": "light",
+      "beats": [
+        "jet"
+      ],
+      "attach_to": "jet",
+      "tracking": "follow",
+      "color": "primary",
+      "params": {
+        "radius": 3,
+        "energy": 1.2,
+        "along": 0.55,
+        "along_swing": 0.35,
+        "along_hz": 1.4
+      },
+      "shader": {
+        "technique": "light",
+        "look": "An orange light riding the jet, sliding up and down it so a warm glow runs along the ground under the stream.",
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "plume-smoke",
+      "type": "smoke",
+      "beats": [
+        "jet",
+        "gutter"
+      ],
+      "attach_to": "jet",
+      "tracking": "trail",
+      "blend": "alpha",
+      "color": "shadow",
+      "z": 4,
+      "params": {
+        "count": 12,
+        "rise_speed": 30,
+        "size_px": {
+          "min": 14,
+          "max": 20
+        },
+        "lifetime_ms": 800,
+        "opacity": 0.16,
+        "spread_px": 4
+      },
+      "shader": {
+        "material": "smoky",
+        "look": "Faint grey smoke curling up off the top of the jet.",
+        "technique": "particles",
+        "noise": {
+          "type": "curl",
+          "scale": 2,
+          "speed": 0.5,
+          "contrast": 0.4
+        },
+        "flow": {
+          "direction": "upward",
+          "speed": 0.5
+        },
+        "dissolve": {
+          "pattern": "fbm",
+          "edge_width": 0.4
+        },
+        "lighting": "lit"
+      }
+    },
+    {
       "id": "splash-billows",
       "type": "smoke",
       "beats": [
@@ -532,14 +656,14 @@
       "color": "primary",
       "z": 13,
       "params": {
-        "count": 10,
+        "count": 16,
         "rise_speed": 50,
         "size_px": {
-          "min": 22,
-          "max": 28
+          "min": 26,
+          "max": 34
         },
-        "lifetime_ms": 450,
-        "opacity": 0.55
+        "lifetime_ms": 550,
+        "opacity": 0.6
       },
       "shader": {
         "material": "fiery",
@@ -579,8 +703,8 @@
       "z": 14,
       "params": {
         "count": {
-          "min": 30,
-          "max": 36
+          "min": 40,
+          "max": 48
         },
         "speed": 200,
         "speed_spread": 0.55,
@@ -609,6 +733,73 @@
       }
     },
     {
+      "id": "contact-flash",
+      "type": "flash",
+      "beats": [
+        "contact"
+      ],
+      "anchor": "point",
+      "tracking": "follow",
+      "color": "core",
+      "z": 17,
+      "params": {
+        "scope": "local",
+        "radius_px": 55,
+        "peak": 0.55
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "A hot white-orange flare where the jet tip first lands.",
+        "technique": "procedural",
+        "emissive": {
+          "hdr": 5,
+          "falloff": "exponential"
+        },
+        "lighting": "emits_light"
+      }
+    },
+    {
+      "id": "contact-burst",
+      "type": "sparks",
+      "beats": [
+        "contact"
+      ],
+      "anchor": "point",
+      "tracking": "trail",
+      "color": "gradient_core_to_primary",
+      "z": 15,
+      "params": {
+        "count": {
+          "min": 22,
+          "max": 26
+        },
+        "speed": 320,
+        "speed_spread": 0.5,
+        "gravity": -60,
+        "lifetime_ms": 360,
+        "size_px": 3,
+        "spread_deg": 170,
+        "drag": 0.5,
+        "emit_ms": 60,
+        "look": "ember"
+      },
+      "shader": {
+        "material": "fiery",
+        "look": "One burst of bright sparks thrown off the first hit.",
+        "technique": "particles",
+        "flow": {
+          "direction": "outward",
+          "speed": 4
+        },
+        "emissive": {
+          "hdr": 4,
+          "falloff": "hard",
+          "core_ratio": 0.6
+        },
+        "lighting": "unlit"
+      }
+    },
+    {
       "id": "smoke",
       "type": "smoke",
       "beats": [
@@ -621,13 +812,13 @@
       "color": "shadow",
       "z": 5,
       "params": {
-        "count": 8,
+        "count": 12,
         "rise_speed": 40,
         "size_px": {
-          "min": 26,
-          "max": 32
+          "min": 28,
+          "max": 36
         },
-        "lifetime_ms": 700,
+        "lifetime_ms": 800,
         "opacity": 0.4
       },
       "shader": {
@@ -664,7 +855,7 @@
       "color": "primary",
       "params": {
         "radius": 4,
-        "energy": 1.5
+        "energy": 2
       },
       "shader": {
         "technique": "light",
@@ -729,7 +920,7 @@
   ],
   "variation": {
     "seeded": true,
-    "notes": "Flame surges, puff paths, spark spray and the scorch's texture and angle vary per cast. The 0.2 s kindle, the ignite time and the 0.11 s reach stay fixed so the hit always lands at the same moment."
+    "notes": "Flame surges, puff paths, spark spray and the scorch's texture and angle vary per cast. The 0.2 s kindle, the ignite time and the 0.11 s reach stay fixed so the hit always lands at the same moment. The jet light's swing and the plume smoke's puffs vary with the seed too."
   },
-  "director_notes": "A flamethrower-style jet, built to sit next to Dragon Breath without repeating it: Dragon Breath is a heavy creature breath (0.5 s inhale, wide cone at spread 3.8, sweeping across an area); this is a quick hand-held attack aimed at one target. Choices: (1) a short 0.2 s kindle (a flicker of fire at the hand, a few sparks) so it feels snappy; (2) a tight fire beam (spread 2, width 18-20 px) with fast flow (8) and high churn (0.6) so surges visibly race down the column, no sweep; (3) a compact splash at the target (additive billows, ember spray at the hit point) over a burn patch that cools into a small scorch. Hero view is side because the jet reads best in profile. Sound: ignite, a slightly higher-pitched fire hiss for the stream, a quiet fire tail."
+  "director_notes": "A flamethrower-style jet, built to sit next to Dragon Breath without repeating it: Dragon Breath is a heavy creature breath (0.5 s inhale, wide cone at spread 3.8, sweeping across an area); this is a quick hand-held attack aimed at one target. Choices: (1) a short 0.2 s kindle (a flicker of fire at the hand, a few sparks) so it feels snappy; (2) a tight fire beam (spread 2, width 18-20 px) with fast flow (8) and high churn (0.6) so surges visibly race down the column, no sweep; (3) a compact splash at the target (additive billows, ember spray at the hit point) over a burn patch that cools into a small scorch. Hero view is side because the jet reads best in profile. Sound: ignite, a slightly higher-pitched fire hiss for the stream, a quiet fire tail. Revised after an in-game test: the plume's licks pulled too far off the core and showed a repeating saw-tooth edge, and aimed at a target's feet the jet sank into the ground. Now edge_softness 0.75 stretches and feathers the edges, puffs hug the core (puff_spread/puff_rise 0.35), turbulence and churn are lower, and ground_clearance_px 6 tilts the jet up just enough to stay out of the ground. Also added: a hot knot of flame in the palm while it pours, a light riding the jet, faint smoke and slower embers off the top, a contact beat (flash and spark burst) for the first hit, a bigger splash and scorch, and a deeper red secondary with far_heat 0.35 so the far end reddens."
 }

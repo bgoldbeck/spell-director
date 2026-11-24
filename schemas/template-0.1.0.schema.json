@@ -1127,6 +1127,39 @@
                       "type": "string",
                       "pattern": "^#[0-9a-fA-F]{6}$",
                       "description": "A light color outside the palette (#RRGGBB), e.g. neon stage or rim lights. Overrides the layer's color slot."
+                    },
+                    "along": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "With attach_to a beam: where on the beam the light sits, 0 = the hand, 1 = the target (default 0.5)."
+                    },
+                    "along_swing": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "With attach_to a beam: how far (in beam lengths) the light slides back and forth around `along` (default 0)."
+                    },
+                    "along_hz": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "$ref": "#/$defs/range"
+                        }
+                      ],
+                      "description": "With attach_to a beam: slides per second (default 1)."
                     }
                   }
                 }
