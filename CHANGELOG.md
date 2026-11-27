@@ -6,6 +6,10 @@ To release, see [docs/releasing.md](docs/releasing.md).
 
 ## [Unreleased]
 
+### Changed
+
+- **Flame Jet** revised against a real flamethrower reference: the column runs dead straight (no wobble, smaller surges), a white-yellow needle at the palm opens out over its far half (spread 3.4) with the heat falling through yellow, orange and red (far_heat 0.3, hotter HDR for bloom); the arm stays thrust out with the palm glowing through the whole jet; sparks spit off the jet; bigger rolling billows pile up on the target into heavier smoke, with a new sear glow, a smoke column off the seared spot and denser spark showers.
+
 
 ### Added
 
