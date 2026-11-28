@@ -6,6 +6,15 @@
   "description": "A shield made only of holy light. It unfolds from the paladin's raised hand: a curved lens of white-gold energy with a bright rim, a turning sigil on its face and a hot glowing heart, wrapped in bloom and throwing sunrays out in every direction. It holds as long as the paladin keeps it raised, then folds back into the hand.",
   "element": "light",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast"
+    ],
+    "category": "buff",
+    "delivery": "applied",
+    "area": "self",
+    "duration": "channeled"
+  },
   "tags": [
     "holy",
     "radiant",

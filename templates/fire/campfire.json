@@ -5,6 +5,16 @@
   "description": "A small, natural campfire in a ring of stones: the kindling catches with a soft whoosh, settles into a steady, crackling burn with licking flames, drifting embers and a thin smoke column, then dies down to glowing coals.",
   "element": "fire",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "linger"
+    ],
+    "category": "utility",
+    "delivery": "placed",
+    "area": "ground_aoe",
+    "duration": "lingering"
+  },
   "tags": [
     "campfire",
     "cozy",

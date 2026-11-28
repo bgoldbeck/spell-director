@@ -5,6 +5,17 @@
   "description": "A crackling arc leaps from the caster's hand to the nearest enemy, then hops to two or three more. Each hop is a little weaker than the last.",
   "element": "lightning",
   "archetype": "chain",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "chain",
+    "area": "multi",
+    "duration": "instant"
+  },
   "tags": [
     "multi-target",
     "snappy",

@@ -61,6 +61,7 @@ h2 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing
 .stage-title { position: absolute; top: 12px; left: 14px; pointer-events: none; text-shadow: 0 1px 3px #000; }
 .title { font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
 .subtitle { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.classline { color: var(--muted); font-size: 11px; letter-spacing: .03em; margin-top: 2px; opacity: .9; }
 
 .caption {
   position: absolute; left: 0; right: 0; bottom: 14px;

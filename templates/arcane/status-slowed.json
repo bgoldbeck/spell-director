@@ -5,6 +5,16 @@
   "description": "Time drags for the victim: an hourglass hangs over their head, rings of slowed time sink in toward them, a clock-face circle turns under their feet and golden sand drifts lazily round them.",
   "element": "arcane",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "control",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

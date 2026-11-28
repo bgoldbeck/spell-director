@@ -5,6 +5,17 @@
   "description": "Three spinning war hammers crackling with lightning fan out from the caster, curve back in and slam into one chosen enemy together. A thunderclap shockwave rolls out and lightning forks from the struck enemy to everyone standing round it.",
   "element": "lightning",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

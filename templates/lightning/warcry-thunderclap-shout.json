@@ -5,6 +5,19 @@
   "description": "A shout that cracks like thunder: a crackling blue shockwave rolls out from the caster and, as it passes each enemy, a bolt drops out of the sky onto them and they reel back.",
   "element": "lightning",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "warcry",
     "shout",

@@ -5,6 +5,16 @@
   "description": "The victim is bleeding: blood drips steadily off them into a spreading pool, a red pulse beats through them like a heartbeat, and now and then a spurt of drops sprays out.",
   "element": "blood",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "debuff",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

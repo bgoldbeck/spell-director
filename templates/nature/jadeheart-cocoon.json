@@ -6,6 +6,19 @@
   "element": "nature",
   "line": "Gemwarden",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "linger"
+    ],
+    "category": "buff",
+    "also": [
+      "heal"
+    ],
+    "delivery": "applied",
+    "area": "self",
+    "duration": "sustained"
+  },
   "tags": [
     "buff",
     "aura",

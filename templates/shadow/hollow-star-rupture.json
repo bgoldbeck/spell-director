@@ -5,6 +5,20 @@
   "description": "A black star flies to the chosen enemy and tears a rift open under it. The rift drags at everyone around it, ripping wisps off each enemy, and then it collapses and ruptures outward in a violet shockwave that strikes them all.",
   "element": "shadow",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

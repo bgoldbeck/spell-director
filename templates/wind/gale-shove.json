@@ -4,6 +4,17 @@
   "name": "Gale Shove",
   "element": "wind",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "control",
+    "delivery": "beam",
+    "area": "cone",
+    "duration": "instant"
+  },
   "description": "The caster draws the air in with a quick swirl at the palm, then thrusts it out as a wide, rushing cone of wind: gust lines tear through it, dust and leaves are kicked up and blown back off the target, and the ground is swept into streaks.",
   "tags": ["cone", "gust", "push", "knockback", "quick", "area"],
   "source": {

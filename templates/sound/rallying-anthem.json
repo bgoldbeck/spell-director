@@ -6,6 +6,16 @@
   "element": "sound",
   "line": "Bard",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "buff",
+    "delivery": "emanate",
+    "area": "group",
+    "duration": "instant"
+  },
   "tags": [
     "bard",
     "song",

@@ -6,6 +6,19 @@
   "element": "ice",
   "line": "Sorcerer",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "linger"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "sustained"
+  },
   "tags": [
     "aura",
     "looping",

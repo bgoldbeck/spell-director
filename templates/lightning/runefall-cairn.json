@@ -5,6 +5,17 @@
   "description": "A storm-rune circle opens under the chosen enemy while a ring of carved rune-stones rises and turns over it and every enemy nearby. Then they all slam down in the same instant with a thunderclap, each one lancing storm light into the ground.",
   "element": "lightning",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

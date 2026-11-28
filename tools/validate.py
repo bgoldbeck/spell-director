@@ -229,12 +229,41 @@ def check(doc: dict) -> tuple[list[str], list[str]]:
                 warnings.append(f"layer {lid!r} ({layer['type']}): unknown param {key!r}")
 
     _check_loop(doc, beats, errors, warnings)
+    _check_classification(doc, errors, warnings)
 
     for path, rng in _ranges(doc):
         if rng["min"] > rng["max"]:
             errors.append(f"{path}: min {rng['min']} is greater than max {rng['max']}")
 
     return errors, warnings
+
+
+# Each stage a template claims needs beats of the matching phase.
+STAGE_PHASE = {"cast": "anticipation", "travel": "travel", "impact": "impact"}
+STAGE_ORDER = ["cast", "travel", "impact", "linger"]
+
+
+def _check_classification(doc: dict, errors: list[str], warnings: list[str]) -> None:
+    c = doc.get("classification") or {}
+    stages = c.get("stages") or []
+    phases = {b["phase"] for b in doc["beats"]}
+    if stages != sorted(stages, key=STAGE_ORDER.index):
+        errors.append(f"classification.stages: {stages} is out of order; use {' > '.join(STAGE_ORDER)}")
+    for stage, phase in STAGE_PHASE.items():
+        if stage in stages and phase not in phases:
+            errors.append(f"classification.stages has {stage!r}, but no beat has phase {phase!r}")
+    for stage in ("cast", "impact"):
+        if stage not in stages and STAGE_PHASE[stage] in phases:
+            warnings.append(f"classification.stages: a beat has phase {STAGE_PHASE[stage]!r}, but {stage!r} isn't listed")
+    lasting = c.get("duration") in ("lingering", "sustained")
+    if "linger" in stages and not lasting:
+        warnings.append(f"classification.stages has 'linger', but duration is {c.get('duration')!r} (use lingering or sustained)")
+    if lasting and "linger" not in stages:
+        warnings.append(f"classification.duration is {c.get('duration')!r}, so stages should end with 'linger'")
+    if c.get("category") in (c.get("also") or []):
+        warnings.append(f"classification.also repeats the category {c.get('category')!r}")
+    if doc.get("archetype") == "status" and (c.get("delivery") != "applied" or c.get("duration") != "sustained"):
+        warnings.append("classification: a status effect is delivery 'applied' with duration 'sustained'")
 
 
 def _max(v, default=0):

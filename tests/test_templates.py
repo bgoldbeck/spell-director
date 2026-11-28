@@ -131,3 +131,44 @@ def test_status_effects_validate_coats_and_steady_sparks():
     halo["params"]["lifetime_ms"] = 5000
     errors, warnings = check(doc)
     assert not errors and not warnings
+
+
+def test_requires_classification(base):
+    doc = copy.deepcopy(base)
+    del doc["classification"]
+    errors, _ = check(doc)
+    assert any("classification" in e for e in errors)
+
+
+def test_classification_stage_needs_matching_beats(base):
+    doc = copy.deepcopy(base)
+    doc["classification"]["stages"] = ["cast", "travel", "impact"]
+    errors, _ = check(doc)
+    assert any("'travel'" in e and "phase 'travel'" in e for e in errors)
+    doc["classification"]["stages"] = ["impact", "cast"]
+    errors, _ = check(doc)
+    assert any("out of order" in e for e in errors)
+
+
+def test_classification_linger_matches_duration(base):
+    doc = copy.deepcopy(base)
+    doc["classification"]["duration"] = "lingering"
+    _, warnings = check(doc)
+    assert any("should end with 'linger'" in w for w in warnings)
+    doc["classification"]["stages"] = ["cast", "impact", "linger"]
+    doc["classification"]["duration"] = "instant"
+    _, warnings = check(doc)
+    assert any("has 'linger'" in w for w in warnings)
+
+
+def test_every_status_effect_and_buff_is_classified_to_match():
+    for path in TEMPLATES:
+        doc = load(path)
+        c = doc["classification"]
+        if doc["archetype"] == "status":
+            assert c["category"] in ("debuff", "control"), doc["id"]
+            assert c["stages"][-1] == "linger", doc["id"]
+        if "buff" in doc.get("tags", []):
+            assert c["category"] in ("buff", "heal"), doc["id"]
+        if "warcry" in doc.get("tags", []):
+            assert c["delivery"] == "emanate", doc["id"]

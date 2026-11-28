@@ -5,6 +5,18 @@
   "description": "A creature draws a deep breath while fire builds in its mouth, then unleashes a roaring, widening cone of flame that sweeps across the target, splashes into billows and embers, and leaves a long burning swath that cools to scorch.",
   "element": "fire",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact",
+      "linger"
+    ],
+    "category": "damage",
+    "delivery": "beam",
+    "area": "cone",
+    "duration": "lingering"
+  },
   "tags": [
     "cone",
     "breath",

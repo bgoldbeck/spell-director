@@ -5,6 +5,17 @@
   "description": "A warning circle opens on the ground and the light turns orange as a burning rock tears down out of the sky trailing fire and smoke, slams into the target in a blinding flash, and blows out a fireball, a shockwave, flying rock and a rolling dust wave, leaving a smoking crater with glowing cracks.",
   "element": "fire",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "ground_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "meteor",
     "sky",

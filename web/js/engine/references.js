@@ -159,6 +159,7 @@ export function readmeMarkdown(m, items = referenceChecklist(m)) {
     "",
     `This folder is a complete reference pack for rebuilding the spell \`${id}\` (seed ${m.seed}) in a game engine.`,
     "",
+    ...(m.template.classification?.summary ? [`**What kind of spell**: ${m.template.classification.summary}. The guide's *What kind of spell this is* section says how each stage maps onto game events.`, ""] : []),
     "**If you are an AI model building this spell** (in Unity, Godot or anything else): do not be lazy with it. Every file here was made so you don't have to guess, and you are expected to use all of them.",
     "",
     `1. Read \`${id}.guide.md\` first, starting with its **Use every reference (required)** section.`,

@@ -172,3 +172,17 @@ def test_breakdown_reference_video(lib, tmp_path):
     assert gif["gif"]["trim"]["start_s"] == 0.2
     with pytest.raises(library.LibraryError, match="end must be after start"):
         library.breakdown_reference(str(SAMPLE_GIF), start_s=1.0, end_s=0.5)
+
+
+def test_list_templates_filters_by_classification():
+    every = library.list_templates()
+    assert all(t["classification"] for t in every)
+    buffs = library.list_templates(category="buff")
+    assert buffs and all("buff" in [t["classification"]["category"], *t["classification"].get("also", [])] for t in buffs)
+    lingering = {t["id"] for t in library.list_templates(duration="lingering")}
+    assert {"poison-mire-splat", "poison-venom-bloom"} <= lingering
+    travel = library.list_templates(stage="travel")
+    assert travel and all("travel" in t["classification"]["stages"] for t in travel)
+    pbae_control = library.list_templates(area="pbae", category="control")
+    assert "shadow-warcry-dread-howl" in {t["id"] for t in pbae_control}
+    assert library.list_templates(delivery="melee", element="physical")

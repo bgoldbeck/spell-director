@@ -6,6 +6,16 @@
   "description": "A fencer's thrust: the caster draws the sword back to the hip, then lunges in and drives the point straight through the enemy. A narrow lance of light shoots out ahead of the point, a ring of air snaps open where it pierces and sparks spray out behind the enemy.",
   "element": "physical",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

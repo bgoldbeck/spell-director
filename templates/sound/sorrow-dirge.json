@@ -6,6 +6,17 @@
   "element": "sound",
   "line": "Bard",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "debuff",
+    "delivery": "beam",
+    "area": "cone",
+    "duration": "instant"
+  },
   "tags": [
     "bard",
     "song",

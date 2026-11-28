@@ -5,6 +5,16 @@
   "description": "The victim is sick with plague: a murky, blotchy film covers them, sickly spores and a yellow-green miasma drift off them, and a few flies buzz round their head.",
   "element": "poison",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "debuff",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

@@ -5,6 +5,16 @@
   "description": "Poison seeps through the victim: a slick green ooze crawls down their body, toxic bubbles rise off them and pop, a little skull floats up now and then, and venom drips into a green puddle.",
   "element": "poison",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "debuff",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

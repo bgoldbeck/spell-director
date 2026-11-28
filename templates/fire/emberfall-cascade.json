@@ -5,6 +5,18 @@
   "description": "A fireball lobbed high at the chosen enemy detonates in a fireball and a ring of flame, flinging burning fragments that rain onto every enemy around it and set each one alight. Lava wells up in the cracks and smoke rises over the burning area.",
   "element": "fire",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact",
+      "linger"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "lingering"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

@@ -5,6 +5,19 @@
   "description": "Frost creeps out from the caster's feet and the air glitters, then ice explodes outward in rings of spikes, each row taller than the last, until the enemies at the edge are each locked inside a spike of ice. Snow sifts down over the frozen circle.",
   "element": "ice",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

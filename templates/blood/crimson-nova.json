@@ -6,6 +6,16 @@
   "element": "blood",
   "line": "Vampire",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "vampire",
     "blood",

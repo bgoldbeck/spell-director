@@ -5,6 +5,17 @@
   "description": "A crackling ball of lightning gathers in the caster's hand, flies at the target trailing a streak of light, and bursts on contact.",
   "element": "lightning",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "projectile",
     "single-target",

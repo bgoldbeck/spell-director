@@ -109,8 +109,31 @@ def _find(template_id: str) -> Path | None:
     return None
 
 
-def list_templates(element: str | None = None, archetype: str | None = None) -> list[dict]:
-    """Summaries of every template in the library, optionally filtered."""
+CLASS_AXES = ("category", "delivery", "area", "duration")
+
+
+def _class_matches(cls: dict, filters: dict) -> bool:
+    for axis, want in filters.items():
+        if not want:
+            continue
+        if axis == "stage":
+            if want not in (cls.get("stages") or []):
+                return False
+        elif axis == "category":
+            if want != cls.get("category") and want not in (cls.get("also") or []):
+                return False
+        elif cls.get(axis) != want:
+            return False
+    return True
+
+
+def list_templates(element: str | None = None, archetype: str | None = None, category: str | None = None,
+                   delivery: str | None = None, area: str | None = None, duration: str | None = None,
+                   stage: str | None = None) -> list[dict]:
+    """Summaries of every template in the library, optionally filtered by element,
+    archetype or classification (category also matches `also`; stage is one of
+    the template's stages)."""
+    filters = {"category": category, "delivery": delivery, "area": area, "duration": duration, "stage": stage}
     out = []
     for path in _template_files():
         try:
@@ -121,11 +144,14 @@ def list_templates(element: str | None = None, archetype: str | None = None) -> 
             continue
         if archetype and doc.get("archetype") != archetype:
             continue
+        if not _class_matches(doc.get("classification") or {}, filters):
+            continue
         out.append({
             "id": doc.get("id"),
             "name": doc.get("name"),
             "element": doc.get("element"),
             "archetype": doc.get("archetype"),
+            "classification": doc.get("classification"),
             "line": doc.get("line"),
             # An aura's seamless sustain loop, or None for a one-shot.
             "loop_range": doc.get("timing", {}).get("loop_range"),

@@ -5,6 +5,17 @@
   "description": "A spiked chakram ringed with lightning is flung flat at the chosen enemy, bites, and ricochets round every enemy nearby in turn, leaving a hanging arc along each bounce.",
   "element": "lightning",
   "archetype": "chain",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "chain",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

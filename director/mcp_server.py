@@ -44,10 +44,17 @@ def _call(fn, *args):
 
 
 @mcp.tool(annotations=READ_ONLY)
-def list_templates(element: str | None = None, archetype: str | None = None) -> dict[str, Any]:
-    """List the templates in the library (id, name, element, archetype, hero view,
-    duration, tags, description). Optionally filter by element or archetype."""
-    return {"templates": library.list_templates(element, archetype)}
+def list_templates(element: str | None = None, archetype: str | None = None, category: str | None = None,
+                   delivery: str | None = None, area: str | None = None, duration: str | None = None,
+                   stage: str | None = None) -> dict[str, Any]:
+    """List the templates in the library (id, name, element, archetype, classification,
+    hero view, duration, tags, description). Optionally filter by element, archetype or
+    classification: category (damage, buff, debuff, control, heal, utility; matches
+    `also` too), delivery (projectile, beam, chain, strike, melee, emanate, applied,
+    placed), area (single, multi, self, group, targeted_aoe, pbae, ground_aoe, cone,
+    line), duration (instant, channeled, lingering, sustained) or stage (cast, travel,
+    impact, linger)."""
+    return {"templates": library.list_templates(element, archetype, category, delivery, area, duration, stage)}
 
 
 @mcp.tool(annotations=READ_ONLY)

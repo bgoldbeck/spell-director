@@ -6,6 +6,16 @@
   "description": "The caster swings the sword out to the side and spins on the spot twice, the blade drawing a ring of cut air all the way round them. Each enemy standing close is struck in turn as the edge passes, and the dust on the ground is swept into a ring.",
   "element": "physical",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

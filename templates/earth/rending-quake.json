@@ -5,6 +5,16 @@
   "description": "The caster raises a foot while the ground trembles, then stomps: fissures race out in every direction, the ground around them heaves up in broken slabs ring after ring, pebbles bounce across the whole area and the camera shakes hard and long before the slabs settle back and the cracks are left behind.",
   "element": "earth",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "quake",
     "area",

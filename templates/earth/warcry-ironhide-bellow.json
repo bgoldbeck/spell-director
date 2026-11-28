@@ -5,6 +5,16 @@
   "description": "A deep, ground-shaking bellow. A ring of rock bursts up round the caster and a bronze wave rolls over every ally; grey stone creeps up their bodies and hardens into a gleaming bronze shell, then settles into a faint metal sheen.",
   "element": "earth",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "buff",
+    "delivery": "emanate",
+    "area": "group",
+    "duration": "instant"
+  },
   "tags": [
     "warcry",
     "shout",

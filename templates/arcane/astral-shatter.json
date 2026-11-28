@@ -5,6 +5,16 @@
   "description": "A star-chart circle spins under the caster as crystals form in the air, then space cracks like glass: violet crystal shards erupt outward in rings and straight lances of starlight spear every enemy round the caster.",
   "element": "arcane",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

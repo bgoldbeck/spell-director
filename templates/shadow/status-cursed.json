@@ -5,6 +5,16 @@
   "description": "The victim is cursed: a violet-black shadow crawls over them, dark wisps rise off them, a grinning skull hangs over their head and a hex circle burns under their feet.",
   "element": "shadow",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "debuff",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

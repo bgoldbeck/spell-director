@@ -6,6 +6,16 @@
   "description": "The paladin raises a hand to the heavens. A ring of holy script opens on the ground under the target and a point of light gathers high above it; then a pillar of white-gold light slams straight down onto the target, wound with spiralling threads, pours down for a long moment with light rising off the ground, and narrows away to nothing, leaving the sigil glowing.",
   "element": "light",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "single",
+    "duration": "channeled"
+  },
   "tags": [
     "holy",
     "radiant",

@@ -5,6 +5,17 @@
   "description": "A rumble overhead and a trickle of grit and pebbles warn of it, a dark patch spreads on the ground, then boulders tumble down onto the target one after another, smashing into the ground in bursts of dust and chips, and a last huge boulder crashes down on top before the rubble settles.",
   "element": "earth",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "ground_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "falling",
     "boulders",

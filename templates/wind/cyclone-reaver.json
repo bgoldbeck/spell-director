@@ -6,6 +6,16 @@
   "description": "A greatsword whirlwind: the caster grips the huge blade in both hands, holds it out and spins four times, faster and faster. The blade whips the air into a howling green-white cyclone that drags grit and leaves round with it, and on the last turn every enemy standing close is flung away.",
   "element": "wind",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

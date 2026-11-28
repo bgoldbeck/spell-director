@@ -5,6 +5,16 @@
   "description": "A bolt drops from the sky onto one target. The air gathers static, a faint leader feels for the ground, then a blinding return stroke hits and flickers twice before leaving a scorch mark.",
   "element": "lightning",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "single-target",
     "heavy",

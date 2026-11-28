@@ -6,6 +6,16 @@
   "description": "A long, flashy combo: four quick cuts from four directions (right, left, rising, falling), each leaving a golden arc that lingers so the enemy ends up caged in crossing crescents, then the caster draws back and lunges through them with a blazing thrust that bursts the whole cage apart.",
   "element": "physical",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

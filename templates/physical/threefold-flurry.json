@@ -6,6 +6,15 @@
   "description": "A three-hit combo: a flat cut from the right, a backhand cut returning from the left, then a stepping overhead chop. Each stroke leaves its own arc of cut air, each hit bites with sparks, and the last one cracks the ground and staggers the enemy back.",
   "element": "physical",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

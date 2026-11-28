@@ -5,6 +5,20 @@
   "description": "A lightning-wound javelin spirals into the chosen enemy and bursts into a cage: upright bars of lightning over every enemy round it, joined by arcs into a ring and spokes back to the javelin, shocking everyone inside.",
   "element": "lightning",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

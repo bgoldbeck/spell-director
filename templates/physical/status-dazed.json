@@ -5,6 +5,16 @@
   "description": "The victim is dazed: a ring of cartoon stars spins round their head, twinkling as it goes, after a bonk that knocks a few stars loose.",
   "element": "physical",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "control",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

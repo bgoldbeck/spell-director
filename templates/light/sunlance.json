@@ -5,6 +5,17 @@
   "description": "The caster stands still and drinks in sunlight: motes of gold and green drift in from all around and spiral into a growing sun in their hand while a glyph opens under their feet. Then a thick lance of golden-white light, wound with two spiralling threads, pours into the target and floods it with light, leaving a glowing sun-mark.",
   "element": "light",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "beam",
+    "area": "single",
+    "duration": "channeled"
+  },
   "tags": [
     "charged",
     "solar",

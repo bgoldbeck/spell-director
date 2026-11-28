@@ -5,6 +5,17 @@
   "description": "The caster gathers a growing fireball over a burning rune circle, hurls it in an arc, and it detonates on the target in a star of flame: spokes of fire shoot out in every direction, a shockwave rolls across the ground, a fireball billows up, and a wide rayed scorch is left behind.",
   "element": "fire",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "fireball",
     "explosion",

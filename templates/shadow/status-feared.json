@@ -5,6 +5,16 @@
   "description": "The victim is terrified: cold shadow claws up from the ground round them, they go pale with a dark rim, exclamation marks pop over their head and beads of sweat fly off them.",
   "element": "shadow",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "control",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

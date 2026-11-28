@@ -4,6 +4,20 @@
   "name": "Tornado",
   "element": "wind",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "control",
+    "also": [
+      "damage"
+    ],
+    "delivery": "projectile",
+    "area": "ground_aoe",
+    "duration": "channeled"
+  },
   "description": "Wind gathers into a dusty swirl in front of the caster, snaps up into a towering funnel that spins up with a roar, weaves across the ground to the target, grinds over it with debris and leaves whirling around it, then ropes out and flings everything it carried, leaving a spiral of scoured ground.",
   "tags": [
     "vortex",

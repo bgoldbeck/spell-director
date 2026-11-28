@@ -6,6 +6,17 @@
   "element": "poison",
   "line": "Cabalist",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact",
+      "linger"
+    ],
+    "category": "damage",
+    "delivery": "placed",
+    "area": "ground_aoe",
+    "duration": "lingering"
+  },
   "tags": [
     "cabalist",
     "poison",

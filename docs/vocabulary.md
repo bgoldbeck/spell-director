@@ -418,10 +418,29 @@ A warcry is a shout that rolls out over the allies or enemies round the caster. 
 
 Examples of targeted area spells: `templates/lightning/stormhammer-barrage.json` (hammers then a fork), `cleaving-squall.json` (a chain round the group), `ricochet-stormdiscs.json` (a ricochet), `stormcage-javelin.json` (a cage), `runefall-cairn.json` and `thunderhead-verdict.json` (from the sky), plus `ice/glacial-shatterpoint.json`, `fire/emberfall-cascade.json`, `earth/faultline-crush.json` and `poison/venom-bloom.json`. Point-blank: `lightning/stormcrown-nova.json`, `shadow/abyssal-implosion.json` (pull in, then detonate), `ice/permafrost-crown.json`, `earth/tectonic-crown.json` and more. Ground-targeted: `poison/mire-splat.json`.
 
+### Spell classification
+
+Every template is classified on five axes (template-format.md, *Classification*). Words that tell you which:
+
+| Word | Means | Template |
+|---|---|---|
+| charge-up, wind-up, cast | the build before it goes | stage `cast` (anticipation beats) |
+| projectile, thrown, flies, travels | it crosses to the target | stage `travel`, delivery `projectile` (or `chain`, `beam`) |
+| impact, hit, lands, AoE burst | it arrives | stage `impact` |
+| lingering, leaves a pool, burning ground, field, zone | stays after the hit, in the world | stage `linger`, duration `lingering` |
+| lasts, aura, buff, affliction, while active | stays on a character | stage `linger`, duration `sustained` |
+| channel, hold, stream, breath | lasts while held | duration `channeled` |
+| buff, blessing, shield, haste | helps | category `buff` (`heal` for heals) |
+| debuff, curse, weaken, poison, burn | harms over time or weakens | category `debuff` |
+| root, stun, freeze, fear, sleep, knockback | stops or moves | category `control` |
+| targeted AoE, splash | an area round the chosen target | area `targeted_aoe` |
+| PBAE, point-blank, around me | an area round the caster | area `pbae` |
+| ground-targeted, at a spot | an area on the ground | area `ground_aoe` |
+
 ## 9. How the director uses this
 
 1. Hear the request (text) or read a GIF breakdown.
-2. Pick an archetype: `strike`, `projectile`, `chain`, `beam`, `aura`, `nova`, `status`, and the hero view (ask what camera the game uses if unknown).
+2. Pick an archetype: `strike`, `projectile`, `chain`, `beam`, `aura`, `nova`, `status`, the classification (stages, category, delivery, area, duration), and the hero view (ask what camera the game uses if unknown).
 3. Propose the phases with durations, and ask at most 2–3 choices in plain words, for example:
    *"Should it have a long charge-up (heavier, 0.4 s) or hit instantly (snappier)?"*
    *"One clean bolt, or a wild tree of forks?"*

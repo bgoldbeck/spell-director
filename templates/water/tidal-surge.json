@@ -5,6 +5,20 @@
   "description": "Water pools and churns at the caster's feet, heaves up into a curling wall of water that rolls across the ground, and crashes over the target in a burst of spray and foam, leaving the whole area soaked.",
   "element": "water",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "projectile",
+    "area": "line",
+    "duration": "instant"
+  },
   "tags": [
     "wave",
     "area",

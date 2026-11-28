@@ -5,6 +5,16 @@
   "description": "Notes spiral in as the caster draws breath, then a single thunderous note shatters the air: concentric sound waves roll out over the ground and through the air, cracking the ground, staggering every enemy round the caster and flinging glowing notes outward.",
   "element": "sound",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

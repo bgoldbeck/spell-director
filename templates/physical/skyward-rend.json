@@ -6,6 +6,19 @@
   "description": "The caster drops the blade low and rips it upward through the enemy: a tall arc of cut air rises from the ground to over the caster's head, sparks and grit fly upward and the enemy is popped off their feet into a short hang before landing in a crouch.",
   "element": "physical",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "melee",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

@@ -5,6 +5,16 @@
   "description": "The victim is trapped in a floating bubble of water: a wobbling, glossy sphere closes round them, tiny bubbles rise inside it, light ripples on the ground, and it pops with a splash when the effect ends.",
   "element": "water",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "control",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

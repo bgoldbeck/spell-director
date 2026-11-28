@@ -5,6 +5,18 @@
   "description": "A ground-targeted splat. A huge wobbling glob of green ooze surges down onto a chosen spot and lands with a heavy SPLAT: a crown of goo thrown up, droplets slopped out in every direction and a surge sloshing outward, then the leftover blob jiggles flat. It leaves a stinking, bubbling, glossy green pool under rising fumes that hurts every enemy standing in it.",
   "element": "poison",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact",
+      "linger"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "ground_aoe",
+    "duration": "lingering"
+  },
   "tags": [
     "splash",
     "multi-target",

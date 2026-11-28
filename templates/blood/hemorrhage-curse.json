@@ -6,6 +6,19 @@
   "element": "blood",
   "line": "Vampire",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "debuff",
+    "also": [
+      "damage"
+    ],
+    "delivery": "applied",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "vampire",
     "blood",

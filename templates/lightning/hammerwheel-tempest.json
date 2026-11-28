@@ -5,6 +5,16 @@
   "description": "Storm hammers form round the caster and spin up faster and faster. With a thunderclap they are flung out in every direction at once, one at each enemy, with the shockwave rolling out behind them, and they lie where they hit, crackling.",
   "element": "lightning",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

@@ -5,6 +5,16 @@
   "description": "The caster throws back their head and howls. Cold rings of shadow ripple out and dark wisps crawl along the ground; every enemy they touch shrinks back, trembling, with a skull of dread flaring over their head.",
   "element": "shadow",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "control",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "warcry",
     "shout",

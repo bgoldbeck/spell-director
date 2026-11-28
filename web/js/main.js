@@ -14,11 +14,12 @@ import { makeStudio, quadViewports, screenOverlays, shakeCamera } from "./engine
 import { GIF_VIEW_LABELS, exportGifs, gifFileName } from "./gifexport.js";
 import { ALL, groupCatalog, isExtra, resolveStart, spellsFor, step, typeLabel } from "./catalog.js";
 import { clipNames, clipsWanted, getClip, registerClip } from "./engine/clips.js";
+import { classificationLabel, stagesLabel } from "./engine/classification.js";
 
 const $ = (id) => document.getElementById(id);
 const ui = {
   canvas: $("canvas"), stage: $("stage"), typeSelect: $("type-select"), spellSelect: $("spell-select"),
-  prevSpell: $("prev-spell"), nextSpell: $("next-spell"), spellCount: $("spell-count"), title: $("title"), subtitle: $("subtitle"),
+  prevSpell: $("prev-spell"), nextSpell: $("next-spell"), spellCount: $("spell-count"), title: $("title"), subtitle: $("subtitle"), classline: $("classline"),
   beatNames: $("beat-names"), beatIntent: $("beat-intent"), cues: $("cues"), time: $("time"),
   replay: $("replay"), play: $("play"), speed: $("speed"), loop: $("loop"), seed: $("seed"), reroll: $("reroll"),
   scrubber: $("scrubber"), bands: $("bands"), beats: $("beats"), description: $("description"),
@@ -271,7 +272,10 @@ function buildTypeSelect() {
   const all = new Option(`${typeLabel(ALL)} (${state.templates.length})`, ALL);
   ui.typeSelect.add(all);
   for (const g of state.groups.filter((x) => !isExtra(x))) ui.typeSelect.add(new Option(`${g.label} (${g.templates.length})`, g.type));
-  for (const [label, list] of [["Spell lines", state.groups.filter((x) => x.line)], ["Kinds", state.groups.filter((x) => x.kind)]]) {
+  const axes = [...new Set(state.groups.filter((x) => x.axis).map((x) => x.axis))];
+  const extras = [["Spell lines", state.groups.filter((x) => x.line)], ["Kinds", state.groups.filter((x) => x.kind)],
+    ...axes.map((a) => [a, state.groups.filter((x) => x.axis === a)])];
+  for (const [label, list] of extras) {
     if (!list.length) continue;
     const og = document.createElement("optgroup");
     og.label = label;
@@ -356,6 +360,9 @@ function buildTemplateUI() {
   ui.loop.parentElement.title = lr
     ? "On: the aura holds, looping its sustain section. Off: it plays its end and stops."
     : "Replay the spell when it ends";
+  const cls = classificationLabel(tpl);
+  ui.classline.textContent = cls ? `${stagesLabel(tpl)} · ${cls}` : "";
+  ui.classline.hidden = !cls;
   ui.description.textContent = tpl.description || "";
   ui.notes.textContent = tpl.director_notes ? `Director's notes: ${tpl.director_notes}` : "";
   ui.scrubber.max = String(d);

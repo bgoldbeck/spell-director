@@ -1,6 +1,8 @@
 // Groups templates by spell type (the template's `element`) for the viewer's
 // Type and Spell dropdowns. Pure functions, so Node can test them.
 
+import { AXES, STAGE_LABEL } from "./engine/classification.js";
+
 export const ALL = "all";
 
 const label = (s) => String(s).replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -91,13 +93,46 @@ export function groupByKind(templates) {
   return groups;
 }
 
-// Element groups, then spell-line groups, then kinds: what the Type dropdown lists.
-export function groupCatalog(templates) {
-  return [...groupByType(templates), ...groupByLine(templates), ...groupByKind(templates)];
+// Classification groups (the template's `classification`): one group per
+// value on each axis, under the axis's name (`axis`, e.g. "Category"), in
+// the axis's own order. A spell is in its category and in each of its
+// `also` categories. "Stages" groups spells by their whole stage pattern
+// ("Cast > Travel > Impact"), most common first. Type "class:<axis>:<value>".
+export const CLASS_PREFIX = "class:";
+
+export function groupByClass(templates) {
+  const byName = (a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id));
+  const groups = [];
+  const classed = templates.filter((t) => t?.classification && typeof t.classification === "object");
+  const patterns = new Map();
+  for (const t of classed) {
+    const key = (t.classification.stages || []).join("-");
+    if (!key) continue;
+    if (!patterns.has(key)) patterns.set(key, []);
+    patterns.get(key).push(t);
+  }
+  [...patterns.entries()]
+    .sort(([a, x], [b, y]) => y.length - x.length || a.localeCompare(b))
+    .forEach(([key, list]) => groups.push({
+      type: `${CLASS_PREFIX}stages:${key}`, label: key.split("-").map((s) => STAGE_LABEL[s] || s).join(" > "),
+      axis: "Stages", templates: list.slice().sort(byName),
+    }));
+  for (const { key, label, values } of AXES) {
+    for (const value of Object.keys(values)) {
+      const list = classed.filter((t) => t.classification[key] === value || (key === "category" && (t.classification.also || []).includes(value)));
+      if (list.length) groups.push({ type: `${CLASS_PREFIX}${key}:${value}`, label: values[value], axis: label, templates: list.sort(byName) });
+    }
+  }
+  return groups;
 }
 
-// Line and kind groups list spells that an element group already lists.
-export const isExtra = (g) => !!(g.line || g.kind);
+// Element groups, then spell-line groups, kinds and classifications: what the Type dropdown lists.
+export function groupCatalog(templates) {
+  return [...groupByType(templates), ...groupByLine(templates), ...groupByKind(templates), ...groupByClass(templates)];
+}
+
+// Line, kind and classification groups list spells that an element group already lists.
+export const isExtra = (g) => !!(g.line || g.kind || g.axis);
 
 // The templates the Spell dropdown shows for a type, in dropdown order.
 export function spellsFor(groups, type) {

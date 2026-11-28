@@ -5,6 +5,19 @@
   "description": "A pale cyclone spins up round the caster, faster and faster, sucking in dust, grit and leaves. Then it blasts outward in a gale that sweeps over every enemy round them, flinging debris and a wall of dust.",
   "element": "wind",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

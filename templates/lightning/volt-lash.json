@@ -5,6 +5,16 @@
   "description": "Static builds over the caster's whole body until it snaps across them, then a thick jagged bolt lashes from their hand straight into the target, restrikes twice, wraps it in crackling arcs and throws sparks.",
   "element": "lightning",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "bolt",
     "thrown",

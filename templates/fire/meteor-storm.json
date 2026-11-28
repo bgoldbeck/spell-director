@@ -6,6 +6,17 @@
   "element": "fire",
   "line": "Sorcerer",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "ground_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "sorcerer",
     "meteor",

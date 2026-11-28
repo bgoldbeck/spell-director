@@ -6,6 +6,16 @@
   "description": "A two-handed maul slam: the caster hauls a heavy iron-headed maul up over their head, holds it, then drives it straight down onto the enemy in front. The ground caves into a crater, a hard shockwave and a rolling wall of dust ring out from the hit, rock heaves up and everyone close by is blown off their feet.",
   "element": "physical",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": ["maul", "hammer", "mace", "melee", "weapon", "slam", "overhead", "two-handed", "heavy", "shockwave", "splash", "area"],
   "source": {
     "kind": "director_text",

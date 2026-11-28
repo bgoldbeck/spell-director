@@ -6,6 +6,16 @@
   "element": "shadow",
   "line": "Warlock",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "warlock",
     "shadow",

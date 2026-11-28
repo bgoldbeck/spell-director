@@ -5,6 +5,16 @@
   "description": "Cracks glow under the target and pebbles jump as the ground swells, then a cluster of sharp stone pillars stabs up out of the ground, the tallest in the middle, flinging chips and dust, holds for a moment and crumbles back down.",
   "element": "earth",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "spikes",
     "pillars",

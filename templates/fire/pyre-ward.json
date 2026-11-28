@@ -6,6 +6,16 @@
   "element": "fire",
   "line": "Sorcerer",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "linger"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "sustained"
+  },
   "tags": [
     "aura",
     "looping",

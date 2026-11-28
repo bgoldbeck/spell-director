@@ -5,6 +5,17 @@
   "description": "Two lightning-edged axes are hurled crosswise, whirling, and bite into the chosen enemy. Where they strike they burst into a chain of lightning that runs round every enemy nearby, one after another.",
   "element": "lightning",
   "archetype": "chain",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "chain",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

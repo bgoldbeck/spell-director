@@ -5,6 +5,20 @@
   "description": "The caster braces while a huge sphere of water swells and churns in their hands, then lets it go as a thick, pounding torrent that shoves the caster back and smashes into the target in a towering burst of spray.",
   "element": "water",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "beam",
+    "area": "single",
+    "duration": "channeled"
+  },
   "tags": [
     "line",
     "cannon",

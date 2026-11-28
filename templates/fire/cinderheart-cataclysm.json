@@ -5,6 +5,17 @@
   "description": "The ground under the caster glows and embers spiral in, then the caster erupts: a rolling wall of flame sweeps out over every enemy round them and sets each alight. Lava splits the ground outward and a column of dark smoke towers over the burnt circle, lit orange from below.",
   "element": "fire",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact",
+      "linger"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "lingering"
+  },
   "tags": [
     "splash",
     "multi-target",

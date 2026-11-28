@@ -5,6 +5,17 @@
   "description": "The caster bellows a rallying cry and drives a golden war banner into the ground beside them. A ring of light washes over every ally, who leap up cheering, and the banner's aura holds: the cloth ripples, a golden circle glows on the ground and motes of light lift off each ally.",
   "element": "light",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact",
+      "linger"
+    ],
+    "category": "buff",
+    "delivery": "emanate",
+    "area": "group",
+    "duration": "sustained"
+  },
   "tags": [
     "warcry",
     "shout",

@@ -5,6 +5,20 @@
   "description": "The caster focuses and ripples of warped space pulse from their hand; a shimmering link reaches out and seizes the target in a pink bubble of force that lifts debris around it while the air ripples and warps. Then the caster clenches: the bubble collapses inward and crushes the target with a burst of light and a cracking of the ground.",
   "element": "psychic",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "control",
+    "also": [
+      "damage"
+    ],
+    "delivery": "strike",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "telekinesis",
     "psychic",

@@ -5,6 +5,20 @@
   "description": "Cold mist and frost flakes gather at the caster's hand, then a glassy ray of ice lances to the target, which bristles with ice crystals and frost spreading over the ground before the crystals shatter.",
   "element": "ice",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "beam",
+    "area": "single",
+    "duration": "channeled"
+  },
   "tags": [
     "line",
     "beam",

@@ -6,6 +6,17 @@
   "description": "The paladin pulls a point of holy light into an open hand, a small sigil flaring under their feet, then hurls it: a white-gold bolt with a long radiant tail streaks to the target and bursts in a cross of light, a halo ring and a fountain of golden motes, leaving a glowing sigil branded on the ground.",
   "element": "light",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "holy",
     "radiant",

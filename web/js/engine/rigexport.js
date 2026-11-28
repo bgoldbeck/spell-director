@@ -15,6 +15,7 @@
 // Pure (no Three.js): the page gathers the rig poses and points from the
 // stage (web/js/exporter.js) and Node can test everything here.
 
+import { classificationOut } from "./classification.js";
 import { GltfBuilder } from "./glb.js";
 import { BODY, WEAPONS, gestureInfo } from "./gesture.js";
 import { ALL_BONES, PARENT, QI, REST, WEAPON_BONE, makeClip, mixamoName, qconj, qmul, qnorm, qrot, rigPositions } from "./rig.js";
@@ -312,7 +313,7 @@ export function buildTimeline(src) {
       "Layers' looks (shader intent, colors, blend) are in the sprite sheet JSON and guide; the sheets show what each layer should look like.",
     ].join(" "),
     generator: `SpellDirector ${src.version || ""}`.trim(),
-    template: { id, name: template.name, element: template.element, archetype: template.archetype },
+    template: { id, name: template.name, element: template.element, archetype: template.archetype, classification: classificationOut(template) },
     seed,
     duration_ms: manifest.duration_ms ?? template.timing?.duration_ms ?? 0,
     loop: !!manifest.loop,
