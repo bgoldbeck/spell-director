@@ -5,6 +5,16 @@
   "description": "A boss calls down one colossal strike. A wide ring of static marks the danger zone for over half a second, then a thick forked bolt slams down, restrikes three times and blasts a shockwave, sparks and a big scorch across the area.",
   "element": "lightning",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "ground_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "boss",
     "heavy",

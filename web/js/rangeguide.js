@@ -9,6 +9,7 @@
 // units exactly (ppu pixels per unit; 1 unit = one character height). The
 // effect is drawn alone, without the set or stand-ins, like the sprite export.
 
+import { classificationOut } from "./engine/classification.js";
 import * as THREE from "three";
 import { Effect } from "./engine/effect.js";
 import { Post } from "./engine/post.js";
@@ -219,7 +220,7 @@ export async function rangeGuide(template, opts = {}) {
     id: l.id, type: l.type, anchor: l.anchor || "target", tracking: trackingFor(l), tracking_source: l.tracking ? "template" : "default",
   }));
   return {
-    template: { id: template.id, name: template.name, element: template.element, archetype: template.archetype, duration_ms: template.timing?.duration_ms },
+    template: { id: template.id, name: template.name, element: template.element, archetype: template.archetype, classification: classificationOut(template), duration_ms: template.timing?.duration_ms },
     seed,
     style: style.id,
     readability: r,

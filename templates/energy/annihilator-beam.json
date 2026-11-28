@@ -5,6 +5,17 @@
   "description": "The caster pours everything into one shot: raw energy is dragged in from the ground around them into a shuddering white-hot core, then a massive beam wound with corkscrewing energy tears across the field with a recoil that cracks the ground under their feet and shoves them back. The target vanishes in a blast. Afterwards the caster is spent, vents smoke and sputters while they recharge.",
   "element": "energy",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "beam",
+    "area": "single",
+    "duration": "channeled"
+  },
   "tags": [
     "beam",
     "hyper",

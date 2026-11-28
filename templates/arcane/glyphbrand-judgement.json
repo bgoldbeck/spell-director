@@ -5,6 +5,16 @@
   "description": "A glyph circle brands the chosen enemy, and smaller glyphs spread from it to every enemy nearby along threads of light. Then lances of violet light strike down on all the marked enemies in the same instant.",
   "element": "arcane",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

@@ -5,6 +5,16 @@
   "description": "The victim is haunted: little ghosts circle round them, a cold ghostly sheen clings to their skin, pale wisps drift up and a dark mist pools at their feet.",
   "element": "spirit",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "debuff",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

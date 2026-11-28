@@ -36,6 +36,7 @@ Pull these out of what the user said, and note which are missing:
 |---|---|---|
 | `element` | "lightning", "storm", "shock"; "fire", "flame", "burn", "breath", "inferno", "blaze"; "water", "jet", "splash", "wave", "tide"; "ice", "frost", "freeze", "snow", "blizzard"; "wind", "air", "tornado", "whirlwind", "gust", "gale"; "sun", "solar", "holy", "radiant" (light); "raw power", "hyper", "cannon", "annihilate" (energy); "psychic", "mind", "telekinetic" (psychic); "earth", "rock", "stone", "ground", "quake", "slam", "boulder"; "blood", "vampire", "bleed", "siphon" (blood); "song", "bard", "anthem", "dirge" (sound); "shadow", "dark", "void", "death", "necro" (shadow); "plague", "rot", "toxic", "disease" (poison); "bonk", "daze", "stun", "knockout" (physical) | ask (it's rarely missing) |
 | `archetype` | strike (from above / one hit), projectile (thrown), chain (jumps), beam (continuous), aura (around the caster), nova (bursts outward), status (an affliction on a target: burning, frozen, asleep, poisoned) | infer, or ask as a choice |
+| `classification` | stages: "charge-up" (cast), "throws", "flies" (travel), "hits", "bursts" (impact), "leaves a pool", "lingers", "lasts" (linger); category: "buff", "heal", "curse", "debuff", "root", "stun", "knockback" (control), else damage; area: "around me" (pbae), "around the target", "splash" (targeted_aoe), "at a spot" (ground_aoe), "cone", "line", "allies" (group); duration: "channel", "hold" (channeled), "pool", "field" (lingering), "aura", "buff", "affliction" (sustained) | infer every axis; the validator checks stages against your beats (template-format.md, *Classification*) |
 | weight | heavy, boss, big, ultimate → long anticipation, hold frames, shake. quick, light, basic → snappy | default to medium |
 | camera / hero view | top-down, isometric, side-scroller, fighting game, over-the-shoulder (see vocabulary §7) | **ask** |
 | scale | boss, area, single target, ultimate | infer from weight |
@@ -248,7 +249,7 @@ More examples: [`templates/light/sunlance.json`](../templates/light/sunlance.jso
 
 When asked to grow the library ("make 5 lightning templates"), act as both user and director:
 
-1. `list_templates` to see what exists. Aim for spread: different archetypes, weights, hero views and moods. Don't make two templates that differ only in numbers.
+1. `list_templates` to see what exists (filter by `category`, `delivery`, `area`, `duration` or `stage` to find gaps, e.g. no ground-lingering ice spell yet). Aim for spread: different archetypes, classifications, weights, hero views and moods. Don't make two templates that differ only in numbers.
 2. For each, write a one-line imaginary request first ("snappy chain shock for a side-scroller"), and put it in `source.prompt` with `kind: director_text`.
 3. Answer your own Step 2 questions, varying the answers across the batch, and record them in `director_notes`.
 4. Validate and save each. Report the list with one line per template.

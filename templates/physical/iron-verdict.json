@@ -6,6 +6,16 @@
   "description": "A two-step overhead chop: the caster lifts the sword high behind the head, steps in and brings it straight down on the enemy. A tall arc of cut air falls with the blade, the strike cracks the ground at the enemy's feet, throws up grit and dust and staggers them back.",
   "element": "physical",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

@@ -5,6 +5,16 @@
   "description": "A dark storm cloud boils up over the target and flickers with lightning inside it, then a massive bolt drops out of it with a delayed thunderclap, a cloudburst of rain spatters down and the cloud drifts apart.",
   "element": "lightning",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "storm",
     "cloud",

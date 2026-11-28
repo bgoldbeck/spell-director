@@ -6,6 +6,16 @@
   "description": "The basic sword cut: the caster winds the blade back to the side and sweeps it flat across the enemy in front of them. A thin pale arc of cut air hangs for a moment behind the edge, a spray of sparks bursts where the steel bites and the enemy rocks back.",
   "element": "physical",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

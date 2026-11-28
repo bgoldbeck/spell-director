@@ -5,6 +5,17 @@
   "description": "A targetless ground pound that tears the earth open in a wide cone ahead of the caster: the slam splits the ground into deep fissures that race out nine metres across a 100 degree fan, rock bursts up row after row, and the chasms stay open, glowing faintly from deep inside and breathing dust, before they cool and close over.",
   "element": "earth",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact",
+      "linger"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "cone",
+    "duration": "lingering"
+  },
   "tags": [
     "ground",
     "slam",

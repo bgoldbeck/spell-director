@@ -6,6 +6,20 @@
   "element": "blood",
   "line": "Vampire",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "heal"
+    ],
+    "delivery": "beam",
+    "area": "single",
+    "duration": "channeled"
+  },
   "tags": [
     "vampire",
     "blood",

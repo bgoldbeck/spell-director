@@ -5,6 +5,19 @@
   "description": "A black vortex opens round the caster and drags at every enemy nearby, tearing wisps off them and sucking them in as it spins faster. Then it collapses into the caster and detonates in a violet shockwave, black smoke and rifts torn in the ground.",
   "element": "shadow",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

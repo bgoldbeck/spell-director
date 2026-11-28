@@ -5,6 +5,16 @@
   "description": "Lightning crawls up the caster and a crackling dome of storm light swells round them, drawing the air in. Then it bursts: a thunderclap, two shockwaves racing out over cracked ground, and an arc leaping from the caster to every enemy in the ring.",
   "element": "lightning",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

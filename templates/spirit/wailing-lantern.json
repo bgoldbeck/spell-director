@@ -5,6 +5,17 @@
   "description": "A pale lantern of spirit light drifts to the chosen enemy and breaks with a wail. Spirits pour out of it and streak along curving paths to every enemy nearby, flaring as they strike and leaving wisps rising off them.",
   "element": "spirit",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

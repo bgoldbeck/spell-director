@@ -5,6 +5,20 @@
   "description": "A jagged ice core lobbed at the chosen enemy bursts into a crown of ice spikes and a freezing shockwave. Frost races over the ground and each enemy nearby is locked inside a spike of ice.",
   "element": "ice",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

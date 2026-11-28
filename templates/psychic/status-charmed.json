@@ -5,6 +5,16 @@
   "description": "The victim is charmed: little hearts float up off them and circle their head, a rosy glow beats softly through them and a pink circle shimmers at their feet.",
   "element": "psychic",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "control",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

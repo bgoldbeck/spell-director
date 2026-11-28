@@ -6,6 +6,17 @@
   "element": "arcane",
   "line": "Wayfarer",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact",
+      "linger"
+    ],
+    "category": "utility",
+    "delivery": "placed",
+    "area": "self",
+    "duration": "lingering"
+  },
   "tags": [
     "travel",
     "portal",

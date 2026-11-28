@@ -6,6 +6,16 @@
   "description": "A greatsword finisher: the caster heaves a huge blade up with both hands, holds it at the top, then brings it down on the enemy in front. The ground splits, a ring of rock and dust bursts out and everyone standing round the struck enemy is thrown back.",
   "element": "physical",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

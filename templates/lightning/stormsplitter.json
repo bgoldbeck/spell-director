@@ -6,6 +6,16 @@
   "description": "The caster raises a crackling sword and leaps at the enemy; at the top of the leap lightning slams down out of the sky onto the enemy, pinning them, and the caster drives the charged blade into them as they land. The charge erupts out of the struck enemy and forks to everyone standing round them, knocking the whole group back over a scorched star of cracks.",
   "element": "lightning",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

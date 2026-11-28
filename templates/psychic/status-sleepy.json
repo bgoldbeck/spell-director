@@ -5,6 +5,16 @@
   "description": "The victim has nodded off: big comic Zs float up from their head, growing and swaying as they go, a soft lavender glow breathes slowly round them and drowsy motes drift.",
   "element": "psychic",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "control",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

@@ -5,6 +5,20 @@
   "description": "A thorned seed lobbed onto the chosen enemy bursts into rings of thorns. Roots tear through the ground and thorns burst up round every enemy nearby, snaring them where they stand.",
   "element": "nature",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

@@ -5,6 +5,16 @@
   "description": "A test piece for six-way lit smoke: a small campfire with a pale smoke column, lit in turn by neon lights from the right, left, top, below, front and behind, then by three colored lights circling it, so you can see the smoke respond to every light direction.",
   "element": "fire",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "linger"
+    ],
+    "category": "utility",
+    "delivery": "placed",
+    "area": "ground_aoe",
+    "duration": "lingering"
+  },
   "tags": [
     "test",
     "six-way",

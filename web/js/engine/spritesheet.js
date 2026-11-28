@@ -9,6 +9,7 @@
 // up pixel for pixel across sheets. A sheet wider than the limit wraps into
 // further blocks of view rows.
 
+import { classificationGuideLines, classificationOut } from "./classification.js";
 import { layerIntensity, layerLoop, layerWindow, loopRange, paramAtFrom, resolveParams } from "./timeline.js";
 import { soundSheet } from "./sound.js";
 import { decalBlend, decalFillState, decalPlan, decalState } from "./decal.js";
@@ -475,7 +476,7 @@ export function buildManifest({ template, seed, plan, sheets, visible, views, tr
     build_order: buildOrder(template, layers),
     layer_toggles: layerToggles(template, buildOrder(template, layers)),
     generator: `SpellDirector ${version}`.trim(),
-    template: { id: template.id, name: template.name, element: template.element, archetype: template.archetype, description: template.description || "" },
+    template: { id: template.id, name: template.name, element: template.element, archetype: template.archetype, classification: classificationOut(template), description: template.description || "" },
     seed,
     duration_ms: plan.duration,
     loop,
@@ -632,6 +633,7 @@ export function guideMarkdown(m, { files } = {}) {
   );
 
   add(...referenceChecklistLines(m, m.reference_checklist || referenceChecklist(m)));
+  add(...classificationGuideLines(m.template));
   add("## How to use this export", "");
   add(...HOW_TO_USE.map((x) => `> ${x}`).flatMap((x) => [x, ">"]).slice(0, -1), "");
   if (m.style) add(...styleGuideLines({ id: m.style.id, from: m.style.source, notes: m.style.notes }));

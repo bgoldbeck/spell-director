@@ -5,6 +5,16 @@
   "description": "Pale spirits circle the caster faster and faster, then the caster wails: ripples roll out through the air and a spirit streaks out along a curving path to each enemy round them, flaring as it strikes and leaving wisps rising.",
   "element": "spirit",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

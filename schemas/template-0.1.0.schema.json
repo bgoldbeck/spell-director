@@ -11,6 +11,7 @@
     "name",
     "element",
     "archetype",
+    "classification",
     "timing",
     "space",
     "views",
@@ -71,6 +72,96 @@
         "status"
       ],
       "description": "strike, projectile, chain, beam, aura or nova; status: a lingering affliction on one target (burning, frozen, asleep) that applies, loops while it lasts (timing.loop_range) and expires."
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stages",
+        "category",
+        "delivery",
+        "area",
+        "duration"
+      ],
+      "description": "How the spell is classified, for browsing and for engine builders. stages: the parts it is built from, in order; category: what it does in play; delivery: how it reaches what it hits; area: what it covers; duration: how long it stays. See docs/template-format.md, Classification.",
+      "properties": {
+        "stages": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "cast",
+              "travel",
+              "impact",
+              "linger"
+            ]
+          },
+          "description": "cast: a charge-up or wind-up (anticipation beats); travel: something flies or rolls from the caster to the target (travel beats); impact: it lands, bursts or hits (impact beats); linger: something stays after the hit, on the ground or on a character (a pool, a field, a buff, an affliction). In this order."
+        },
+        "category": {
+          "enum": [
+            "damage",
+            "buff",
+            "debuff",
+            "control",
+            "heal",
+            "utility"
+          ],
+          "description": "What the spell is for. damage: hurts; buff: helps a character (shield, haste, strength, resistance); debuff: weakens or harms over time (curse, burning, poison, blind); control: stops or moves a character (root, stun, freeze, fear, sleep, knockback); heal: restores health; utility: neither (portals, campfires)."
+        },
+        "also": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "damage",
+              "buff",
+              "debuff",
+              "control",
+              "heal",
+              "utility"
+            ]
+          },
+          "description": "Other categories it also covers, e.g. a root eruption is damage, also control; a life drain is damage, also heal."
+        },
+        "delivery": {
+          "enum": [
+            "projectile",
+            "beam",
+            "chain",
+            "strike",
+            "melee",
+            "emanate",
+            "applied",
+            "placed"
+          ],
+          "description": "projectile: thrown, flies to the target; beam: a continuous stream or ray; chain: jumps between targets; strike: lands on the target at once, from the hand, the sky or the ground; melee: a weapon blow; emanate: bursts or rolls out from the caster (novas, warcries, auras round the caster); applied: put straight onto a character's body (buffs, afflictions); placed: set down at a spot and works there (fields, storms, portals, campfires)."
+        },
+        "area": {
+          "enum": [
+            "single",
+            "multi",
+            "self",
+            "group",
+            "targeted_aoe",
+            "pbae",
+            "ground_aoe",
+            "cone",
+            "line"
+          ],
+          "description": "single: one target; multi: several separate targets; self: the caster only; group: the caster's allies around them; targeted_aoe: an area round the chosen target; pbae: point-blank, an area round the caster; ground_aoe: an area at a spot on the ground; cone: a wedge in front of the caster; line: a long narrow strip."
+        },
+        "duration": {
+          "enum": [
+            "instant",
+            "channeled",
+            "lingering",
+            "sustained"
+          ],
+          "description": "instant: plays once and is gone; channeled: lasts while the caster holds it (beams, breath, a raised shield); lingering: leaves something in the world that keeps working (pools, burning ground, fields, storms); sustained: stays on a character and loops (buffs, auras, afflictions; timing.loop_range)."
+        }
+      }
     },
     "tags": {
       "type": "array",

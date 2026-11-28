@@ -5,6 +5,17 @@
   "description": "The caster heaves a boulder out of the ground and hurls it onto the chosen enemy. It smashes down, slabs of ground shove up round the crater, and fault lines race out to burst a stone spear up under every enemy nearby.",
   "element": "earth",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

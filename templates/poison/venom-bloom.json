@@ -5,6 +5,18 @@
   "description": "A bubbling glob of venom is lobbed onto the chosen enemy and bursts, spattering gobbets onto every enemy around it. A toxic pool spreads over the whole area under a hanging green cloud while the enemies steam.",
   "element": "poison",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact",
+      "linger"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "lingering"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

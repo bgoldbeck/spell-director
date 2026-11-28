@@ -5,6 +5,17 @@
   "description": "A quick flick of the wrist sends three small embers spitting at a target one after another, each on its own arc; each bursts in a pop of sparks, leaving a few singe marks and a wisp of smoke.",
   "element": "fire",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "embers",
     "volley",

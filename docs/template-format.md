@@ -24,6 +24,7 @@ A **template** is what the director writes. It describes a spell effect well eno
 | `element` | yes | `lightning`, `fire`, `ice`, `blood`, `sound`, `shadow`, `poison`, `spirit`, `physical` (blunt knocks: dazed, stunned), ... |
 | `line` | no | The spell line (class, school or skill line) it belongs to, such as `Bard`, `Paladin`, `Druid`, `Necromancer` or `Vampire`. The viewer's Type list groups spells by line as well as by element. |
 | `archetype` | yes | `strike`, `projectile`, `chain`, `beam`, `aura`, `nova`, `status` (a lingering affliction on one target, see [Status effects](#status-effects)). |
+| `classification` | yes | What the spell is built from and what it does: `stages`, `category`, `delivery`, `area`, `duration`. See [Classification](#classification). |
 | `description`, `tags` | no | For browsing the library. |
 | `source` | no | `handwritten`, `director_text` (with `prompt`), or `director_gif` (with `reference`). |
 | `timing` | yes | `duration_ms`, optional `fps_hint`, `loop` (replay the whole spell), `loop_range` (an aura's seamless sustain loop, see [Auras](#auras)). |
@@ -36,6 +37,32 @@ A **template** is what the director writes. It describes a spell effect well eno
 | `layers` | yes | What gets drawn. |
 | `variation` | no | Notes on what should differ between casts. |
 | `director_notes` | no | Why the director made the choices it did. Useful when revising. |
+
+## Classification
+
+Every template says what kind of spell it is, on five axes, so people and AI can browse the library by it and engine builders know how to wire it to game events. The viewer lists each value under **Type → Stages / Category / Area / Delivery / Duration** (`?type=class:<axis>:<value>`, e.g. `?type=class:duration:lingering`, `?type=class:stages:cast-travel-impact`), shows the classification under the spell's title, and every export repeats it (JSON `template.classification`, the guide's *What kind of spell this is* section, the README and the Unity timeline).
+
+```json
+"classification": {
+  "stages": ["cast", "travel", "impact", "linger"],
+  "category": "damage",
+  "also": ["debuff"],
+  "delivery": "projectile",
+  "area": "targeted_aoe",
+  "duration": "lingering"
+}
+```
+
+| Axis | Values | Meaning |
+|---|---|---|
+| `stages` | `cast`, `travel`, `impact`, `linger` (in this order, only the ones it has) | **cast**: the charge-up or wind-up (needs an `anticipation` beat). **travel**: something flies or rolls from the caster (or the sky) to the target (needs a `travel` beat). **impact**: it lands, bursts or hits (needs an `impact` beat). **linger**: something stays after the hit: a pool, a field, a buff, an affliction (duration `lingering` or `sustained`). |
+| `category` | `damage`, `buff`, `debuff`, `control`, `heal`, `utility` | What it is for. **debuff**: weakens or harms over time (curse, burning, poison, blind). **control**: stops or moves a character (root, stun, freeze, fear, sleep, knockback). **utility**: neither (portals, campfires). |
+| `also` (optional) | the same values | Other categories it covers: a root eruption is `damage`, also `control`; a life drain is `damage`, also `heal`. The viewer lists the spell under each. |
+| `delivery` | `projectile`, `beam`, `chain`, `strike`, `melee`, `emanate`, `applied`, `placed` | How it reaches what it hits. **strike**: lands on the target at once (a bolt from the hand, a strike from the sky, spikes from the ground). **emanate**: bursts or rolls out from the caster (novas, warcries, auras round the caster). **applied**: put straight onto a body (buffs, afflictions). **placed**: set down at a spot and works there (fields, storms, portals, campfires). |
+| `area` | `single`, `multi`, `self`, `group`, `targeted_aoe`, `pbae`, `ground_aoe`, `cone`, `line` | What it covers. **multi**: several separate targets (a chain). **group**: the caster's allies. **targeted_aoe**: round the chosen target. **pbae**: point-blank, round the caster. **ground_aoe**: at a spot on the ground. |
+| `duration` | `instant`, `channeled`, `lingering`, `sustained` | **channeled**: lasts while the caster holds it (beams, breath, a raised shield). **lingering**: leaves something in the world that keeps working (pools, burning ground, fields, storms; "ground lingering" in the viewer). **sustained**: stays on a character and loops (buffs, auras, afflictions, usually with `timing.loop_range`). |
+
+`archetype` is still the renderer's family (how the effect is staged); the classification is about the spell in play, so two beams can differ (Flame Jet is `damage`/`channeled`, Sorrow Dirge is a `debuff` cone). Status effects are always `applied` and `sustained`; buffs are `buff` or `heal`; warcries `emanate`.
 
 ## Views
 
@@ -564,7 +591,8 @@ Decals don't follow a travelling vortex: anchor the mark where it ends up.
 - every range has `min <= max`;
 - unknown layer params are reported as warnings;
 - a drawn layer without a `shader` intent is reported as a warning (an engine rebuild would have to guess its look), and so is a `shader` on a `sound_cue` or `camera_shake`;
-- a `sound_cue` whose `cue` isn't in the cue library is reported as a warning (the viewer captions it but plays nothing).
+- a `sound_cue` whose `cue` isn't in the cue library is reported as a warning (the viewer captions it but plays nothing);
+- `classification.stages` are in order, and `cast`, `travel` and `impact` each have a beat of the matching phase (errors); `linger` goes with duration `lingering` or `sustained` and the other way round, and a status effect is `applied` and `sustained` (warnings).
 
 ## Versioning
 

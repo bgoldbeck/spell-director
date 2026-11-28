@@ -4,6 +4,17 @@
   "name": "Scythe Volley",
   "element": "wind",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "single",
+    "duration": "instant"
+  },
   "description": "The caster gathers the air into a blade, then flings three razor-thin crescents of wind in quick succession: two curve in from either side, tilted opposite ways, and the third flies straight down the middle. They slice through the target with sharp glints, flick off chips and leaves, and leave crossing cuts in the ground.",
   "tags": [
     "crescent",

@@ -5,6 +5,16 @@
   "description": "The caster gathers strength as pebbles lift and dust is drawn in, hangs for a beat, then slams the ground: a quake runs out in a frontal arc, splitting the earth and bursting rock spikes up row after row, each row bigger than the last, ending in a huge eruption that hurls rocks and dust high before everything crumbles back down.",
   "element": "earth",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "cone",
+    "duration": "instant"
+  },
   "tags": [
     "ground",
     "slam",

@@ -5,6 +5,17 @@
   "description": "A frost circle marks the ground, then a howling blizzard pours down over the whole area: driving snow slanted by the wind, swirling whiteout and frost spreading across the ground, before the storm blows itself out.",
   "element": "ice",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact",
+      "linger"
+    ],
+    "category": "damage",
+    "delivery": "placed",
+    "area": "ground_aoe",
+    "duration": "lingering"
+  },
   "tags": [
     "area",
     "storm",

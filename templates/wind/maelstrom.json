@@ -4,6 +4,16 @@
   "name": "Maelstrom",
   "element": "wind",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "placed",
+    "area": "ground_aoe",
+    "duration": "channeled"
+  },
   "description": "A boss-scale wind storm. Clouds gather and turn over the target while a wide warning ring spins on the ground, then lightning cracks down and the storm touches down: a broad eyewall rises around a calm eye inside an even wider outer band. Rain, debris and leaves whip round it in bands for two seconds, with lightning and shaking, then it collapses, flings everything outward and leaves a vast scoured spiral.",
   "tags": [
     "storm",

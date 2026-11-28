@@ -6,6 +6,16 @@
   "element": "light",
   "line": "Paladin",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "linger"
+    ],
+    "category": "buff",
+    "delivery": "emanate",
+    "area": "group",
+    "duration": "sustained"
+  },
   "tags": [
     "aura",
     "looping",

@@ -6,6 +6,17 @@
   "element": "wind",
   "line": "Bard",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact",
+      "linger"
+    ],
+    "category": "buff",
+    "delivery": "applied",
+    "area": "self",
+    "duration": "sustained"
+  },
   "tags": [
     "buff",
     "aura",

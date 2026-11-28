@@ -6,6 +6,16 @@
   "element": "nature",
   "line": "Druid",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "linger"
+    ],
+    "category": "heal",
+    "delivery": "applied",
+    "area": "self",
+    "duration": "sustained"
+  },
   "tags": [
     "buff",
     "aura",

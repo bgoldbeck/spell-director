@@ -5,6 +5,19 @@
   "description": "A shimmering bubble of force swells round the caster and stones float up off the ground all round, then it bursts outward with a psychic shriek: ripples of warped space roll out, the stones are hurled away and every enemy round the caster reels.",
   "element": "psychic",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

@@ -5,6 +5,17 @@
   "description": "The caster draws a long breath as green motes swirl in, then exhales a burst of plague: venom sprays out in every direction, a rolling green cloud spreads over every enemy round them and hangs there over a spreading pool while the enemies steam.",
   "element": "poison",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact",
+      "linger"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "lingering"
+  },
   "tags": [
     "splash",
     "multi-target",

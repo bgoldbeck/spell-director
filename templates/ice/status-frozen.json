@@ -5,6 +5,16 @@
   "description": "The victim is frozen inside a block of ice: ice climbs up them as they are caught, they stand stiff in a clear, frosted crystal that glints, cold mist pools round it, and it shatters when the effect ends.",
   "element": "ice",
   "archetype": "status",
+  "classification": {
+    "stages": [
+      "impact",
+      "linger"
+    ],
+    "category": "control",
+    "delivery": "applied",
+    "area": "single",
+    "duration": "sustained"
+  },
   "tags": [
     "status",
     "status-effect",

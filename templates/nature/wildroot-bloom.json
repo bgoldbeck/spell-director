@@ -5,6 +5,19 @@
   "description": "Leaves swirl round the caster and green light pulses in the ground, then it bursts: glowing roots tear outward, a fairy ring of mushrooms pops up round the caster, rings of thorns burst further out and thorns curl round every enemy at the edge.",
   "element": "nature",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

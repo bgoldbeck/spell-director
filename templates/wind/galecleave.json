@@ -6,6 +6,17 @@
   "description": "A ranged sword cut: the caster sweeps the blade flat and the cut itself flies off it as a wide crescent of wind, skimming forward to slice through an enemy several paces away, knocking them back and leaving a cut in the ground.",
   "element": "wind",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

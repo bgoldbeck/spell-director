@@ -5,6 +5,17 @@
   "description": "A savage war cry that sets the blood burning. A red shockwave rolls out over every ally; they pump up on the spot, then a crimson fury ignites over them: flickering red flames on their bodies, a hot glow in the chest and embers streaming up, held for as long as the fury lasts.",
   "element": "fire",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact",
+      "linger"
+    ],
+    "category": "buff",
+    "delivery": "emanate",
+    "area": "group",
+    "duration": "sustained"
+  },
   "tags": [
     "warcry",
     "shout",

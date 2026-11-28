@@ -5,6 +5,16 @@
   "description": "The caster rears back and roars. A wall of sound slams out over the ground in a ring, tearing up dust and gouging the earth, and every enemy round them is blown off their feet and shoved back.",
   "element": "sound",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "control",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "warcry",
     "shout",

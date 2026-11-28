@@ -5,6 +5,17 @@
   "description": "The caster thrusts a glowing hand forward and a straight, pressurised jet of flame pours from the palm: a white-yellow needle at the hand that widens steadily without waving, deepening through orange to red, and piles up on the target in big rolling billows that climb and darken into smoke, searing it under a shower of sparks.",
   "element": "fire",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "beam",
+    "area": "single",
+    "duration": "channeled"
+  },
   "tags": [
     "jet",
     "stream",

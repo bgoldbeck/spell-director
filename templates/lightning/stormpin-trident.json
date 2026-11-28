@@ -5,6 +5,20 @@
   "description": "A lightning-charged trident spirals point first into the chosen enemy and pins it. A bolt from the sky answers the trident, and then lightning forks out from the pinned enemy to everyone around it.",
   "element": "lightning",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "also": [
+      "control"
+    ],
+    "delivery": "projectile",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

@@ -6,6 +6,17 @@
   "element": "blood",
   "line": "Vampire",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "vampire",
     "bats",

@@ -5,6 +5,16 @@
   "description": "Pebbles lift off the ground all round the caster as they raise their arms, then they slam down: rings of ground slabs burst up racing outward, the outer rows biggest, a dust wave rolls out and a stone spear throws every enemy at the edge.",
   "element": "earth",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

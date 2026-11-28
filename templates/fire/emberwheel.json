@@ -6,6 +6,16 @@
   "description": "The blade catches fire as the caster swings it out, then they spin twice and the flame draws a wheel of fire round them. Enemies close by are seared as it passes, a burning ring is left scorched into the ground and the wheel bursts outward into a wave of flame when the spin stops.",
   "element": "fire",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "melee",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "sword",
     "melee",

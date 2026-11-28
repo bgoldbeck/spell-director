@@ -6,6 +6,19 @@
   "element": "shadow",
   "line": "Necromancer",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "linger"
+    ],
+    "category": "debuff",
+    "also": [
+      "damage"
+    ],
+    "delivery": "emanate",
+    "area": "pbae",
+    "duration": "sustained"
+  },
   "tags": [
     "aura",
     "looping",

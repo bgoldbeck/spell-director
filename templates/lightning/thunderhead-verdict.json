@@ -5,6 +5,16 @@
   "description": "A storm cloud boils up over the chosen enemy and the ground under it glows. A huge bolt drops onto the target, then bolts rain down on every enemy around it, rippling outward.",
   "element": "lightning",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

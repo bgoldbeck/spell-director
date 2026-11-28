@@ -6,6 +6,16 @@
   "element": "shadow",
   "line": "Necromancer",
   "archetype": "aura",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "placed",
+    "area": "ground_aoe",
+    "duration": "channeled"
+  },
   "tags": [
     "necromancer",
     "bones",

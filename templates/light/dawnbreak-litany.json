@@ -5,6 +5,16 @@
   "description": "A great ring of holy script turns under the caster while light gathers, then a pillar of light crashes down on the caster and bursts outward in golden shockwaves, and a shaft of light strikes each enemy round them. Motes of light drift up afterwards.",
   "element": "light",
   "archetype": "nova",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "pbae",
+    "duration": "instant"
+  },
   "tags": [
     "splash",
     "multi-target",

@@ -6,6 +6,17 @@
   "description": "The caster draws grave-cold up out of the earth into a clawed hand, a sickly green sigil opening underfoot, then flings it: a pale green, skull-bright bolt dragging a tail of black grave-mist streaks to the target and bursts in a cold green flash, a spray of bone shards and a gout of black mist, leaving a rotting sigil on the ground that crumbles away.",
   "element": "shadow",
   "archetype": "projectile",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "projectile",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "necrotic",
     "grave",

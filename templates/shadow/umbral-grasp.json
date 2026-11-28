@@ -6,6 +6,19 @@
   "element": "shadow",
   "line": "Warlock",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "impact"
+    ],
+    "category": "control",
+    "also": [
+      "damage"
+    ],
+    "delivery": "strike",
+    "area": "single",
+    "duration": "instant"
+  },
   "tags": [
     "warlock",
     "shadow",

@@ -5,6 +5,17 @@
   "description": "A warning ring spreads round the chosen enemy, then three spinning anvils crackling with lightning drop out of the sky round it. They land together with a thunderclap and a shockwave that knocks into every enemy in the ring.",
   "element": "lightning",
   "archetype": "strike",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "strike",
+    "area": "targeted_aoe",
+    "duration": "instant"
+  },
   "tags": [
     "targeted-aoe",
     "splash",

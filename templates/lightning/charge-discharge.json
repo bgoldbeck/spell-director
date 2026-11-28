@@ -5,6 +5,17 @@
   "description": "The caster gathers a crackling orb of electricity, which swells and destabilizes, then releases it as a thick, wobbling beam in a straight line.",
   "element": "lightning",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "beam",
+    "area": "line",
+    "duration": "channeled"
+  },
   "tags": [
     "line",
     "charged",

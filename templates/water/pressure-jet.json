@@ -5,6 +5,17 @@
   "description": "The caster gathers a wobbling ball of water, then fires it as a rippling blue jet that travels to the target and bursts into a splash fountain, leaving mist and a wet puddle behind.",
   "element": "water",
   "archetype": "beam",
+  "classification": {
+    "stages": [
+      "cast",
+      "travel",
+      "impact"
+    ],
+    "category": "damage",
+    "delivery": "beam",
+    "area": "single",
+    "duration": "channeled"
+  },
   "tags": [
     "line",
     "jet",
